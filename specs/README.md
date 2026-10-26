@@ -19,7 +19,7 @@ specs/<feature>/
 
 | feature | 状态 | 依赖 | 最近更新 | 备注 |
 |---|---|---|---|---|
-| （示例）desktop-shell | in-progress | 无 | 2026-10-26 | 示例行，按需增删 |
+| data-layer | in-progress | 无 | 2026-10-26 | Spec 阶段（Clarify 中） |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
