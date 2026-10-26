@@ -35,6 +35,7 @@
 | D-008 | 前端框架：Vue 3 + Vite + TS | React | 中文生态、心智负担低；图表密集场景够用 |
 | D-009 | 知识库多层存储与检索：LanceDB + bge-m3 + bge-reranker-v2-m3 + DuckDB FTS + DuckDB/Parquet，MinerU 解析 + PaddleOCR | sqlite-vec / bge-small-zh（原推荐） | embedding 只找文本，数字表格走 SQL；详见 architecture.md §4 |
 | D-010 | 后端框架：FastAPI | — | localhost 标准答案，低风险 |
+| D-011 | UI 视觉体系与交互形态：暗色玻璃 + 工作台焦点带 + 底部抽屉对话（时间线 CoT）+ 模块角标 + 红涨绿跌（行情专属）+ 模块库固定栅格 | 亮色纸底 / 其他对话形态 | 产品视觉工作流逐项确认；详见 ADR 与 designUI.md |
 
 §9 待确认事项已全部确认（2026-10-26），保留作记录。
 

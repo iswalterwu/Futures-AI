@@ -43,13 +43,21 @@ dense + BM25 各召回 30–50 → RRF 融合 → 元数据过滤（品种/日�
 5. **期货元数据**：品种、交易所（SHFE/INE/DCE/CZCE/CME/LME）、合约月份、报告类型（日报/周报/月报/交易所公告/仓单日报）、发布日 vs 数据日（两者常不同）、主力连续 vs 单合约
 6. **容量**：30 份 × 30 页 ≈ 900 页/天 ≈ 2000–3500 chunk/天；一年约 100 万 chunk、向量 5–8GB；瓶颈在解析/OCR，夜间批处理；PDF 原件约 100GB/年放 NAS
 
-## 待确认
+## 待确认 → 已确认（2026-10-26）
 
-- **解析管线分级**：MinerU 底层为 PyTorch 版面检测模型，CPU 吞吐不现实（单页 10–60s）且安装包 +5GB 级。
-  建议按 tier/硬件分级：基础版 = PyMuPDF 文本层 + 规则表格提取 + RapidOCR 兜底；专业版/有 GPU = MinerU 全量。待 Walter 确认。
+**解析管线按硬件自动分级**：
+
+- 有 NVIDIA GPU（≥8GB 显存）且 tier 允许 → MinerU 全量解析（中文双栏/表格质量最高）
+- 其余（纯 CPU / 非 NVIDIA GPU）→ PyMuPDF 文本层 + 规则表格提取 + RapidOCR 兜底
+- 解析质量同时作为授权 tier 的功能开关（基础版轻量管线 / 专业版 MinerU）
+
+开发基准机：NVIDIA GeForce RTX 4060 Laptop GPU（8GB 显存）+ Intel Arc iGPU。
+含义：MinerU 可本机 CUDA 运行；但 8GB 显存不支持本地大模型（14B+ 放不下），
+本地生成模型兜底现实选项为 4–8B 量化，v1 以 API 主路径为准；批处理需控制并发以适配 8GB 显存。
 
 ## 影响
 
 - `backend/knowledge/` 技术栈与摄取管线
 - 安装包体积与分发策略
-- 与授权 tier 联动（解析质量可作为功能开关）
+- 与授权 tier 联动（解析质量作为功能开关，已确认）
+- 硬件分级：GPU 探测 + 管线选择；开发基准 RTX 4060 Laptop 8GB
