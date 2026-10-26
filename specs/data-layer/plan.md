@@ -22,7 +22,7 @@
   │   │   ├── eia/              #   manifest.yaml + eia_adapter.py
   │   │   └── local_file/       #   manifest.yaml + local_file_adapter.py
   │   ├── catalog/
-  │   │   ├── descriptor.py     # 3 键规范化（UTF-8/键排序/枚举小写/缺省空串）+ SHA-256 截断 16 字节 + 8 槽渲染
+  │   │   ├── descriptor.py     # 3 键规范化（三键必填/枚举小写/键排序/UTF-8）+ SHA-256 截断 16 字节 + 8 槽渲染
   │   │   ├── aliases.py        # 别名（含 adapter 来源作用域，手动 > manifest > 模板 > 模糊）
   │   │   └── registry.py       # 目录编译：扫描适配器目录 -> manifest -> 序列目录；软删/error 状态迁移
   │   ├── store/
@@ -92,12 +92,13 @@ provides:                    # 必填，非空数组
 ```
 sources(id, adapter_id, name, enabled, status, manifest_path)
         -- status: ok/disabled/error；manifest_path 持久化适配器目录路径（冷启动按路径定位更新状态）
-        -- 注：优先级不在本表；唯一权威 = series_sources.priority（provides[].priority 默认 100 落库）
+        -- 注：优先级不在本表；唯一权威 = series_sources.priority（provides[].priority 默认 100 落库）；enabled 单一权威在本表
 series(id, descriptor_json, display_id_8slot, unit, freq, tz) -- 派生缓存，manifest 为权威
-series_sources(series_id, source_id, priority, enabled, reg_order)
-        UNIQUE(series_id, source_id)                           -- provides[].priority 落库于此，逐序列择优以此为准
+series_sources(series_id, source_id, priority, reg_order)
+        UNIQUE(series_id, source_id)                           -- source_id = sources.id；provides[].priority 落库于此，逐序列择优以此为准
 aliases(id, source_symbol, adapter_id, series_id, rule_kind)  -- rule_kind: manifest/template/fuzzy/manual
         UNIQUE(source_symbol, adapter_id)
+        -- 写入裁决：新写入的 rule_kind 优先级低于现有行时拒绝并提示（手动 > manifest > 模板 > 模糊）
 user_overrides(series_id, source_id, priority)                -- 手动覆盖 = 替换该 source 优先级值，参与同一决胜链；UNIQUE(series_id, source_id)
 jobs(name, adapter_id, series_id, schedule_spec, last_run)    -- AC-004-2 任务注册表
 import_maps(id, file_pattern, column_map_json)                -- AC-007-3 列映射持久化
@@ -106,7 +107,7 @@ import_maps(id, file_pattern, column_map_json)                -- AC-007-3 列映
 ### 3.2 DuckDB（observations.duckdb，数据 + 批次）
 
 ```
-observations(series_id, ts, value, unit, source,
+observations(series_id, ts, value, unit, source,             -- source 存 adapter_id（与 sources.adapter_id 同口径）
              fetched_at, asof, ingest_run, payload_hash)
         UNIQUE(series_id, ts, source, ingest_run)             -- 幂等 = 冲突忽略，永不删行
 ingest_runs(ingest_run, adapter_id, series_id, range_start, range_end,
@@ -120,7 +121,7 @@ ingest_runs(ingest_run, adapter_id, series_id, range_start, range_end,
 - `latest_obs(series_id)` 与 `asof(series_id, t)` 共用同一择优函数；asof(t) = asof ≤ t 的行（AC-003-3）
 - **asof = finished_at（批次成功提交时刻）**；fetched_at = 拉取时间；run 提交前数据不可见
 - 原子性：run 建在拉取前（running）；提交 = observations + run=succeeded 同一 DuckDB 事务；失败 = 独立事务标 failed（无部分数据行）；崩溃遗留 running → 冷启动时超时（>60min）标 failed
-- **单写者**：service 打开 DuckDB 时持有数据目录**写锁**（plan §3.3 .lock）；CLI 写操作遇锁报错提示；**只读查询以 DuckDB read_only 连接执行，不受写锁影响**；MCP 在 Backend 进程内，service 连接互斥串行化（Q-019/Q-029）
+- **单写者**：service 打开 DuckDB 时持有数据目录写锁（plan §3.3 .lock）；CLI 写操作遇锁报错提示；CLI 只读命令（list/reconcile/provenance/diff）在锁被占时经 localhost MCP HTTP 路由查询；MCP 在 Backend 进程内，service 连接互斥串行化（Q-019/Q-029）
 
 ### 3.3 用户数据目录（权威布局，AC-009-3 指向本节；每安装一套，默认 `%LOCALAPPDATA%/FuturesAI/`）
 
