@@ -26,8 +26,10 @@ Futures-AI：给期货交易者的本地化 AI 分析软件（桌面应用）。
 ## 2. 工作流：spec-driven（固定流程，所有功能开发必须遵守）
 
 ```
-Constitution → Spec → Clarify → Plan → Checklist → Tasks → Analyze → Implement → Converge → Review → Handoff
+Constitution → Spec → Clarify → 【Gate 1】 → Plan → Checklist → Tasks → Analyze → Implement → Converge → Review → 【Gate 2】 → Handoff
 ```
+
+**总规则**：每一步开始时重新读取对应文件（AGENTS.md、docs/、`specs/<feature>/` 产物），不依赖会话记忆。
 
 1. **Constitution**：先固化项目原则，明确安全边界、什么该做什么不该做。
    载体：本文件（§3 决策红线、§4 工作约定）+ `docs/`（plan/architecture/designUI）+ `docs/decisions/` ADR。
@@ -35,24 +37,39 @@ Constitution → Spec → Clarify → Plan → Checklist → Tasks → Analyze �
    产物：`specs/<feature>/spec.md`。
 3. **Clarify**：AI Agent 追问所有描述不明确的地方和歧义点；能从仓库、文档、既有方案推断的，不问用户；
    将回答融入 spec 中，避免出现模糊不清的情况。产物：更新 `spec.md`（歧义记录表）。
+
+**Gate 1（人工批准，硬闸门）**：Clarify 完成后、Plan 开始前，由用户批准 `spec.md`。批准后 **spec 冻结**；
+未批准不得进入 Plan。此后任何需求变更都按第 8 步的变更规则处理。
+
 4. **Plan**：参考技术栈和架构信息，生成来自 spec 规范的设计成果，包括具体的实施细节。
    产物：`specs/<feature>/plan.md`。
 5. **Checklist**：生成一个自定义的质量检查清单，包括针对 spec 需求进行的单元测试，以便在工作进行分解前
    确保需求描述完整、清晰且一致。这些自定义检查清单属于审核员所确定的需求质量审查成果；只有当审核员认为
    某项检查标准得到满足时，才会标记该项检查为已通过。虽然某些自定义项已通过检查，但这并不意味着实施工作已经完成。
+   **审核员约束**：审核必须是独立会话（新开会话、与实施会话隔离），并使用与实施不同的模型；
+   至少配置 2 名审核员（deepseek-v4.1-flash 与 gpt-6.1-sol）并行审核，各自产出勾选结果，
+   按共识取通过项；有分歧的项视为未通过并附说明。
    产物：`specs/<feature>/checklist.md`（实施者不勾选）。
 6. **Tasks**：把方案拆成 0.5 到 2 小时可完成的任务，每个任务包含上下文、修改范围、完成标准和验证命令。
+   **完成标准必须引用 spec 的 AC 编号**（如“满足 AC-001-1”），验证命令与完成标准一一对应。
    产物：`specs/<feature>/tasks.md`。
 7. **Analyze**：报告在 spec.md、plan.md 和 tasks.md 之间存在的冲突、差距和模糊之处。该报告是只读的；
    如果发现了问题请进行修复，然后在实施之前重新运行该报告。
 8. **Implement**：按照依赖顺序执行 tasks.md 中的任务。在执行之前，会读取检查清单中的复选框状态作为前置条件，
    并在继续之前确认所有检查清单项都已勾选；过程中不会修改任何检查清单文件或标记。可以一次性运行以构建整个系统，
    或者将任务划分为多个阶段来处理大型功能。
+   **需求变更规则**：Implement 中途需求发生变化 → 回到 Clarify 重新走流水线（更新 spec → 重新过 Gate 1 →
+   更新 plan/tasks），不许直接改 tasks.md 偷跑。
 9. **Converge**：对比代码库与规范、计划以及任务列表进行检查。如果发现差距，就在 tasks.md 处添加新的任务，
    然后运行 Implement 工作流再次进行比对，直到报告"已收敛"为止。否则任务完成，可以继续完成评审。
-10. **Review**：调用第三方 agent（新开独立会话）参考 spec.md，按 bug、架构风险、测试缺口、目标是否对齐进行评审，
-    禁止只做风格化总结。
-11. **Handoff**：更新 feature 的 review.md，记录完成项、未完成项、风险和下一步任务。
+10. **Review**：调用第三方 agent（新开独立会话，与实施会话隔离）参考 **spec.md + plan.md + tasks.md + 实际代码差异**
+    （git diff），按 bug、架构风险、测试缺口、目标是否对齐进行评审，禁止只做风格化总结。
+
+**Gate 2（人工批准，硬闸门）**：Review 完成后，由用户确认评审结论（bug 修复 / 风险接受 / 缺口补齐），确认后方可进入 Handoff。
+
+11. **Handoff**：更新 feature 的 review.md，记录完成项、未完成项、风险和下一步任务，并附**验收证据**：
+    测试命令输出摘要、Converge 报告结论。然后**提交 PR 并 merge 到 main**；若出现 conflict，先 resolve 冲突
+    （涉及实现语义的冲突解决后回到 Analyze/Converge 复查），再完成 merge。
 
 ### 功能规格目录约定
 
@@ -64,6 +81,11 @@ specs/<feature>/          # 每个功能性 feature 一个独立规格目录（�
 ├── review.md             # 评审与交接记录（Handoff 阶段更新）
 └── checklist.md          # 质量检查清单（Checklist 阶段生成，有则必读）
 ```
+
+### 多 feature 并行
+
+`specs/README.md` 维护一张**状态表**（feature / 状态 / 依赖 / 最近更新）。feature 开始、阻塞、完成时必须更新；
+依赖未满足的 feature 不得进入 Plan。
 
 新建 feature 一律从 `templates/` 模板起稿，走完整个工作流。
 
