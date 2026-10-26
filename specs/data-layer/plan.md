@@ -1,6 +1,6 @@
 # Feature: data-layer 实施计划（plan.md）
 
-> Plan 阶段产物：由 spec.md（v12，十一轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
+> Plan 阶段产物：由 spec.md（v13，十二轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
 
 ## 1. 技术方案
 
@@ -22,7 +22,7 @@
   │   │   ├── eia/              #   manifest.yaml + eia_adapter.py
   │   │   └── local_file/       #   manifest.yaml + local_file_adapter.py
   │   ├── catalog/
-  │   │   ├── descriptor.py     # 3 键规范化（三键必填/枚举小写/键排序/UTF-8）+ SHA-256 截断 16 字节 + 8 槽渲染
+  │   │   ├── descriptor.py     # 描述符规范化（asset/geo/measure 必填 + contract 可选，键集恒四键）+ SHA-256 截断 16 字节 + 8 槽渲染
   │   │   ├── aliases.py        # 别名（含 adapter 来源作用域，手动 > manifest > 模板 > 模糊）
   │   │   └── registry.py       # 目录编译：扫描适配器目录 -> manifest -> 序列目录；软删/error 状态迁移
   │   ├── store/
@@ -51,10 +51,11 @@ name: AKShare 行情           # 必填，显示名（list_sources 的 name 来�
 version: 1                   # 必填，正整数
 credentials: none            # 必填，enum: none | {kind: api_key, credential_ref: <名>}
 provides:                    # 必填，非空数组
-  - descriptor:              #   必填：3 键
+  - descriptor:              #   必填：3 键 + 可选 contract
       asset: sc              #     必填，v1 enum: sc/fu/lu/bu/pg/crude/brent/diesel/lpg
       geo: world             #     必填，v1 enum: world/na/nwe/med/me/afr/in/cn/apx
       measure: close         #     必填，v1 enum: close/volume/oi/stock/receipt/balance
+      contract: ""           #     可选，缺省空串 = 主力/连续；非空 = 指定合约（去首尾空白、不转小写）
     symbols: ["futures_daily_SC"]   # 必填，非空：源侧符号，自动注册别名（rule_kind=manifest）
     unit: cny_bbl            #   必填，v1 enum: cny_bbl/cny_ton/usd_bbl/kb_d/kton
     freq: 1d                 #   必填，enum: 1d/1w/1m
@@ -136,7 +137,7 @@ creds/                   # DPAPI 加密凭证
 
 ## 4. 关键流程
 
-1. **冷启动**：service.init() → 扫描内置（包内资源）与用户适配器目录 → manifest 校验：**不可解析或字段非法的 manifest 一律把对应 source 标 error（按 manifest_path 定位：曾存在则原地改 status，未存在则以 adapter_id=文件路径登记虚拟条目；重复 id 的后到者同样标 error），报告路径+字段+原因；error 不影响其他适配器**（AC-001-3/4）→ 对比上次扫描：目录中消失的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级）→ 加载别名与覆盖 → **最后计算主源（候选 = status=ok 的源）并写 series 派生缓存（unit/freq/tz = 主源值）** → 清理超时 running 批次 → 就绪
+1. **冷启动**：service.init() → 扫描内置（包内资源）与用户适配器目录 → manifest 校验：**不可解析或字段非法的 manifest 一律把对应 source 标 error（按 manifest_path 定位：曾存在则原地改 status，未存在则以 adapter_id=文件路径登记虚拟条目；重复 id 的后到者同样标 error），报告路径+字段+原因；error 不影响其他适配器**（AC-001-3/4）→ 对比上次扫描：目录中消失的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级；**编译 = 增/改/软删，不清空既有 series 行——全部 manifest 非法时历史序列仍可查询与对账**）→ 加载别名与覆盖 → **最后计算主源（候选 = status=ok 的源）并写 series 派生缓存（unit/freq/tz = 主源值）** → 清理超时 running 批次 → 就绪
 2. **按需取数**（do_fetch=true）：建 ingest_run（running，记录 series/range）→ 解析适配器与源符号 → adapter.fetch → 单位归一化检查 → **同一 DuckDB 事务**：写 observations + run=succeeded → 返回；任一步失败 → 无数据行 + 独立事务 run=failed；可重试错误（超时/5xx/限流）支持手动重试 = 新 run
 3. **只读短路**（do_fetch=false）：仅查询现有数据（latest_obs/asof），不创建 run、不触发适配器、不写库
 4. **diff**：两 run 仅当均为 succeeded、series_id 相同、source 相同、[range_start, range_end] 相同、unit/freq/tz 快照一致时可比；否则返回不可比原因（AC-005-2）
@@ -148,7 +149,7 @@ creds/                   # DPAPI 加密凭证
 | AC | 实现位置 | 验证方式 |
 |---|---|---|
 | AC-001-1/2/3/4 | adapters/ + registry | tests/test_adapters.py（好/坏 manifest 样例按 §2.1 字段表；移除 → disabled、校验失败 → error、重复 id 后到者 → error 且先到者生效） |
-| AC-002-1/2/3/4/5 | catalog/descriptor + aliases | tests/test_identity.py（golden 向量对拍 ID 与 8 槽；归并；别名作用域与裁决；AC-002-4 grep 范围同 AC-009-2、阳性样例置 fixtures/manual_series_id_fixtures/） |
+| AC-002-1/2/3/4/5 | catalog/descriptor + aliases | tests/test_identity.py（golden 向量对拍 ID 与 8 槽（含 contract 缺省与 SC2401 样例）；归并；别名作用域与裁决；AC-002-4 grep 范围同 AC-009-2、阳性样例置 fixtures/manual_series_id_fixtures/） |
 | AC-003-1/2/3/4 | store/duck + winners | tests/test_store.py（重放幂等；latest 两粒度；asof≡latest；决胜链含 tie-break 与手动覆盖） |
 | AC-004-1/2/3/4/5/6 | fetch/ + jobs + cli | tests/test_fetch.py（mock adapter；原子性：中途失败无部分行 + run=failed；重试=新 run）；test_cli.py（config/jobs 持久化；add-source 写 manifest 骨架）；AC-004-4 = base.Adapter 签名存在断言（import 测试）；AC-004-6 = serve 持锁下写命令报错 + 只读命令经 HTTP 路由断言 |
 | AC-005-1/2 | store + ingest | tests/test_provenance.py（字段查询；同范围 diff 三分类；跨范围 → 覆盖不一致） |
@@ -162,7 +163,7 @@ creds/                   # DPAPI 加密凭证
 | 风险 | 对策 |
 |---|---|
 | akshare 接口漂移/限流 | 适配器隔离 + 版本锁定 + 失败不回退（AC-004-3）；离线测试用固定响应样本 mock |
-| DuckDB 单写者限制 | 写锁（plan §3.3 .lock）：service 持写锁，CLI 写操作遇锁报错；只读查询 read_only 连接旁路；MCP 进程内 + 连接互斥串行化（Q-019/Q-029） |
+| DuckDB 单写者限制 | 写锁（plan §3.3 .lock）：service 持写锁，CLI 写操作遇锁报错；CLI 只读命令经 localhost HTTP 路由（端点发现 = data/mcp_endpoint.json）；MCP 进程内 + 连接互斥串行化（Q-019/Q-029） |
 | Windows 编码/时区坑 | `PYTHONIOENCODING=utf-8`；时间戳 UTC 存储 + tz 标记 |
 | pywin32（DPAPI）不可用 | fail closed：拒绝保存/读取并报错（AC-009-1），无降级路径 |
 | Python 3.14 wheel 可用性 | **实施首任务 = 依赖安装冒烟**（全依赖 pip install + import）；失败则调整版本锁定并回 spec |

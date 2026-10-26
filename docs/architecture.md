@@ -56,7 +56,7 @@ id: akshare
 version: 1
 credentials: none            # 或 {kind: api_key, credential_ref: <名>}，密钥存凭证库（DPAPI）
 provides:
-  - descriptor: {asset: sc, geo: world, measure: close}   # 3 键身份；unit/freq/tz 为元数据
+  - descriptor: {asset: sc, geo: world, measure: close, contract: ""}   # contract 可选：空串 = 主力/连续
     symbols: ["futures_daily_SC"]      # 源侧符号
     unit: cny_bbl
     freq: 1d

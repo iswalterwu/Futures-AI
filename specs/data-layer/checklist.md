@@ -6,10 +6,10 @@
 > **审核员**：A = deepseek/deepseek-flash（独立会话；注：deepseek-v4.1-flash 在已认证 provider 下不存在，以同 provider deepseek-flash 替代）、B = openai/gpt-6.1-sol（独立会话）。
 > 共识规则：两审一致通过才算通过；分歧视为未通过。
 >
-> **审核历程**：首轮双审未通过（14 阻断 B-01~B-14）→ 二轮（设计层缺陷 D1~D21）→ 三至十轮（契约细节逐步收敛）→ **v11 为验收目标版本（第十一轮复核）**。
+> **审核历程**：首轮双审未通过（14 阻断 B-01~B-14）→ 二轮（设计层缺陷 D1~D21）→ 三至十轮（契约细节逐步收敛）→ **v13 为验收目标版本（第十三轮复核）**。
 > **审核员模型替代待确认**：AGENTS.md 指定的 deepseek-v4.1-flash 在已认证 provider 下不存在，A 以同 provider deepseek-flash 替代，待 Walter 在 Gate 1 一并确认。
 
-## 当前状态（v11，第十一轮复核目标）
+## 当前状态（v13，第十三轮复核目标）
 
 ### 需求完整性
 
@@ -44,6 +44,6 @@
 
 ## 复核条件（全部满足后方可进入 Tasks）
 
-1. 第十一轮双审复核通过（v11 闭环）
-2. v11 spec.md 获 **Gate 1 再批准**（Walter）——**顺带确认审核员模型替代（deepseek-v4.1-flash 不存在于已认证 provider，A 以 deepseek-flash 替代）**
+1. 第十三轮双审复核通过（v13 闭环）
+2. v13 spec.md 获 **Gate 1 再批准**（Walter）——**顺带确认审核员模型替代（deepseek-v4.1-flash 不存在于已认证 provider，A 以 deepseek-flash 替代）**
 3. tasks.md 生成后，补审“任务粒度 + 验证命令 ↔ AC 一一对应”项（review.md 按 Handoff 阶段生成，属流程预期）
