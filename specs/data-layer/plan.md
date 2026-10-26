@@ -1,6 +1,6 @@
 # Feature: data-layer 实施计划（plan.md）
 
-> Plan 阶段产物：由 spec.md（v13，十二轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
+> Plan 阶段产物：由 spec.md（v14，十三轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
 
 ## 1. 技术方案
 
@@ -72,7 +72,7 @@ provides:                    # 必填，非空数组
 | 接口 | 签名与语义 |
 |---|---|
 | search_series | `search_series(q) -> {matches:[{series_id, descriptor, unit, freq}]}` |
-| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；source=None = 该序列 status=ok 的启用源中优先级数值最小者（并列取注册顺序先者；无 ok 源 → not_found）；false = 只读短路（不触发适配器、不写库） |
+| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；source=None = 该序列 status=ok 且 enabled 的启用源中优先级数值最小者（并列取注册顺序先者）；**仅 do_fetch=true 分支：无启用源 → not_found；只读分支忽略 source、不受源状态影响（返回跨源择优历史数据）**；false = 只读短路（不触发适配器、不写库） |
 | list_sources | `list_sources() -> {sources:[{adapter_id, name, enabled, status}]}`（status: ok/disabled/error） |
 | reconcile | `reconcile(series_id) -> {report:{series_id, checks:[...]}}` |
 | config | `config add-source/alias/priority/credentials …`（CLI 专属；add-source = 在用户适配器目录写 manifest 骨架；只能配置已有 manifest 的源） |
@@ -130,14 +130,15 @@ ingest_runs(ingest_run, adapter_id, series_id, range_start, range_end,
 ```
 data/catalog.sqlite
 data/observations.duckdb
-data/.lock               # 单写者文件锁
+data/.lock               # 单写者写锁
+data/mcp_endpoint.json   # 运行态：serve 端口+令牌（CLI 只读路由的端点发现，AC-004-6）
 adapters/                # 用户适配器目录（扫描点，manifest.yaml 每适配器一份）
 creds/                   # DPAPI 加密凭证
 ```
 
 ## 4. 关键流程
 
-1. **冷启动**：service.init() → 扫描内置（包内资源）与用户适配器目录 → manifest 校验：**不可解析或字段非法的 manifest 一律把对应 source 标 error（按 manifest_path 定位：曾存在则原地改 status，未存在则以 adapter_id=文件路径登记虚拟条目；重复 id 的后到者同样标 error），报告路径+字段+原因；error 不影响其他适配器**（AC-001-3/4）→ 对比上次扫描：目录中消失的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级；**编译 = 增/改/软删，不清空既有 series 行——全部 manifest 非法时历史序列仍可查询与对账**）→ 加载别名与覆盖 → **最后计算主源（候选 = status=ok 的源）并写 series 派生缓存（unit/freq/tz = 主源值）** → 清理超时 running 批次 → 就绪
+1. **冷启动**：service.init() → 扫描内置（包内资源）与用户适配器目录 → manifest 校验：**不可解析或字段非法的 manifest 一律把对应 source 标 error（按 manifest_path 定位：曾存在则原地改 status，未存在则以 adapter_id=文件路径登记虚拟条目；重复 id 的后到者同样标 error），报告路径+字段+原因；error 不影响其他适配器**（AC-001-3/4）→ 对比上次扫描：目录中消失的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级；**编译 = 增/改/软删，不清空既有 series 行——全部 manifest 非法时历史序列仍可查询与对账**）→ 加载别名与覆盖 → **最后计算主源（候选 = status=ok 且 enabled=true 的启用源；enabled=false 视为非启用）**并写 series 派生缓存（unit/freq/tz = 主源值） → 清理超时 running 批次 → 就绪
 2. **按需取数**（do_fetch=true）：建 ingest_run（running，记录 series/range）→ 解析适配器与源符号 → adapter.fetch → 单位归一化检查 → **同一 DuckDB 事务**：写 observations + run=succeeded → 返回；任一步失败 → 无数据行 + 独立事务 run=failed；可重试错误（超时/5xx/限流）支持手动重试 = 新 run
 3. **只读短路**（do_fetch=false）：仅查询现有数据（latest_obs/asof），不创建 run、不触发适配器、不写库
 4. **diff**：两 run 仅当均为 succeeded、series_id 相同、source 相同、[range_start, range_end] 相同、unit/freq/tz 快照一致时可比；否则返回不可比原因（AC-005-2）
