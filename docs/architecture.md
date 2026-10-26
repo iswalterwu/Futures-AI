@@ -70,7 +70,7 @@ provides:
 
 - **规范身份** = 3 键描述符 {asset, geo, measure} → 规范化（键排序/枚举小写/缺省空串/UTF-8）后稳定哈希派生 ID；unit/freq/tz 为序列元数据（不参与身份，同身份不同口径进对账 R-006）
 - 8 槽渲染格式继承 FTEngine（`cat.geo1.geo2.com1.com2.measure.slot7.freq`）：asset→槽1、geo→槽2、measure→槽6、freq 元数据→槽8，未用槽位填 `-`
-- **别名映射层**：源侧 ticker/字段名 → 描述符（模板规则 + 模糊匹配 + 用户手动覆盖），带来源作用域，裁决：手动 > 模板 > 模糊
+- **别名映射层**：源侧 ticker/字段名 → 描述符（模板规则 + 模糊匹配 + 用户手动覆盖），带来源作用域，裁决：手动 > manifest > 模板 > 模糊
 - 两源同描述符自动归并同序列
 
 ### 3.3 观测存储（DuckDB）
@@ -80,7 +80,7 @@ observations(series_id, ts, value, unit,
              source, fetched_at, asof, ingest_run, payload_hash)
 ```
 
-- 追加写、永不删行；`latest_obs` 视图取现值；asof 重建任一时点所见（继承 FTEngine）
+- 追加写、永不删行；`latest_obs` 视图取现值；asof 重建任一时点所见（v1 择优用当前配置，历史配置版本化留 Phase 2，不承诺）
 - 供方竞争：同 series_id 多源按优先级逐点择优（全族权威 < 纯计算 < 交易所 < 转发 < 常规）。**v1 收窄（2026-10-26，data-layer Checklist 双审裁定）：优先级数值低者胜 → asof 新者胜 → ingest_run 大者胜（最终决胜）→ 手动覆盖最优先；五层分类留待平衡表 feature 再评估**
 
 ### 3.4 溯源与对齐（track & align）
