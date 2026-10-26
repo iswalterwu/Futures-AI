@@ -47,18 +47,22 @@ pi coding agent（子进程，`pi --mode rpc`）
 
 ## 3. 统一数据层（核心设计）
 
-### 3.1 适配器 manifest（草案）
+### 3.1 适配器 manifest（草案，完整字段契约以 specs/data-layer/plan.md §2.1 为准）
 
 每个数据源一个适配器，带声明清单：
 
 ```yaml
 id: akshare
 version: 1
-credentials: none            # 或 {kind: api_key, env: XXX}
+credentials: none            # 或 {kind: api_key, credential_ref: <名>}，密钥存凭证库（DPAPI）
 provides:
-  - descriptor: {asset: sc, measure: close, freq: 1d, unit: cny_bbl}
+  - descriptor: {asset: sc, geo: world, measure: close}   # 3 键身份；unit/freq/tz 为元数据
     symbols: ["futures_daily_SC"]      # 源侧符号
-    fetch: {modes: [on_demand, realtime], history_days: 3650}
+    unit: cny_bbl
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100                     # 越小越优先，默认 100
+    fetch: {modes: [on_demand], history_days: 3650}
     update: {lag_min: 0, revises: true}
 ```
 

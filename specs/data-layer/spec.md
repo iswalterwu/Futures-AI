@@ -26,14 +26,14 @@
 - 溯源与对齐最小集：provenance 字段、批次 diff（带覆盖范围约束）、单位/时区/重采样对账
 - v1 内置适配器：akshare（行情/仓单）、EIA（能源公开数据）、本地文件（CSV/Excel 向导映射）
 - agent 工具（经 MCP 暴露）：search_series / fetch_series / list_sources / reconcile
-- 凭证本地加密存储，代码零 fallback，读取失败 fail closed
+- 凭证本地加密存储，代码零 fallback，读取失败 fail closed；单写者（DuckDB 文件锁）
 - 最小 CLI 数据源配置入口（开发/测试期；正式 GUI 归 settings feature）
 
 ### 非目标
 
 - realtime 行情流实现（Phase 2）
 - 品种业务模型（供需/物流/平衡表口径 —— 后续 domain feature）
-- 前端数据源配置界面（归 settings feature；本 feature 只提供 **CLI 入口**，service 门面供未来 API 包装，不交付任何 HTTP 端点）
+- 前端数据源配置界面（归 settings feature；本 feature 只提供 **CLI 入口**，service 门面供未来 API 包装，**不交付任何前端业务 HTTP 端点（MCP streamable HTTP 除外）**）
 - 第三方适配器生态与安装市场（Phase 4）
 - 统一交易日历（v1 存原始时间戳 + freq 标记）
 
@@ -49,21 +49,21 @@
 
 ### R-002 序列身份
 
-- **what**：规范身份 = **3 键描述符 {asset, geo, measure}** 经规范化后取 SHA-256 前 16 字节（32 hex 字符）为序列 ID；unit/freq/tz 属于序列元数据，不参与身份。8 槽渲染格式仅用于显示：`asset.geo.-.-.-.measure.-.freq`（未用槽位填 `-`，映射表见 plan §2，含 golden 对拍）。别名映射：源侧符号 → 描述符（模板规则 + 模糊匹配 + 手动覆盖），带来源作用域，裁决顺序：手动 > 模板 > 模糊。
+- **what**：规范身份 = **3 键描述符 {asset, geo, measure}** 经规范化后取 SHA-256 前 16 字节（32 hex 字符）为序列 ID；unit/freq/tz 属于序列元数据，不参与身份。规范化输入规则：键集固定、枚举小写、缺省/空值一律空串（哈希输入层不替换为 `-`，`-` 仅在 8 槽显示层出现）、JSON 键排序、UTF-8 编码、`separators=(',',':')`。8 槽渲染格式仅用于显示：`asset.geo.-.-.-.measure.-.freq`（映射表见 plan §2.3，含 golden 对拍）。别名映射：源侧符号 → 描述符（模板规则 + 模糊匹配 + 手动覆盖），带来源作用域，裁决顺序：**手动 > manifest > 模板 > 模糊**。
 - **验收规则**：
   - [ ] AC-002-1 同一描述符经规范化后产生确定且稳定的 ID（跨重启/跨机器/跨实现稳定）：规范化规则 = 键集固定、枚举小写、缺省空串、JSON 键排序、UTF-8 编码、`separators=(',',':')`；测试含 golden 向量
   - [ ] AC-002-2 两个来源声明同一 3 键描述符 → 自动归并到同一序列（unit/freq 不同仍归并，差异进对账 R-006）
-  - [ ] AC-002-3 别名映射可被用户手动覆盖，覆盖持久化；别名带来源作用域；冲突时按"手动 > 模板 > 模糊"裁决
+  - [ ] AC-002-3 别名映射可被用户手动覆盖，覆盖持久化；别名带来源作用域；冲突时按"手动 > manifest > 模板 > 模糊"裁决
   - [ ] AC-002-4 同一 ID 永不手写分配（代码审查项：仓库内无人工编号入口；CI grep 检查，规则与样例见 AC-009-2 同款方式）
   - [ ] AC-002-5 8 槽渲染 ID 由 3 键描述符 + freq 元数据按映射表渲染，含 golden 对拍
 
 ### R-003 观测存储
 
-- **what**：DuckDB observations 表（series_id/ts/value/unit/source/fetched_at/asof/ingest_run/payload_hash）。**追加写永不删行**；幂等 = `(series_id, ts, source, ingest_run)` 唯一索引 + 冲突忽略。latest_obs = 每 `(series_id, ts)` 按择优规则取当前版本；latest(series_id) = 最新 ts 的择优值。asof(t) 与 latest_obs 使用**同一择优规则**（见下），保证 asof(now) ≡ latest_obs。择优规则：优先级数值低者胜 → asof 新者胜 → ingest_run 大者胜（最终决胜）→ 用户手动覆盖最优先。fetched_at = 实际拉取时间；asof = 摄入批次时间（恒等于该 run 的创建时间，不可回填）。
+- **what**：DuckDB observations 表（series_id/ts/value/unit/source/fetched_at/asof/ingest_run/payload_hash）。**追加写永不删行**；幂等 = `(series_id, ts, source, ingest_run)` 唯一索引 + 冲突忽略。latest_obs = 每 `(series_id, ts)` 按择优规则取当前版本；latest(series_id) = 最新 ts 的择优值。asof(t) = 取 asof ≤ t 的行按**同一择优规则**返回，保证 asof(now) ≡ latest_obs。择优规则：优先级数值低者胜 → asof 新者胜 → ingest_run 大者胜（最终决胜）→ 用户手动覆盖最优先。fetched_at = 实际拉取时间；**asof = 该批次成功提交的时刻（finished_at），数据对世界可见的时间点**。历史择优配置语义：asof 查询只影响观测行可见性，择优使用**当前**配置（历史配置版本化留 Phase 2，明确不承诺）。
 - **验收规则**：
   - [ ] AC-003-1 同 ingest_run 重放不产生重复行（唯一索引冲突忽略，不覆盖已保留历史）
   - [ ] AC-003-2 latest_obs 每 `(series_id, ts)` 返回择优值；latest(series_id) 返回最新 ts 的择优值
-  - [ ] AC-003-3 asof(t) 返回任一时点所见，且与 latest_obs 使用同一择优规则（asof(now) 与 latest_obs 一致）
+  - [ ] AC-003-3 asof(t) = 取 asof ≤ t 的行按同一择优规则返回（asof(now) 与 latest_obs 一致；asof 为批次提交时刻，不会"看到"提交前不存在的数据）
   - [ ] AC-003-4 择优确定性：优先级低者胜 → asof 新者胜 → ingest_run 大者胜；用户手动覆盖最优先；v1 基础版（FTEngine 五层分类不搬，architecture §3.3 已注记收窄）
 
 ### R-004 取数模式
@@ -73,19 +73,19 @@
   - [ ] AC-004-1 service.fetch_series(series_id, range, source?, do_fetch) 的 do_fetch **无默认值，调用方必须显式传入**；do_fetch=true 触发按需取数并写库返回；CLI fetch 命令 = true，MCP 工具 = false（见 R-008）
   - [ ] AC-004-2 scheduled 任务可注册/查看/手动触发（v1 骨架，不要求完整调度 UI）；CLI 提供 jobs 子命令
   - [ ] AC-004-3 失败原子性：ingest_run 在拉取前创建（running），拉取/归一化/写入任一环节失败 → run 标记 failed，本批次不产生部分写入；已有成功批次不回退；可重试错误（网络超时/5xx/限流）支持手动重试，重试 = 新 ingest_run
-  - [ ] AC-004-4 realtime 仅定义接口签名（文档化），不实现、不测试网络行为
-  - [ ] AC-004-5 CLI `config` 子命令可添加/配置数据源并持久化（重启后生效）
+  - [ ] AC-004-4 realtime 仅定义接口签名（base.Adapter 中存在签名定义，测试 import 断言存在即可），不实现、不测试网络行为
+  - [ ] AC-004-5 CLI `config` 子命令可配置数据源并持久化（重启后生效）；**config 只能配置已有 manifest 的源**（凭证/优先级/别名），`add-source` = 在用户适配器目录写入 manifest 骨架文件
 
 ### R-005 溯源
 
-- **what**：每个观测值可回答"哪来的、何时来、哪一批"；批次 diff 报告"什么变了、变多少"。ingest_run 记录 (adapter_id, series_id, range_start, range_end)；**diff 仅在同 series_id 且覆盖范围相同的两个 run 之间计算**，范围不同则报告覆盖不一致而非误报删除。
+- **what**：每个观测值可回答"哪来的、何时来、哪一批"；批次 diff 报告"什么变了、变多少"。ingest_run 记录 (adapter_id, series_id, range_start, range_end)；**diff 仅在两个 status=succeeded 的 run、同 series_id、同 source（adapter）、覆盖范围相同时可比**，否则报告不可比原因而非误报删除。
 - **验收规则**：
   - [ ] AC-005-1 任意观测可查询其 source/fetched_at/ingest_run/payload_hash
-  - [ ] AC-005-2 两个同覆盖范围 ingest_run 之间可生成 diff：run A 有、run B 无的 `(series_id, ts, source)` 记为删除；数值变化记为修订；结果含新增/修订/删除三类与"变多少"汇总；覆盖范围不同 → 报告覆盖不一致
+  - [ ] AC-005-2 两个成功且同 series、同 source、同覆盖范围的 ingest_run 之间可生成 diff：run A 有、run B 无的 `(series_id, ts, source)` 记为删除；数值变化记为修订；汇总含三类计数、ΣΔvalue、max|Δ|；不满足可比条件 → 报告不可比原因
 
 ### R-006 对齐校验
 
-- **what**：同序列多源自动检查单位、时区/日历、重采样口径；**单位/时区/频率以 manifest 声明为唯一权威**（series 表字段为派生缓存，冲突时以 manifest 为准并出对账提示）；不一致进对账报告（v1 最小集：单位 + 时区 + 频率）。展示口径跟随主源（优先级最低数值者），不静默换算。
+- **what**：同序列多源自动检查单位、时区/日历、重采样口径；**单位/时区/频率以 manifest 声明为唯一权威**（series 表字段为派生缓存，冲突时以 manifest 为准并出对账提示）；不一致进对账报告（v1 最小集：单位 + 时区 + 频率）。展示口径跟随主源（优先级最低数值者；并列时取 series_sources 注册顺序先者），不静默换算。
 - **验收规则**：
   - [ ] AC-006-1 两源同序列且 manifest 声明单位不同 → 对账报告提示（不静默换算），展示口径跟随主源
   - [ ] AC-006-2 时区/频率声明不一致 → 对账报告提示
@@ -102,7 +102,7 @@
 
 ### R-008 agent 工具（MCP）
 
-- **what**：data 工具集经本地 MCP server（streamable HTTP，localhost，由 Backend 进程内提供）暴露给 pi：search_series / fetch_series / list_sources / reconcile。逐工具最小返回契约：search_series → `{matches:[{series_id, descriptor, unit, freq}]}`；fetch_series → `{series_id, rows, meta}`；list_sources → `{sources:[{adapter_id, name, enabled, status}]}`；reconcile → `{report:{series_id, checks:[...]}}`；错误统一 `{error:{code, message, retryable}}`。
+- **what**：data 工具集经本地 MCP server（streamable HTTP，localhost，由 Backend 进程内提供）暴露给 pi。**输入契约**：`search_series(q: string)`；`fetch_series(series_id, range, source?, fetch: boolean = false)`；`list_sources()`；`reconcile(series_id)`。逐工具最小返回契约：search_series → `{matches:[{series_id, descriptor, unit, freq}]}`；fetch_series → `{series_id, rows, meta}`；list_sources → `{sources:[{adapter_id, name, enabled, status}]}`；reconcile → `{report:{series_id, checks:[...]}}`；错误统一 `{error:{code, message, retryable}}`。
 - **验收规则**：
   - [ ] AC-008-1 四个工具可经 MCP 调用并返回各自契约的结构化结果（逐工具 schema 见 what）
   - [ ] AC-008-2 fetch_series 工具默认 do_fetch=false：走只读短路分支（仅查询现有数据，不触发适配器、不写库）；带显式 fetch 标志才触发按需取数与写库
@@ -113,8 +113,8 @@
 - **what**：凭证存用户数据目录 `creds/` 并加密（DPAPI）；**保存与读取两条路径均 fail closed**（DPAPI 不可用 = 拒绝保存并报错；读取/解密失败 = 报错，禁止返回明文或 None）；代码无硬编码凭证；每安装独立数据目录。
 - **验收规则**：
   - [ ] AC-009-1 凭证文件不含明文（DPAPI 加密）；保存失败与读取失败两条路径均报错（测试覆盖）
-  - [ ] AC-009-2 代码库零凭证字面量（含测试 fixture）：grep 扫描范围 = backend/ 与 tests/ 全部文本文件；规则 = key/secret/token/password 赋值模式；配阳性/阴性样例
-  - [ ] AC-009-3 数据目录结构与 architecture.md §3/§4 一致（统一 `creds/` 命名），用户数据不入 Git；测试断言目录结构
+  - [ ] AC-009-2 代码库零凭证字面量：grep 扫描范围 = backend/ 与仓库根 tests/ 全部文本文件（排除 `fixtures/credential_scan_fixtures/` 阳性样例目录，排除清单写死在扫描规则中）；规则 = key/secret/token/password 赋值模式（可执行正则）；阳性样例放排除目录、阴性样例遍布代码（随测试提交）
+  - [ ] AC-009-3 数据目录结构与 plan §3.3 权威布局一致（统一 `creds/` 命名），用户数据不入 Git；测试断言目录结构
 
 ## 4. 约束与依赖
 
@@ -143,3 +143,7 @@
 | Q-014 | 择优最终决胜（复核 D5） | 优先级低 → asof 新 → ingest_run 大（2026-10-26） | R-003 |
 | Q-015 | diff 覆盖范围（复核 C8/D6） | 仅同 series + 同覆盖范围可比；否则报告覆盖不一致（2026-10-26） | R-005 |
 | Q-016 | MCP 逐工具 schema（复核 D10） | 四工具各自最小返回契约（2026-10-26） | R-008 |
+| Q-017 | asof 时间点语义（三轮复核） | asof = 批次成功提交时刻（finished_at），数据对世界可见的时间点；asof(t) = asof ≤ t 的行（2026-10-26） | R-003 |
+| Q-018 | 历史择优配置语义（三轮复核） | asof 只影响行可见性，择优用当前配置；历史配置版本化留 Phase 2，明确不承诺（2026-10-26） | R-003 |
+| Q-019 | CLI 与 Backend 单写者（三轮复核） | DuckDB 打开时持数据目录文件锁；CLI 写操作遇锁报错提示；MCP 进程内串行化（2026-10-26） | plan §3.2/§6 |
+| Q-020 | diff 可比条件（三轮复核） | 仅两个 succeeded、同 series、同 source、同覆盖范围的 run 可比（2026-10-26） | R-005 |

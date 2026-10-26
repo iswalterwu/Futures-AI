@@ -43,22 +43,24 @@
 
 ### 2.1 manifest 字段契约（AC-001-2 判定依据，Gate 1 前定稿）
 
+manifest 文件名固定 `manifest.yaml`，位于适配器目录内；重复 id 拒绝加载并报告。字段契约：
+
 ```yaml
 id: akshare                  # 必填，唯一，[a-z0-9-]{1,64}
 version: 1                   # 必填，正整数
 credentials: none            # 必填，enum: none | {kind: api_key, credential_ref: <名>}
 provides:                    # 必填，非空数组
   - descriptor:              #   必填：3 键
-      asset: sc              #     必填，enum（v1: sc/fu/lu/bu/pg/eia_diesel/…），小写
-      geo: world             #     必填，小写，缺省空串视为 "-"
-      measure: close         #     必填，小写，enum（close/volume/oi/stock/balance/…）
-    symbols: ["futures_daily_SC"]   # 必填，非空：源侧符号，自动注册为别名（rule_kind=manifest）
-    unit: cny_bbl            #   必填：单位枚举（cny_bbl/kb_d/…）
-    freq: 1d                 #   必填，enum: 1d/1w/1m/…
+      asset: sc              #     必填，v1 enum: sc/fu/lu/bu/pg/crude/brent/diesel/lpg
+      geo: world             #     必填，v1 enum: world/na/nwe/med/me/afr/in/cn/apx/…（枚举表随适配器注册）
+      measure: close         #     必填，v1 enum: close/volume/oi/stock/receipt/balance/…
+    symbols: ["futures_daily_SC"]   # 必填，非空：源侧符号，自动注册别名（rule_kind=manifest）
+    unit: cny_bbl            #   必填，v1 enum: cny_bbl/cny_ton/usd_bbl/kb_d/kton
+    freq: 1d                 #   必填，enum: 1d/1w/1m
     tz: Asia/Shanghai        #   必填，IANA 时区
-    priority: 100            #   可选，默认 100（越小越优先）
-    fetch: {modes: [on_demand], history_days: 3650}   # 必填：modes enum 子集
-    update: {lag_min: 0, revises: true}               # 必填
+    priority: 100            #   可选，int ≥0，默认 100（越小越优先；落库到 series_sources）
+    fetch: {modes: [on_demand], history_days: 3650}   # 必填：modes ⊂ {on_demand, realtime}；history_days int ≥0
+    update: {lag_min: 0, revises: true}               # 必填：lag_min int ≥0（分钟）；revises bool
 ```
 
 校验失败 = 拒绝加载并报告文件路径 + 字段 + 原因（AC-001-2）。
@@ -68,10 +70,10 @@ provides:                    # 必填，非空数组
 | 接口 | 签名与语义 |
 |---|---|
 | search_series | `search_series(q) -> {matches:[{series_id, descriptor, unit, freq}]}` |
-| fetch_series | `fetch_series(series_id, range, source=None, do_fetch)` —— **do_fetch 无默认，调用方显式传入**；false = 只读短路（不触发适配器、不写库） |
+| fetch_series | `fetch_series(series_id, range, source, do_fetch)` —— source 与 do_fetch **均无默认值，调用方显式传入**；false = 只读短路（不触发适配器、不写库） |
 | list_sources | `list_sources() -> {sources:[{adapter_id, name, enabled, status}]}`（status: ok/disabled/error） |
 | reconcile | `reconcile(series_id) -> {report:{series_id, checks:[...]}}` |
-| config | `config add-source/alias/priority/credentials …`（CLI 专属，持久化到 SQLite） |
+| config | `config add-source/alias/priority/credentials …`（CLI 专属；add-source = 在用户适配器目录写 manifest 骨架；只能配置已有 manifest 的源） |
 | jobs | `jobs list/run`（CLI 专属） |
 | import | `import <file>`（CLI 向导，CSV/Excel 映射） |
 
@@ -85,11 +87,15 @@ provides:                    # 必填，非空数组
 ### 3.1 SQLite（catalog.sqlite，仅目录）
 
 ```
-sources(id, adapter_id, name, priority, enabled, status)      -- status: ok/disabled/error
+sources(id, adapter_id, name, priority, enabled, status)      -- status: ok/disabled/error；priority 为 adapter 级默认
 series(id, descriptor_json, display_id_8slot, unit, freq, tz) -- 派生缓存，manifest 为权威
+series_sources(series_id, source_id, priority, enabled, reg_order)
+        UNIQUE(series_id, source_id)                           -- provides[].priority 落库于此，逐序列择优以此为准
 aliases(id, source_symbol, adapter_id, series_id, rule_kind)  -- rule_kind: manifest/template/fuzzy/manual
         UNIQUE(source_symbol, adapter_id)
 user_overrides(series_id, source_id, priority)                -- 手动覆盖（最优先），UNIQUE(series_id, source_id)
+jobs(name, adapter_id, series_id, schedule_spec, last_run)    -- AC-004-2 任务注册表
+import_maps(id, file_pattern, column_map_json)                -- AC-007-3 列映射持久化
 ```
 
 ### 3.2 DuckDB（observations.duckdb，数据 + 批次）
@@ -103,19 +109,30 @@ ingest_runs(ingest_run, adapter_id, series_id, range_start, range_end,
 ```
 
 - 幂等：`INSERT OR IGNORE`；重放不重复、不覆盖（AC-003-1）
-- **择优解析在 Python 侧（store/winners.py）**：DuckDB 取候选行 → SQLite 读优先级/覆盖 → 规则：优先级低者胜 → asof 新者胜 → ingest_run 大者胜 → 手动覆盖最优先（AC-003-4）
-- `latest_obs(series_id)` 与 `asof(series_id, t)` 共用同一择优函数，保证 asof(now) ≡ latest_obs（AC-003-3）
-- 原子性：run 建在拉取前（running）；observations 与 run 状态同一 DuckDB 事务提交；失败 → 无行 + run=failed（AC-004-3）
-- 时间语义：fetched_at = 拉取时间；asof = run 创建时间（恒等，不可回填）
+- **择优解析在 Python 侧（store/winners.py）**：DuckDB 取候选行 → SQLite 读 series_sources.priority + user_overrides → 规则：优先级低者胜 → asof 新者胜 → ingest_run 大者胜 → 手动覆盖最优先（AC-003-4）
+- `latest_obs(series_id)` 与 `asof(series_id, t)` 共用同一择优函数；asof(t) = asof ≤ t 的行（AC-003-3）
+- **asof = finished_at（批次成功提交时刻）**；fetched_at = 拉取时间；run 提交前数据不可见
+- 原子性：run 建在拉取前（running）；提交 = observations + run=succeeded 同一 DuckDB 事务；失败 = 独立事务标 failed（无部分数据行）；崩溃遗留 running → 冷启动时超时（>60min）标 failed
+- **单写者**：service 打开 DuckDB 时持有数据目录文件锁（plan §3.3 .lock）；CLI 写操作遇锁报错提示；MCP 在 Backend 进程内，service 连接互斥串行化（Q-019）
+
+### 3.3 用户数据目录（权威布局，AC-009-3 指向本节；每安装一套，默认 `%LOCALAPPDATA%/FuturesAI/`）
+
+```
+data/catalog.sqlite
+data/observations.duckdb
+data/.lock               # 单写者文件锁
+adapters/                # 用户适配器目录（扫描点，manifest.yaml 每适配器一份）
+creds/                   # DPAPI 加密凭证
+```
 
 ## 4. 关键流程
 
-1. **冷启动**：service.init() → 扫描内置 + 用户适配器目录 → manifest 校验（坏件报告跳过）→ 对比上次扫描：被移除的 source 标 disabled（软删，数据保留）、校验失败的标 error（≠ 移除）→ 编译序列目录 → 加载别名与覆盖 → 就绪
-2. **按需取数**（do_fetch=true）：建 ingest_run（running，记录 series/range）→ 解析适配器与源符号 → adapter.fetch → 单位归一化检查 → 事务写 observations + run=succeeded → 返回；**任一步失败 → 事务回滚 + run=failed**，可重试错误（超时/5xx/限流）支持手动重试 = 新 run
+1. **冷启动**：service.init() → 扫描内置 + 用户适配器目录 → manifest 校验（坏件：报告路径+字段+原因跳过；**不可解析的 manifest 以 adapter_id=文件路径登记为 sources 表 error 虚拟条目**，AC-001-3）→ 对比上次扫描：被移除的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级）→ 加载别名与覆盖 → 清理超时 running 批次 → 就绪
+2. **按需取数**（do_fetch=true）：建 ingest_run（running，记录 series/range）→ 解析适配器与源符号 → adapter.fetch → 单位归一化检查 → **同一 DuckDB 事务**：写 observations + run=succeeded → 返回；任一步失败 → 无数据行 + 独立事务 run=failed；可重试错误（超时/5xx/限流）支持手动重试 = 新 run
 3. **只读短路**（do_fetch=false）：仅查询现有数据（latest_obs/asof），不创建 run、不触发适配器、不写库
-4. **diff**：两 run 仅当 series_id 相同且 [range_start, range_end] 相同时可比；否则返回覆盖不一致（AC-005-2）
-5. **对账**：reconcile(id) → 各源 manifest 声明的 unit/tz/freq 对比 → 报告（不静默换算）；展示口径跟随主源（优先级最低数值者）
-6. **MCP**：FastMCP 以 streamable HTTP 起在 Backend 进程内（localhost 端口 + 令牌）；pi 的 mcp.json 用 URL 连接；四工具委托 service，逐工具返回契约见 spec R-008
+4. **diff**：两 run 仅当均为 succeeded、series_id 相同、source 相同、[range_start, range_end] 相同时可比；否则返回不可比原因（AC-005-2）
+5. **对账**：reconcile(id) → 各源 manifest 声明的 unit/tz/freq 对比 → 报告（不静默换算）；展示口径跟随主源（优先级最低数值者，并列取 series_sources 注册顺序先者）
+6. **MCP**：FastMCP 以 streamable HTTP 起在 Backend 进程内（localhost 端口 + 令牌）；pi 的 mcp.json 用 URL 连接；四工具委托 service（**连接互斥串行化**）；逐工具输入/返回契约见 spec R-008
 
 ## 5. 验收对应
 
@@ -124,19 +141,19 @@ ingest_runs(ingest_run, adapter_id, series_id, range_start, range_end,
 | AC-001-1/2/3 | adapters/ + registry | tests/test_adapters.py（好/坏 manifest 样例按 §2.1 字段表；移除 → disabled、校验失败 → error） |
 | AC-002-1/2/3/4/5 | catalog/descriptor + aliases | tests/test_identity.py（golden 向量对拍 ID 与 8 槽；归并；别名作用域与裁决；CI grep） |
 | AC-003-1/2/3/4 | store/duck + winners | tests/test_store.py（重放幂等；latest 两粒度；asof≡latest；决胜链含 tie-break 与手动覆盖） |
-| AC-004-1/2/3/4/5 | fetch/ + jobs + cli | tests/test_fetch.py（mock adapter；原子性：中途失败无部分行 + run=failed；重试=新 run）；test_cli.py（config/jobs 持久化） |
+| AC-004-1/2/3/4/5 | fetch/ + jobs + cli | tests/test_fetch.py（mock adapter；原子性：中途失败无部分行 + run=failed；重试=新 run）；test_cli.py（config/jobs 持久化；add-source 写 manifest 骨架）；AC-004-4 = base.Adapter 签名存在断言（import 测试） |
 | AC-005-1/2 | store + ingest | tests/test_provenance.py（字段查询；同范围 diff 三分类；跨范围 → 覆盖不一致） |
 | AC-006-1/2/3 | align.py | tests/test_align.py（单位/时区/频率不一致样例；manifest 权威裁决） |
 | AC-007-1/2/3/4 | adapters/* | tests/test_adapters_*.py（akshare/EIA 固定响应样本 mock + 在线冒烟；import 向导样例文件；隔离性） |
 | AC-008-1/2/3 | mcp_server.py | tests/test_mcp.py（HTTP 调用四工具逐 schema；do_fetch 默认 false 短路断言无写库；结构化错误） |
-| AC-009-1/2/3 | creds.py + 扫描 | tests/test_creds.py（保存/读取失败路径均报错）；grep：backend/ 与 tests/ 全文本、key/secret/token/password 赋值模式、阳/阴性样例；目录结构断言 |
+| AC-009-1/2/3 | creds.py + 扫描 | tests/test_creds.py（保存/读取失败路径均报错）；grep：backend/ + 根 tests/（排除 fixtures/credential_scan_fixtures/，规则正则+阳/阴性样例随测试提交）；目录结构断言（plan §3.3） |
 
 ## 6. 风险与回滚
 
 | 风险 | 对策 |
 |---|---|
 | akshare 接口漂移/限流 | 适配器隔离 + 版本锁定 + 失败不回退（AC-004-3）；离线测试用固定响应样本 mock |
-| DuckDB 单写者限制 | 单进程模型：service 持有唯一连接；MCP 在进程内 HTTP（Q-013），无第二写者 |
+| DuckDB 单写者限制 | 文件锁（plan §3.3 .lock）：service 持锁，CLI 写操作遇锁报错；MCP 进程内 + 连接互斥串行化（Q-019） |
 | Windows 编码/时区坑 | `PYTHONIOENCODING=utf-8`；时间戳 UTC 存储 + tz 标记 |
 | pywin32（DPAPI）不可用 | fail closed：拒绝保存/读取并报错（AC-009-1），无降级路径 |
 | Python 3.14 wheel 可用性 | **实施首任务 = 依赖安装冒烟**（全依赖 pip install + import）；失败则调整版本锁定并回 spec |
