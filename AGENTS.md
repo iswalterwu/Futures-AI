@@ -19,9 +19,55 @@ Futures-AI：给期货交易者的本地化 AI 分析软件（桌面应用）。
 | `docs/architecture.md` | 产品架构：分层职责、数据底座、知识层、agent 集成、报告管线、授权模块 | 动架构相关代码前必读 |
 | `docs/designUI.md` | 全局设计理念：配色系统、图表系统、chart-spec 模型、UI 组件、日报设计 | 动前端/图表/日报样式前必读 |
 | `docs/decisions/` | ADR 决策记录（编号、日期、背景、取舍） | 新决策先登记再实现 |
-| `specs/` | 从 FTEngine 移植的规范资产（图表/UI 规范原文，逐份搬运） | 图表与 UI 实现细节 |
+| `specs/<feature>/` | 功能规格目录：spec.md / plan.md / tasks.md / review.md | 开发任何功能时（唯一实施入口） |
+| `templates/` | spec-driven 工作流模板（spec/plan/tasks/checklist/review） | 新建功能规格时 |
+| `design/` | 从 FTEngine 移植的规范资产（图表/UI 规范原文，逐份搬运） | 图表与 UI 实现细节 |
 
-## 2. 已确认的关键决策（实现不得偏离）
+## 2. 工作流：spec-driven（固定流程，所有功能开发必须遵守）
+
+```
+Constitution → Spec → Clarify → Plan → Checklist → Tasks → Analyze → Implement → Converge → Review → Handoff
+```
+
+1. **Constitution**：先固化项目原则，明确安全边界、什么该做什么不该做。
+   载体：本文件（§3 决策红线、§4 工作约定）+ `docs/`（plan/architecture/designUI）+ `docs/decisions/` ADR。
+2. **Spec**：按照 what/why 写 feature 的需求，不写技术方案；每条需求必须能映射到具体的验收规则。
+   产物：`specs/<feature>/spec.md`。
+3. **Clarify**：AI Agent 追问所有描述不明确的地方和歧义点；能从仓库、文档、既有方案推断的，不问用户；
+   将回答融入 spec 中，避免出现模糊不清的情况。产物：更新 `spec.md`（歧义记录表）。
+4. **Plan**：参考技术栈和架构信息，生成来自 spec 规范的设计成果，包括具体的实施细节。
+   产物：`specs/<feature>/plan.md`。
+5. **Checklist**：生成一个自定义的质量检查清单，包括针对 spec 需求进行的单元测试，以便在工作进行分解前
+   确保需求描述完整、清晰且一致。这些自定义检查清单属于审核员所确定的需求质量审查成果；只有当审核员认为
+   某项检查标准得到满足时，才会标记该项检查为已通过。虽然某些自定义项已通过检查，但这并不意味着实施工作已经完成。
+   产物：`specs/<feature>/checklist.md`（实施者不勾选）。
+6. **Tasks**：把方案拆成 0.5 到 2 小时可完成的任务，每个任务包含上下文、修改范围、完成标准和验证命令。
+   产物：`specs/<feature>/tasks.md`。
+7. **Analyze**：报告在 spec.md、plan.md 和 tasks.md 之间存在的冲突、差距和模糊之处。该报告是只读的；
+   如果发现了问题请进行修复，然后在实施之前重新运行该报告。
+8. **Implement**：按照依赖顺序执行 tasks.md 中的任务。在执行之前，会读取检查清单中的复选框状态作为前置条件，
+   并在继续之前确认所有检查清单项都已勾选；过程中不会修改任何检查清单文件或标记。可以一次性运行以构建整个系统，
+   或者将任务划分为多个阶段来处理大型功能。
+9. **Converge**：对比代码库与规范、计划以及任务列表进行检查。如果发现差距，就在 tasks.md 处添加新的任务，
+   然后运行 Implement 工作流再次进行比对，直到报告"已收敛"为止。否则任务完成，可以继续完成评审。
+10. **Review**：调用第三方 agent（新开独立会话）参考 spec.md，按 bug、架构风险、测试缺口、目标是否对齐进行评审，
+    禁止只做风格化总结。
+11. **Handoff**：更新 feature 的 review.md，记录完成项、未完成项、风险和下一步任务。
+
+### 功能规格目录约定
+
+```
+specs/<feature>/          # 每个功能性 feature 一个独立规格目录（如 desktop-shell）
+├── spec.md               # 需求：what/why + 验收规则（不含技术方案）
+├── plan.md               # 实施设计：技术方案与细节（Plan 阶段）
+├── tasks.md              # 任务分解（0.5–2h/任务，含验证命令）
+├── review.md             # 评审与交接记录（Handoff 阶段更新）
+└── checklist.md          # 质量检查清单（Checklist 阶段生成，有则必读）
+```
+
+新建 feature 一律从 `templates/` 模板起稿，走完整个工作流。
+
+## 3. 已确认的关键决策（实现不得偏离）
 
 - **技术栈**：Python 后端核心 + Web 前端（Vue 3 + TS + ECharts）+ 桌面外壳（候选见 plan.md §9，未冻结前不写外壳代码）
 - **AI 底座**：pi coding agent。Python 侧经 `pi --mode rpc` 子进程驱动；agent 工具经本地 MCP server 暴露
@@ -30,8 +76,9 @@ Futures-AI：给期货交易者的本地化 AI 分析软件（桌面应用）。
 - **存储**：DuckDB（时序/分析）+ SQLite（元数据/向量）；每用户独立数据目录，本地优先
 - **v1 范围**：油品垂直（供需、物流、期货市场交易数据三大模块）
 
-## 3. 工作约定
+## 4. 工作约定
 
+- 所有功能开发必须走 §2 spec-driven 工作流；`specs/<feature>/` 是实施的唯一入口
 - 决策先写 ADR（`docs/decisions/`）再改代码；方案变更先改 docs 再动实现
 - 用户文档、私有数据、凭证永不入库；`.gitignore` 锚点不得移除
 - 凭证只在 `.env` 或用户本地数据目录，代码零 fallback 字面量

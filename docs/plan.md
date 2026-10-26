@@ -47,7 +47,9 @@ docs/
 ├── data/              # （后续）数据模型、序列规范、适配器 SDK 规范、溯源对齐规格
 ├── agent/             # （后续）pi 集成细节、工具清单、记忆模块设计、prompt 约定
 └── business/          # （后续）收费框架、授权协议、分发与更新、隐私合规
-specs/                 # FTEngine 移植的规范资产（逐份搬运、保留原文编号）
+specs/<feature>/       # 功能规格目录：每功能一份 spec/plan/tasks/review（唯一实施入口）
+templates/             # spec-driven 工作流模板（spec/plan/tasks/checklist/review 的模板权威）
+design/                # FTEngine 移植的规范资产（charts/、ui/，逐份搬运、保留原文编号）
 ```
 
 文档纪律：
@@ -55,6 +57,7 @@ specs/                 # FTEngine 移植的规范资产（逐份搬运、保留�
 - 每份规范只有一个权威作者位置；README 只导航不复制数值（防双份漂移）
 - 所有"为什么"写进 ADR 或规范条目，不散落在会话里
 - 方案变更先改 docs 再改代码；实现与 docs 冲突以 docs 为准
+- **功能开发一律走 spec-driven 工作流**（AGENTS.md §2）：Constitution → Spec → Clarify → Plan → Checklist → Tasks → Analyze → Implement → Converge → Review → Handoff；规格与实施产物在 `specs/<feature>/`
 
 ## 5. 目录结构规划
 
@@ -63,7 +66,9 @@ Futures-AI/
 ├── AGENTS.md           # agent 工作手册（本仓库上下文入口）
 ├── README.md           # 项目简介（人读）
 ├── docs/               # 设计文档（见 §4）
-├── specs/              # FTEngine 规范资产移植区（charts/、ui/）
+├── specs/              # 功能规格目录（每 feature 一份：spec/plan/tasks/review）
+├── templates/          # spec-driven 工作流模板
+├── design/             # FTEngine 规范资产移植区（charts/、ui/）
 ├── shell/              # 桌面外壳：主进程、托盘、通知、更新、打包配置
 ├── frontend/           # Web 前端：Vue 3 + Vite + TS + ECharts
 ├── backend/            # Python 核心（FastAPI，localhost）
@@ -119,7 +124,7 @@ Futures-AI/
 
 | 阶段 | 内容 |
 |---|---|
-| **Phase 0（当前）** | 文档体系与仓库骨架：AGENTS.md、docs 三件套、ADR 流程；§9 待确认决策冻结 |
+| **Phase 0（当前）** | 文档体系与仓库骨架：AGENTS.md、docs 三件套、ADR 流程、spec-driven 工作流与模板（templates/、specs/）；§9 待确认决策冻结 |
 | **Phase 1 油品 MVP** | 数据层骨架（适配器框架 + akshare/EIA/本地文件三适配器）、序列目录与溯源、ECharts 模板库 v1（固定模板）、日报管线 v1（固定模板）、pi 集成（RPC + 基础工具）、知识库 v1（文档摄取+检索）、桌面外壳、本地打包 |
 | **Phase 2 个性化与自迭代** | 记忆模块增强（用户关注/逻辑学习）、图表属性自定义、日报内容自定义、对齐与对账报告、更多适配器 |
 | **Phase 3 商业化** | 授权体系、tier 功能开关、自动更新、公测/发布 |

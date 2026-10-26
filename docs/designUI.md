@@ -69,6 +69,7 @@ season-daily（日/周度年份叠线）· season-monthly（月度年份叠线�
 
 ## 7. 规范资产移植计划
 
-- `specs/charts/`：design/Graphs 各条目文件（Base/Kinds/Palette/Seasonal/Tooltip/Formats/Copy/Lint_Rules）
-- `specs/ui/`：design/UI 各条目文件（Layout/Cards/Tables/Colors/Fonts/Components/Foundations）
+- `design/charts/`：FTEngine design/Graphs 各条目文件（Base/Kinds/Palette/Seasonal/Tooltip/Formats/Copy/Lint_Rules）
+- `design/ui/`：FTEngine design/UI 各条目文件（Layout/Cards/Tables/Colors/Fonts/Components/Foundations）
 - 原则：实现对应模块时按需逐份搬运并登记，不一次性搬空；每份保留原条目 id 与"为什么"
+- 注：`specs/` 目录留给功能规格（spec-driven 工作流，见 AGENTS.md §2），规范资产统一放 `design/`

@@ -1,0 +1,16 @@
+# specs/ — 功能规格目录
+
+每个功能性 feature 一个独立规格目录，例如 `desktop-shell`、`data-layer`、`daily-report`。
+
+```
+specs/<feature>/
+├── spec.md       # 需求：what/why + 验收规则（Spec / Clarify 阶段）
+├── plan.md       # 实施设计（Plan 阶段）
+├── tasks.md      # 任务分解（Tasks 阶段；Implement/Converge 更新）
+├── review.md     # 评审与交接（Handoff 阶段）
+└── checklist.md  # 质量检查清单（Checklist 阶段，审核员生成并勾选）
+```
+
+- 工作流与各阶段规则见根目录 `AGENTS.md` §2
+- 模板在 `templates/`
+- 本目录是功能实施的唯一入口：先有规格、后有代码
