@@ -1,6 +1,6 @@
 # Feature: data-layer 实施计划（plan.md）
 
-> Plan 阶段产物：由 spec.md（v10，九轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
+> Plan 阶段产物：由 spec.md（v12，十一轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
 
 ## 1. 技术方案
 
@@ -82,8 +82,9 @@ provides:                    # 必填，非空数组
 
 ### 2.3 8 槽渲染映射（AC-002-5 golden）
 
-`cat = asset → 槽1；geo → 槽2；槽3/4/5 = "-"；measure → 槽6；槽7 = "-"；freq 元数据 → 槽8`。
-示例：`{asset: sc, geo: world, measure: close} + freq=1d → sc.world.-.-.-.close.-.1d`。
+`cat = asset → 槽1；geo → 槽2；槽3/4/5 = "-"；measure → 槽6；contract → 槽7（空串渲染为 "-"）；freq 元数据 → 槽8`。
+示例：`{asset: sc, geo: world, measure: close, contract: ""} + freq=1d → sc.world.-.-.-.close.-.1d`；
+`contract: "SC2401" → sc.world.-.-.-.close.SC2401.1d`。
 
 ## 3. 数据与存储
 
@@ -149,9 +150,9 @@ creds/                   # DPAPI 加密凭证
 | AC-001-1/2/3/4 | adapters/ + registry | tests/test_adapters.py（好/坏 manifest 样例按 §2.1 字段表；移除 → disabled、校验失败 → error、重复 id 后到者 → error 且先到者生效） |
 | AC-002-1/2/3/4/5 | catalog/descriptor + aliases | tests/test_identity.py（golden 向量对拍 ID 与 8 槽；归并；别名作用域与裁决；AC-002-4 grep 范围同 AC-009-2、阳性样例置 fixtures/manual_series_id_fixtures/） |
 | AC-003-1/2/3/4 | store/duck + winners | tests/test_store.py（重放幂等；latest 两粒度；asof≡latest；决胜链含 tie-break 与手动覆盖） |
-| AC-004-1/2/3/4/5/6 | fetch/ + jobs + cli | tests/test_fetch.py（mock adapter；原子性：中途失败无部分行 + run=failed；重试=新 run）；test_cli.py（config/jobs 持久化；add-source 写 manifest 骨架）；AC-004-4 = base.Adapter 签名存在断言（import 测试）；AC-004-6 = 写锁互斥 + read_only 只读旁路断言 |
+| AC-004-1/2/3/4/5/6 | fetch/ + jobs + cli | tests/test_fetch.py（mock adapter；原子性：中途失败无部分行 + run=failed；重试=新 run）；test_cli.py（config/jobs 持久化；add-source 写 manifest 骨架）；AC-004-4 = base.Adapter 签名存在断言（import 测试）；AC-004-6 = serve 持锁下写命令报错 + 只读命令经 HTTP 路由断言 |
 | AC-005-1/2 | store + ingest | tests/test_provenance.py（字段查询；同范围 diff 三分类；跨范围 → 覆盖不一致） |
-| AC-006-1/2/3 | align.py | tests/test_align.py（单位/时区/频率不一致样例；manifest 权威裁决） |
+| AC-006-1/2/3/4 | align.py | tests/test_align.py（单位/时区/频率不一致样例；manifest 权威裁决；退化分支：无主源 → 缓存沿用/置空 + report.warnings） |
 | AC-007-1/2/3/4 | adapters/* | tests/test_adapters_*.py（akshare/EIA 固定响应样本 mock + 在线冒烟；import 向导样例文件；隔离性） |
 | AC-008-1/2/3/4 | mcp_server.py | tests/test_mcp.py（HTTP 调用四工具逐 schema；fetch 默认 false 短路断言无写库；结构化错误含 retryable 映射；serve 启动后端点可连接） |
 | AC-009-1/2/3 | creds.py + 扫描 | tests/test_creds.py（保存/读取失败路径均报错）；grep：backend/ + 根 tests/（排除 fixtures/credential_scan_fixtures/，规则正则+阳/阴性样例随测试提交）；目录结构断言（plan §3.3） |

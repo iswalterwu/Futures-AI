@@ -11,7 +11,7 @@
 
 ## 结论（裁定内容）
 
-1. **序列身份 = 3 键 {asset, geo, measure}**；unit/freq/tz 为序列元数据（不参与身份），manifest 声明为唯一权威，series 表派生缓存取主源值
+1. **序列身份 = 描述符 {asset, geo, measure, contract?}（contract 可选，缺省空串 = 主力/连续）**；unit/freq/tz 为序列元数据（不参与身份），manifest 声明为唯一权威，series 表派生缓存取主源值
 2. **供方竞争 v1 基础版**：唯一全序 = 优先级数值小者胜 → asof 新者胜 → ingest_run（DuckDB 自增 BIGINT）大者胜；手动覆盖 = 替换该 source 优先级值、参与同一决胜链（无独立绝对覆盖）；FTEngine 五层分类留待平衡表 feature
 3. **调度器 v1 收窄**：任务注册表 + 手动触发，不引 APScheduler（随 daily-report feature 引入）
 4. **asof = 批次成功提交时刻（finished_at）**；历史择优使用当前配置（配置版本化留 Phase 2，不承诺）
@@ -35,4 +35,4 @@
 ## 影响
 
 - `docs/architecture.md` §3 相关注记
-- `specs/data-layer/` spec/plan 的裁决登记（Q-005~Q-026）
+- `specs/data-layer/` spec/plan 的裁决登记（Q-005~Q-032）
