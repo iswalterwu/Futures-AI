@@ -80,7 +80,7 @@ observations(series_id, ts, value, unit,
              source, fetched_at, asof, ingest_run, payload_hash)
 ```
 
-- 追加写、永不删行；`latest_obs` 视图取现值；asof 重建任一时点所见（v1 择优用当前配置，历史配置版本化留 Phase 2，不承诺）
+- 追加写、永不删行；latest_obs 查询取现值（v1 由 Python 侧 winners 择优解析，非 DuckDB 视图）；asof 重建任一时点所见（v1 择优用当前配置，历史配置版本化留 Phase 2，不承诺）
 - 供方竞争：同 series_id 多源按优先级逐点择优（全族权威 < 纯计算 < 交易所 < 转发 < 常规）。**v1 收窄（2026-10-26，data-layer Checklist 双审裁定）：唯一全序 = 优先级数值低者胜 → asof 新者胜 → ingest_run（自增 BIGINT）大者胜；手动覆盖 = 替换该 source 优先级值并参与同一决胜链（无独立绝对覆盖）；五层分类留待平衡表 feature 再评估**
 
 ### 3.4 溯源与对齐（track & align）

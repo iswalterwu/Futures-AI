@@ -1,6 +1,6 @@
 # Feature: data-layer 实施计划（plan.md）
 
-> Plan 阶段产物：由 spec.md（v4，四轮双审修订中）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
+> Plan 阶段产物：由 spec.md（v7，六轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
 
 ## 1. 技术方案
 
@@ -34,7 +34,7 @@
   │   │   └── jobs.py           # 任务注册表 + list/run（不引 APScheduler）
   │   ├── align.py              # 对账（manifest 权威）
   │   ├── creds.py              # DPAPI 加解密（保存/读取均 fail closed）
-  │   ├── cli.py                # config|fetch|list|jobs|reconcile|import 子命令
+  │   ├── cli.py                # config|fetch|list|jobs|reconcile|import|provenance|diff 子命令
   │   └── mcp_server.py         # FastMCP streamable HTTP（localhost）
   └── tests/                    # pytest，隔离临时根 fixture
   ```
@@ -71,7 +71,7 @@ provides:                    # 必填，非空数组
 | 接口 | 签名与语义 |
 |---|---|
 | search_series | `search_series(q) -> {matches:[{series_id, descriptor, unit, freq}]}` |
-| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；source=None = 该序列启用源中优先级最低者（并列取注册顺序先者）；false = 只读短路（不触发适配器、不写库） |
+| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；source=None = 该序列启用源中优先级数值最小者（并列取注册顺序先者）；false = 只读短路（不触发适配器、不写库） |
 | list_sources | `list_sources() -> {sources:[{adapter_id, name, enabled, status}]}`（status: ok/disabled/error） |
 | reconcile | `reconcile(series_id) -> {report:{series_id, checks:[...]}}` |
 | config | `config add-source/alias/priority/credentials …`（CLI 专属；add-source = 在用户适配器目录写 manifest 骨架；只能配置已有 manifest 的源） |
@@ -90,8 +90,9 @@ provides:                    # 必填，非空数组
 ### 3.1 SQLite（catalog.sqlite，仅目录）
 
 ```
-sources(id, adapter_id, name, priority, enabled, status, manifest_path)
+sources(id, adapter_id, name, enabled, status, manifest_path)
         -- status: ok/disabled/error；manifest_path 持久化适配器目录路径（冷启动按路径定位更新状态）
+        -- 注：优先级不在本表；唯一权威 = series_sources.priority（provides[].priority 默认 100 落库）
 series(id, descriptor_json, display_id_8slot, unit, freq, tz) -- 派生缓存，manifest 为权威
 series_sources(series_id, source_id, priority, enabled, reg_order)
         UNIQUE(series_id, source_id)                           -- provides[].priority 落库于此，逐序列择优以此为准
@@ -144,8 +145,8 @@ creds/                   # DPAPI 加密凭证
 
 | AC | 实现位置 | 验证方式 |
 |---|---|---|
-| AC-001-1/2/3 | adapters/ + registry | tests/test_adapters.py（好/坏 manifest 样例按 §2.1 字段表；移除 → disabled、校验失败 → error） |
-| AC-002-1/2/3/4/5 | catalog/descriptor + aliases | tests/test_identity.py（golden 向量对拍 ID 与 8 槽；归并；别名作用域与裁决；CI grep） |
+| AC-001-1/2/3/4 | adapters/ + registry | tests/test_adapters.py（好/坏 manifest 样例按 §2.1 字段表；移除 → disabled、校验失败 → error、重复 id 后到者 → error 且先到者生效） |
+| AC-002-1/2/3/4/5 | catalog/descriptor + aliases | tests/test_identity.py（golden 向量对拍 ID 与 8 槽；归并；别名作用域与裁决；AC-002-4 grep 范围同 AC-009-2、阳性样例置 fixtures/manual_series_id_fixtures/） |
 | AC-003-1/2/3/4 | store/duck + winners | tests/test_store.py（重放幂等；latest 两粒度；asof≡latest；决胜链含 tie-break 与手动覆盖） |
 | AC-004-1/2/3/4/5 | fetch/ + jobs + cli | tests/test_fetch.py（mock adapter；原子性：中途失败无部分行 + run=failed；重试=新 run）；test_cli.py（config/jobs 持久化；add-source 写 manifest 骨架）；AC-004-4 = base.Adapter 签名存在断言（import 测试） |
 | AC-005-1/2 | store + ingest | tests/test_provenance.py（字段查询；同范围 diff 三分类；跨范围 → 覆盖不一致） |
