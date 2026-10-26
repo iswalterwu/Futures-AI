@@ -1,8 +1,8 @@
 # Feature: data-layer（spec.md）
 
 > Spec 阶段产物：what/why 与验收规则，不含技术方案（技术落点引用 docs/architecture.md §3，实施细节在 plan.md）。
-> **Gate 1 记录**：2026-10-26 首版批准（Walter）；同日 Checklist 双审发现 14 项阻断，修订后二/三轮复核再发现设计层与契约细节缺陷，
-> 全部修订登记于 §5（Q-005~Q-020）。**待重新批准后冻结。**
+> **Gate 1 记录**：2026-10-26 首版批准（Walter）；同日 Checklist 双审发现 14 项阻断，经二至四轮复核修订（登记于 §5 Q-005~Q-020），
+> 第五轮复核后按剩余阻断项修订（v6）。**待重新批准后冻结。**
 
 ## 1. 背景与动机（why）
 
@@ -70,7 +70,7 @@
 
 - **what**：scheduled 骨架（任务注册表 + 查看 + 手动触发，不引调度器）+ on_demand（fetch_series 触发适配器即时拉取 → 写库 → 返回）；realtime 仅定义接口签名（不实现）。
 - **验收规则**：
-  - [ ] AC-004-1 service.fetch_series(series_id, range, do_fetch, source=None) 的 do_fetch **无默认值，调用方必须显式传入**；source=None = 该序列启用源中优先级最低者（并列取注册顺序先者）；do_fetch=true 触发按需取数并写库返回；CLI fetch 命令 = true，MCP 工具 = false（见 R-008）
+  - [ ] AC-004-1 service.fetch_series(series_id, range, do_fetch, source=None) 的 do_fetch **无默认值，调用方必须显式传入**；source=None = 该序列启用源中优先级最低者（并列取注册顺序先者）；**source 参数仅作用于 do_fetch=true 的拉取来源选择，只读分支忽略 source（返回跨源择优结果）**；do_fetch=true 触发按需取数并写库返回；CLI fetch 命令 = true，MCP 工具 = false（见 R-008）
   - [ ] AC-004-2 scheduled 任务可注册/查看/手动触发（v1 骨架，不要求完整调度 UI）；CLI 提供 jobs 子命令
   - [ ] AC-004-3 失败原子性：ingest_run 在拉取前创建（running），拉取/归一化/写入任一环节失败 → run 标记 failed，本批次不产生部分写入；已有成功批次不回退；可重试错误（网络超时/5xx/限流）支持手动重试，重试 = 新 ingest_run
   - [ ] AC-004-4 realtime 仅定义接口签名（base.Adapter 中存在签名定义，测试 import 断言存在即可），不实现、不测试网络行为
@@ -78,7 +78,7 @@
 
 ### R-005 溯源
 
-- **what**：每个观测值可回答“哪来的、何时来、哪一批”；批次 diff 报告“什么变了、变多少”。ingest_run 记录 (adapter_id, series_id, range_start, range_end, unit, freq, tz 快照)；**diff 仅在两个 status=succeeded 的 run、同 series_id、同 source（adapter）、覆盖范围相同、unit/freq/tz 快照一致时可比**，否则报告不可比原因而非误报删除。
+- **what**：每个观测值可回答“哪来的、何时来、哪一批”；批次 diff 报告“什么变了、变多少”。**交付入口**：CLI `provenance <series_id>`（按值查 source/fetched_at/ingest_run/payload_hash）与 `diff <run_a> <run_b>`（开发者工具，不进 MCP 工具集）。ingest_run 记录 (adapter_id, series_id, range_start, range_end, unit, freq, tz 快照)；**diff 仅在两个 status=succeeded 的 run、同 series_id、同 source（adapter）、覆盖范围相同、unit/freq/tz 快照一致时可比**，否则报告不可比原因而非误报删除。
 - **验收规则**：
   - [ ] AC-005-1 任意观测可查询其 source/fetched_at/ingest_run/payload_hash
   - [ ] AC-005-2 两个成功且同 series、同 source、同覆盖范围、同 unit/freq/tz 快照的 ingest_run 之间可生成 diff：run A 有、run B 无的 `(series_id, ts, source)` 记为删除；数值变化记为修订；汇总含三类计数、ΣΔvalue、max|Δ|；不满足可比条件 → 报告不可比原因
@@ -102,7 +102,7 @@
 
 ### R-008 agent 工具（MCP）
 
-- **what**：data 工具集经本地 MCP server（streamable HTTP，localhost，由 Backend 进程内提供）暴露给 pi。**输入契约**：`search_series(q: string)`；`fetch_series(series_id, range, fetch: boolean = false, source?: string)`，range = `{start: ISO8601, end: ISO8601}`，source = adapter_id；`list_sources()`；`reconcile(series_id)`。**返回契约**：search_series → `{matches:[{series_id, descriptor, unit, freq}]}`；fetch_series → `{series_id, rows:[{ts, value, unit, source}], meta:{series_id, source, fetched_at, asof, count, range}}`；list_sources → `{sources:[{adapter_id, name, enabled, status}]}`；reconcile → `{report:{series_id, checks:[{kind: unit|tz|freq, source_a, source_b, status: ok|mismatch, detail}]}}`；错误统一 `{error:{code, message, retryable}}`，code 枚举：not_found / unauthorized / adapter_error / rate_limited / validation_error / internal。
+- **what**：data 工具集经本地 MCP server（streamable HTTP，localhost，由 Backend 进程内提供）暴露给 pi。**输入契约**：`search_series(q: string)`；`fetch_series(series_id, range, fetch: boolean = false, source?: string)`，range = `{start: ISO8601, end: ISO8601}`，source = adapter_id（仅作用于 fetch=true 的拉取来源）；`list_sources()`；`reconcile(series_id)`。**返回契约**：search_series → `{matches:[{series_id, descriptor, unit, freq}]}`；fetch_series → `{series_id, rows:[{ts, value, unit, source}], meta:{series_id, source, fetched_at, asof, count, range}}`（meta 的 fetched_at/asof = 返回行的 max 值；空结果 rows=[]、count=0、fetched_at/asof=null）；list_sources → `{sources:[{adapter_id, name, enabled, status}]}`；reconcile → `{report:{series_id, checks:[{kind: unit|tz|freq, source_a, source_b, status: ok|mismatch, detail}]}}`；错误统一 `{error:{code, message, retryable}}`，code 枚举与 retryable 映射：not_found=false / unauthorized=false / adapter_error=true / rate_limited=true / validation_error=false / internal=false。
 - **验收规则**：
   - [ ] AC-008-1 四个工具可经 MCP 调用并返回各自契约的结构化结果（逐工具 schema 见 what）
   - [ ] AC-008-2 fetch_series 工具默认 do_fetch=false：走只读短路分支（仅查询现有数据，不触发适配器、不写库）；带显式 fetch 标志才触发按需取数与写库
@@ -113,7 +113,7 @@
 - **what**：凭证存用户数据目录 `creds/` 并加密（DPAPI）；**保存与读取两条路径均 fail closed**（DPAPI 不可用 = 拒绝保存并报错；读取/解密失败 = 报错，禁止返回明文或 None）；代码无硬编码凭证；每安装独立数据目录。
 - **验收规则**：
   - [ ] AC-009-1 凭证文件不含明文（DPAPI 加密）；保存失败与读取失败两条路径均报错（测试覆盖）
-  - [ ] AC-009-2 代码库零凭证字面量：扫描范围 = backend/（含 backend/tests/）与仓库根 tests/（若存在），排除 `fixtures/credential_scan_fixtures/`；规则 = 可执行正则 `(api[_-]?key|secret|token|password)\s*[:=]\s*["'][A-Za-z0-9_\-]{8,}`；阳性样例放排除目录、阴性样例遍布代码（随测试提交）
+  - [ ] AC-009-2 代码库零凭证字面量：扫描范围 = backend/（含 backend/tests/）与仓库根 tests/（若存在），排除 `fixtures/credential_scan_fixtures/`；规则 = 可执行正则组（大小写不敏感）：① `(?i)(api[_-]?key|apikey|secret|token|password)\s*[:=]\s*["'][^"']{8,}["']`；② `(?i)(api[_-]?key|apikey|secret|token|password)\s*[:=]\s*[A-Za-z0-9_\-]{8,}`；阳性样例置于排除目录且须同时命中两条之一（漏检即测试失败，新变形随时补样例）
   - [ ] AC-009-3 数据目录结构与 plan §3.3 权威布局一致（统一 `creds/` 命名），用户数据不入 Git；测试断言目录结构
 
 ## 4. 约束与依赖
@@ -123,7 +123,7 @@
 - 前端不参与本 feature（无 HTTP 端点交付）；MCP 工具是给 pi 的接口（Backend 进程内 HTTP，单写者）
 - Python 3.14 依赖可行性：实施首任务 = 依赖安装冒烟（全依赖 pip install + import），失败则调整版本锁定
 
-## 5. 歧义记录（Clarify / 两轮双审修订）
+## 5. 歧义记录（Clarify / 多轮双审修订）
 
 | # | 问题 | 回答 | 融入位置 |
 |---|---|---|---|

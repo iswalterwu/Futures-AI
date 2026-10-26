@@ -19,7 +19,7 @@ specs/<feature>/
 
 | feature | 状态 | 依赖 | 最近更新 | 备注 |
 |---|---|---|---|---|
-| data-layer | in-progress | 无 | 2026-10-26 | v4 修订完成（三轮双审），待第四轮复核 + Gate 1 再批准 |
+| data-layer | in-progress | 无 | 2026-10-26 | v6 修订（五轮双审），待第六轮复核 + Gate 1 再批准 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。

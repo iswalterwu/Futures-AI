@@ -27,7 +27,7 @@
   │   │   └── registry.py       # 目录编译：扫描适配器目录 -> manifest -> 序列目录；软删/error 状态迁移
   │   ├── store/
   │   │   ├── duck.py           # DuckDB schema（observations + ingest_runs）、幂等写入、候选行查询
-  │   │   ├── winners.py        # 择优解析（Python 侧）：优先级(SQLite) → asof → ingest_run → 手动覆盖
+  │   │   ├── winners.py        # 唯一全序：优先级 → asof → ingest_run（手动覆盖 = 替换优先级）
   │   │   └── ingest.py         # ingest_run 生命周期：拉取前建 running，成功 succeeded / 失败 failed
   │   ├── fetch/
   │   │   ├── on_demand.py      # fetch_series(do_fetch 显式)；do_fetch=false 只读短路
@@ -60,11 +60,11 @@ provides:                    # 必填，非空数组
     freq: 1d                 #   必填，enum: 1d/1w/1m
     tz: Asia/Shanghai        #   必填，IANA 时区
     priority: 100            #   可选，int ≥0，默认 100（越小越优先；落库到 series_sources）
-    fetch: {modes: [on_demand], history_days: 3650}   # 必填：modes ⊂ {on_demand, realtime}；history_days int ≥0
+    fetch: {modes: [on_demand], history_days: 3650}   # 必填：modes ⊂ {scheduled, on_demand, realtime}；history_days int ≥0
     update: {lag_min: 0, revises: true}               # 必填：lag_min int ≥0（分钟）；revises bool
 ```
 
-枚举扩展规则：vocab 枚举值随适配器 manifest 首次使用即注册进 catalog 的 vocab 表；AC-001-2 判定 = 值存在于 vocab 或随本 manifest 声明注册（非法值 = 不在 vocab 且未声明注册）。校验失败 = 拒绝加载并报告文件路径 + 字段 + 原因（AC-001-2）。
+枚举规则：**封闭清单，新增枚举值必须先行修订本 spec（§5 登记）并更新本字段契约，不得运行时自动注册**；非法值 = 不在封闭清单中（AC-001-2 判定）。重复 id：按扫描顺序先加载者生效，后到者登记为 sources 表 error 虚拟条目（adapter_id=文件路径）并报告“重复 id”。校验失败 = 拒绝加载并报告文件路径 + 字段 + 原因（AC-001-2）。
 
 ### 2.2 service 接口（CLI/MCP 共用）
 
@@ -77,6 +77,8 @@ provides:                    # 必填，非空数组
 | config | `config add-source/alias/priority/credentials …`（CLI 专属；add-source = 在用户适配器目录写 manifest 骨架；只能配置已有 manifest 的源） |
 | jobs | `jobs list/run`（CLI 专属） |
 | import | `import <file>`（CLI 向导，CSV/Excel 映射） |
+| provenance | `provenance <series_id>`（CLI 开发者工具，AC-005-1 交付入口） |
+| diff | `diff <run_a> <run_b>`（CLI 开发者工具，AC-005-2 交付入口） |
 
 ### 2.3 8 槽渲染映射（AC-002-5 golden）
 
@@ -88,13 +90,14 @@ provides:                    # 必填，非空数组
 ### 3.1 SQLite（catalog.sqlite，仅目录）
 
 ```
-sources(id, adapter_id, name, priority, enabled, status)      -- status: ok/disabled/error；priority 为 adapter 级默认
+sources(id, adapter_id, name, priority, enabled, status, manifest_path)
+        -- status: ok/disabled/error；manifest_path 持久化适配器目录路径（冷启动按路径定位更新状态）
 series(id, descriptor_json, display_id_8slot, unit, freq, tz) -- 派生缓存，manifest 为权威
 series_sources(series_id, source_id, priority, enabled, reg_order)
         UNIQUE(series_id, source_id)                           -- provides[].priority 落库于此，逐序列择优以此为准
 aliases(id, source_symbol, adapter_id, series_id, rule_kind)  -- rule_kind: manifest/template/fuzzy/manual
         UNIQUE(source_symbol, adapter_id)
-user_overrides(series_id, source_id, priority)                -- 手动覆盖（最优先），UNIQUE(series_id, source_id)
+user_overrides(series_id, source_id, priority)                -- 手动覆盖 = 替换该 source 优先级值，参与同一决胜链；UNIQUE(series_id, source_id)
 jobs(name, adapter_id, series_id, schedule_spec, last_run)    -- AC-004-2 任务注册表
 import_maps(id, file_pattern, column_map_json)                -- AC-007-3 列映射持久化
 ```
@@ -130,7 +133,7 @@ creds/                   # DPAPI 加密凭证
 
 ## 4. 关键流程
 
-1. **冷启动**：service.init() → 扫描内置 + 用户适配器目录 → manifest 校验：**不可解析或字段非法的 manifest 一律把对应 source 标 error（曾存在则原地改 status，未存在则以 adapter_id=文件路径登记虚拟条目），报告路径+字段+原因；error 不影响其他适配器**（AC-001-3）→ 对比上次扫描：目录中消失的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级）→ 加载别名与覆盖 → 清理超时 running 批次 → 就绪
+1. **冷启动**：service.init() → 扫描内置 + 用户适配器目录 → manifest 校验：**不可解析或字段非法的 manifest 一律把对应 source 标 error（按 manifest_path 定位：曾存在则原地改 status，未存在则以 adapter_id=文件路径登记虚拟条目；重复 id 的后到者同样标 error），报告路径+字段+原因；error 不影响其他适配器**（AC-001-3）→ 对比上次扫描：目录中消失的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级）→ 加载别名与覆盖 → 清理超时 running 批次 → 就绪
 2. **按需取数**（do_fetch=true）：建 ingest_run（running，记录 series/range）→ 解析适配器与源符号 → adapter.fetch → 单位归一化检查 → **同一 DuckDB 事务**：写 observations + run=succeeded → 返回；任一步失败 → 无数据行 + 独立事务 run=failed；可重试错误（超时/5xx/限流）支持手动重试 = 新 run
 3. **只读短路**（do_fetch=false）：仅查询现有数据（latest_obs/asof），不创建 run、不触发适配器、不写库
 4. **diff**：两 run 仅当均为 succeeded、series_id 相同、source 相同、[range_start, range_end] 相同、unit/freq/tz 快照一致时可比；否则返回不可比原因（AC-005-2）

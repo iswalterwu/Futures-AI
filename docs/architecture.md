@@ -81,7 +81,7 @@ observations(series_id, ts, value, unit,
 ```
 
 - 追加写、永不删行；`latest_obs` 视图取现值；asof 重建任一时点所见（v1 择优用当前配置，历史配置版本化留 Phase 2，不承诺）
-- 供方竞争：同 series_id 多源按优先级逐点择优（全族权威 < 纯计算 < 交易所 < 转发 < 常规）。**v1 收窄（2026-10-26，data-layer Checklist 双审裁定）：优先级数值低者胜 → asof 新者胜 → ingest_run 大者胜（最终决胜）→ 手动覆盖最优先；五层分类留待平衡表 feature 再评估**
+- 供方竞争：同 series_id 多源按优先级逐点择优（全族权威 < 纯计算 < 交易所 < 转发 < 常规）。**v1 收窄（2026-10-26，data-layer Checklist 双审裁定）：唯一全序 = 优先级数值低者胜 → asof 新者胜 → ingest_run（自增 BIGINT）大者胜；手动覆盖 = 替换该 source 优先级值并参与同一决胜链（无独立绝对覆盖）；五层分类留待平衡表 feature 再评估**
 
 ### 3.4 溯源与对齐（track & align）
 
@@ -133,6 +133,8 @@ knowledge/   沉淀区：notes/（markdown 笔记）facts/（jsonl 结构化事�
 tables/      规范化 Parquet/DuckDB 表
 memory/      agent 记忆状态：profile/（用户画像）focus/（关注点）logic/（分析逻辑）
 ```
+
+数据层目录（data/catalog.sqlite、data/observations.duckdb、data/.lock、adapters/、creds/）以 specs/data-layer/plan.md §3.3 为权威布局。
 
 ### 4.5 摄取管线
 
