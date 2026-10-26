@@ -1,6 +1,6 @@
 # Feature: data-layer 实施计划（plan.md）
 
-> Plan 阶段产物：由 spec.md（v15，十四轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
+> Plan 阶段产物：由 spec.md（v16，十五轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
 
 ## 1. 技术方案
 
@@ -97,8 +97,9 @@ sources(id, adapter_id, name, enabled, status, manifest_path)
         -- status: ok/disabled/error；manifest_path 持久化适配器目录路径（冷启动按路径定位更新状态）
         -- 注：优先级不在本表；唯一权威 = series_sources.priority（provides[].priority 默认 100 落库）；enabled 单一权威在本表
 series(id, descriptor_json, display_id_8slot, unit, freq, tz,
-      status, valid_to)  -- status: active/soft_deleted；valid_to = 软删时间戳（载体）；
-                        -- 序列目录增量重建：移除源时 series 标 soft_deleted，历史数据保留且可查询
+      status, valid_to)  -- status: active/soft_deleted；valid_to = 软删时间戳（载体）
+      -- 软删生命周期：同序列仍有其他提供源 → series 不移除，仅删除 series_sources 对应行；
+      -- 全部源移除 → series 标 soft_deleted；源重新加入 → 恢复 active 并清 valid_to
 series_sources(series_id, source_id, priority, reg_order)
         UNIQUE(series_id, source_id)                           -- source_id = sources.id；provides[].priority 落库于此，逐序列择优以此为准
 aliases(id, source_symbol, adapter_id, series_id, rule_kind)  -- rule_kind: manifest/template/fuzzy/manual

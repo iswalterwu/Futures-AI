@@ -1,7 +1,7 @@
 # Feature: data-layer（spec.md）
 
 > Spec 阶段产物：what/why 与验收规则，不含技术方案（技术落点引用 docs/architecture.md §3，实施细节在 plan.md）。
-> **Gate 1 记录**：2026-10-26 首版批准（Walter）；同日 Checklist 双审发现 14 项阻断，经二至九轮复核修订（登记于 §5 Q-005~Q-029 与 D-012 ADR）。**待重新批准后冻结。**
+> **Gate 1 记录**：2026-10-26 首版批准（Walter）；同日 Checklist 双审发现 14 项阻断，经二至十五轮复核修订（登记于 §5 Q-005~Q-032 与 D-012 ADR）。**待重新批准后冻结。**
 
 ## 1. 背景与动机（why）
 
@@ -70,7 +70,7 @@
 
 - **what**：scheduled 骨架（任务注册表 + 查看 + 手动触发，不引调度器）+ on_demand（fetch_series 触发适配器即时拉取 → 写库 → 返回）；realtime 仅定义接口签名（不实现）。
 - **验收规则**：
-  - [ ] AC-004-1 service.fetch_series(series_id, range, do_fetch, source=None) 的 do_fetch **无默认值，调用方必须显式传入**；source=None = 该序列 status=ok 且 enabled 的启用源中优先级数值最小者（并列取注册顺序先者；**仅 do_fetch=true 分支：无启用源 → 返回 not_found**）；**显式 source 指向 disabled/error 源 → 返回 validation_error**；**source 参数仅作用于 do_fetch=true 的拉取来源选择，只读分支忽略 source（返回跨源择优结果）**；do_fetch=true 触发按需取数并写库返回；CLI fetch 命令 = true，MCP 工具 = false（见 R-008）
+  - [ ] AC-004-1 service.fetch_series(series_id, range, do_fetch, source=None) 的 do_fetch **无默认值，调用方必须显式传入**；source=None = 该序列 status=ok 且 enabled 的启用源中优先级数值最小者（并列取注册顺序先者；**仅 do_fetch=true 分支：无启用源 → 返回 not_found**）；**显式 source 指向非启用源（status 非 ok 或 enabled=false）→ 返回 validation_error**；**source 参数仅作用于 do_fetch=true 的拉取来源选择，只读分支忽略 source（返回跨源择优结果）**；do_fetch=true 触发按需取数并写库返回；CLI fetch 命令 = true，MCP 工具 = false（见 R-008）
   - [ ] AC-004-2 scheduled 任务可注册/查看/手动触发（v1 骨架，不要求完整调度 UI）；CLI 提供 jobs 子命令
   - [ ] AC-004-3 失败原子性：ingest_run 在拉取前创建（running），拉取/归一化/写入任一环节失败 → run 标记 failed，本批次不产生部分写入；已有成功批次不回退；可重试错误（网络超时/5xx/限流）支持手动重试，重试 = 新 ingest_run
   - [ ] AC-004-4 realtime 仅定义接口签名（base.Adapter 中存在签名定义，测试 import 断言存在即可），不实现、不测试网络行为
@@ -91,7 +91,7 @@
   - [ ] AC-006-1 两源同序列且 manifest 声明单位不同 → 对账报告提示（不静默换算），展示口径跟随主源
   - [ ] AC-006-2 时区/频率声明不一致 → 对账报告提示
   - [ ] AC-006-3 对账结果可查询（reconcile 工具）
-  - [ ] AC-006-4 退化分支：**主源候选为空（全源 status 非 ok 或 enabled=false）** → series 派生缓存沿用最后一次缓存值（**无历史缓存 = 首次启动全源非法 → 派生缓存字段置空**）+ 对账报告 `report.warnings` 非空并注明原因
+  - [ ] AC-006-4 退化分支：**主源候选为空（全源 status 非 ok 或 enabled=false）** → series 派生缓存沿用最后一次缓存值（**无历史缓存 = 首次启动全源非法 → 派生缓存字段置空；空数据目录首启无 series 行 → 验收 = reconcile 报告 warnings 说明“无可用序列”**）+ 对账报告 `report.warnings` 非空并注明原因
 
 ### R-007 内置适配器
 
@@ -123,7 +123,8 @@
 
 - 依赖决策：D-002（Python）、D-005（数据底座）、D-006（DuckDB + SQLite）、D-003（pi RPC + MCP）、D-009（知识层共用 DuckDB）
 - 环境：Windows 11、Python 3.14；测试用隔离临时根，不接触真实私有数据（AGENTS.md §4）
-- 前端不参与本 feature（无 HTTP 端点交付）；MCP 工具是给 pi 的接口（Backend 进程内 HTTP，单写者）
+- 前端不参与本 feature（**不交付前端业务 HTTP 端点；MCP streamable HTTP 与 CLI 只读内部通道除外**）；MCP 工具是给 pi 的接口（Backend 进程内 HTTP，单写者）
+- **本 feature 范围与语义裁定的权威 = D-012 ADR**（docs/decisions/20261026-data-layer-v1-scope.md）
 - Python 3.14 依赖可行性：实施首任务 = 依赖安装冒烟（全依赖 pip install + import），失败则调整版本锁定
 
 ## 5. 歧义记录（Clarify / 多轮双审修订）
@@ -155,7 +156,7 @@
 | Q-023 | MCP 参数名映射（六轮复核） | MCP 层参数 `fetch` ↔ service 层 `do_fetch`（2026-10-26） | R-008 |
 | Q-024 | 重复 id 归属（五/六轮复核） | 先加载者生效，后到者标 error 并报告（2026-10-26） | AC-001-4 |
 | Q-025 | 枚举封闭与扩展（五轮复核） | 封闭清单，新增须先修订 spec 过 Gate，禁止运行时注册（2026-10-26） | plan §2.1 |
-| Q-026 | v1 收窄与语义裁定入 ADR（六轮复核） | 十项裁定登记为 D-012（2026-10-26） | D-012 |
+| Q-026 | v1 收窄与语义裁定入 ADR（六轮复核） | 裁定登记为 D-012（2026-10-26，后续轮次扩展至十二条） | D-012 |
 | Q-027 | 择优候选与状态关系（九轮复核） | 择优候选 = 全部源的观测行（历史可见性不因状态改变）；status 只影响配置角色（主源/默认拉取源/展示口径）（2026-10-26） | R-003/R-006 |
 | Q-028 | 全源非 ok 退化行为（九轮复核） | 主源/派生缓存：沿用最后一次缓存值 + 对账 warning；source=None 拉取：返回 not_found（2026-10-26） | R-006/AC-004-1 |
 | Q-029 | MCP 生命周期与只读旁路（九轮复核） | MCP v1 启动入口 = CLI serve；CLI 只读命令在写锁被占时经 localhost HTTP 路由（2026-10-26；**read_only 连接方案已被十一轮复核否决，以 HTTP 路由为准**） | R-008/AC-004-6 |
