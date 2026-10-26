@@ -49,7 +49,7 @@
 
 ### R-002 序列身份
 
-- **what**：规范身份 = **描述符 {asset, geo, measure, contract?}**（asset/geo/measure 三键必填且非空、枚举小写；**contract 可选键，缺省 = 空串表示主力/连续序列，非空表示指定合约（如 SC2401）**）经规范化后取 SHA-256 前 16 字节（32 hex 字符）为序列 ID；unit/freq/tz 属于序列元数据，不参与身份。规范化输入规则：JSON 键排序（**键集恒四键：contract 缺省输出空串**）、UTF-8 编码、`separators=(',',':')`；contract 规范化 = 去首尾空白、不转小写。8 槽渲染格式仅用于显示：`asset.geo.-.-.-.measure.contract.freq`（contract 空串渲染为 `-`；映射表见 plan §2.3，含 golden 对拍）。别名映射：源侧符号 → 描述符（模板规则 + 模糊匹配 + 手动覆盖），带来源作用域，裁决顺序：**手动 > manifest > 模板 > 模糊**。
+- **what**：规范身份 = **描述符 {asset, geo, measure, contract?}**（asset/geo/measure 三键必填且非空、枚举小写；**contract 可选键，缺省 = 空串表示主力/连续序列，非空表示指定合约（如 SC2401）**）经规范化后取 SHA-256 前 16 字节（32 hex 字符）为序列 ID；unit/freq/tz 属于序列元数据，不参与身份。规范化输入规则：JSON 键排序（**键集恒四键：contract 缺省输出空串**）、UTF-8 编码、`separators=(',',':')`；contract 规范化 = 去首尾空白、不转小写，**字符集 `[A-Za-z0-9]{1,20}`（含非法字符/纯空白/超长 = manifest 校验拒绝，AC-001-2）**。8 槽渲染格式仅用于显示：`asset.geo.-.-.-.measure.contract.freq`（contract 空串渲染为 `-`；映射表见 plan §2.3，含 golden 对拍）。别名映射：源侧符号 → 描述符（模板规则 + 模糊匹配 + 手动覆盖），带来源作用域，裁决顺序：**手动 > manifest > 模板 > 模糊**。
 - **验收规则**：
   - [ ] AC-002-1 同一描述符经规范化后产生确定且稳定的 ID（跨重启/跨机器/跨实现稳定）：规范化规则 = 三键必填、contract 可选（缺省空串）、枚举小写、JSON 键排序、UTF-8 编码、`separators=(',',':')`；测试含 golden 向量
   - [ ] AC-002-2 两个来源声明同一描述符（含 contract）→ 自动归并到同一序列（unit/freq 不同仍归并，差异进对账 R-006）；**不同 contract 值 = 不同序列**
@@ -70,7 +70,7 @@
 
 - **what**：scheduled 骨架（任务注册表 + 查看 + 手动触发，不引调度器）+ on_demand（fetch_series 触发适配器即时拉取 → 写库 → 返回）；realtime 仅定义接口签名（不实现）。
 - **验收规则**：
-  - [ ] AC-004-1 service.fetch_series(series_id, range, do_fetch, source=None) 的 do_fetch **无默认值，调用方必须显式传入**；source=None = 该序列 status=ok 且 enabled 的启用源中优先级数值最小者（并列取注册顺序先者；**仅 do_fetch=true 分支：无启用源 → 返回 not_found；只读分支不受源状态影响，历史数据仍可见**）；**source 参数仅作用于 do_fetch=true 的拉取来源选择，只读分支忽略 source（返回跨源择优结果）**；do_fetch=true 触发按需取数并写库返回；CLI fetch 命令 = true，MCP 工具 = false（见 R-008）
+  - [ ] AC-004-1 service.fetch_series(series_id, range, do_fetch, source=None) 的 do_fetch **无默认值，调用方必须显式传入**；source=None = 该序列 status=ok 且 enabled 的启用源中优先级数值最小者（并列取注册顺序先者；**仅 do_fetch=true 分支：无启用源 → 返回 not_found**）；**显式 source 指向 disabled/error 源 → 返回 validation_error**；**source 参数仅作用于 do_fetch=true 的拉取来源选择，只读分支忽略 source（返回跨源择优结果）**；do_fetch=true 触发按需取数并写库返回；CLI fetch 命令 = true，MCP 工具 = false（见 R-008）
   - [ ] AC-004-2 scheduled 任务可注册/查看/手动触发（v1 骨架，不要求完整调度 UI）；CLI 提供 jobs 子命令
   - [ ] AC-004-3 失败原子性：ingest_run 在拉取前创建（running），拉取/归一化/写入任一环节失败 → run 标记 failed，本批次不产生部分写入；已有成功批次不回退；可重试错误（网络超时/5xx/限流）支持手动重试，重试 = 新 ingest_run
   - [ ] AC-004-4 realtime 仅定义接口签名（base.Adapter 中存在签名定义，测试 import 断言存在即可），不实现、不测试网络行为
@@ -86,12 +86,12 @@
 
 ### R-006 对齐校验
 
-- **what**：同序列多源自动检查单位、时区/日历、重采样口径；**单位/时区/频率以 manifest 声明为唯一权威**；series 表为派生缓存：unit/freq/tz 取主源（**主源候选 = status=ok 的启用源**，优先级数值最小者，并列取注册顺序先者；**全源非 ok → 沿用最后一次缓存值并对账报告标 warning**）的声明值，冷启动编译时写入；不一致进对账报告（v1 最小集：单位 + 时区 + 频率）。展示口径跟随主源，不静默换算。
+- **what**：同序列多源自动检查单位、时区/日历、重采样口径；**单位/时区/频率以 manifest 声明为唯一权威**；series 表为派生缓存：unit/freq/tz 取主源（**主源候选 = status=ok 且 enabled=true 的启用源**，优先级数值最小者，并列取注册顺序先者；**主源候选为空（全源 status 非 ok 或 enabled=false）→ 沿用最后一次缓存值并对账报告标 warning**）的声明值，冷启动编译时写入；不一致进对账报告（v1 最小集：单位 + 时区 + 频率）。展示口径跟随主源，不静默换算。
 - **验收规则**：
   - [ ] AC-006-1 两源同序列且 manifest 声明单位不同 → 对账报告提示（不静默换算），展示口径跟随主源
   - [ ] AC-006-2 时区/频率声明不一致 → 对账报告提示
   - [ ] AC-006-3 对账结果可查询（reconcile 工具）
-  - [ ] AC-006-4 全源非 ok 退化分支：主源候选为空 → series 派生缓存沿用最后一次缓存值（**无历史缓存 = 首次启动全源非法 → 派生缓存字段置空**）+ 对账报告 `report.warnings` 非空并注明原因
+  - [ ] AC-006-4 退化分支：**主源候选为空（全源 status 非 ok 或 enabled=false）** → series 派生缓存沿用最后一次缓存值（**无历史缓存 = 首次启动全源非法 → 派生缓存字段置空**）+ 对账报告 `report.warnings` 非空并注明原因
 
 ### R-007 内置适配器
 
@@ -104,7 +104,7 @@
 
 ### R-008 agent 工具（MCP）
 
-- **what**：data 工具集经本地 MCP server（streamable HTTP，localhost，由 Backend 进程内提供）暴露给 pi。**生命周期：service.start_mcp()/stop_mcp()；v1 启动入口 = CLI `serve` 子命令**（desktop-shell 阶段由 Backend 进程托管）。**输入契约**：`search_series(q: string)`（q 匹配 = 描述符字段（含 contract）与别名的子串匹配；返回 descriptor = 描述符 dict（含 contract，缺省空串））；`fetch_series(series_id, range, fetch: boolean = false, source?: string)`，range = `{start: ISO8601, end: ISO8601}`（**end 为闭区间**），source = adapter_id（仅作用于 fetch=true 的拉取来源）；`list_sources()`；`reconcile(series_id)`。**返回契约**：search_series → `{matches:[{series_id, descriptor, unit, freq}]}`；fetch_series → `{series_id, rows:[{ts, value, unit, source}], meta:{series_id, source, fetched_at, asof, count, range}}`（meta 的 fetched_at/asof = 返回行的 max 值；**meta.source = 返回行 source 集合（多源时取 `"mixed"`；空结果 = null）**；空结果 rows=[]、count=0、fetched_at/asof=null）；list_sources → `{sources:[{adapter_id, name, enabled, status}]}`；reconcile → `{report:{series_id, checks:[{kind: unit|tz|freq, source_a, source_b, status: ok|mismatch, detail}], warnings:[string]}}`（warnings = 退化/全局问题，不绑定成对源）；错误统一 `{error:{code, message, retryable}}`，code 枚举与 retryable 映射：not_found=false / unauthorized=false / adapter_error=true / rate_limited=true / validation_error=false / internal=false。
+- **what**：data 工具集经本地 MCP server（streamable HTTP，localhost，由 Backend 进程内提供）暴露给 pi。**生命周期：service.start_mcp()/stop_mcp()；v1 启动入口 = CLI `serve` 子命令**（desktop-shell 阶段由 Backend 进程托管）。**输入契约**：`search_series(q: string)`（q 匹配 = 描述符字段（含 contract）与别名的子串匹配；返回 descriptor = 描述符 dict（含 contract，缺省空串）；**soft_deleted 序列仍可被检索（历史数据可见）**）；`fetch_series(series_id, range, fetch: boolean = false, source?: string)`，range = `{start: ISO8601, end: ISO8601}`（**end 为闭区间**），source = adapter_id（仅作用于 fetch=true 的拉取来源）；`list_sources()`；`reconcile(series_id)`。**返回契约**：search_series → `{matches:[{series_id, descriptor, unit, freq}]}`；fetch_series → `{series_id, rows:[{ts, value, unit, source}], meta:{series_id, source, fetched_at, asof, count, range}}`（meta 的 fetched_at/asof = 返回行的 max 值；**meta.source = 返回行 source 集合（多源时取 `"mixed"`；空结果 = null）**；空结果 rows=[]、count=0、fetched_at/asof=null）；list_sources → `{sources:[{adapter_id, name, enabled, status}]}`；reconcile → `{report:{series_id, checks:[{kind: unit|tz|freq, source_a, source_b, status: ok|mismatch, detail}], warnings:[string]}}`（warnings = 退化/全局问题，不绑定成对源）；错误统一 `{error:{code, message, retryable}}`，code 枚举与 retryable 映射：not_found=false / unauthorized=false / adapter_error=true / rate_limited=true / validation_error=false / internal=false。
 - **验收规则**：
   - [ ] AC-008-1 四个工具可经 MCP 调用并返回各自契约的结构化结果（逐工具 schema 见 what）
   - [ ] AC-008-2 fetch_series 工具参数 `fetch` 默认 false（**MCP 层参数 `fetch` ↔ service 层 `do_fetch`**）：走只读短路分支（仅查询现有数据，不触发适配器、不写库）；带显式 fetch 标志才触发按需取数与写库

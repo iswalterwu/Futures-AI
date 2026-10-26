@@ -1,10 +1,10 @@
 # Feature: data-layer 实施计划（plan.md）
 
-> Plan 阶段产物：由 spec.md（v14，十三轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
+> Plan 阶段产物：由 spec.md（v15，十四轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
 
 ## 1. 技术方案
 
-- **语言/框架**：Python 3.14（D-002）；包名 `backend.data`；FastAPI 不参与本 feature（service 门面供未来 API 包装，不交付 HTTP 端点）
+- **语言/框架**：Python 3.14（D-002）；包名 `backend.data`；FastAPI 不参与本 feature（service 门面供未来 API 包装；**不交付前端业务 HTTP 端点，MCP streamable HTTP 与 CLI 只读内部通道除外**）
 - **存储**：DuckDB（observations + ingest_runs，同文件单事务）+ SQLite（目录/别名/源注册/手动覆盖）（D-006；Q-012）
 - **MCP**：官方 Python MCP SDK（FastMCP），**streamable HTTP、localhost、Backend 进程内提供**（pi 经 mcp.json URL 连接；单进程单写者，Q-013）
 - **依赖**：duckdb、pydantic、pyyaml、requests、akshare、openpyxl、pandas、mcp、pywin32（DPAPI）、pytest
@@ -56,6 +56,7 @@ provides:                    # 必填，非空数组
       geo: world             #     必填，v1 enum: world/na/nwe/med/me/afr/in/cn/apx
       measure: close         #     必填，v1 enum: close/volume/oi/stock/receipt/balance
       contract: ""           #     可选，缺省空串 = 主力/连续；非空 = 指定合约（去首尾空白、不转小写）
+                            #     字符集 `[A-Za-z0-9]{1,20}`；含非法字符/纯空白/超长 → 校验拒绝（AC-001-2）
     symbols: ["futures_daily_SC"]   # 必填，非空：源侧符号，自动注册别名（rule_kind=manifest）
     unit: cny_bbl            #   必填，v1 enum: cny_bbl/cny_ton/usd_bbl/kb_d/kton
     freq: 1d                 #   必填，enum: 1d/1w/1m
@@ -95,7 +96,9 @@ provides:                    # 必填，非空数组
 sources(id, adapter_id, name, enabled, status, manifest_path)
         -- status: ok/disabled/error；manifest_path 持久化适配器目录路径（冷启动按路径定位更新状态）
         -- 注：优先级不在本表；唯一权威 = series_sources.priority（provides[].priority 默认 100 落库）；enabled 单一权威在本表
-series(id, descriptor_json, display_id_8slot, unit, freq, tz) -- 派生缓存，manifest 为权威
+series(id, descriptor_json, display_id_8slot, unit, freq, tz,
+      status, valid_to)  -- status: active/soft_deleted；valid_to = 软删时间戳（载体）；
+                        -- 序列目录增量重建：移除源时 series 标 soft_deleted，历史数据保留且可查询
 series_sources(series_id, source_id, priority, reg_order)
         UNIQUE(series_id, source_id)                           -- source_id = sources.id；provides[].priority 落库于此，逐序列择优以此为准
 aliases(id, source_symbol, adapter_id, series_id, rule_kind)  -- rule_kind: manifest/template/fuzzy/manual
@@ -150,7 +153,7 @@ creds/                   # DPAPI 加密凭证
 | AC | 实现位置 | 验证方式 |
 |---|---|---|
 | AC-001-1/2/3/4 | adapters/ + registry | tests/test_adapters.py（好/坏 manifest 样例按 §2.1 字段表；移除 → disabled、校验失败 → error、重复 id 后到者 → error 且先到者生效） |
-| AC-002-1/2/3/4/5 | catalog/descriptor + aliases | tests/test_identity.py（golden 向量对拍 ID 与 8 槽（含 contract 缺省与 SC2401 样例）；归并；别名作用域与裁决；AC-002-4 grep 范围同 AC-009-2、阳性样例置 fixtures/manual_series_id_fixtures/） |
+| AC-002-1/2/3/4/5 | catalog/descriptor + aliases | tests/test_identity.py（golden 向量对拍 ID 与 8 槽（含 contract 缺省与 SC2401 样例）；**contract 非法字符/超长/纯空白拒绝样例**；归并；别名作用域与裁决；AC-002-4 grep 范围同 AC-009-2、阳性样例置 fixtures/manual_series_id_fixtures/） |
 | AC-003-1/2/3/4 | store/duck + winners | tests/test_store.py（重放幂等；latest 两粒度；asof≡latest；决胜链含 tie-break 与手动覆盖） |
 | AC-004-1/2/3/4/5/6 | fetch/ + jobs + cli | tests/test_fetch.py（mock adapter；原子性：中途失败无部分行 + run=failed；重试=新 run）；test_cli.py（config/jobs 持久化；add-source 写 manifest 骨架）；AC-004-4 = base.Adapter 签名存在断言（import 测试）；AC-004-6 = serve 持锁下写命令报错 + 只读命令经 HTTP 路由断言 |
 | AC-005-1/2 | store + ingest | tests/test_provenance.py（字段查询；同范围 diff 三分类；跨范围 → 覆盖不一致） |

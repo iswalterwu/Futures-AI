@@ -68,8 +68,8 @@ provides:
 
 ### 3.2 序列身份
 
-- **规范身份** = 3 键描述符 {asset, geo, measure}（三键必填且非空）→ 规范化（键排序/枚举小写/UTF-8）后稳定哈希派生 ID；unit/freq/tz 为序列元数据（不参与身份，同身份不同口径进对账 R-006）
-- 8 槽渲染格式继承 FTEngine（`cat.geo1.geo2.com1.com2.measure.slot7.freq`）：asset→槽1、geo→槽2、measure→槽6、freq 元数据→槽8，未用槽位填 `-`
+- **规范身份** = 描述符 {asset, geo, measure, contract?}（三键必填且非空，contract 可选：缺省空串 = 主力/连续，非空 = 指定合约 `[A-Za-z0-9]{1,20}`，不同 contract = 不同序列）→ 规范化（键排序/枚举小写/UTF-8）后稳定哈希派生 ID；unit/freq/tz 为序列元数据（不参与身份，同身份不同口径进对账 R-006）
+- 8 槽渲染格式继承 FTEngine（`cat.geo1.geo2.com1.com2.measure.slot7.freq`）：asset→槽1、geo→槽2、measure→槽6、contract→槽7（空串渲染 `-`）、freq 元数据→槽8，槽3/4/5 填 `-`
 - **别名映射层**：源侧 ticker/字段名 → 描述符（模板规则 + 模糊匹配 + 用户手动覆盖），带来源作用域，裁决：手动 > manifest > 模板 > 模糊
 - 两源同描述符自动归并同序列
 
