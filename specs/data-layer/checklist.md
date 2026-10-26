@@ -26,12 +26,21 @@
 
 ### 可测试性
 
-- [x] 每条 AC 映射到单元测试 —— plan §5 覆盖 33 条 AC（含 grep 双正则组、fixtures 位置、重复 id 测试行）
+- [x] 每条 AC 映射到单元测试 —— plan §5 覆盖全部 AC（含 grep 双正则组、fixtures 位置、重复 id 测试行、单写者锁冲突断言）
 - [x] 外部数据源离线可验收 —— 固定响应样本 mock + 在线冒烟
 - [ ] 任务粒度与验证命令满足 tasks.md 模板要求 —— 跳过：tasks.md 未生成，Tasks 阶段后单独复审
 
+### 其他自定义项
+
+- [x] 幂等/追加写语义单一 —— 唯一索引冲突忽略，全文无 DELETE+INSERT
+- [x] 择优唯一全序 —— 优先级数值小者 → asof 新者 → ingest_run 大者；覆盖 = 替换优先级（D-012）
+- [x] 单写者闭环 —— 文件锁 + 进程内 MCP + 连接互斥（AC-004-6）
+- [x] 凭证 fail closed —— 保存/读取双失败路径（AC-009-1）
+- [x] 枚举封闭 —— 新增值须先修订 spec 过 Gate（D-012）
+- [x] 决策留痕 —— D-012 入 ADR；plan.md §3 登记；architecture 指向 D-012
+
 ## 复核条件（全部满足后方可进入 Tasks）
 
-1. 第八轮双审复核通过（v7 闭环）
-2. v7 spec.md 获 **Gate 1 再批准**（Walter）
-3. tasks.md 生成后，补审"任务粒度 + 验证命令 ↔ AC 一一对应"项
+1. 第九轮双审复核通过（v9 闭环）
+2. v9 spec.md 获 **Gate 1 再批准**（Walter）——**顺带确认审核员模型替代（deepseek-v4.1-flash 不存在于已认证 provider，A 以 deepseek-flash 替代）**
+3. tasks.md 生成后，补审“任务粒度 + 验证命令 ↔ AC 一一对应”项（review.md 按 Handoff 阶段生成，属流程预期）

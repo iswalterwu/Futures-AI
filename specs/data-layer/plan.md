@@ -16,11 +16,11 @@
   ├── data/
   │   ├── service.py            # 对外门面：CLI / MCP 共用；持有 DuckDB 连接（单写者）
   │   ├── manifest.py           # manifest schema（pydantic，字段表见 §2）
-  │   ├── adapters/
+  │   ├── adapters/             # 每适配器一目录：manifest.yaml + 适配器模块（内置以包内资源形式，用户目录在数据目录）
   │   │   ├── base.py           # Adapter 抽象：fetch(descriptor, source_symbol, range) -> DataFrame
-  │   │   ├── akshare_adapter.py
-  │   │   ├── eia_adapter.py
-  │   │   └── local_file_adapter.py
+  │   │   ├── akshare/          #   manifest.yaml + akshare_adapter.py
+  │   │   ├── eia/              #   manifest.yaml + eia_adapter.py
+  │   │   └── local_file/       #   manifest.yaml + local_file_adapter.py
   │   ├── catalog/
   │   │   ├── descriptor.py     # 3 键规范化（UTF-8/键排序/枚举小写/缺省空串）+ SHA-256 截断 16 字节 + 8 槽渲染
   │   │   ├── aliases.py        # 别名（含 adapter 来源作用域，手动 > 模板 > 模糊）
@@ -34,7 +34,7 @@
   │   │   └── jobs.py           # 任务注册表 + list/run（不引 APScheduler）
   │   ├── align.py              # 对账（manifest 权威）
   │   ├── creds.py              # DPAPI 加解密（保存/读取均 fail closed）
-  │   ├── cli.py                # config|fetch|list|jobs|reconcile|import|provenance|diff 子命令
+  │   ├── cli.py                # config|fetch|list|jobs|reconcile|import|provenance|diff|serve 子命令
   │   └── mcp_server.py         # FastMCP streamable HTTP（localhost）
   └── tests/                    # pytest，隔离临时根 fixture
   ```
@@ -134,12 +134,12 @@ creds/                   # DPAPI 加密凭证
 
 ## 4. 关键流程
 
-1. **冷启动**：service.init() → 扫描内置 + 用户适配器目录 → manifest 校验：**不可解析或字段非法的 manifest 一律把对应 source 标 error（按 manifest_path 定位：曾存在则原地改 status，未存在则以 adapter_id=文件路径登记虚拟条目；重复 id 的后到者同样标 error），报告路径+字段+原因；error 不影响其他适配器**（AC-001-3）→ 对比上次扫描：目录中消失的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级）→ 加载别名与覆盖 → 清理超时 running 批次 → 就绪
+1. **冷启动**：service.init() → 扫描内置（包内资源）与用户适配器目录 → manifest 校验：**不可解析或字段非法的 manifest 一律把对应 source 标 error（按 manifest_path 定位：曾存在则原地改 status，未存在则以 adapter_id=文件路径登记虚拟条目；重复 id 的后到者同样标 error），报告路径+字段+原因；error 不影响其他适配器**（AC-001-3/4）→ 对比上次扫描：目录中消失的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级）→ 加载别名与覆盖 → **最后计算主源（候选 = status=ok 的源）并写 series 派生缓存（unit/freq/tz = 主源值）** → 清理超时 running 批次 → 就绪
 2. **按需取数**（do_fetch=true）：建 ingest_run（running，记录 series/range）→ 解析适配器与源符号 → adapter.fetch → 单位归一化检查 → **同一 DuckDB 事务**：写 observations + run=succeeded → 返回；任一步失败 → 无数据行 + 独立事务 run=failed；可重试错误（超时/5xx/限流）支持手动重试 = 新 run
 3. **只读短路**（do_fetch=false）：仅查询现有数据（latest_obs/asof），不创建 run、不触发适配器、不写库
 4. **diff**：两 run 仅当均为 succeeded、series_id 相同、source 相同、[range_start, range_end] 相同、unit/freq/tz 快照一致时可比；否则返回不可比原因（AC-005-2）
 5. **对账**：reconcile(id) → 各源 manifest 声明的 unit/tz/freq 对比 → 报告（不静默换算）；展示口径跟随主源（优先级最低数值者，并列取 series_sources 注册顺序先者）
-6. **MCP**：FastMCP 以 streamable HTTP 起在 Backend 进程内（localhost 端口 + 令牌）；pi 的 mcp.json 用 URL 连接；四工具委托 service（**连接互斥串行化**）；逐工具输入/返回契约见 spec R-008
+6. **MCP**：FastMCP 以 streamable HTTP 起在 Backend 进程内（localhost 端口 + 令牌）；**生命周期 = service.start_mcp()/stop_mcp()，v1 经 CLI `serve` 子命令启动**（desktop-shell feature 将由 Backend 进程托管）；pi 的 mcp.json 用 URL 连接；四工具委托 service（**连接互斥串行化**）；逐工具输入/返回契约见 spec R-008
 
 ## 5. 验收对应
 
