@@ -76,7 +76,7 @@ observations(series_id, ts, value, unit,
 ```
 
 - 追加写、永不删行；`latest_obs` 视图取现值；asof 重建任一时点所见（继承 FTEngine）
-- 供方竞争：同 series_id 多源按优先级逐点择优（全族权威 < 纯计算 < 交易所 < 转发 < 常规）
+- 供方竞争：同 series_id 多源按优先级逐点择优（全族权威 < 纯计算 < 交易所 < 转发 < 常规）。**v1 收窄（2026-10-26，data-layer Checklist 双审裁定）：优先级数值低者胜 + 同优先级取 asof 新 + 手动覆盖最优先；五层分类留待平衡表 feature 再评估**
 
 ### 3.4 溯源与对齐（track & align）
 
@@ -86,7 +86,7 @@ observations(series_id, ts, value, unit,
 
 ### 3.5 取数模式
 
-- **scheduled**：APScheduler 定时批量（类似 FTEngine 刷新）
+- **scheduled**：APScheduler 定时批量（类似 FTEngine 刷新）。**v1 收窄（2026-10-26）：data-layer 先交付任务注册表骨架 + 手动触发，不引 APScheduler；调度器随 daily-report feature 引入**
 - **on_demand**：agent/用户触发 → 适配器即时拉取 → 写库 → 返回（agent 工具 `fetch_series`）
 - **realtime**：订阅流，喂盯盘与盘中提醒
 
