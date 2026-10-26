@@ -95,7 +95,8 @@ specs/<feature>/          # 每个功能性 feature 一个独立规格目录（�
 - **AI 底座**：pi coding agent。Python 侧经 `pi --mode rpc` 子进程驱动；agent 工具经本地 MCP server 暴露
 - **数据底座**：声明式数据源适配器 + 描述符派生序列 ID + 溯源/修订/对齐层（见 architecture.md §3）
 - **渲染**：ECharts。图表 = 绑定序列 ID 的声明式 chart-spec；v1 固定模板，v2 用户自定义
-- **存储**：DuckDB（时序/分析）+ SQLite（元数据/向量）；每用户独立数据目录，本地优先
+- **存储**：DuckDB（时序/分析）+ SQLite（元数据）+ LanceDB（向量）+ Parquet；每用户独立数据目录，本地优先
+- **知识库**：多层存储与检索（D-009）——embedding 只找文本（bge-m3 + BM25 混合 + reranker 精排），数字与表格走 DuckDB SQL；PDF 解析 MinerU + PaddleOCR
 - **v1 范围**：油品垂直（供需、物流、期货市场交易数据三大模块）
 
 ## 4. 工作约定

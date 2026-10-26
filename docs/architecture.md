@@ -90,22 +90,50 @@ observations(series_id, ts, value, unit,
 - **on_demand**：agent/用户触发 → 适配器即时拉取 → 写库 → 返回（agent 工具 `fetch_series`）
 - **realtime**：订阅流，喂盯盘与盘中提醒
 
-## 4. 知识层
+## 4. 知识层（多层存储与检索，D-009）
 
-### 4.1 目录布局（每用户数据目录）
+核心原则：**embedding 只负责“找文本”，数字和表格交给 SQL**。
+
+### 4.1 存储分层
+
+| 数据类型 | 例子 | 存储 | 检索方式 |
+|---|---|---|---|
+| 非结构化长文 | PDF 研报、新闻、交易所公告 | Markdown/JSON + 原文页坐标 | 切块（带上下文）→ bge-m3 向量 + BM25 混合检索 |
+| 表格 | Excel、PDF 表格、仓单日报 | 规范化 Parquet / DuckDB 表 | SQL（必要时文本转查询）+ 表卡 |
+| 时间序列/大数据集 | 行情、期限结构、持仓、库存 | Parquet + DuckDB | `get_series()` / SQL |
+| 元数据 | 目录、来源、日期、品种、版本 | DuckDB catalog | 检索前过滤 |
+
+选型：PDF 解析 MinerU（纯文本层 PyMuPDF）；OCR PaddleOCR/RapidOCR；嵌入 bge-m3（1024 维/8192 token/dense+sparse）；精排 bge-reranker-v2-m3；向量库 LanceDB；关键词 DuckDB FTS（BM25，备选 Tantivy）；结构化 DuckDB + Parquet。
+
+### 4.2 检索管线
+
+dense + BM25 各召回 30–50 → RRF 融合 → 元数据过滤（品种/日期/来源）→ reranker 精排 → top 8。
+
+### 4.3 工程约定
+
+1. 切块带上下文：每块拼“报告标题 + 发布日期 + 品种 + 章节 + 页码”（contextual retrieval）
+2. 表卡路线：每表生成表卡（表名/列名/单位/日期范围/样例）并只嵌表卡；agent 先查表卡拿 table_id，再 SQL 查明细
+3. 引用到页：chunk 存 doc_id + page + section + 原文哈希，结论可点回 PDF 原页
+4. 增量与版本：文件 hash + mtime；catalog 记录解析器/嵌入模型/切块参数版本，变更即重建
+5. 期货元数据：品种、交易所（SHFE/INE/DCE/CZCE/CME/LME）、合约月份、报告类型、发布日 vs 数据日、主力连续 vs 单合约
+6. 容量：约 900 页/天 ≈ 2000–3500 chunk/天；一年约 100 万 chunk、向量 5–8GB；瓶颈在解析/OCR，夜间批处理；PDF 原件放 NAS
+
+### 4.4 目录布局（每用户数据目录）
 
 ```
 docs_in/     用户指定授权的文档文件夹（程序只读摄取）
+parsed/      解析产物：Markdown/JSON + 页坐标、提取的表格
 knowledge/   沉淀区：notes/（markdown 笔记）facts/（jsonl 结构化事实）
-             summaries/（文档摘要）snapshots/（图表/结论快照）index/（向量索引）
+             summaries/（文档摘要）snapshots/（图表/结论快照）index/（LanceDB 向量 + FTS）
+tables/      规范化 Parquet/DuckDB 表
 memory/      agent 记忆状态：profile/（用户画像）focus/（关注点）logic/（分析逻辑）
 ```
 
-### 4.2 摄取管线
+### 4.5 摄取管线
 
-文档（PDF/docx/xlsx/md）→ 解析 → 分块 → 嵌入（本地 bge-small-zh）→ sqlite-vec 索引 → 摘要
+文档（PDF/docx/xlsx/md）→ 解析（PyMuPDF 文本层 / MinerU 高质量 / OCR 扫描页）→ 分块（带上下文）→ 表卡与表格入库 → 嵌入（bge-m3）→ LanceDB + FTS 索引 → 摘要
 
-### 4.3 记忆与自迭代
+### 4.6 记忆与自迭代
 
 - 短期记忆：会话与近期笔记；长期记忆：沉淀进 knowledge/ 的笔记与事实
 - 自迭代循环：agent 产出新结论 → 经 `kb_write` 写入 knowledge/ → 重建索引 → 后续可检索
@@ -122,7 +150,7 @@ Backend 启动 → spawn `pi --mode rpc`（JSONL over stdio）→ 会话消息/�
 Backend 内置本地 MCP server（stdio），pi 的 mcp.json 指向它；工具集：
 
 - data：`search_series` `fetch_series` `list_sources` `reconcile`
-- knowledge：`kb_search` `kb_write` `kb_status`
+- knowledge：`kb_search`（混合检索）`table_query`（SQL 查表）`kb_write` `kb_status`
 - report：`render_chart` `build_report`（v1 阶段）
 
 权限：读默认；写知识/取数需显式工具调用。

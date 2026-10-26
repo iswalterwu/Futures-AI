@@ -31,8 +31,12 @@
 | D-004 | 渲染层 ECharts | Plotly | K 线一等公民；option 声明式同时服务 agent 生成与用户自定义；大数据性能；geo 支持物流图。FTK 238 行实现重写代价小，规范资产照搬 |
 | D-005 | 数据底座：声明式适配器 + 描述符派生 ID + 溯源对齐层 | 沿用 FTEngine 手动注册表 | 手动维护不可扩展；agent 按需取数需要 fetch 模式分层；对齐/追踪是一等需求 |
 | D-006 | 存储：DuckDB + SQLite，每用户独立数据目录 | 服务端数据库 | 本地优先、嵌入式、可直读用户 CSV/Excel |
+| D-007 | 桌面外壳：Electron | Tauri / pywebview | 打包/更新/托盘/授权生态最成熟；Python 以子进程 sidecar 随包分发 |
+| D-008 | 前端框架：Vue 3 + Vite + TS | React | 中文生态、心智负担低；图表密集场景够用 |
+| D-009 | 知识库多层存储与检索：LanceDB + bge-m3 + bge-reranker-v2-m3 + DuckDB FTS + DuckDB/Parquet，MinerU 解析 + PaddleOCR | sqlite-vec / bge-small-zh（原推荐） | embedding 只找文本，数字表格走 SQL；详见 architecture.md §4 |
+| D-010 | 后端框架：FastAPI | — | localhost 标准答案，低风险 |
 
-待确认决策见 §9（确认后写入 ADR 并移入本表）。
+§9 待确认事项已全部确认（2026-10-26），保留作记录。
 
 ## 4. 文档体系规划
 
@@ -101,7 +105,7 @@ Futures-AI/
 ### 7.2 模型接口对接
 
 - **agent 主路径**：pi 自带模型体系（内置 providers + `models.json` 自定义兼容端点）。用户自填 API key（DeepSeek/GLM/Qwen/OpenAI/Anthropic 等），设置界面写入 pi 配置；token 成本由用户承担
-- **非 agent 用途**（embedding/分类/小模型）：默认本地 sentence-transformers（隐私、零成本），可选用户 API key
+- **非 agent 用途**（嵌入/精排/解析）：全部本地——bge-m3 + bge-reranker-v2-m3 + MinerU/OCR（见 D-009），隐私与零 token 成本；API 嵌入仅作备选
 - **后续**：官方订阅档位含内置模型额度（经我方计费网关），与收费框架联动
 
 ### 7.3 数据源接口对接
@@ -130,20 +134,16 @@ Futures-AI/
 | **Phase 3 商业化** | 授权体系、tier 功能开关、自动更新、公测/发布 |
 | **Phase 4 扩展** | 更多品种插件、移动端读取通道、第三方适配器生态 |
 
-## 9. 待确认决策（确认后写入 ADR 并移入 §3）
+## 9. 待确认决策
 
-| 事项 | 推荐 | 备选 | 备注 |
-|---|---|---|---|
-| 桌面外壳 | **Electron**（打包/自动更新/托盘/授权生态最成熟，Node 与 pi 生态同源） | Tauri（体积小，但 Python sidecar 打包 + Rust 工具链复杂度高）；pywebview（仅原型） | Python 以子进程/sidecar 方式随包分发 |
-| 前端框架 | **Vue 3 + Vite + TS** | React | 图表密集 + 中文生态 |
-| 向量检索 | **sqlite-vec**（SQLite 扩展） | LanceDB / Chroma | 嵌入式、随 DuckDB/SQLite 一并分发 |
-| 嵌入模型 | **本地 bge-small-zh 起步** | API 嵌入 | 隐私 + 零成本；模型可换 |
-| 后端框架 | **FastAPI** | — | localhost，低风险默认 |
+已全部确认（2026-10-26）：桌面外壳 Electron（D-007）、前端 Vue 3（D-008）、知识库与嵌入栈（D-009）、后端 FastAPI（D-010）。
+后续新决策一律走 ADR（docs/decisions/）。
 
 ## 10. 风险与约束
 
 - **数据源合规**：软件不转售行情；适配器只做"用户自带凭证的通道"，来源稳定性风险由适配器层隔离
 - **Windows 打包与签名**：代码签名证书成本；自动更新通道需稳定
+- **本地模型体积与性能**：MinerU/嵌入/精排随包分发使安装包 GB 级；CPU 解析吞吐有限，批量解析走夜间调度（D-009）
 - **pi 版本策略**：随包锁定 pi 版本，升级走正式发布流程
 - **激活/换机**：无账号体系，激活码换机流程与防滥用需要产品化设计
 - **垂直深度 vs 通用底座**：油品做深的同时保持底座干净，避免品种逻辑渗入底座（用插件边界守护）
