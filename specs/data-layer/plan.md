@@ -1,6 +1,6 @@
 # Feature: data-layer 实施计划（plan.md）
 
-> Plan 阶段产物：由 spec.md（v7，六轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
+> Plan 阶段产物：由 spec.md（v10，九轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
 
 ## 1. 技术方案
 
@@ -23,7 +23,7 @@
   │   │   └── local_file/       #   manifest.yaml + local_file_adapter.py
   │   ├── catalog/
   │   │   ├── descriptor.py     # 3 键规范化（UTF-8/键排序/枚举小写/缺省空串）+ SHA-256 截断 16 字节 + 8 槽渲染
-  │   │   ├── aliases.py        # 别名（含 adapter 来源作用域，手动 > 模板 > 模糊）
+  │   │   ├── aliases.py        # 别名（含 adapter 来源作用域，手动 > manifest > 模板 > 模糊）
   │   │   └── registry.py       # 目录编译：扫描适配器目录 -> manifest -> 序列目录；软删/error 状态迁移
   │   ├── store/
   │   │   ├── duck.py           # DuckDB schema（observations + ingest_runs）、幂等写入、候选行查询
@@ -71,7 +71,7 @@ provides:                    # 必填，非空数组
 | 接口 | 签名与语义 |
 |---|---|
 | search_series | `search_series(q) -> {matches:[{series_id, descriptor, unit, freq}]}` |
-| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；source=None = 该序列启用源中优先级数值最小者（并列取注册顺序先者）；false = 只读短路（不触发适配器、不写库） |
+| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；source=None = 该序列 status=ok 的启用源中优先级数值最小者（并列取注册顺序先者；无 ok 源 → not_found）；false = 只读短路（不触发适配器、不写库） |
 | list_sources | `list_sources() -> {sources:[{adapter_id, name, enabled, status}]}`（status: ok/disabled/error） |
 | reconcile | `reconcile(series_id) -> {report:{series_id, checks:[...]}}` |
 | config | `config add-source/alias/priority/credentials …`（CLI 专属；add-source = 在用户适配器目录写 manifest 骨架；只能配置已有 manifest 的源） |
@@ -116,11 +116,11 @@ ingest_runs(ingest_run, adapter_id, series_id, range_start, range_end,
 ```
 
 - 幂等：`INSERT OR IGNORE`；重放不重复、不覆盖（AC-003-1）
-- **择优解析在 Python 侧（store/winners.py）**：DuckDB 取候选行 → SQLite 读 series_sources.priority + user_overrides → 唯一全序：优先级低者胜 → asof 新者胜 → ingest_run 大者胜（自增 BIGINT 数值比较）；**手动覆盖 = 替换该 source 的优先级值，参与同一决胜链**（AC-003-4）
+- **择优解析在 Python 侧（store/winners.py）**：DuckDB 取**全部源**候选行 → SQLite 读 series_sources.priority + user_overrides → 唯一全序：优先级低者胜 → asof 新者胜 → ingest_run 大者胜（自增 BIGINT 数值比较）；**手动覆盖 = 替换该 source 的优先级值，参与同一决胜链**；status 只影响配置角色（主源/默认拉取源/展示口径，Q-027）（AC-003-4）
 - `latest_obs(series_id)` 与 `asof(series_id, t)` 共用同一择优函数；asof(t) = asof ≤ t 的行（AC-003-3）
 - **asof = finished_at（批次成功提交时刻）**；fetched_at = 拉取时间；run 提交前数据不可见
 - 原子性：run 建在拉取前（running）；提交 = observations + run=succeeded 同一 DuckDB 事务；失败 = 独立事务标 failed（无部分数据行）；崩溃遗留 running → 冷启动时超时（>60min）标 failed
-- **单写者**：service 打开 DuckDB 时持有数据目录文件锁（plan §3.3 .lock）；CLI 写操作遇锁报错提示；MCP 在 Backend 进程内，service 连接互斥串行化（Q-019）
+- **单写者**：service 打开 DuckDB 时持有数据目录**写锁**（plan §3.3 .lock）；CLI 写操作遇锁报错提示；**只读查询以 DuckDB read_only 连接执行，不受写锁影响**；MCP 在 Backend 进程内，service 连接互斥串行化（Q-019/Q-029）
 
 ### 3.3 用户数据目录（权威布局，AC-009-3 指向本节；每安装一套，默认 `%LOCALAPPDATA%/FuturesAI/`）
 
@@ -148,11 +148,11 @@ creds/                   # DPAPI 加密凭证
 | AC-001-1/2/3/4 | adapters/ + registry | tests/test_adapters.py（好/坏 manifest 样例按 §2.1 字段表；移除 → disabled、校验失败 → error、重复 id 后到者 → error 且先到者生效） |
 | AC-002-1/2/3/4/5 | catalog/descriptor + aliases | tests/test_identity.py（golden 向量对拍 ID 与 8 槽；归并；别名作用域与裁决；AC-002-4 grep 范围同 AC-009-2、阳性样例置 fixtures/manual_series_id_fixtures/） |
 | AC-003-1/2/3/4 | store/duck + winners | tests/test_store.py（重放幂等；latest 两粒度；asof≡latest；决胜链含 tie-break 与手动覆盖） |
-| AC-004-1/2/3/4/5 | fetch/ + jobs + cli | tests/test_fetch.py（mock adapter；原子性：中途失败无部分行 + run=failed；重试=新 run）；test_cli.py（config/jobs 持久化；add-source 写 manifest 骨架）；AC-004-4 = base.Adapter 签名存在断言（import 测试） |
+| AC-004-1/2/3/4/5/6 | fetch/ + jobs + cli | tests/test_fetch.py（mock adapter；原子性：中途失败无部分行 + run=failed；重试=新 run）；test_cli.py（config/jobs 持久化；add-source 写 manifest 骨架）；AC-004-4 = base.Adapter 签名存在断言（import 测试）；AC-004-6 = 写锁互斥 + read_only 只读旁路断言 |
 | AC-005-1/2 | store + ingest | tests/test_provenance.py（字段查询；同范围 diff 三分类；跨范围 → 覆盖不一致） |
 | AC-006-1/2/3 | align.py | tests/test_align.py（单位/时区/频率不一致样例；manifest 权威裁决） |
 | AC-007-1/2/3/4 | adapters/* | tests/test_adapters_*.py（akshare/EIA 固定响应样本 mock + 在线冒烟；import 向导样例文件；隔离性） |
-| AC-008-1/2/3 | mcp_server.py | tests/test_mcp.py（HTTP 调用四工具逐 schema；do_fetch 默认 false 短路断言无写库；结构化错误） |
+| AC-008-1/2/3/4 | mcp_server.py | tests/test_mcp.py（HTTP 调用四工具逐 schema；fetch 默认 false 短路断言无写库；结构化错误含 retryable 映射；serve 启动后端点可连接） |
 | AC-009-1/2/3 | creds.py + 扫描 | tests/test_creds.py（保存/读取失败路径均报错）；grep：backend/ + 根 tests/（排除 fixtures/credential_scan_fixtures/，规则正则+阳/阴性样例随测试提交）；目录结构断言（plan §3.3） |
 
 ## 6. 风险与回滚
@@ -160,7 +160,7 @@ creds/                   # DPAPI 加密凭证
 | 风险 | 对策 |
 |---|---|
 | akshare 接口漂移/限流 | 适配器隔离 + 版本锁定 + 失败不回退（AC-004-3）；离线测试用固定响应样本 mock |
-| DuckDB 单写者限制 | 文件锁（plan §3.3 .lock）：service 持锁，CLI 写操作遇锁报错；MCP 进程内 + 连接互斥串行化（Q-019） |
+| DuckDB 单写者限制 | 写锁（plan §3.3 .lock）：service 持写锁，CLI 写操作遇锁报错；只读查询 read_only 连接旁路；MCP 进程内 + 连接互斥串行化（Q-019/Q-029） |
 | Windows 编码/时区坑 | `PYTHONIOENCODING=utf-8`；时间戳 UTC 存储 + tz 标记 |
 | pywin32（DPAPI）不可用 | fail closed：拒绝保存/读取并报错（AC-009-1），无降级路径 |
 | Python 3.14 wheel 可用性 | **实施首任务 = 依赖安装冒烟**（全依赖 pip install + import）；失败则调整版本锁定并回 spec |

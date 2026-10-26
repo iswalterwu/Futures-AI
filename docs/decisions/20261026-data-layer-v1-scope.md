@@ -21,6 +21,8 @@
 8. **单写者**：数据目录文件锁；CLI 写操作遇锁报错；MCP 进程内连接互斥串行化
 9. **枚举封闭**：manifest 枚举为封闭清单，新增值须先修订 spec（过 Gate），禁止运行时注册
 10. **diff 可比条件**：两 run 均 succeeded、同 series、同 source、同覆盖范围、同 unit/freq/tz 快照
+11. **择优候选与状态关系**：择优候选 = 全部源的观测行（历史可见性不因源状态改变）；status 只影响配置角色（主源/默认拉取源/展示口径）；全源非 ok → 派生缓存沿用末次值 + 对账 warning，source=None 拉取返回 not_found
+12. **MCP 生命周期**：v1 启动入口 = CLI `serve`（service.start_mcp()）；desktop-shell 阶段由 Backend 进程托管；只读查询以 DuckDB read_only 连接旁路写锁
 
 ## 取舍理由
 
