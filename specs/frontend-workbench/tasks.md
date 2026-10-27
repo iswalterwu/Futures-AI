@@ -1,7 +1,7 @@
 # Feature: frontend-workbench 任务清单（tasks.md）
 
 > Tasks 阶段产物：每个任务 0.5–2 小时可完成，按依赖顺序执行（Implement 阶段）。
-> **状态：草案第二版（2026-10-27）——Checklist 通过后生效。** 执行前置条件：`checklist.md` 全部勾选。
+> **状态：草案第三版（2026-10-27）——Checklist 通过后生效。** 执行前置条件：`checklist.md` 全部勾选。第三版按第二轮双审与第三轮定向复核整改：agent 事件归约（normalize + 六份原始样本）并入 T-13、原锚清单 source_anchors.json 入 T-03 / T-04、不叠层几何断言与 layering 守卫分入 T-21 / T-08、焦点带组件交接（T-19 保留占位 → T-20 接入）。
 > 依据：`spec.md`（Clarify 回流 Q-015 ~ Q-022 修订版，2026-10-27 Gate 1 重新批准、已冻结；45 条 AC）+ `plan.md`（第三版）。第二版按 Checklist 第一轮双审重排：拆出新增值登记（T-05）、网络守卫（T-09）、agent 回放（T-13），新增 ac-coverage 守卫，补齐守卫依赖。
 > 完成标准引用 spec 的 AC 编号；一个 AC 由多个任务分担时标注本任务负责的部分，AC 整体是否满足以 Converge 时相关任务全部完成为准。
 
@@ -36,7 +36,7 @@
 - **依赖**：T-01　**预计**：1.5 h
 - **完成标准**：
   1. 运行器：无参跑全部守卫、带名跑指定守卫或子检查；每个守卫先自检 fixtures（阳性须全部命中、阴性须全部不中），为全部守卫类 AC（AC-001-1/2/3/5/6、AC-004-6、AC-006-1/2、AC-007-1/3、AC-008-1/2/3）提供执行机制
-  2. design-registry 五个子检查按 plan §2.8 判定（含 `adopted ∪ not_adopted = source_anchors`、source 三种形式），fixtures 覆盖每个子检查的阳性与阴性（AC-008-1 / AC-008-2 / AC-008-3 的判定逻辑）
+  2. design-registry 五个子检查按 plan §2.8 判定：正向 `adopted ∪ not_adopted = source_anchors`、反向从正文提取锚并与 `design/ui/source_anchors.json` 比对（同步漏锚、正文多出未分类锚均报错）、`new: true` 标记只许出现在 `adopted` 项、source 三种形式；fixtures 覆盖每个子检查的阳性与阴性，含"同步漏锚"与"正文漏分类"两个阳性样例（AC-008-1 / AC-008-2 / AC-008-3 的判定逻辑）
 - **验证命令**：
   1. `pnpm -C frontend guards --self-test`
   2. `pnpm -C frontend guards design-registry --self-test`
@@ -44,17 +44,19 @@
 ### T-03 规范资产移植（一）：Foundations / Colors / Fonts / Layout
 
 - **上下文**：plan §2.9 前四行；spec R-008。这四份为令牌 `source` 提供锚点（T-06 依赖）。源：`D:\FTEngine\design\UI\{Foundations,Colors,Fonts,Layout}`（共 41 个原锚）。
-- **修改范围**：`design/ui/UI_FOUNDATIONS.md`、`design/ui/UI_COLORS.md`、`design/ui/UI_FONTS.md`、`design/ui/UI_LAYOUT.md`、`design/ui/README.md`
+- **修改范围**：`design/ui/UI_FOUNDATIONS.md`、`design/ui/UI_COLORS.md`、`design/ui/UI_FONTS.md`、`design/ui/UI_LAYOUT.md`、`design/ui/README.md`、`design/ui/source_anchors.json`（新建：四份的原锚清单，记源路径 / 锚名 / 数量 / 核对日期；共 41 锚）
 - **依赖**：T-02　**预计**：2 h
 - **完成标准**：
   1. 四份条目按 plan §2.9 移植：原 front matter 与原 `id` 保留，追加 `source / source_verified / migrated / adaptation / source_anchors / adopted / not_adopted`；采用的锚保留"规定 / 为什么 / 落点"，不采用的锚保留标题 + 一行原因；末尾 `## 暗色适配` 段逐锚写差异；README 登记来源路径、移植日期与采用范围（AC-008-1，这四份与索引）
+  2. `design/ui/source_anchors.json` 覆盖这四份的全部原锚（41 条），T-02 的 `design-registry:entries` 据此做正向与反向核（AC-008-1 / AC-008-2）
 - **验证命令**：
   1. `pnpm -C frontend guards design-registry:entries`
+  2. `pnpm -C frontend guards design-registry:entries --reverse`
 
 ### T-04 规范资产移植（二）：Components / Cards / Tables / Nav 与图表配色
 
 - **上下文**：plan §2.9 后续行；`PALETTE_CORE.md` 的 `palette-core` / `palette-retired` 块是 color-literals 与 theme-contrast 守卫的数据源；`PALETTE_DARK.md` 记录 Q-003 裁定（A 等亮）。
-- **修改范围**：`design/ui/UI_COMPONENTS.md`、`design/ui/UI_CARDS.md`、`design/ui/UI_TABLES.md`、`design/ui/UI_NAV.md`、`design/ui/README.md`（补登四份）、`design/charts/PALETTE_CORE.md`（原件逐字复制 + 追加 front matter 字段与 `## 暗色适配` 指向 PALETTE_DARK）、`design/charts/PALETTE_DARK.md`（plan §2.1 配色表里 **palette-core 原色**的暗色值——每个用途一个 `### #<锚>`、方法、两个卡面的对比度、ΔE2000、Q-003 裁定记录、样张路径；界面三色不入此文件）、`design/charts/README.md`
+- **修改范围**：`design/ui/UI_COMPONENTS.md`、`design/ui/UI_CARDS.md`、`design/ui/UI_TABLES.md`、`design/ui/UI_NAV.md`、`design/ui/README.md`（补登四份）、`design/ui/source_anchors.json`（补入这四份的 45 个原锚，与 T-03 的 41 个合为 86）、`design/charts/PALETTE_CORE.md`（原件逐字复制 + 追加 front matter 字段与 `## 暗色适配` 指向 PALETTE_DARK）、`design/charts/PALETTE_DARK.md`（plan §2.1 配色表里 **palette-core 原色**的暗色值——每个用途一个 `### #<锚>`、方法、两个卡面的对比度、ΔE2000、Q-003 裁定记录、样张路径；界面三色不入此文件）、`design/charts/README.md`
 - **依赖**：T-03　**预计**：2 h
 - **完成标准**：
   1. 四份 UI 条目（共 45 个原锚全覆盖）与两份 charts 文件格式合规（AC-008-1）
@@ -171,17 +173,21 @@
   3. `pnpm -C frontend test:unit -t "AC-007-2"`
   4. `pnpm -C frontend guards network-scope`
 
-### T-13 agent 回放脚本与 MockAgentClient
+### T-13 agent 事件归约与回放脚本
 
-- **上下文**：plan §2.5 mock 回放段（五个脚本、选择规则、终态唯一）。为时间线、后台运行与跳转用例提供确定的输入。
-- **修改范围**：`frontend/src/contracts/mock/agent/{success,failure,long,retry,abort}.ts`、`frontend/src/contracts/mock/agent/index.ts`（MockAgentClient：脚本选择 URL `?agentScript=` > `window.__FAI_MOCK__.agentScript` > success）、`frontend/tests/unit/agent-mock.spec.ts`
-- **依赖**：T-11　**预计**：1 h
+- **上下文**：plan §2.5（mock 回放五个脚本与选择规则；「归约实现与离线验证」的 normalizePiEvents 与六份 pi 原始样本）。为时间线、后台运行与跳转用例提供确定输入，同时把 pi → AgentEvent 的归约规则变成可测逻辑。
+- **修改范围**：`frontend/src/agent/normalize.ts`（纯函数 `normalizePiEvents`）、`frontend/tests/fixtures/pi-raw/*.jsonl`（六份：plain-success / retry-then-success / retry-exhausted / aborted / compaction-recovery / nested-paths，各附期望快照）、`frontend/tests/unit/agent-normalize.spec.ts`、`frontend/src/contracts/mock/agent/{success,failure,long,retry,abort}.ts`、`frontend/src/contracts/mock/agent/index.ts`（MockAgentClient：脚本选择 URL `?agentScript=` > `window.__FAI_MOCK__.agentScript` > success）、`frontend/tests/unit/agent-mock.spec.ts`
+- **依赖**：T-11　**预计**：2 h
 - **完成标准**：
-  1. 五个脚本的每个事件通过 AgentEvent 校验，每个脚本恰好一个终态；long ≥ 20 步、跨 ≥ 15 s（AC-005-6，脚本部分）
+  1. 五份回放脚本的每个事件通过 AgentEvent 校验，每份恰好一个终态；long ≥ 20 步、跨 ≥ 15 s（AC-005-6，脚本部分）
   2. 脚本可经 URL 参数与注入对象选择，未知脚本名报错（为 AC-005-3 等端到端用例提供确定入口）
+  3. `normalizePiEvents` 对六份原始样本的输出符合快照：每份恰好一个终态、终态后无该 run 事件、`stepId` 单调；`compaction_end.willRetry` 与 `auto_retry_start` 都算继续；使用真实嵌套路径 `message_end.message.stopReason / errorMessage`（AC-005-6，归约部分）
+  4. 运行中 `abort()` 后不再推送该脚本后续事件与终态，`run.aborted` 不重复（边界用例）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-005-6 scripts"`
   2. `pnpm -C frontend test:unit -t "AC-005-3 selection"`
+  3. `pnpm -C frontend test:unit -t "AC-005-6 normalize"`
+  4. `pnpm -C frontend test:unit -t "AC-005-6 abort"`
 
 ### T-14 契约文档生成与 contract-doc 守卫
 
@@ -248,11 +254,11 @@
 ### T-19 模块栅格、布局与模块库
 
 - **上下文**：plan §2.4（栅格列数、layoutStore 默认 = 目录顺序、模块库列出全部七个并标状态、`.glass-drawer` 面板、持久化 key `fai.v1.layout`）、§4 流程 2。
-- **修改范围**：`frontend/src/workbench/{WorkbenchPage.vue,ModuleGrid.vue,ModuleLibrary.vue}`（WorkbenchPage 由 T-15 的骨架改为装配 FocusBand + ModuleGrid）、`frontend/src/stores/layout.ts`、`frontend/e2e/modules.spec.ts`
+- **修改范围**：`frontend/src/workbench/{WorkbenchPage.vue,ModuleGrid.vue,ModuleLibrary.vue}`（本任务装配 ModuleGrid 与模块库；焦点带先保留 T-15 的占位容器，由 T-20 换成真实组件，避免依赖尚未创建的文件）、`frontend/src/stores/layout.ts`、`frontend/e2e/modules.spec.ts`
 - **依赖**：T-15、T-18　**预计**：2 h
 - **完成标准**：
   1. 默认布局为七个模块且顺序 = 目录顺序；模块库列出全部七个并标明是否已在工作台，可添加（追加到末尾）与移除（AC-004-1）
-  2. 模块库每项显示目录中的 `description` 文案；模块默认跨列取目录 `defaultSpan`，列数不足时截断为剩余列数（断言 `grid-column` 计算值）（AC-004-1）
+  2. 模块库每项显示目录中的 `description` 文案；模块默认跨列取 `min(defaultSpan, 当前列数)`（断言 `grid-column` 计算值）（AC-004-1）
   3. 上移 / 下移 / 移除 / 添加后刷新页面，布局保持（AC-004-2）
   4. 工作台上全部模块的 DOM 符合模块壳契约（页面级遍历）（AC-004-3，页面部分）
 - **验证命令**：
@@ -264,7 +270,7 @@
 ### T-20 今日焦点带（行情 | 指标两段、固定）
 
 - **上下文**：plan §2.3（结论 ≤ 3 条、数字卡按语义分两段、行情段引入 `updown.css`、空态、跳转、焦点带固定）；D-013。
-- **修改范围**：`frontend/src/workbench/FocusBand.vue`、`frontend/tests/component/focus-band.spec.ts`、`frontend/e2e/workbench.spec.ts`
+- **修改范围**：`frontend/src/workbench/{FocusBand.vue,WorkbenchPage.vue}`（以 FocusBand 替换 T-15 骨架里的焦点带占位）、`frontend/tests/component/focus-band.spec.ts`、`frontend/e2e/workbench.spec.ts`
 - **依赖**：T-19　**预计**：2 h
 - **完成标准**：
   1. 渲染 mock 日报摘要：结论条目、数字卡、方向色（AC-003-1）
@@ -273,6 +279,7 @@
   4. market 语义数字用涨跌色、analysis 语义用"红 = 负"（AC-003-4）
   5. 行情数字只在行情段、分析数字只在指标段，涨跌色只出现在行情段（AC-003-5）
   6. 焦点带不在模块库、无移除钮，增删模块后仍在（AC-003-6）
+  7. 读日报失败时焦点带显示错误态（含诊断，plan 行为，非 spec 要求）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-003-1"`
   2. `pnpm -C frontend test:e2e -g "AC-003-2"`
@@ -280,6 +287,7 @@
   4. `pnpm -C frontend test:unit -t "AC-003-4"`
   5. `pnpm -C frontend test:unit -t "AC-003-5"`
   6. `pnpm -C frontend test:e2e -g "AC-003-6"`
+  7. `pnpm -C frontend test:unit -t "AC-003-1 error"`
 
 ### T-21 断点、窄窗口与运行时令牌对拍
 
@@ -291,7 +299,7 @@
   2. 运行时逐令牌对拍通过，且覆盖某变量的阳性自检被检出（AC-001-1，运行时部分）
   3. CSS 媒体查询阈值全部来自令牌断点（AC-001-1，断点部分）
   4. KPI 大数、模块壳标题、正文、数值的计算字体族首项正确（AC-001-4，运行时部分）
-  5. 滚动到模块区底部，任何模块壳的 `getBoundingClientRect()` 与焦点带矩形都不相交（焦点带不重叠内容，plan §2.1 叠层约束；AC-001-3）
+  5. 滚动到模块区底部，按**可见裁剪区**判定：把每个模块壳的矩形与滚动容器的 `getBoundingClientRect()` 取交集（模块内容被滚动区裁剪，原始矩形不能直接用——见复核反例），断言与焦点带矩形不相交（焦点带不重叠内容，plan §2.1 叠层约束；AC-001-3）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-002-6"`
   2. `pnpm -C frontend test:e2e -g "AC-001-1"`
@@ -373,7 +381,7 @@
 - **完成标准**：
   1. long 脚本运行中切到其他页面再返回、收起抽屉再展开，两种情况下时间线都包含期间产生的步骤，同一 runId、无重复步骤（AC-005-3）
   2. 带 moduleId 的事件使模块角标 running → done，用户点击模块后清除（AC-005-4）
-  3. 引导跳转：目标在布局 → 导航并高亮；已移除 → Toast + "添加回工作台"、布局不变，点击后加回并高亮；不存在 → Toast 且地址不变（AC-005-5）
+  3. 引导跳转：目标在布局 → 导航并高亮；已移除 → Toast + "添加回工作台"、布局不变，点击后加回并高亮（**从非工作台路由发起时也要按 plan §2.5 的四步顺序完成**：加回 → 导航 → 等挂载 → 滚动 → 高亮）；不存在 → Toast 且地址不变（AC-005-5）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-005-3"`
   2. `pnpm -C frontend test:e2e -g "AC-005-4"`
@@ -386,7 +394,7 @@
 - **依赖**：T-16、T-17、T-20、T-22、T-23、T-25　**预计**：1.5 h
 - **完成标准**：
   1. 四个场景各一用例：normal 正常渲染、empty 空态、error 工作台可达且模块显示错误态、slow 先见加载态后就绪（AC-007-2，端到端部分）
-  2. error 场景下模块错误态的诊断信息可见可复制；同一场景下焦点带显示错误态（AC-004-4，端到端部分）
+  2. error 场景下模块错误态的诊断信息可见可复制；同一场景下焦点带显示错误态（后者属 plan §2.3 行为，spec R-003 只要求空态）（AC-004-4，端到端部分）
   3. 页面上每个 `.sem-market` 元素都在登记容器内，且计算后的背景色不是涨跌色（AC-001-5，运行时部分）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-007-2"`
@@ -423,11 +431,11 @@
 |---|---|
 | AC-001-1 | T-06、T-21 |
 | AC-001-2 | T-07 |
-| AC-001-3 | T-08（静态）、T-10、T-29（人工 M-01） |
+| AC-001-3 | T-08（静态）、T-10、T-21（不叠层几何）、T-29（人工 M-01） |
 | AC-001-4 | T-10、T-21 |
 | AC-001-5 | T-08（静态）、T-10、T-12、T-22、T-23、T-28 |
 | AC-001-6 | T-07 |
-| AC-002-1 | T-16 |
+| AC-002-1 | T-15（骨架）、T-16 |
 | AC-002-2 | T-15 |
 | AC-002-3 | T-17 |
 | AC-002-4 | T-17 |
@@ -448,7 +456,7 @@
 | AC-005-5 | T-27 |
 | AC-005-6 | T-11、T-13、T-14 |
 | AC-005-7 | T-25 |
-| AC-006-1 ~ AC-006-3 | T-24 |
+| AC-006-1 ~ AC-006-3 | T-24；AC-006-2 另由 T-08（layering）覆盖 |
 | AC-006-4 | T-24、T-29（人工 M-08） |
 | AC-007-1 | T-09、T-12 |
 | AC-007-2 | T-12（单元）、T-28（端到端） |
