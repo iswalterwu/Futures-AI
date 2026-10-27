@@ -3,7 +3,7 @@
 > Checklist 阶段产物，由审核员生成并勾选。仅当审核员认为某项检查标准得到满足时才标记为通过；
 > 通过只代表需求质量达标，不代表实施完成。实施者不勾选本文件。
 >
-> **审核员**：A = anthropic/claude-fable-5-1（✅ Walter 2026-10-27 确认，替代 deepseek-flash）、B = openai/gpt-6.1-sol。均为独立会话。
+> **审核员**：A = claude-bridge/claude-fable-5-1（✅ Walter 2026-10-27 确认替代 deepseek-flash；经 claude-bridge 路由）、B = openai/gpt-6.1-sol。均为独立会话。
 > 共识规则：两审一致通过才算通过；分歧视为未通过。
 >
 > **审核历程**：首轮双审未通过（14 阻断）→ 二至十五轮逐步收敛（设计层缺陷 → 契约细节 → 语义细化 → 留痕同步）→
