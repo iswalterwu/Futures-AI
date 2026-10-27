@@ -77,7 +77,7 @@ class EiaAdapter(Adapter):
             if range_end and ts > range_end:
                 continue
             rows.append((ts, val))
-        if bad and not rows:
+        if bad:
             from data.fetch.on_demand import FetchError
 
             raise FetchError(

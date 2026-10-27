@@ -166,7 +166,7 @@ class Service:
 
     def reconcile(self, series_id):
         with self._access_lock:
-            return reconcile(self.cat, series_id)
+            return reconcile(self.cat, series_id, store=self.store)
 
     def provenance(self, series_id, ts=None):
         with self._access_lock:

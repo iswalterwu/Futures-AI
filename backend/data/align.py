@@ -12,7 +12,7 @@ from data.catalog.db import CatalogDB
 KINDS = ("unit", "freq", "tz")
 
 
-def reconcile(cat: CatalogDB, series_id: str | None) -> dict:
+def reconcile(cat: CatalogDB, series_id: str | None, store=None) -> dict:
     """返回 {report: {series_id, checks: [...], warnings: [...]}}。
 
     - checks：启用源两两对比三类口径，status = ok | mismatch
@@ -31,8 +31,18 @@ def reconcile(cat: CatalogDB, series_id: str | None) -> dict:
 
     decls = cat.source_declarations(series_id)
     enabled = cat.enabled_sources(series_id)
-    # R6-02：对账候选 = 全部当前源（停用/报错源的历史观测仍参与择优，口径差异不得遗漏）
-    candidates = cat.current_sources(series_id)
+    # R6-02/R7-02：对账候选 = 当前源 ∪ 历史观测来源（清单失效但观测仍在择优的源不得遗漏）
+    candidates = list(dict.fromkeys(cat.current_sources(series_id)))
+    if store is not None:
+        obs_sources = [
+            r[0]
+            for r in store.con.execute(
+                "SELECT DISTINCT source FROM observations WHERE series_id=?", [series_id]
+            ).fetchall()
+        ]
+        for s in obs_sources:
+            if s not in candidates:
+                candidates.append(s)
     checks = []
     for a, b in combinations(candidates, 2):
         for kind in KINDS:
