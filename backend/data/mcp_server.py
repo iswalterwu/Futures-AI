@@ -25,7 +25,7 @@ from starlette.responses import JSONResponse
 
 from data.fetch.on_demand import FetchError
 from data.lock import DEFAULT_SERVE_PORT, remove_endpoint, write_endpoint
-from data.service import Service
+from data.service import Service, ServiceClosed
 from data.store.provenance import DiffError
 
 DEFAULT_HOST = "127.0.0.1"
@@ -174,6 +174,8 @@ def _internal_endpoint(handler, authorized):
             return JSONResponse(FetchError("unauthorized", "令牌无效").to_dict(), status_code=403)
         try:
             payload = await _in_thread(handler, request.query_params)
+        except ServiceClosed as e:  # 关闭屏障：通道即将停止，读者应等待写锁释放后本地读取
+            return JSONResponse(e.to_dict(), status_code=503)
         except Exception as e:
             return JSONResponse(_error(e), status_code=400)
         return JSONResponse(_jsonable(payload))
@@ -205,8 +207,10 @@ def _wait_started(server, thread, timeout: float) -> None:
 
 
 def _stop(server, thread, drain_timeout: float) -> None:
-    """停止接收新连接并等在途请求完成；超时强制停服。"""
+    """停止接收新连接并等在途请求完成；超时强制停服（剩余请求由关闭屏障拒绝）。"""
     server.should_exit = True
+    if thread.ident is None:  # 线程尚未启动
+        return
     thread.join(drain_timeout)
     if thread.is_alive():
         server.force_exit = True
@@ -235,8 +239,8 @@ def readonly_channel(
     server = uvicorn.Server(config)
     thread = threading.Thread(target=server.run, name="readonly-channel", daemon=True)
     published = False
-    thread.start()
     try:
+        thread.start()
         _wait_started(server, thread, startup_timeout)
         port = None
         if server.started and getattr(server, "servers", None):

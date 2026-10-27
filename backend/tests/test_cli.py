@@ -160,7 +160,7 @@ class TestSingleWriter:
             monkeypatch.setattr(
                 cli,
                 "_internal_get",
-                lambda root, path, params: calls.append((path, params)) or [{"source": "akshare"}],
+                lambda root, path, params, **k: calls.append((path, params)) or [{"source": "akshare"}],
             )
             assert run("provenance", SID, "--root", str(tmp_path)) == 0
             assert calls and calls[0][0] == "/internal/provenance"

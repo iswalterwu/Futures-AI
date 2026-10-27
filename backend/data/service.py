@@ -2,13 +2,15 @@
 
 写模式：构造时**先取写锁、后开库**（F-01）；只读模式：read_only 连接、不取锁；
 只读且库文件尚不存在/未初始化（空目录首启）→ 内存目录（按清单编译）+ 空观测库，不在磁盘建库。
-并发（plan §2.2 MCP 执行模型）：全部数据访问经 _access_lock 串行（单连接）；
+并发（plan §2.2 MCP 执行模型）：全部数据访问经 _access_lock 串行（单连接），并带关闭屏障；
 取数写路径另经 _write_mutex 串行，适配器网络阶段不持 _access_lock。
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -61,14 +63,72 @@ def _like(q: str) -> str:
     return "%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
 
 
-def _open_duck(path, read_only: bool) -> DuckStore:
-    """DuckDB 文件已被其他进程打开 → LockBusy（单写者冲突），不抛裸 IO 异常。"""
-    try:
-        return DuckStore(path, read_only=read_only)
-    except duckdb.IOException as e:
-        if "already open" in str(e):
-            raise LockBusy("数据目录被另一进程占用（观测库已被打开）") from e
-        raise
+# DuckDB 文件被其他进程占用的消息特征：带持有者 PID 的变体（already open）与
+# 持有者已退出、仅剩 Windows 共享冲突文本的变体（英/中文系统）
+_BUSY_MARKERS = ("already open", "being used by another process", "正在使用此文件")
+OPEN_RETRY_S = 5.0  # 写进程开库遇占用的重试窗口（秒）：取锁后新的只读命令不再本地开库
+
+
+class ServiceClosed(FetchError):
+    """关闭屏障：服务已关闭后迟到的数据访问在触碰连接前即被拒绝（plan §2.2）。"""
+
+    def __init__(self):
+        super().__init__("internal", "服务已关闭（写进程正在退出），请稍后重试")
+
+
+class _AccessGuard:
+    """数据访问锁（可重入，单连接串行）+ 关闭屏障。
+
+    `with guard:` 取锁后检查关闭标志，已关闭 → 释放锁并抛 ServiceClosed；
+    `with guard.closing():` 取锁并置关闭标志（Service.close 关库用）。
+    """
+
+    def __init__(self):
+        self._lock = threading.RLock()
+        self._closed = False
+
+    def __enter__(self):
+        self._lock.acquire()
+        if self._closed:
+            self._lock.release()
+            raise ServiceClosed()
+        return self
+
+    def __exit__(self, *exc):
+        self._lock.release()
+        return False
+
+    @contextlib.contextmanager
+    def closing(self):
+        with self._lock:
+            self._closed = True
+            yield
+
+    @property
+    def closed(self) -> bool:
+        return self._closed
+
+    def owned(self) -> bool:
+        """当前线程是否持有访问锁（锁覆盖断言与诊断用）。"""
+        return self._lock._is_owned()
+
+
+def _is_busy(e: Exception) -> bool:
+    return any(m in str(e) for m in _BUSY_MARKERS)
+
+
+def _open_duck(path, read_only: bool, retry_s: float = 0.0) -> DuckStore:
+    """DuckDB 文件被其他进程占用 → retry_s 内间隔重试；仍占用 → LockBusy（不抛裸 IO 异常）。"""
+    deadline = time.monotonic() + retry_s
+    while True:
+        try:
+            return DuckStore(path, read_only=read_only)
+        except duckdb.IOException as e:
+            if not _is_busy(e):
+                raise
+            if time.monotonic() >= deadline:
+                raise LockBusy("数据目录被其他进程占用（观测库正被打开），请稍后重试") from e
+            time.sleep(0.05)
 
 
 class Service:
@@ -89,7 +149,7 @@ class Service:
                 self._lock_f = None
             raise
         self.reg = Registry(self.cat, builtin_dir or BUILTIN_ADAPTERS_DIR, self.dirs["adapters"])
-        self._access_lock = threading.RLock()  # F-02：全部数据访问串行（单连接）
+        self._access_lock = _AccessGuard()  # F-02：全部数据访问串行（单连接）+ 关闭屏障
         self._write_mutex = threading.Lock()  # 取数写路径串行（网络阶段不占访问锁）
         self.adapters: dict[str, object] = {}  # source_id → 取数实例（按 implementation 绑定）
         self._bindings: dict[str, str] = {}  # source_id → implementation
@@ -105,7 +165,7 @@ class Service:
         if not self.readonly:
             cat = CatalogDB(cat_path)
             try:
-                return cat, _open_duck(duck_path, read_only=False)
+                return cat, _open_duck(duck_path, read_only=False, retry_s=OPEN_RETRY_S)
             except Exception:
                 cat.close()
                 raise
@@ -139,8 +199,8 @@ class Service:
             return self
         with self._access_lock:
             self._refresh()  # 写模式落盘；只读首启仅编译内存目录
-        if not self.readonly:
-            self.store.stale_running()
+            if not self.readonly:
+                self.store.stale_running()
         return self
 
     def _refresh(self) -> None:
@@ -365,8 +425,9 @@ class Service:
             self._lock_f = None
 
     def close(self):
-        """关库并释放写锁。在访问锁保护下进行：等仍持锁的在途访问（如只读通道请求）结束后才关。"""
-        with self._access_lock:
+        """关库并释放写锁。在访问锁内先置关闭标志：仍持锁的在途访问先完成，
+        此后迟到的数据访问被屏障拒绝（ServiceClosed），不会触碰已关闭的连接。"""
+        with self._access_lock.closing():
             try:
                 self.store.close()
             finally:

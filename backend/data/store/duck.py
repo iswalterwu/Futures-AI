@@ -91,8 +91,8 @@ class DuckStore:
             return rid  # 重放不改成功事实
         if cur[0] != RUNNING:
             raise ValueError(f"批次 {rid} 已终态（{cur[0]}），不可提交")
-        self.con.execute("BEGIN")
         try:
+            self.con.execute("BEGIN")  # 纳入保护：BEGIN 刚生效即被中断也会回滚
             if rows:
                 stamped = [
                     (sid, ts, val, unit, src, fetched, None, rid, payload_hash)

@@ -239,3 +239,19 @@
 | T-78 | import 向导等待输入时不持访问锁、经写进程只读通道的读取即时成功（持久回归） | R17-B 测试缺口 | AC-004-6、AC-007-3 | `pytest R17 -k TestWizardChannel -q` | ✅ |
 | T-79 | 凭证部分写入后失败、双写者交错且一方替换失败的持久回归 | R17-B 测试缺口 | AC-009-1 | `pytest R17 -k TestCredentialFailures -q` | ✅ |
 | T-80 | 凭证扫描阳性样例逐条标注规则组并断言各自命中（三组均有样例），补阴性样例（`tests/test_scan.py`、`tests/fixtures/credential_scan_fixtures/`） | R17-B-05 | AC-009-2 | `pytest tests/test_scan.py -q` | ✅ |
+
+## 追加任务（第十八轮双审发现，Converge 再开）
+
+> 来源：第十八轮复审 A、B 均未通过：A P2-1 只读命令短暂打开 DuckDB 时写命令/serve 开库失败且误报“数据库错误”（既有）；B R18-B-01 强制停服后排队请求在关库后访问连接；B R18-B-02 BEGIN 位于回滚保护外（既有）。另有 P3 与测试缺口。plan §2.2/§3.2 已先行修订（关闭屏障、进程间开库竞争、路由截止时间、运行态文件删除重试）。
+> R18 = `tests/test_review_round18.py`。
+
+| # | 任务（修改范围） | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-81 | 写进程开库遇 DuckDB 被占用（含无 PID 后缀的共享冲突变体）5s 内重试，仍占用 → LockBusy；只读命令本地开库遇竞态 → 回到等待/路由（`data/service.py`、`data/cli.py`）；真实多进程回归（读者持续轮询时写命令全部成功、读者零失败） | R18-A P2-1 | AC-004-6、AC-008-4 | `pytest R18 -k TestOpenContention -q` | ✅ |
+| T-82 | 关闭屏障：访问锁内先置关闭标志再关库，迟到访问抛 ServiceClosed；内部端点 503，CLI 读者视同通道不可用（`data/service.py`、`data/mcp_server.py`、`data/cli.py`） | R18-B-01（P2） | AC-004-6、AC-008-3 | `pytest R18 -k TestShutdownBarrier -q` | ✅ |
+| T-83 | BEGIN 纳入回滚保护：刚生效即被中断也回滚，失败状态独立提交，连接可继续使用（`data/store/duck.py`） | R18-B-02（P2） | AC-004-3 | `pytest R18 -k TestBeginInterrupt -q` | ✅ |
+| T-84 | 单次路由超时取“10s 与剩余等待时间”的较小者；端点中途消失视为通道不可用继续等待（`data/cli.py`） | R18-B-03、R18-A P3-1 | AC-004-6 | `pytest R18 -k TestRouteDeadline -q` | ✅ |
+| T-85 | 端点/写锁文件删除遇共享冲突短暂重试（≤2s）；serve 停服时端点删除失败不影响正常退出（`data/lock.py`、`data/cli.py`） | R18-A P3-2 | AC-008-4、AC-004-6 | `pytest R18 -k TestRuntimeFileRemoval -q` | ✅ |
+| T-86 | 通道线程的 start() 纳入清理保护（已启动未返回即中断也停止服务）（`data/mcp_server.py`） | R18-B-04 | AC-004-6、AC-008-3 | `pytest R18 -k TestThreadStartInterrupt -q` | ✅ |
+| T-87 | 访问锁覆盖持久断言：连接代理检查 import 向导（含模板复用）、add-source、取数、配置及并发通道读取的全部数据访问均持锁，向导等待输入不持锁；init 中的超时批次清理移入访问锁（`data/service.py`、测试） | R18-A/B 测试缺口 | AC-004-6、AC-007-3、AC-004-5 | `pytest R18 -k TestLockCoverage -q` | ✅ |
+| T-88 | realtime 接口签名参数断言（descriptor, on_update） | R18-B 测试缺口 | AC-004-4 | `pytest R18 -k TestRealtimeSignature -q` | ✅ |

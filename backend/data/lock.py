@@ -16,6 +16,21 @@ class LockBusy(Exception):
     pass
 
 
+def _unlink_retry(path: Path, timeout: float = 2.0) -> None:
+    """删除运行态文件；遇共享冲突（其他进程正读取该文件）短暂重试，超时仍失败则抛出。"""
+    import time
+
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            Path(path).unlink(missing_ok=True)
+            return
+        except PermissionError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.02)
+
+
 def ensure_layout(root: Path) -> dict[str, Path]:
     """创建权威布局目录；返回 {data, adapters, creds}。"""
     dirs = {name: (root / name) for name in LAYOUT}
@@ -134,7 +149,7 @@ def release_lock(f) -> None:
         msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
     finally:
         f.close()
-        Path(lock_path).unlink(missing_ok=True)
+        _unlink_retry(Path(lock_path))
 
 
 def write_endpoint(data_dir: Path, port: int, token: str) -> Path:
@@ -151,7 +166,7 @@ def remove_endpoint(data_dir: Path, token: str) -> None:
     """serve 退出时删除端点文件（仅删除本进程写入的那份：令牌一致）。"""
     ep = read_endpoint(data_dir)
     if ep and ep.get("token") == token:
-        (data_dir / ENDPOINT_FILENAME).unlink(missing_ok=True)
+        _unlink_retry(data_dir / ENDPOINT_FILENAME)
 
 
 def read_endpoint(data_dir: Path) -> dict | None:

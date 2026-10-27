@@ -74,10 +74,13 @@ def _db_error(e: Exception) -> dict:
 
 
 def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TIMEOUT_S):
-    """经持锁进程的内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。"""
+    """经持锁进程的内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。
+
+    端点文件已消失、HTTP 503（关闭屏障：通道即将停止）→ ConnectionError，由调用方按“通道不可用”等待。
+    """
     ep = read_endpoint(root / "data")
     if not ep:
-        raise FetchError("internal", "写进程运行中且尚未提供只读通道，请稍后重试")
+        raise ConnectionError("端点文件已消失（写进程正在退出）")
     qs = urllib.parse.urlencode(params)
     url = f"http://127.0.0.1:{ep['port']}{path}" + (f"?{qs}" if qs else "")
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {ep['token']}"})
@@ -85,6 +88,8 @@ def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TI
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
+        if e.code == 503:
+            raise ConnectionError("只读通道正在关闭") from e
         try:
             err = json.loads(e.read().decode("utf-8"))["error"]
         except Exception:
@@ -96,17 +101,74 @@ def _lock_held(root: Path) -> bool:
     return lock_held(root / "data")  # R9-02：陈旧锁回收，真实持锁才路由
 
 
-def _route_readonly(root: Path, args) -> object:
+def _route_readonly(root: Path, args, timeout: float = ROUTE_TIMEOUT_S) -> object:
     if args.cmd == "list":
         path = {"series": "/internal/search", "sources": "/internal/sources", "jobs": "/internal/jobs"}
-        return _internal_get(root, path[args.what], {})
+        return _internal_get(root, path[args.what], {}, timeout=timeout)
     if args.cmd == "jobs":
-        return _internal_get(root, "/internal/jobs", {})
+        return _internal_get(root, "/internal/jobs", {}, timeout=timeout)
     if args.cmd == "reconcile":
-        return _internal_get(root, "/internal/reconcile", {"series_id": args.series_id})
+        return _internal_get(root, "/internal/reconcile", {"series_id": args.series_id}, timeout=timeout)
     if args.cmd == "provenance":
-        return _internal_get(root, "/internal/provenance", {"series_id": args.series_id})
-    return _internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b})
+        return _internal_get(root, "/internal/provenance", {"series_id": args.series_id}, timeout=timeout)
+    return _internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b}, timeout=timeout)
+
+
+def _readonly(root: Path, args) -> int:
+    """只读命令（plan §2.2）：无写锁 → 本地只读；有写锁 → 经持锁进程的只读通道路由。
+
+    写进程启停过渡窗口内尚无端点、端点不可达/无响应/正在关闭、本地开库恰逢写进程开库（竞态）
+    均继续等待：端点可用即路由、写锁释放即本地读取；全部受同一截止时间约束。
+    """
+    deadline = time.monotonic() + READ_WAIT_S
+    route_err = busy_err = None
+    retry_at = 0.0
+    while True:
+        if _lock_held(root):
+            remaining = deadline - time.monotonic()
+            if read_endpoint(root / "data") and time.monotonic() >= retry_at and remaining > 0:
+                try:
+                    payload = _route_readonly(root, args, timeout=max(0.5, min(ROUTE_TIMEOUT_S, remaining)))
+                except FetchError as e:
+                    _json_out(e.to_dict())
+                    return 1
+                except OSError as e:
+                    route_err, retry_at = e, time.monotonic() + ROUTE_RETRY_S
+                except Exception as e:
+                    print(f"错误：内部路由失败: {e}", file=sys.stderr)
+                    return 1
+                else:
+                    _json_out(payload)
+                    return 0
+        else:
+            try:
+                svc = Service(root, readonly=True)
+            except LockBusy as e:
+                svc, busy_err = None, e  # 写进程恰在取锁开库（竞态）→ 回到等待/路由
+            except Exception as e:
+                _json_out(_err_dict(e))
+                return 1
+            if svc is not None:
+                try:
+                    svc.init()
+                    payload = _local_readonly(svc, args)
+                except Exception as e:  # 业务错误/不可比/库错误/意外错误 → 结构化输出
+                    _json_out(_err_dict(e))
+                    return 1
+                finally:
+                    svc.close()
+                _json_out(payload)
+                return 0
+        if time.monotonic() >= deadline:
+            if route_err is not None:
+                msg = f"错误：写进程运行中，只读通道无响应（{route_err}），请稍后重试"
+            elif busy_err is not None and not _lock_held(root):
+                msg = f"错误：{busy_err}"
+            else:
+                msg = "错误：写进程运行中且尚未提供只读通道，请稍后重试"
+            print(msg, file=sys.stderr)
+            return 1
+        time.sleep(0.2)
 
 
 def _local_readonly(svc: Service, args) -> object:
@@ -305,8 +367,8 @@ def _serve(root: Path, port: int) -> int:
 
     try:
         svc = Service(root)
-    except LockBusy:
-        print("错误：数据目录已被另一写进程占用", file=sys.stderr)
+    except LockBusy as e:
+        print(f"错误：{e}", file=sys.stderr)
         return 1
     except Exception as e:
         _json_out(_err_dict(e))
@@ -338,7 +400,10 @@ def _serve(root: Path, port: int) -> int:
                 ).to_dict())
                 return 1
         finally:
-            remove_endpoint(root / "data", token)
+            try:
+                remove_endpoint(root / "data", token)
+            except OSError:
+                pass  # 残留端点由读者按“不可达 → 等待写锁释放”处理，不影响正常停服
     finally:
         svc.close()
     return 0
@@ -432,58 +497,13 @@ def _dispatch(args) -> int:
     is_readonly = args.cmd in readonly_cmds or (args.cmd == "jobs" and args.job_cmd == "list")
 
     if is_readonly:
-        # 持锁进程（serve 或 CLI 写命令）提供只读通道：发现端点即路由；写进程启停过渡窗口内尚无端点 →
-        # 短暂等待，端点出现即路由、写锁释放即本地只读；端点不可达/无响应 → 同一截止时间内间隔重试
-        deadline = time.monotonic() + READ_WAIT_S
-        route_err, retry_at = None, 0.0
-        while _lock_held(root):
-            ep = read_endpoint(root / "data")
-            if ep and time.monotonic() >= retry_at:
-                try:
-                    payload = _route_readonly(root, args)
-                except FetchError as e:
-                    _json_out(e.to_dict())
-                    return 1
-                except OSError as e:
-                    route_err, retry_at = e, time.monotonic() + ROUTE_RETRY_S
-                except Exception as e:
-                    print(f"错误：内部路由失败: {e}", file=sys.stderr)
-                    return 1
-                else:
-                    _json_out(payload)
-                    return 0
-            if time.monotonic() >= deadline:
-                if route_err is not None:
-                    msg = f"错误：写进程运行中，只读通道无响应（{route_err}），请稍后重试"
-                else:
-                    msg = "错误：写进程运行中且尚未提供只读通道，请稍后重试"
-                print(msg, file=sys.stderr)
-                return 1
-            time.sleep(0.2)
-        try:
-            svc = Service(root, readonly=True)
-        except LockBusy as e:
-            print(f"错误：{e}（写进程运行中但未发现可用端点，请稍后重试）", file=sys.stderr)
-            return 1
-        except Exception as e:
-            _json_out(_err_dict(e))
-            return 1
-        try:
-            svc.init()
-            payload = _local_readonly(svc, args)
-        except Exception as e:  # 业务错误/不可比/库错误/意外错误 → 结构化输出
-            _json_out(_err_dict(e))
-            return 1
-        finally:
-            svc.close()
-        _json_out(payload)
-        return 0
+        return _readonly(root, args)
 
     # 写命令：构造写 Service（先锁后库）
     try:
         svc = Service(root)
-    except LockBusy:
-        print("错误：数据目录被另一写进程占用（serve 运行中？）", file=sys.stderr)
+    except LockBusy as e:  # 另一写进程持锁，或观测库正被其他进程打开（重试后仍占用）
+        print(f"错误：{e}（serve 或其他写命令运行中？）", file=sys.stderr)
         return 1
     except Exception as e:
         _json_out(_err_dict(e))

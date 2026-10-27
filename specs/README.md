@@ -19,7 +19,7 @@ specs/<feature>/
 
 | feature | 状态 | 依赖 | 最近更新 | 备注 |
 |---|---|---|---|---|
-| data-layer | in-progress | 无 | 2026-10-27 | 第十七轮 B 的 P2（通道退出排空）已修（290 tests 绿）→ 第十八轮双审复核 + Checklist 留痕 → Gate 2 |
+| data-layer | in-progress | 无 | 2026-10-27 | 第十八轮双审 3 项 P2 已修（307 tests 绿）→ 第十九轮双审复核 + Checklist 留痕 → Gate 2 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
