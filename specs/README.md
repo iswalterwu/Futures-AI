@@ -19,7 +19,7 @@ specs/<feature>/
 
 | feature | 状态 | 依赖 | 最近更新 | 备注 |
 |---|---|---|---|---|
-| data-layer | in-progress | 无 | 2026-10-26 | Gate 1 已批准 ✅ → Tasks 完成（T-01~T-20）→ Implement 进行中 |
+| data-layer | in-progress | 无 | 2026-10-27 | Implement/Converge 完成（138 tests 绿）→ Review 十轮完成 → 待 Gate 2 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
