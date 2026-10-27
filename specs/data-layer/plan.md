@@ -81,7 +81,7 @@ provides:                    # 必填，非空数组
 | list_sources | `list_sources() -> {sources:[{adapter_id, name, enabled, status}]}`（status: ok/disabled/error） |
 | reconcile | `reconcile(series_id) -> {report:{series_id, checks:[{kind: unit|tz|freq, source_a, source_b, status: ok|mismatch, detail}], warnings:[string]}}`（warnings = 退化/全局问题，不绑定成对源；**无可用序列时（空目录首启）：返回 warnings 说明“无可用序列”**） |
 | config | `config add-source/alias/priority/credentials …`（CLI 专属；add-source = 在用户适配器目录写 manifest 骨架；只能配置已有 manifest 的源） |
-| jobs | `jobs list/run`（CLI 专属） |
+| jobs | `jobs register|list|run`（CLI 专属；注册 = 按 manifest 声明自动注册或显式 `jobs register <adapter_id>`） |
 | import | `import <file>`（CLI 向导，CSV/Excel 映射） |
 | provenance | `provenance <series_id>`（CLI 开发者工具，AC-005-1 交付入口） |
 | diff | `diff <run_a> <run_b>`（CLI 开发者工具，AC-005-2 交付入口） |
@@ -95,9 +95,11 @@ provides:                    # 必填，非空数组
 | list_sources | 无 | `{sources:[{adapter_id, name, enabled, status}]}` |
 | reconcile | `series_id` | `{report:{series_id, checks:[...], warnings:[string]}}` |
 
+**内部只读通道（AC-004-6 判定依据）**：serve 的同一 HTTP 端点提供内部只读子端点 `/internal/provenance` 与 `/internal/diff`（同令牌）；CLI 的 provenance/diff 在写锁被占时经此路由查询。
+
 **错误契约**：`{error:{code, message, retryable}}`；code↔retryable 映射（固定）：not_found=false / unauthorized=false / adapter_error=true / rate_limited=true / validation_error=false / internal=false。
 
-**realtime 接口签名（AC-004-4 判定依据）**：`base.Adapter` 上存在 `realtime_hint` 属性（文档字符串常量），测试以 import 断言其存在；无网络实现。
+**realtime 接口签名（AC-004-4 判定依据）**：`base.Adapter.realtime_signature(descriptor, on_update)` 方法签名 + 模块级文档常量；测试以 import 断言方法存在与签名参数（无网络实现）。
 
 **diff 汇总统计量（AC-005-2 判定依据）**：三类计数（新增/修订/删除）；ΣΔvalue = 修订值净变化总和；max|Δ| = 修订值最大绝对变化；新增/删除不计入 Δ。
 
@@ -121,8 +123,9 @@ sources(id, adapter_id, name, enabled, status, manifest_path)
         -- 注：优先级不在本表；唯一权威 = series_sources.priority（provides[].priority 默认 100 落库）；enabled 单一权威在本表
 series(id, descriptor_json, display_id_8slot, unit, freq, tz,
       status, valid_to)  -- status: active/soft_deleted；valid_to = 软删时间戳（载体）
-      -- 软删生命周期：同序列仍有其他提供源 → series 不移除，仅删除 series_sources 对应行；
-      -- 全部源移除 → series 标 soft_deleted；源重新加入 → 恢复 active 并清 valid_to
+      -- 软删生命周期：series_sources 行**永不物理删除**（作为历史择优的优先级快照）；
+      -- 同序列仍有其他提供源 → series 不移除；全部源移除 → series 标 soft_deleted；
+      -- 源重新加入 → series 恢复 active、清 valid_to，series_sources 对应行更新
 series_sources(series_id, source_id, priority, reg_order)
         UNIQUE(series_id, source_id)                           -- source_id = sources.id；provides[].priority 落库于此，逐序列择优以此为准
 aliases(id, source_symbol, adapter_id, series_id, rule_kind)  -- rule_kind: manifest/template/fuzzy/manual
