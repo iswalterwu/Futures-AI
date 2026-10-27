@@ -1,0 +1,13 @@
+id: eia
+name: EIA 公开数据
+version: 1
+credentials: {kind: api_key, credential_ref: eia_api_key}
+provides:
+  - descriptor: {asset: diesel, geo: world, measure: stock, contract: ""}
+    symbols: ["PET.WGTSTUS1.W"]
+    unit: kb_d
+    freq: 1w
+    tz: America/New_York
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}

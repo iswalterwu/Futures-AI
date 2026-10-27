@@ -1,0 +1,13 @@
+id: local-file
+name: 本地文件导入
+version: 1
+credentials: none
+provides:
+  - descriptor: {asset: crude, geo: world, measure: close, contract: ""}
+    symbols: ["user_csv"]
+    unit: usd_bbl
+    freq: 1d
+    tz: UTC
+    priority: 300
+    fetch: {modes: [on_demand], history_days: 3650}
+    update: {lag_min: 0, revises: false}
