@@ -247,3 +247,70 @@ class TestConcurrency:
                 assert all(v == float(i) for v in vals), f"串线: series t{i} 得到 {vals}"
         finally:
             svc.close()
+
+
+class TestRound5Regressions:
+    def test_empty_date_rejected_whole_batch(self, tmp_path, monkeypatch):
+        """R5-01：空日期 → 整批拒绝、批次 failed、无观测。"""
+        from data.service import Service
+
+        setup_svc = Service(tmp_path).init()
+        setup_svc.close()
+        f = tmp_path / "bad.csv"
+        f.write_text("日期,收盘价\n,70.5\n2026-10-02,71.0\n", encoding="utf-8")
+        monkeypatch.setattr("builtins.input", lambda prompt="": "y")
+        from data import cli
+
+        assert cli.main(["--root", str(tmp_path), "import", str(f)]) == 1
+        svc = Service(tmp_path)
+        try:
+            statuses = svc.store.con.execute(
+                "SELECT status FROM ingest_runs ORDER BY ingest_run"
+            ).fetchall()
+            assert statuses and statuses[-1][0] == "failed"
+            assert svc.store.count_obs(
+                __import__("data.catalog.descriptor", fromlist=["derive_id"]).derive_id(
+                    {"asset": "crude", "geo": "world", "measure": "close", "contract": ""}
+                )
+            ) == 0
+        finally:
+            svc.close()
+
+    def test_old_path_invalid_does_not_hurt_new_path(self, tmp_path):
+        """R5-02：新路径合法清单接管后，旧路径坏件不得误伤。"""
+        svc = Service(tmp_path).init()
+        try:
+            b = svc.dirs["adapters"] / "b" / "manifest.yaml"
+            b.parent.mkdir(exist_ok=True)
+            b.write_text(
+                "id: shared\nname: S\nversion: 1\ncredentials: none\nprovides:\n"
+                "  - descriptor: {asset: bu, geo: cn, measure: close, contract: \"\"}\n"
+                "    symbols: [X]\n    unit: cny_ton\n    freq: 1d\n    tz: Asia/Shanghai\n"
+                "    fetch: {modes: [on_demand], history_days: 1}\n"
+                "    update: {lag_min: 0, revises: true}\n",
+                encoding="utf-8",
+            )
+            svc.reg.rebuild()
+            a = svc.dirs["adapters"] / "a" / "manifest.yaml"
+            a.parent.mkdir(exist_ok=True)
+            a.write_text(b.read_text(encoding="utf-8"), encoding="utf-8")
+            b.write_text("id: [broken", encoding="utf-8")
+            svc.reg.rebuild()
+            row = svc.cat.con.execute(
+                "SELECT status FROM sources WHERE id='shared'"
+            ).fetchone()
+            assert row and row[0] == "ok"
+        finally:
+            svc.close()
+
+    def test_local_hash_matches_parsed_snapshot(self, tmp_path):
+        """R5-03：哈希与实际解析内容同一快照（单次读取）。"""
+        import hashlib
+
+        from data.adapters.local_file.local_file_adapter import parse_with_mapping
+
+        f = tmp_path / "p.csv"
+        f.write_text("日期,收盘价\n2026-10-01,70.5\n", encoding="utf-8")
+        rows, raw = parse_with_mapping(str(f), {"date_col": "日期", "value_col": "收盘价"})
+        assert hashlib.sha256(f.read_bytes()).hexdigest() == hashlib.sha256(raw).hexdigest()
+        assert len(rows) == 1

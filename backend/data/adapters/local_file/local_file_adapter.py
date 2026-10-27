@@ -26,10 +26,14 @@ def guess_mapping(df: pd.DataFrame) -> dict:
 
 def parse_with_mapping(path: str, mapping: dict, start=None, end=None) -> tuple[list[tuple], bytes]:
     """按映射解析文件 → ([(ts, value)], raw_bytes)。时区统一 naive UTC（R2-01）。"""
+    import io as _io
     from pathlib import Path
 
-    raw = Path(path).read_bytes()
-    df = pd.read_csv(path) if str(path).lower().endswith(".csv") else pd.read_excel(path)
+    raw = Path(path).read_bytes()  # 单次读取快照（R5-03）
+    if str(path).lower().endswith(".csv"):
+        df = pd.read_csv(_io.BytesIO(raw))
+    else:
+        df = pd.read_excel(_io.BytesIO(raw))
     if not mapping.get("date_col") or not mapping.get("value_col"):
         raise FetchError("validation_error", "列映射不完整，请先完成向导确认")
     rows = []

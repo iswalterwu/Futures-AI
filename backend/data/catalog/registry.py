@@ -91,7 +91,14 @@ class Registry:
         current_errors = set()
         for e in errors:
             key = f"error:{e['path']}"
-            existing_id = path_to_id.get(str(Path(e["path"]).parent)) if e.get("kind") == "invalid" else None
+            existing_id = (
+                path_to_id.get(str(Path(e["path"]).parent))
+                if e.get("kind") == "invalid"
+                else None
+            )
+            # R5-02：该 id 本轮已被其他路径的合法清单接管 → 不误伤
+            if existing_id and existing_id in goods:
+                existing_id = None
             if existing_id:
                 self.cat.con.execute(
                     "UPDATE sources SET status='error' WHERE id=?", [existing_id]
