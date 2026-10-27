@@ -108,7 +108,7 @@
 - **依赖**：T-02　**预计**：1.5 h
 - **完成标准**：
   1. `backdrop-filter` 只在 `src/design/glass.css` 且 ≤ 3 条规则（扫描 CSS、`<style>`、内联样式、主题 JSON 字符串值），玻璃类名只许三个（AC-001-3，静态部分）
-  2. updown-scope 四个子检查（refs 定义处豁免、color-only、imports 限三处、usage 限三处与 `Num.vue`）按 plan §2.1 判定（AC-001-5，静态部分）
+  2. updown-scope 四个子检查（refs 定义处豁免、color-only、imports 限两处行情模块目录 + 焦点带行情段、usage 按 plan §2.1 防线 4：含 `Num.vue` / `Kpi.vue`、排除 `src/contracts/`）按 plan §2.1 判定（AC-001-5，静态部分）
   3. `grid-template-columns` 不含未包 `minmax()` 的 `1fr`，零豁免（AC-004-6）
   4. layering：带 `backdrop-filter` 的 sticky / fixed 元素只许是登记的三层容器；玻璃容器不得嵌套（带文字元素不得位于两层玻璃之上，plan §2.1 叠层约束）（AC-001-3 / AC-006-2）
 - **验证命令**：
@@ -149,7 +149,7 @@
 - **修改范围**：`frontend/src/contracts/types.ts`（zod，字段带 `.describe()`）、`frontend/src/contracts/client.ts`、`frontend/src/contracts/methods.ts`（`CONTRACT_METHODS`）、`frontend/src/agent/events.ts`、`frontend/tests/unit/contracts.spec.ts`
 - **依赖**：T-01　**预计**：1.5 h
 - **完成标准**：
-  1. 业务数值统一用 `Figure`（四项元数据必填）；`BoardCell` 满足 `state = ok ⇔ figure ≠ null`；缺任一元数据或 `ok` 缺 figure 的反例被拒（AC-007-4，类型部分）
+  1. 业务数值只能取 `Figure` / `BoardCell` / `SparkSeries` 三种形态（四项元数据必填）；`BoardCell` 满足 `state = ok ⇔ figure ≠ null`；缺任一元数据、`ok` 缺 figure、`SparkSeries` 的 semantic / seriesId 与行级不一致的反例均被拒（AC-007-4，类型部分）
   2. AgentEvent 十种事件类型与字段按 plan §2.5 定义并可校验（AC-005-6，类型部分）
   3. DataClient / AgentClient 每个方法在 `CONTRACT_METHODS` 有语义条目，每个 schema 字段有描述（AC-007-3，语义源部分）
 - **验证命令**：
@@ -182,7 +182,7 @@
   1. 五份回放脚本的每个事件通过 AgentEvent 校验，每份恰好一个终态；long ≥ 20 步、跨 ≥ 15 s（AC-005-6，脚本部分）
   2. 脚本可经 URL 参数与注入对象选择，未知脚本名报错（为 AC-005-3 等端到端用例提供确定入口）
   3. `normalizePiEvents` 对六份原始样本的输出符合快照：每份恰好一个终态、终态后无该 run 事件、`stepId` 单调；`compaction_end.willRetry` 与 `auto_retry_start` 都算继续；使用真实嵌套路径 `message_end.message.stopReason / errorMessage`（AC-005-6，归约部分）
-  4. 运行中 `abort()` 后不再推送该脚本后续事件与终态，`run.aborted` 不重复（边界用例）
+  4. 运行中 `abort()` 后不再推送该脚本后续事件与终态，`run.aborted` 不重复（边界用例）（AC-005-6，abort 边界）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-005-6 scripts"`
   2. `pnpm -C frontend test:unit -t "AC-005-3 selection"`
@@ -279,7 +279,7 @@
   4. market 语义数字用涨跌色、analysis 语义用"红 = 负"（AC-003-4）
   5. 行情数字只在行情段、分析数字只在指标段，涨跌色只出现在行情段（AC-003-5）
   6. 焦点带不在模块库、无移除钮，增删模块后仍在（AC-003-6）
-  7. 读日报失败时焦点带显示错误态（含诊断，plan 行为，非 spec 要求）
+  7. 读日报失败时焦点带显示错误态（含诊断，plan 行为，非 spec 要求；落 AC-003-3 的空 / 错误态分支，AC-003-3 仍只要求空态文案）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-003-1"`
   2. `pnpm -C frontend test:e2e -g "AC-003-2"`
@@ -299,7 +299,7 @@
   2. 运行时逐令牌对拍通过，且覆盖某变量的阳性自检被检出（AC-001-1，运行时部分）
   3. CSS 媒体查询阈值全部来自令牌断点（AC-001-1，断点部分）
   4. KPI 大数、模块壳标题、正文、数值的计算字体族首项正确（AC-001-4，运行时部分）
-  5. 滚动到模块区底部，按**可见裁剪区**判定：把每个模块壳的矩形与滚动容器的 `getBoundingClientRect()` 取交集（模块内容被滚动区裁剪，原始矩形不能直接用——见复核反例），断言与焦点带矩形不相交（焦点带不重叠内容，plan §2.1 叠层约束；AC-001-3）
+  5. 滚动过程中分顶部 / 中段 / 底部三个采样位置，按**可见裁剪区**判定：把每个模块壳的矩形与滚动容器的 `getBoundingClientRect()` 取交集（模块内容被滚动区裁剪，原始矩形不能直接用——见复核反例），断言与焦点带矩形不相交（焦点带不重叠内容，plan §2.1 叠层约束；AC-001-3）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-002-6"`
   2. `pnpm -C frontend test:e2e -g "AC-001-1"`
@@ -462,10 +462,10 @@
 | AC-007-2 | T-12（单元）、T-28（端到端） |
 | AC-007-3 | T-11、T-14 |
 | AC-007-4 | T-11、T-12 |
-| AC-008-1 | T-02、T-03、T-04、T-05、T-30 |
+| AC-008-1 | T-02、T-03、T-04、T-05、T-30（AC-008-1 / AC-008-2 双向核） |
 | AC-008-2 | T-02、T-06 |
 | AC-008-3 | T-02、T-04 |
 | AC-009-1 | T-01（打底）、T-29 |
 | AC-009-2 | T-29 |
 
-合计 30 个任务，预计约 47 小时。
+合计 30 个任务，预计约 48 小时。

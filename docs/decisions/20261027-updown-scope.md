@@ -39,3 +39,7 @@ D-011 结论 6 规定行情模块红涨绿跌、分析图表保持红 = 负，"�
 - `docs/designUI.md` §2.2：涨跌颜色作用域按本 ADR 表述
 - `specs/frontend-workbench/`：spec R-001 / R-003 / R-004（Q-015、Q-016）；plan 的 `updown-scope` 守卫与 `src/design/updown.css`
 - 后续 feature 若在新位置使用涨跌专色：新增后继 ADR（取代本 ADR 的位置清单），同步 designUI §2.2 与 `docs/plan.md` §3；本 ADR 保持原样
+
+## 勘误
+
+- 2026-10-27：本文件在同日发布后有一处**编辑性**修正（实现尚未开始）：结论 1 与上文「影响」末条原本写作“新增位置须先修订本 ADR”，与 `docs/decisions/README.md` 的“决策变更 = 新 ADR，不修改历史文件”相抵，改为“新增后继 ADR、本 ADR 保持原样”。决策内容（四个位置的清单与语义划分）不变，不构成对 D-011 结论 6 的重新裁定。此勘误于 Checklist 复核中被指出，并在 Gate 2 前如实记录。
