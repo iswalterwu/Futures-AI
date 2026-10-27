@@ -21,13 +21,14 @@ dependencies = [
 
 [project.scripts]
 futureai-data = "data.cli:main"
+futureai-settings = "settings.cli:main"
 
 [build-system]
 requires = ["setuptools>=75"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["data*"]
+include = ["data*", "settings*"]
 
 [tool.setuptools.package-data]
 "data.adapters.akshare" = ["manifest.yaml"]
