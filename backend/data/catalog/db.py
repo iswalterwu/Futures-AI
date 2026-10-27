@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS series(
 );
 CREATE TABLE IF NOT EXISTS series_sources(
   series_id TEXT, source_id TEXT, priority INTEGER DEFAULT 100, reg_order INTEGER,
+  unit TEXT, freq TEXT, tz TEXT,
   UNIQUE(series_id, source_id)
 );
 CREATE TABLE IF NOT EXISTS aliases(
@@ -64,12 +65,38 @@ class CatalogDB:
         base.update(over)
         return base
 
-    def set_series_source(self, series_id: str, source_id: str, priority: int, reg_order: int) -> None:
+    def set_series_source(
+        self, series_id: str, source_id: str, priority: int, reg_order: int,
+        unit: str | None = None, freq: str | None = None, tz: str | None = None,
+    ) -> None:
         self.con.execute(
-            "INSERT OR REPLACE INTO series_sources VALUES (?,?,?,?)",
-            [series_id, source_id, priority, reg_order],
+            "INSERT OR REPLACE INTO series_sources VALUES (?,?,?,?,?,?,?)",
+            [series_id, source_id, priority, reg_order, unit, freq, tz],
         )
         self.con.commit()
+
+    def source_declarations(self, series_id: str) -> dict[str, dict]:
+        """source_id → {priority, unit, freq, tz}（每源口径声明快照，对账与主源派生用）。"""
+        rows = self.con.execute(
+            "SELECT source_id, priority, unit, freq, tz FROM series_sources WHERE series_id=?",
+            [series_id],
+        ).fetchall()
+        return {
+            r[0]: {"priority": r[1], "unit": r[2], "freq": r[3], "tz": r[4]} for r in rows
+        }
+
+    def enabled_sources(self, series_id: str) -> list[str]:
+        """该序列的启用源（status=ok 且 enabled=1）。"""
+        return [
+            r[0]
+            for r in self.con.execute(
+                "SELECT ss.source_id FROM series_sources ss "
+                "JOIN sources s ON s.id = ss.source_id "
+                "WHERE ss.series_id=? AND s.status='ok' AND s.enabled=1 "
+                "ORDER BY ss.priority ASC, ss.reg_order ASC",
+                [series_id],
+            ).fetchall()
+        ]
 
     def set_override(self, series_id: str, source_id: str, priority: int) -> None:
         self.con.execute(
