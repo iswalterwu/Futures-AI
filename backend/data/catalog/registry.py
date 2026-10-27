@@ -75,11 +75,6 @@ class Registry:
                 "manifest_path=excluded.manifest_path",
                 [sid, sid, m.name, adapter_dir],
             )
-        for (sid, status) in self.cat.con.execute(
-            "SELECT id, status FROM sources WHERE status != 'error'"
-        ).fetchall():
-            if sid not in seen_ids and status != "disabled":
-                self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [sid])
         # R6-03/R7-03：goods 更新后建路径映射；仅纳入本轮实际扫描到的路径
         scanned_dirs = {str(Path(mf).parent) for (_d, mf) in entries}
         path_to_id = {
@@ -139,6 +134,12 @@ class Registry:
                 "DELETE FROM sources WHERE id=? AND status='error'",
                 [f"error:{mf_path}"],
             )
+
+        for (sid, status) in self.cat.con.execute(
+            "SELECT id, status FROM sources WHERE status != 'error'"
+        ).fetchall():
+            if sid not in seen_ids and status != "disabled":
+                self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [sid])
 
         # ---- series 编译（增量，不清空；同描述符归并 AC-002-2） ----
         # F-10：本轮未被声明的提供关系标 current=0（历史快照保留）
