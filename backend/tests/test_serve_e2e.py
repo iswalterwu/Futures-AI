@@ -67,6 +67,45 @@ def _mcp_post(port, body, bearer=None, session=None):
         return e.code, None, e.read().decode("utf-8", "replace")
 
 
+# 中继：自带控制台运行，在同一控制台内以新进程组启动 serve 并发送 CTRL_BREAK（与测试进程是否挂控制台无关）
+RELAY = r'''
+import json, signal, subprocess, sys, time, urllib.error, urllib.request
+from pathlib import Path
+
+backend, root, port, out = sys.argv[1], Path(sys.argv[2]), int(sys.argv[3]), Path(sys.argv[4])
+proc = subprocess.Popen(
+    [sys.executable, "-m", "data.cli", "--root", str(root), "serve", "--port", str(port)],
+    cwd=backend, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+)
+ready = False
+deadline = time.monotonic() + 90
+while time.monotonic() < deadline and proc.poll() is None:
+    if (root / "data" / "mcp_endpoint.json").exists():
+        try:
+            urllib.request.urlopen(f"http://127.0.0.1:{port}/internal/sources", timeout=1)
+        except urllib.error.HTTPError:
+            ready = True
+            break
+        except OSError:
+            pass
+    time.sleep(0.3)
+res = {"ready": ready}
+if ready:
+    proc.send_signal(signal.CTRL_BREAK_EVENT)
+    try:
+        res["rc"] = proc.wait(timeout=30)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        res["rc"] = "timeout"
+else:
+    proc.kill()
+res["lock"] = (root / "data" / ".lock").exists()
+res["endpoint"] = (root / "data" / "mcp_endpoint.json").exists()
+out.write_text(json.dumps(res), encoding="utf-8")
+'''
+
+
 @pytest.fixture()
 def serve_proc(tmp_path):
     root = tmp_path / "root"
@@ -141,3 +180,21 @@ class TestServeE2E:
         assert json.loads(capsys.readouterr().out)["sources"]
         assert not (root / "data" / ".lock").exists()
         assert cli.main(["--root", str(root), "config", "disable", "eia"]) == 0
+
+    def test_graceful_ctrl_break_removes_endpoint_and_lock(self, tmp_path):
+        """AC-008-4 生命周期：真实信号优雅退出 → 退出码 0，端点文件与写锁均清理。"""
+        relay = tmp_path / "relay.py"
+        relay.write_text(RELAY, encoding="utf-8")
+        root, out = tmp_path / "root", tmp_path / "res.json"
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        si.wShowWindow = 0  # SW_HIDE
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONPATH=str(BACKEND))
+        p = subprocess.Popen(
+            [sys.executable, str(relay), str(BACKEND), str(root), str(_free_port()), str(out)],
+            env=env, creationflags=subprocess.CREATE_NEW_CONSOLE, startupinfo=si,
+        )
+        p.wait(timeout=180)
+        assert json.loads(out.read_text(encoding="utf-8")) == {
+            "ready": True, "rc": 0, "lock": False, "endpoint": False,
+        }

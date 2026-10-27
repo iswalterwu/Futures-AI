@@ -163,3 +163,18 @@
 | T-44 | 时间语义：带时区 range 换算到序列主源声明时区；本地导入带时区时间戳换算到目标源声明时区 | A-P3 | AC-004-1、AC-007-3 | `pytest R12 -k "TimeSemantics or choose_among" -q` | ✅ |
 | T-45 | CLI 小项：credentials 交互输入（不入 shell 历史、不需写锁）、凭证名校验（防路径穿越）、CSV 后缀大小写、jobs last_run UTC 且触发后记录、add-source id 校验（防路径穿越）与骨架补全、diff 不可比原因输出、内部路由错误透传、mcp<2 锁定入 pyproject | A-P3 | AC-009-1、AC-007-3、AC-004-2、AC-004-5、AC-005-2 | `pytest R12 -k CliMisc -q` + `pytest tests/test_cli.py -q` | ✅ |
 | T-46 | 内置清单 SC 仓单单位修正（cny_ton → kb，原始桶 ÷1000），与库存日报同一数量型归一规则 | Converge 自查（随 T-37 发现） | AC-007-1、AC-006-1（口径声明权威） | `pytest tests/test_adapters_builtin.py -q` + `pytest R12 -k builtin_receipt -q` | ✅ |
+
+## 追加任务（第十三轮双审发现，Converge 再开）
+
+> 来源：第十三轮复审（A=claude-fable-5-1、B=gpt-6.1-sol）均未通过：共同 P2 = eia 无凭证引用分支被函数内局部导入遮蔽（UnboundLocalError → adapter_error/可重试）；B 另一 P2 = 不存在的序列在只读分支被当作成功空序列；另有 P3 与按 AC 的测试缺口。plan §2.1/§2.2/§6 已先行修订。
+> R13 = `tests/test_review_round13.py`；关键修复均做变异验证（注入旧行为 → 对应测试必失败）。
+
+| # | 任务 | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-47 | eia 凭证引用：删除遮蔽模块级 FetchError 的局部导入；清单跨字段校验（implementation: eia ⇒ credentials.kind=api_key，否则源 error 且原因可见）；凭证损坏经 service/MCP = unauthorized；EIA 请求边界 401/403/429/5xx 码与 retryable | R13-A/B 共同 P2 + 测试缺口 | AC-007-2、AC-008-3、AC-001-2 | `pytest R13 -k EiaCredentialRef -q` | ✅ |
+| T-48 | 不存在的序列 → not_found（只读/取数两分支一致）；已登记无观测 = 成功空结果 | R13-B-02（P2）、A-P3 | AC-008-3、AC-004-1 | `pytest R13 -k UnknownSeries -q` | ✅ |
+| T-49 | 取数排队隔离：fetch=true 经专用单槽限流器异步排队（不占工作线程）；akshare 上游调用硬超时（挂起不长期占住写路径） | R13-B-03、A-P3（写互斥无超时） | AC-004-6、AC-008-1、AC-004-3 | `pytest R13 -k FetchQueueIsolation -q` | ✅ |
+| T-50 | 真实 SDK 边界回归：FU/BU/LU 库存经 akshare 真实符号映射与列解析（仅 HTTP 边界注入固定响应）；仓单默认回看窗口不再硬编码年份 | B 测试缺口 + 自查 | AC-007-1 | `pytest R13 -k AkshareSdkBoundary -q` | ✅ |
+| T-51 | 检索只匹配描述符字段值与别名（不含 JSON 键名）；add-source 骨架 id/name 以字符串写出、eia 凭证引用名 ≤64 | A-P3、R13-B-04 | AC-008-1、AC-004-5 | `pytest R13 -k SearchAndSkeleton -q` | ✅ |
+| T-52 | 库文件损坏 → CLI 结构化 internal 错误（只读/写/serve 三路，不留写锁）；陈旧锁删除失败视为占用；非 serve 写进程持锁时只读提示语义化 | A-P3、B 测试缺口 | AC-004-6、AC-008-3 | `pytest R13 -k CorruptDbAndLockEdges -q` | ✅ |
+| T-53 | 按 AC 补齐断言：提交中途故障整体回滚（AC-004-3）；修订间历史时点与覆盖（AC-003-3/4）；diff 单因素不可比原因（AC-005-2）；主源为空时缓存沿用/无历史置空（AC-006-4，warning 区分两种情形）；Excel 导入与映射复用（AC-007-3）；默认只读不调适配器且不写批次（AC-008-2）；MCP list_sources 含 reason（AC-008-1）；真实 CTRL_BREAK 优雅退出清理端点与写锁（AC-008-4） | A/B 测试缺口 | AC-003-3、AC-003-4、AC-004-3、AC-005-2、AC-006-4、AC-007-3、AC-008-1、AC-008-2、AC-008-4 | `pytest R13 -k AcceptanceGaps -q` + `pytest tests/test_serve_e2e.py -q` | ✅ |

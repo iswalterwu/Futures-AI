@@ -8,7 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import yaml
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from data.catalog.descriptor import ASSET_ENUM, GEO_ENUM, MEASURE_ENUM, CONTRACT_RE, DescriptorError
 
@@ -150,12 +150,16 @@ class Manifest(BaseModel):
 
     @field_validator("implementation")
     @classmethod
-    def _implementation(cls, v: str | None) -> str | None:
+    def _implementation(cls, v: str | None, info: ValidationInfo) -> str | None:
         if v is None:
             return None
         v = str(v).strip()
         if v not in IMPLEMENTATIONS:
             raise ValueError(f"implementation 非法值: {v!r}（v1 内置实现: {sorted(IMPLEMENTATIONS)}）")
+        # 跨字段：eia 实现必须声明凭证引用（credentials 先于本字段校验，见字段顺序）
+        cred = info.data.get("credentials")
+        if v == "eia" and cred is not None and cred.kind != "api_key":
+            raise ValueError("implementation: eia 要求 credentials: {kind: api_key, credential_ref: <名>}")
         return v
 
     @field_validator("name")

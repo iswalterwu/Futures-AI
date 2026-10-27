@@ -7,13 +7,19 @@
 - `<品种>_STOCK`（如 FU_STOCK）→ `_get_stock(asset)`：库存日报（东方财富期货库存数据）
 
 仓单/库存为数量型：源侧原始单位为桶/吨，按清单声明单位归一（kb/kton = 原始值 ÷ 1000）；
-价格型不换算。
+价格型不换算。上游 SDK 调用有硬超时（SDK 内部请求未设超时，挂起不得长期占住写路径）。
 """
 from __future__ import annotations
+
+import threading
+from datetime import date, timedelta
 
 import pandas as pd
 
 from data.adapters.base import Adapter
+
+AKSHARE_TIMEOUT_S = 300  # 单次上游调用上限（含仓单逐日抓取）
+RECEIPT_DEFAULT_DAYS = 30  # 仓单未给范围时的默认回看窗口
 
 _MAIN_SUFFIX = "0"  # 主力连续符号后缀（SC0/FU0/…）
 _RECEIPT_SUFFIX = "_RECEIPT"
@@ -45,9 +51,13 @@ def _get_receipt(asset: str, start=None, end=None):
     """
     import akshare as ak
 
-    s = (start.strftime("%Y%m%d") if start else "20260101")
-    e = (end.strftime("%Y%m%d") if end else "20261231")
-    df = ak.get_receipt(start_date=s, end_date=e, vars_list=[asset.upper()])
+    end_d = end.date() if end else date.today()
+    start_d = start.date() if start else end_d - timedelta(days=RECEIPT_DEFAULT_DAYS)
+    df = ak.get_receipt(
+        start_date=start_d.strftime("%Y%m%d"),
+        end_date=end_d.strftime("%Y%m%d"),
+        vars_list=[asset.upper()],
+    )
     if df is None or df.empty:
         return pd.DataFrame(columns=["日期", "值"])
     return df  # 列归一由 fetch 统一处理（date→日期、receipt→值）
@@ -58,6 +68,26 @@ def _get_stock(asset: str):
     import akshare as ak
 
     return ak.futures_inventory_em(symbol=asset.lower())
+
+
+def _call_with_timeout(fn, timeout: float):
+    """在守护线程中执行上游调用；超时抛 TimeoutError（可重试的适配器错误），挂起线程被放弃。"""
+    box: dict = {}
+
+    def run():
+        try:
+            box["value"] = fn()
+        except BaseException as e:  # 原样转交调用方
+            box["error"] = e
+
+    t = threading.Thread(target=run, name="akshare-call", daemon=True)
+    t.start()
+    t.join(timeout)
+    if t.is_alive():
+        raise TimeoutError(f"akshare 上游调用超时（>{timeout:g}s）")
+    if "error" in box:
+        raise box["error"]
+    return box.get("value")
 
 
 def _route(symbol: str):
@@ -80,7 +110,7 @@ class AkshareAdapter(Adapter):
     def fetch(self, provide, range_start=None, range_end=None):
         symbol = provide.symbols[0]
         getter, value_col, quantity = _route(symbol)
-        df = getter(range_start, range_end)
+        df = _call_with_timeout(lambda: getter(range_start, range_end), AKSHARE_TIMEOUT_S)
         raw = df.to_json(force_ascii=False) if df is not None else None
         if df is None or df.empty:
             return [], raw

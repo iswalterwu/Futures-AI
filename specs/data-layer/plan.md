@@ -52,7 +52,8 @@ version: 1                   # 必填，正整数
 credentials: none            # 必填，enum: none | {kind: api_key, credential_ref: <名>}
 implementation: akshare      # 可选，enum: akshare | eia | local-file（v1 内置取数实现，封闭清单）；缺省 = 仅声明源
                              #   （进目录、可检索/对账，不可取数：取数返回 not_found）；用户目录清单借此复用内置实现，
-                             #   如声明指定合约 {asset: sc, geo: cn, measure: close, contract: SC2401} 并绑定 akshare
+                             #   如声明指定合约 {asset: sc, geo: cn, measure: close, contract: SC2401} 并绑定 akshare；
+                             #   跨字段：implementation: eia 要求 credentials.kind = api_key（否则校验失败，源标 error 并给出原因）
 provides:                    # 必填，非空数组
   - descriptor:              #   必填：3 键 + 可选 contract
       asset: sc              #     必填，v1 enum: sc/fu/lu/bu/pg/crude/brent/diesel/lpg
@@ -73,7 +74,9 @@ provides:                    # 必填，非空数组
 
 **执行绑定（AC-001-1/AC-007-1）**：冷启动时每个合法清单按 `implementation` 绑定一个取数实例（akshare/local-file 无状态；eia 的凭证引用取自**该清单**的 `credentials.credential_ref`）。v1 不加载用户目录中的代码（第三方实现属 Phase 4，spec 非目标）——用户源只能复用内置实现。
 
-**akshare 源符号约定**：`<品种>0` = 主力连续日线（如 `SC0`）；`<合约代码>` = 指定合约日线（如 `SC2401`）；`<品种>_RECEIPT` = 交易所仓单日报；`<品种>_STOCK` = 库存日报（东方财富期货库存数据，v1 内置 FU/BU/LU）。仓单/库存为数量型序列：源侧原始单位为桶（SC）/吨（FU/BU/LU），适配器按清单声明单位归一（kb/kton = 原始值 ÷ 1000）；价格型序列不换算。
+**akshare 源符号约定**：`<品种>0` = 主力连续日线（如 `SC0`）；`<合约代码>` = 指定合约日线（如 `SC2401`）；`<品种>_RECEIPT` = 交易所仓单日报；`<品种>_STOCK` = 库存日报（东方财富期货库存数据，v1 内置 FU/BU/LU）。仓单/库存为数量型序列：源侧原始单位为桶（SC）/吨（FU/BU/LU），适配器按清单声明单位归一（kb/kton = 原始值 ÷ 1000）；价格型序列不换算。上游 SDK 调用有硬超时（300s，超时 = adapter_error 可重试）；仓单未给范围时默认回看 30 天。
+
+**R-007 覆盖对照（内置 vs 用户清单可达）**：内置 akshare 清单声明 SC/FU/LU/BU/PG 主力连续日线、SC 仓单日报、FU/BU/LU 库存日报；指定合约与其余品种的仓单/库存由用户清单绑定 akshare 声明即可取数（符号约定同上）。PG（大商所）仓单/库存的源侧单位为“手”，不在 v1 单位封闭枚举内（新增单位须先修订 spec），v1 不内置。
 
 ### 2.2 接口与契约（spec 中所有“见 plan §2.2”的落点）
 
@@ -83,11 +86,11 @@ provides:                    # 必填，非空数组
 
 | 接口 | 签名与语义 |
 |---|---|
-| search_series | `search_series(q) -> {matches:[{series_id, descriptor, unit, freq}]}`；q 匹配 = 描述符字段（含 contract）与别名的子串匹配（`%`/`_` 按字面字符匹配，不作通配）；descriptor = 描述符 dict（含 contract，缺省空串） |
-| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；range = `{start: ISO8601, end: ISO8601}`（**end 为闭区间**）；source=None = 启用源中优先级数值最小者（并列取注册顺序先者）；**仅 do_fetch=true 分支：无启用源 → not_found；显式 source 指向非启用源 → validation_error；只读分支忽略 source、不受源状态影响（返回跨源择优历史数据）**；do_fetch=false = 只读短路（不触发适配器、不写库）。**range 时间语义**：观测 ts = 源声明时区下的时间标签（naive）；range 不带时区 = 同一基准直接比较；带时区 = 先换算到序列主源声明时区再去时区比较 |
+| search_series | `search_series(q) -> {matches:[{series_id, descriptor, unit, freq}]}`；q 匹配 = 描述符字段值（asset/geo/measure/contract，不含键名）与别名的子串匹配（`%`/`_` 按字面字符匹配，不作通配）；descriptor = 描述符 dict（含 contract，缺省空串） |
+| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；range = `{start: ISO8601, end: ISO8601}`（**end 为闭区间**）；source=None = 启用源中优先级数值最小者（并列取注册顺序先者）；**仅 do_fetch=true 分支：无启用源 → not_found；显式 source 指向非启用源 → validation_error；只读分支忽略 source、不受源状态影响（返回跨源择优历史数据）**；do_fetch=false = 只读短路（不触发适配器、不写库）。**序列不存在（目录中无此 ID）→ not_found（两分支一致）；已登记但无观测 = 成功空结果**。**range 时间语义**：观测 ts = 源声明时区下的时间标签（naive）；range 不带时区 = 同一基准直接比较；带时区 = 先换算到序列主源声明时区再去时区比较 |
 | list_sources | `list_sources() -> {sources:[{adapter_id, name, enabled, status, reason}]}`（status: ok/disabled/error；reason = 最近一次目录编译给出的状态原因：error = 校验失败的路径+字段+原因，disabled = 清单已移除，ok = null） |
 | reconcile | `reconcile(series_id) -> {report:{series_id, checks:[{kind: unit|tz|freq, source_a, source_b, status: ok|mismatch, detail}], warnings:[string]}}`（warnings = 退化/全局问题，不绑定成对源；**无可用序列时（空目录首启）：返回 warnings 说明“无可用序列”**） |
-| config | `config add-source <id> [--implementation akshare|eia|local-file]` / `alias <symbol> <source_id> <series_id>` / `priority <series_id> <source_id> <n>` / `enable <source_id>` / `disable <source_id>` / `credentials <name> [secret]`（CLI 专属；持久化，重启后生效）。**只能配置已有清单的源**：源须为真实源（非 error 虚拟条目）且清单仍在（status≠disabled）；priority 另要求该源当前清单声明该序列、n ≥ 0；alias 要求序列存在；不满足 → not_found/validation_error，不落库。add-source = 在用户适配器目录写清单骨架（id 须符合 §2.1 正则；骨架含 credentials/implementation，provides 待填——填写前该源登记为 error 并给出原因）。enable/disable = R-001 单源启停（写 sources.enabled 后重算主源派生缓存）。credentials 省略 secret 时交互输入（不回显，避免进入 shell 历史） |
+| config | `config add-source <id> [--implementation akshare|eia|local-file]` / `alias <symbol> <source_id> <series_id>` / `priority <series_id> <source_id> <n>` / `enable <source_id>` / `disable <source_id>` / `credentials <name> [secret]`（CLI 专属；持久化，重启后生效）。**只能配置已有清单的源**：源须为真实源（非 error 虚拟条目）且清单仍在（status≠disabled）；priority 另要求该源当前清单声明该序列、n ≥ 0；alias 要求序列存在；不满足 → not_found/validation_error，不落库。add-source = 在用户适配器目录写清单骨架（id 须符合 §2.1 正则；骨架含 credentials/implementation，provides 待填——填写前该源登记为 error 并给出原因）。enable/disable = R-001 单源启停（写 sources.enabled 后重算主源派生缓存）。credentials 省略 secret 时交互输入（不回显，避免进入 shell 历史）；不需要写锁（只写 creds/）；显式传 secret 仅供脚本化场景（已知风险：可能进入 shell 历史/进程参数，风险接受并在 CLI 帮助中提示）；凭证名须匹配 `[A-Za-z0-9_-]{1,64}` |
 | jobs | `jobs register|list|run`（CLI 专属；`jobs register <name> <source_id> <series_id>` 要求该源当前清单声明该序列；last_run = 触发后记录的 UTC 时间） |
 | import | `import <file> [--series <id>] [--source <id>]`（CLI 向导，CSV/Excel 映射；目标 = `implementation: local-file` 的启用源所声明的序列，多目标时交互选择；带时区时间戳换算到目标源声明时区） |
 | serve | `serve [--port N]`（默认 8932，仅 127.0.0.1；启动时打印清单校验失败报告；正常退出删除端点文件并释放写锁） |
@@ -103,13 +106,13 @@ provides:                    # 必填，非空数组
 | list_sources | 无 | `{sources:[{adapter_id, name, enabled, status, reason}]}` |
 | reconcile | `series_id` | `{report:{series_id, checks:[...], warnings:[string]}}` |
 
-**内部只读通道（AC-004-6 判定依据）**：serve 的同一 HTTP 端点提供内部只读子端点 `/internal/sources`、`/internal/search`、`/internal/jobs`、`/internal/reconcile`、`/internal/provenance`、`/internal/diff`（同令牌）；CLI 只读命令（list/jobs list/reconcile/provenance/diff）在写锁被占时经此路由查询。失败返回 HTTP 400 + `{error:{code, message, retryable}}`，CLI 原样输出 message（含 diff 不可比原因）。
+**内部只读通道（AC-004-6 判定依据）**：serve 的同一 HTTP 端点提供内部只读子端点 `/internal/sources`、`/internal/search`、`/internal/jobs`、`/internal/reconcile`、`/internal/provenance`、`/internal/diff`（同令牌）；CLI 只读命令（list/jobs list/reconcile/provenance/diff）在写锁被占时经此路由查询。失败返回 HTTP 400 + `{error:{code, message, retryable}}`，CLI 原样输出 message（含 diff 不可比原因）。写锁由非 serve 写命令（fetch/import/config…）持有时无只读通道：只读命令返回“写进程运行中，请稍后重试”（DuckDB 单写者固有限制）。库文件损坏/不可读 → CLI 输出结构化 internal 错误（不抛裸异常、不留写锁）。
 
 **空数据目录首启（只读命令，AC-004-6/AC-006-4）**：库文件尚不存在（或未初始化）时，只读命令使用内存目录（按当前清单编译）+ 空观测库照常返回，不在磁盘上建库、不取写锁；reconcile 对不存在的序列返回 warnings“无可用序列”。
 
-**错误契约**：`{error:{code, message, retryable}}`；code↔retryable 映射（固定）：not_found=false / unauthorized=false / adapter_error=true / rate_limited=true / validation_error=false / internal=false。失败类别 → code：凭证缺失/读取/解密失败与上游 401/403 → unauthorized；序列/源/任务不存在、源未绑定取数实现 → not_found；参数/数据校验失败、配置目标不合法、diff 不可比 → validation_error；网络/上游 5xx/解析失败 → adapter_error；上游 429 → rate_limited。
+**错误契约**：`{error:{code, message, retryable}}`；code↔retryable 映射（固定）：not_found=false / unauthorized=false / adapter_error=true / rate_limited=true / validation_error=false / internal=false。失败类别 → code：凭证未声明/缺失/读取/解密失败与上游 401/403 → unauthorized；序列/源/任务不存在、源未绑定取数实现 → not_found；参数/数据校验失败、配置目标不合法、diff 不可比 → validation_error；网络/上游 5xx/解析失败 → adapter_error；上游 429 → rate_limited。
 
-**MCP 执行模型**：工具与内部端点在工作线程中执行（不阻塞事件循环）；service 的全部数据访问经同一访问锁串行（单连接）；取数的网络阶段不持访问锁（批次创建与提交两段持锁），写路径另由写互斥串行。
+**MCP 执行模型**：工具与内部端点在工作线程中执行（不阻塞事件循环）；service 的全部数据访问经同一访问锁串行（单连接）；取数的网络阶段不持访问锁（批次创建与提交两段持锁），写路径另由写互斥串行。取数（fetch=true）先在专用单槽限流器上异步排队、再进工作线程：排队不占线程，只读请求的线程容量不被写请求耗尽；上游调用有硬超时，挂起不得长期占住写路径。
 
 **realtime 接口签名（AC-004-4 判定依据）**：`base.Adapter.realtime_signature(descriptor, on_update)` 方法签名 + 模块级文档常量；测试以 import 断言方法存在与签名参数（无网络实现）。
 
@@ -208,7 +211,7 @@ creds/                   # DPAPI 加密凭证
 
 | 风险 | 对策 |
 |---|---|
-| akshare 接口漂移/限流 | 适配器隔离 + 版本锁定 + 失败不回退（AC-004-3）；离线测试用固定响应样本 mock |
+| akshare 接口漂移/限流/挂起 | 适配器隔离 + 版本锁定 + 失败不回退（AC-004-3）；离线测试用固定响应样本 mock（库存在 SDK 的 HTTP 边界注入，覆盖符号映射与列解析）；SDK 内部请求无超时 → 适配器硬超时（守护线程，超时放弃） |
 | DuckDB 单写者限制 | 写锁（plan §3.3 .lock）：service 持写锁，CLI 写操作遇锁报错；CLI 只读命令经 localhost HTTP 路由（端点发现 = data/mcp_endpoint.json）；MCP 进程内 + 连接互斥串行化（Q-019/Q-029） |
 | Windows 编码/时区坑 | `PYTHONIOENCODING=utf-8`；系统时间（fetched_at/asof/批次时间）= naive UTC；观测 ts = 源声明时区下的时间标签（naive）+ 清单 tz 元数据（spec 非目标：v1 存原始时间戳）；带时区的查询范围/导入时间先换算到声明时区 |
 | pywin32（DPAPI）不可用 | fail closed：拒绝保存/读取并报错（AC-009-1），无降级路径 |

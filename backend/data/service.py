@@ -202,13 +202,18 @@ class Service:
             return self._search_unlocked(q)
 
     def _search_unlocked(self, q: str) -> dict:
+        """q 子串匹配描述符字段值（asset/geo/measure/contract，不含 JSON 键名）与别名（plan §2.2）。"""
         pat = _like(q or "")
+        fields = " OR ".join(
+            f"json_extract(descriptor_json, '$.{k}') LIKE ? ESCAPE '\\'"
+            for k in ("asset", "geo", "measure", "contract")
+        )
         rows = self.cat.con.execute(
             "SELECT id, descriptor_json, display_id_8slot, unit, freq FROM series "
-            "WHERE display_id_8slot LIKE ? ESCAPE '\\' OR descriptor_json LIKE ? ESCAPE '\\' OR id IN "
+            f"WHERE {fields} OR id IN "
             "(SELECT series_id FROM aliases WHERE source_symbol LIKE ? ESCAPE '\\') "
             "ORDER BY id LIMIT 50",
-            [pat, pat, pat],
+            [pat] * 5,
         ).fetchall()
         return {
             "matches": [

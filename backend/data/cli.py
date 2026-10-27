@@ -11,11 +11,14 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sqlite3
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+import duckdb
 
 from data import creds
 from data.adapters.local_file.local_file_adapter import guess_mapping, parse_with_mapping
@@ -51,11 +54,17 @@ def _err_dict(e: Exception) -> dict:
     return FetchError("internal", str(e)).to_dict()
 
 
+def _db_error(e: Exception) -> dict:
+    """库文件损坏/不可读 → 结构化 internal 错误（不抛裸异常）。"""
+    return FetchError("internal", f"数据库不可读（文件可能损坏）：{e}").to_dict()
+
+
 def _internal_get(root: Path, path: str, params: dict):
     """经 serve 内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。"""
     ep = read_endpoint(root / "data")
     if not ep:
-        raise FetchError("internal", "serve 未运行且未发现端点文件")
+        # 写锁被非 serve 写命令（fetch/import/config…）持有：DuckDB 单写者期间不可读
+        raise FetchError("internal", "写进程运行中且未提供只读通道（非 serve 写命令执行中），请稍后重试")
     qs = urllib.parse.urlencode(params)
     url = f"http://127.0.0.1:{ep['port']}{path}" + (f"?{qs}" if qs else "")
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {ep['token']}"})
@@ -206,9 +215,14 @@ def _hash_bytes(raw: bytes) -> str:
 
 
 def _skeleton(source_id: str, implementation: str | None) -> str:
-    """清单骨架（plan §2.2）：除 provides 外字段齐全；provides 待填（填写前该源登记为 error 并给出原因）。"""
+    """清单骨架（plan §2.2）：除 provides 外字段齐全；provides 待填（填写前该源登记为 error 并给出原因）。
+
+    id/name 以 JSON 字符串写出（YAML 兼容），避免 123、null 等被解析为非字符串；
+    eia 凭证引用名按凭证名规则截断到 64 字符以内。
+    """
     if implementation == "eia":
-        cred = f"{{kind: api_key, credential_ref: {source_id.replace('-', '_')}_key}}"
+        ref = source_id.replace("-", "_")[:60] + "_key"
+        cred = f"{{kind: api_key, credential_ref: {ref}}}"
     else:
         cred = "none"
     impl_line = (
@@ -216,9 +230,10 @@ def _skeleton(source_id: str, implementation: str | None) -> str:
         if implementation
         else "# implementation: akshare      # 可选：akshare | eia | local-file；缺省 = 仅声明源（不可取数）\n"
     )
+    quoted = json.dumps(source_id)
     return (
-        f"id: {source_id}\n"
-        f"name: {source_id}\n"
+        f"id: {quoted}\n"
+        f"name: {quoted}\n"
         "version: 1\n"
         f"credentials: {cred}\n"
         f"{impl_line}"
@@ -268,6 +283,9 @@ def _serve(root: Path, port: int) -> int:
     except LockBusy:
         print("错误：数据目录已被另一写进程占用", file=sys.stderr)
         return 1
+    except (sqlite3.DatabaseError, duckdb.Error) as e:
+        _json_out(_db_error(e))
+        return 1
     try:
         svc.init()
         for e in svc.manifest_errors:  # AC-001-2：清单校验失败启动即报告
@@ -304,7 +322,10 @@ def main(argv=None) -> int:
     c_prio.add_argument("series_id"); c_prio.add_argument("source_id"); c_prio.add_argument("priority", type=int)
     c_cred = cfg_sub.add_parser("credentials")
     c_cred.add_argument("name")
-    c_cred.add_argument("secret", nargs="?", default=None, help="省略则交互输入（不回显，不进入 shell 历史）")
+    c_cred.add_argument(
+        "secret", nargs="?", default=None,
+        help="建议省略：省略则不回显交互输入；显式传入仅供脚本化场景，可能留在 shell 历史或进程参数中",
+    )
     c_src = cfg_sub.add_parser("add-source")
     c_src.add_argument("id")
     c_src.add_argument("--implementation", choices=sorted(IMPLEMENTATIONS), default=None)
@@ -378,11 +399,17 @@ def main(argv=None) -> int:
         except LockBusy as e:
             print(f"错误：{e}（写进程运行中但未发现可用端点，请稍后重试）", file=sys.stderr)
             return 1
+        except (sqlite3.DatabaseError, duckdb.Error) as e:
+            _json_out(_db_error(e))
+            return 1
         try:
             svc.init()
             payload = _local_readonly(svc, args)
         except (FetchError, DiffError) as e:
             _json_out(_err_dict(e))
+            return 1
+        except (sqlite3.DatabaseError, duckdb.Error) as e:
+            _json_out(_db_error(e))
             return 1
         finally:
             svc.close()
@@ -394,6 +421,9 @@ def main(argv=None) -> int:
         svc = Service(root)
     except LockBusy:
         print("错误：数据目录被另一写进程占用（serve 运行中？）", file=sys.stderr)
+        return 1
+    except (sqlite3.DatabaseError, duckdb.Error) as e:
+        _json_out(_db_error(e))
         return 1
     try:
         svc.init()

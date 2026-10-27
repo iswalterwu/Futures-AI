@@ -3,12 +3,15 @@
 - MCP streamable HTTP + 内部只读端点 = **同一端口**（FastMCP custom_route），仅监听 127.0.0.1
 - 主 MCP 通道与内部端点均要求 Bearer token（F-06）
 - 工具与内部端点在工作线程执行，不阻塞事件循环；数据访问由 service 访问锁串行（F-02）
+- 取数（fetch=true）经专用单槽限流器排队：排队期间不占工作线程，只读请求的线程容量不被写请求耗尽
 """
 from __future__ import annotations
 
+import asyncio
 import hmac
 import json
 import time
+import weakref
 
 import anyio
 from mcp.server.auth.provider import AccessToken
@@ -60,9 +63,9 @@ def _int_param(params, name: str) -> int:
         raise FetchError("validation_error", f"参数 {name} 须为整数") from e
 
 
-async def _in_thread(fn, *args):
+async def _in_thread(fn, *args, limiter=None):
     """同步 service 调用移入工作线程（取数的网络等待不阻塞事件循环）。"""
-    return await anyio.to_thread.run_sync(fn, *args)
+    return await anyio.to_thread.run_sync(fn, *args, limiter=limiter)
 
 
 def build_mcp(
@@ -80,6 +83,16 @@ def build_mcp(
             validate_token_resource=False,
         ),
     )
+
+    # 取数写路径的单槽限流器（每事件循环一个；写本身另由 service 写互斥串行）
+    fetch_limiters: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
+
+    def _fetch_limiter() -> anyio.CapacityLimiter:
+        loop = asyncio.get_running_loop()
+        lim = fetch_limiters.get(loop)
+        if lim is None:
+            lim = fetch_limiters[loop] = anyio.CapacityLimiter(1)
+        return lim
 
     @mcp.tool()
     async def search_series(q: str) -> dict:
@@ -103,7 +116,7 @@ def build_mcp(
             return {"series_id": series_id, "rows": rows, "meta": _meta_json(res["meta"])}
 
         try:
-            return await _in_thread(call)
+            return await _in_thread(call, limiter=_fetch_limiter() if fetch else None)
         except Exception as e:
             return _error(e)
 

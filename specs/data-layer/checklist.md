@@ -42,5 +42,5 @@
 ## 复核条件
 
 1. 终审双审复核 ✅ 已通过（A：v18 通过；B：v22 通过；共识 = 通过）
-2. v22 spec.md 获 **Gate 1 再批准**（Walter）——当前待批准项
+2. v22 spec.md 获 **Gate 1 再批准**（Walter）——✅ 已批准（2026-10-27，Implement 前）
 3. 注：tasks.md 的“任务粒度 + 验证命令 ↔ AC 一一对应”为 **Tasks 阶段产物自身的质量要求**，在 Analyze 阶段补审（不是进入 Tasks 的前置条件）；review.md 按 Handoff 阶段生成

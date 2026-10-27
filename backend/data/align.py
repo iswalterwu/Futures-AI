@@ -62,7 +62,13 @@ def reconcile(cat: CatalogDB, series_id: str | None, store=None) -> dict:
                 }
             )
     if not enabled:
-        warnings.append("主源候选为空：无启用源（展示口径沿用末次缓存或置空）")
+        cache = cat.con.execute(
+            "SELECT unit, freq, tz FROM series WHERE id=?", [series_id]
+        ).fetchone()
+        if cache and any(v is not None for v in cache):
+            warnings.append("主源候选为空：无启用源（展示口径沿用末次缓存）")
+        else:
+            warnings.append("主源候选为空：无启用源且无历史展示口径（展示口径置空）")
     else:
         primary = enabled[0]
         srow = cat.con.execute(

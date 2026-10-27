@@ -46,6 +46,7 @@ def fetch_series(
 ):
     """统一取数入口。
 
+    - 序列不存在（目录中无此 ID）→ not_found（两分支一致；已登记但无观测 = 成功空结果）
     - do_fetch 无默认值（Python 层强制传参）；只读分支忽略 source，返回跨源择优结果
     - do_fetch=True：source=None → 启用源中优先级最小者（无 → not_found）；
       显式 source 指向非启用源 → validation_error；源未绑定取数实现 → not_found
@@ -55,6 +56,8 @@ def fetch_series(
     """
     guard = guard if guard is not None else nullcontext()
     with guard:
+        if not cat.series_exists(series_id):
+            raise FetchError("not_found", f"序列 {series_id} 不存在")
         priorities = cat.effective_priorities(series_id)
         if not do_fetch:
             rows = latest_obs(store, series_id, priorities, start=start, end=end)

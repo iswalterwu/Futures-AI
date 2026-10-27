@@ -83,8 +83,6 @@ class EiaAdapter(Adapter):
                 continue
             rows.append((ts, val))
         if bad:
-            from data.fetch.on_demand import FetchError
-
             raise FetchError(
                 "validation_error", f"EIA 响应含 {bad} 行无效数据（空日期/非法值），整批拒绝"
             )
