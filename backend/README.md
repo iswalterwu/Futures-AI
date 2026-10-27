@@ -53,10 +53,11 @@ provides:
     update: {lag_min: 0, revises: true}
 ```
 
-akshare 源符号约定：`SC0` 主力连续、`SC2401` 指定合约、`SC_RECEIPT` 仓单日报、`FU_STOCK` 库存日报（字段契约见 `../specs/data-layer/plan.md` §2.1）。清单校验失败的原因可在 `list sources` 的 `reason` 字段查看。
+akshare 源符号约定：`SC0` 主力连续、`SC2401` 指定合约、`SC_RECEIPT` 仓单日报、`FU_STOCK` 库存日报（仓单/库存按品种原始口径折算：SC 桶→kb，FU/BU/LU 吨→kton，PG 手×20 吨→kton）（字段契约见 `../specs/data-layer/plan.md` §2.1）。清单校验失败的原因可在 `list sources` 的 `reason` 字段查看。
 
 ## 验证
 
 ```bash
+pip install -e . -c constraints.txt   # 受测版本约束（pyproject 仅声明兼容下界）
 python -m pytest tests/ -q
 ```

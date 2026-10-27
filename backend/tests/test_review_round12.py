@@ -9,7 +9,7 @@ import subprocess
 import sys
 import threading
 import time
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -69,6 +69,18 @@ def call_tool(mcp, name, args):
     out = asyncio.run(mcp.call_tool(name, args))
     text = out[0].text if hasattr(out[0], "text") else str(out[0])
     return json.loads(text)
+
+
+class FrozenDate(date):
+    """固定“今天”：仓单/库存的默认滚动窗口与运行日期无关（测试可复现）。"""
+
+    @classmethod
+    def today(cls):
+        return cls(2026, 10, 27)
+
+
+def freeze_today(monkeypatch):
+    monkeypatch.setattr(ak_mod, "date", FrozenDate)
 
 
 def main_df(value=500.0, day="2026-10-01"):
@@ -248,6 +260,7 @@ class TestBindingContractInventory:
             {"日期": ["2026-10-08", "2026-10-09"], "库存": [12000.0, 15000.0], "增减": [0, 3000]}
         )
         monkeypatch.setattr(ak_mod, "_get_stock", lambda asset: seen.append(asset) or df)
+        freeze_today(monkeypatch)
         svc = Service(tmp_path).init()
         try:
             res = svc.fetch(FU_STOCK, do_fetch=True)
@@ -261,6 +274,7 @@ class TestBindingContractInventory:
     def test_builtin_receipt_end_to_end(self, tmp_path, monkeypatch):
         df = pd.DataFrame({"var": ["SC"], "receipt": [5451000], "receipt_chg": [0], "date": ["2026-10-09"]})
         monkeypatch.setattr(ak_mod, "_get_receipt", lambda asset, start=None, end=None: df)
+        freeze_today(monkeypatch)
         svc = Service(tmp_path).init()
         try:
             res = svc.fetch(SC_RECEIPT, do_fetch=True)

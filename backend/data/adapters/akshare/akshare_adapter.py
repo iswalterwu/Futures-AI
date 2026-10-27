@@ -6,27 +6,41 @@
 - `<品种>_RECEIPT`（如 SC_RECEIPT）→ `_get_receipt(asset, start, end)`：交易所仓单日报
 - `<品种>_STOCK`（如 FU_STOCK）→ `_get_stock(asset)`：库存日报（东方财富期货库存数据）
 
-仓单/库存为数量型：源侧原始单位为桶/吨，按清单声明单位归一（kb/kton = 原始值 ÷ 1000）；
-价格型不换算。上游 SDK 调用有硬超时（SDK 内部请求未设超时，挂起不得长期占住写路径）。
+仓单/库存为数量型：按品种登记的源侧原始口径（桶/吨/手）折算到清单声明单位（kb/kton），
+未登记品种或量纲不匹配 → validation_error（不产出错标数据）；价格型不换算。
+批次覆盖 = effective_range 解析出的实际请求窗口（仓单/库存为滚动窗口，AC-005-2）。
+上游 SDK 调用有硬超时（SDK 内部请求未设超时，挂起不得长期占住写路径）。
 """
 from __future__ import annotations
 
 import threading
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 
 from data.adapters.base import Adapter
+from data.fetch.on_demand import FetchError
 
 AKSHARE_TIMEOUT_S = 300  # 单次上游调用上限（含仓单逐日抓取）
-RECEIPT_DEFAULT_DAYS = 30  # 仓单未给范围时的默认回看窗口
+RECEIPT_DEFAULT_DAYS = 30  # 仓单未给起点时的回看窗口（逐日抓取）
+STOCK_DEFAULT_DAYS = 365  # 库存未给起点时的回看窗口（须落在源的单页窗口内）
+STOCK_PAGE_ROWS = 500  # 东财库存每次只返回最近 500 个交易日
 
 _MAIN_SUFFIX = "0"  # 主力连续符号后缀（SC0/FU0/…）
 _RECEIPT_SUFFIX = "_RECEIPT"
 _STOCK_SUFFIX = "_STOCK"
 
-# 数量型序列：清单声明单位 → 相对源侧原始单位（桶/吨）的除数
-_QUANTITY_DIVISOR = {"kb": 1000.0, "kton": 1000.0}
+# 数量型（仓单/库存）源侧原始口径：品种 → (基准量纲, 每原始单位折合的基准量)
+# 上期所/能源中心按吨（FU/BU/LU）、桶（SC）计；大商所 PG 按手计，合约规格 20 吨/手
+_RAW_QUANTITY = {
+    "SC": ("bbl", 1.0),
+    "FU": ("ton", 1.0),
+    "BU": ("ton", 1.0),
+    "LU": ("ton", 1.0),
+    "PG": ("ton", 20.0),
+}
+# 清单声明单位 → (基准量纲, 除数)
+_DECLARED_QUANTITY = {"kb": ("bbl", 1000.0), "kton": ("ton", 1000.0)}
 
 
 def _get_main(symbol: str):
@@ -90,26 +104,78 @@ def _call_with_timeout(fn, timeout: float):
     return box.get("value")
 
 
-def _route(symbol: str):
-    """源符号 → (取数函数(start, end), 值列名, 是否数量型)。"""
+def _kind(symbol: str) -> str:
     if symbol.endswith(_RECEIPT_SUFFIX):
-        asset = symbol[: -len(_RECEIPT_SUFFIX)]
-        return (lambda start, end: _get_receipt(asset, start, end)), "值", True
+        return "receipt"
     if symbol.endswith(_STOCK_SUFFIX):
-        asset = symbol[: -len(_STOCK_SUFFIX)]
-        return (lambda start, end: _get_stock(asset)), "库存", True
+        return "stock"
+    return "price"
+
+
+def _variety(symbol: str) -> str:
+    for suffix in (_RECEIPT_SUFFIX, _STOCK_SUFFIX):
+        if symbol.endswith(suffix):
+            return symbol[: -len(suffix)].upper()
+    return symbol
+
+
+def _quantity_scale(variety: str, unit: str | None) -> tuple[float, float]:
+    """(乘数, 除数)：原始值 × 乘数 ÷ 除数 = 清单声明单位下的值；未登记品种/量纲不匹配 → validation_error。"""
+    raw = _RAW_QUANTITY.get(variety)
+    if raw is None:
+        raise FetchError(
+            "validation_error",
+            f"品种 {variety} 的仓单/库存原始口径未登记（plan §2.1），不支持取数",
+        )
+    decl = _DECLARED_QUANTITY.get(unit or "")
+    if decl is None or decl[0] != raw[0]:
+        want = "kb" if raw[0] == "bbl" else "kton"
+        raise FetchError(
+            "validation_error",
+            f"{variety} 仓单/库存原始量纲为 {raw[0]}，清单声明单位 {unit!r} 不匹配（应为 {want}）",
+        )
+    return raw[1], decl[1]
+
+
+def _midnight(d: date) -> datetime:
+    return datetime(d.year, d.month, d.day)
+
+
+def _route(symbol: str):
+    """源符号 → (取数函数(start, end), 值列名)。"""
+    kind = _kind(symbol)
+    if kind == "receipt":
+        asset = _variety(symbol)
+        return (lambda start, end: _get_receipt(asset, start, end)), "值"
+    if kind == "stock":
+        asset = _variety(symbol)
+        return (lambda start, end: _get_stock(asset)), "库存"
     if symbol.endswith(_MAIN_SUFFIX) and len(symbol) == 3:
-        return (lambda start, end: _get_main(symbol)), "收盘价", False
+        return (lambda start, end: _get_main(symbol)), "收盘价"
     # 指定合约（如 SC2401）
-    return (lambda start, end: _get_contract(symbol)), "收盘价", False
+    return (lambda start, end: _get_contract(symbol)), "收盘价"
 
 
 class AkshareAdapter(Adapter):
     id = "akshare"
 
+    def effective_range(self, provide, range_start=None, range_end=None):
+        """价格型 = 调用方范围（None = 源全量历史）；仓单/库存 = 滚动窗口，未给端点时按默认回看补全。"""
+        kind = _kind(provide.symbols[0])
+        if kind == "price":
+            return range_start, range_end
+        end = range_end or _midnight(date.today())
+        days = RECEIPT_DEFAULT_DAYS if kind == "receipt" else STOCK_DEFAULT_DAYS
+        start = range_start or (end - timedelta(days=days))
+        return start, end
+
     def fetch(self, provide, range_start=None, range_end=None):
         symbol = provide.symbols[0]
-        getter, value_col, quantity = _route(symbol)
+        kind = _kind(symbol)
+        mult, div = 1.0, 1.0
+        if kind != "price":
+            mult, div = _quantity_scale(_variety(symbol), getattr(provide, "unit", None))
+        getter, value_col = _route(symbol)
         df = _call_with_timeout(lambda: getter(range_start, range_end), AKSHARE_TIMEOUT_S)
         raw = df.to_json(force_ascii=False) if df is not None else None
         if df is None or df.empty:
@@ -122,14 +188,21 @@ class AkshareAdapter(Adapter):
             df = df.rename(columns={"close": "收盘价"})
         if "receipt" in df.columns and value_col == "值":
             df = df.rename(columns={"receipt": "值"})
-        if "var" in df.columns and symbol.endswith(_RECEIPT_SUFFIX):
-            df = df[df["var"].astype(str).str.upper() == symbol[: -len(_RECEIPT_SUFFIX)].upper()]
+        if "var" in df.columns and kind == "receipt":
+            df = df[df["var"].astype(str).str.upper() == _variety(symbol)]
         date_col = next((c for c in ("日期", "date", "Date") if c in df.columns), None)
         if date_col is None:
             raise ValueError("响应缺少日期列")
         if value_col not in df.columns:
             raise ValueError(f"响应缺少值列: {value_col}")
-        divisor = _QUANTITY_DIVISOR.get(getattr(provide, "unit", None), 1.0) if quantity else 1.0
+        if kind == "stock" and range_start is not None and len(df) >= STOCK_PAGE_ROWS:
+            earliest = pd.to_datetime(df[date_col]).min().to_pydatetime()
+            if earliest > range_start:  # 源单页已截断：覆盖不到请求起点，拒绝虚报覆盖范围
+                raise FetchError(
+                    "validation_error",
+                    f"库存日报源仅提供最近约 {STOCK_PAGE_ROWS} 个交易日（最早 {earliest:%Y-%m-%d}），"
+                    f"请求起点 {range_start:%Y-%m-%d} 超出源窗口",
+                )
         rows = []
         for _, r in df.iterrows():
             ts = pd.to_datetime(r[date_col]).to_pydatetime()
@@ -137,7 +210,7 @@ class AkshareAdapter(Adapter):
                 continue
             if range_end and ts > range_end:
                 continue
-            rows.append((ts, float(r[value_col]) / divisor))
+            rows.append((ts, float(r[value_col]) * mult / div))
         return rows, raw
 
     def realtime_signature(self, descriptor, on_update):

@@ -40,8 +40,8 @@ def _request(series_id: str, api_key: str, start, end):
         raise FetchError("rate_limited", "EIA 限流，请稍后重试")
     if resp.status_code >= 500:
         raise FetchError("adapter_error", f"EIA 服务端错误（HTTP {resp.status_code}）")
-    if resp.status_code >= 400:
-        raise FetchError("adapter_error", f"EIA 请求失败（HTTP {resp.status_code}）")
+    if resp.status_code >= 400:  # 其余 4xx = 请求本身无效（序列代码/参数），重试无益
+        raise FetchError("validation_error", f"EIA 请求无效（HTTP {resp.status_code}，请检查序列代码与参数）")
     return resp.json(), resp.text
 
 

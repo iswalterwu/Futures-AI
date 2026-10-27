@@ -13,6 +13,7 @@ import json
 import re
 import sqlite3
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -40,6 +41,7 @@ from data.store.provenance import DiffError
 DEFAULT_ROOT = Path.home() / "AppData" / "Local" / "FuturesAI"
 
 _SOURCE_ID_RE = re.compile(r"^[a-z0-9-]{1,64}$")  # 同 manifest id（plan §2.1）
+READ_WAIT_S = 30  # 只读命令等待非 serve 写命令结束的上限（秒）
 
 
 def _json_out(obj):
@@ -51,12 +53,31 @@ def _err_dict(e: Exception) -> dict:
         return e.to_dict()
     if isinstance(e, DiffError):
         return FetchError("validation_error", f"不可比：{e.reason}").to_dict()
-    return FetchError("internal", str(e)).to_dict()
+    if isinstance(e, (sqlite3.Error, duckdb.Error)):
+        return _db_error(e)
+    return FetchError("internal", f"{type(e).__name__}: {e}").to_dict()
 
 
 def _db_error(e: Exception) -> dict:
-    """库文件损坏/不可读 → 结构化 internal 错误（不抛裸异常）。"""
-    return FetchError("internal", f"数据库不可读（文件可能损坏）：{e}").to_dict()
+    """库错误 → 结构化 internal 错误（不抛裸异常）：锁定、文件损坏与其他库错误分开提示。"""
+    low = str(e).lower()
+    if isinstance(e, sqlite3.OperationalError) and "locked" in low:
+        text = f"目录库正被其他连接锁定，请稍后重试：{e}"
+    elif "not a database" in low or "not a valid duckdb" in low:
+        text = f"数据库不可读（文件可能损坏）：{e}"
+    else:
+        text = f"数据库错误：{e}"
+    return FetchError("internal", text).to_dict()
+
+
+def _wait_lock_release(root: Path, timeout: float) -> bool:
+    """非 serve 写命令持锁（无只读通道）：等待其释放写锁；超时 → False。"""
+    deadline = time.monotonic() + timeout
+    while _lock_held(root):
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(0.2)
+    return True
 
 
 def _internal_get(root: Path, path: str, params: dict):
@@ -283,11 +304,15 @@ def _serve(root: Path, port: int) -> int:
     except LockBusy:
         print("错误：数据目录已被另一写进程占用", file=sys.stderr)
         return 1
-    except (sqlite3.DatabaseError, duckdb.Error) as e:
-        _json_out(_db_error(e))
+    except Exception as e:
+        _json_out(_err_dict(e))
         return 1
     try:
-        svc.init()
+        try:
+            svc.init()
+        except Exception as e:
+            _json_out(_err_dict(e))
+            return 1
         for e in svc.manifest_errors:  # AC-001-2：清单校验失败启动即报告
             print(f"清单校验失败（已隔离）：{e['reason']}", file=sys.stderr)
         token = secrets.token_hex(16)
@@ -384,32 +409,40 @@ def main(argv=None) -> int:
 
     if is_readonly:
         if _lock_held(root):
-            try:
-                payload = _route_readonly(root, args)
-            except FetchError as e:
-                _json_out(e.to_dict())
+            if read_endpoint(root / "data"):  # serve 持锁 → 内部只读通道
+                try:
+                    payload = _route_readonly(root, args)
+                except FetchError as e:
+                    _json_out(e.to_dict())
+                    return 1
+                except OSError:
+                    payload = None  # 端点不可达（残留端点文件）→ 按非 serve 写进程处理
+                except Exception as e:
+                    print(f"错误：内部路由失败: {e}", file=sys.stderr)
+                    return 1
+                if payload is not None:
+                    _json_out(payload)
+                    return 0
+            # 非 serve 写命令持锁：DuckDB 单写者期间不可读 → 等其结束后本地只读
+            if not _wait_lock_release(root, READ_WAIT_S):
+                print(
+                    "错误：写进程运行中且未提供只读通道（非 serve 写命令执行中），请稍后重试",
+                    file=sys.stderr,
+                )
                 return 1
-            except Exception as e:
-                print(f"错误：内部路由失败: {e}", file=sys.stderr)
-                return 1
-            _json_out(payload)
-            return 0
         try:
             svc = Service(root, readonly=True)
         except LockBusy as e:
             print(f"错误：{e}（写进程运行中但未发现可用端点，请稍后重试）", file=sys.stderr)
             return 1
-        except (sqlite3.DatabaseError, duckdb.Error) as e:
-            _json_out(_db_error(e))
+        except Exception as e:
+            _json_out(_err_dict(e))
             return 1
         try:
             svc.init()
             payload = _local_readonly(svc, args)
-        except (FetchError, DiffError) as e:
+        except Exception as e:  # 业务错误/不可比/库错误/意外错误 → 结构化输出
             _json_out(_err_dict(e))
-            return 1
-        except (sqlite3.DatabaseError, duckdb.Error) as e:
-            _json_out(_db_error(e))
             return 1
         finally:
             svc.close()
@@ -422,8 +455,8 @@ def main(argv=None) -> int:
     except LockBusy:
         print("错误：数据目录被另一写进程占用（serve 运行中？）", file=sys.stderr)
         return 1
-    except (sqlite3.DatabaseError, duckdb.Error) as e:
-        _json_out(_db_error(e))
+    except Exception as e:
+        _json_out(_err_dict(e))
         return 1
     try:
         svc.init()
@@ -449,8 +482,8 @@ def main(argv=None) -> int:
                 print("ok")
             else:
                 return _add_source(svc, root, args.id, args.implementation)
-    except FetchError as e:
-        _json_out(e.to_dict())
+    except Exception as e:  # 业务错误/库错误/意外错误 → 结构化输出（不抛裸异常）
+        _json_out(_err_dict(e))
         return 1
     finally:
         svc.close()

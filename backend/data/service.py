@@ -261,6 +261,8 @@ class Service:
 
     def provenance(self, series_id, ts=None):
         with self._access_lock:
+            if not self.cat.series_exists(series_id):  # 与 fetch_series 同口径
+                raise FetchError("not_found", f"序列 {series_id} 不存在")
             return provenance(self.store, series_id, ts)
 
     def diff(self, run_a: int, run_b: int):

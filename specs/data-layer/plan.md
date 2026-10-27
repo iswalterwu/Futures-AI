@@ -74,9 +74,21 @@ provides:                    # 必填，非空数组
 
 **执行绑定（AC-001-1/AC-007-1）**：冷启动时每个合法清单按 `implementation` 绑定一个取数实例（akshare/local-file 无状态；eia 的凭证引用取自**该清单**的 `credentials.credential_ref`）。v1 不加载用户目录中的代码（第三方实现属 Phase 4，spec 非目标）——用户源只能复用内置实现。
 
-**akshare 源符号约定**：`<品种>0` = 主力连续日线（如 `SC0`）；`<合约代码>` = 指定合约日线（如 `SC2401`）；`<品种>_RECEIPT` = 交易所仓单日报；`<品种>_STOCK` = 库存日报（东方财富期货库存数据，v1 内置 FU/BU/LU）。仓单/库存为数量型序列：源侧原始单位为桶（SC）/吨（FU/BU/LU），适配器按清单声明单位归一（kb/kton = 原始值 ÷ 1000）；价格型序列不换算。上游 SDK 调用有硬超时（300s，超时 = adapter_error 可重试）；仓单未给范围时默认回看 30 天。
+**akshare 源符号约定**：`<品种>0` = 主力连续日线（如 `SC0`）；`<合约代码>` = 指定合约日线（如 `SC2401`）；`<品种>_RECEIPT` = 交易所仓单日报；`<品种>_STOCK` = 库存日报（东方财富期货库存数据）。价格型序列不换算。上游 SDK 调用有硬超时（300s，超时 = adapter_error 可重试）。
 
-**R-007 覆盖对照（内置 vs 用户清单可达）**：内置 akshare 清单声明 SC/FU/LU/BU/PG 主力连续日线、SC 仓单日报、FU/BU/LU 库存日报；指定合约与其余品种的仓单/库存由用户清单绑定 akshare 声明即可取数（符号约定同上）。PG（大商所）仓单/库存的源侧单位为“手”，不在 v1 单位封闭枚举内（新增单位须先修订 spec），v1 不内置。
+**数量型（仓单/库存）归一**：按品种登记源侧原始口径并折算到清单声明单位——
+
+| 品种 | 交易所口径 | 声明单位 | 折算 |
+|---|---|---|---|
+| SC | 能源中心，桶 | kb | ÷ 1000 |
+| FU/BU/LU | 上期所/能源中心，吨 | kton | ÷ 1000 |
+| PG | 大商所，手（合约规格 20 吨/手） | kton | × 20 ÷ 1000 |
+
+未登记品种或声明单位量纲不匹配（如 SC 仓单声明 kton）→ validation_error，在请求上游前拒绝（不产出错标数据）。
+
+**覆盖窗口（AC-005-2）**：批次的覆盖范围 = 适配器在建批次前解析的实际请求窗口（`Adapter.effective_range`）。价格型 = 调用方范围原样（None = 源全量历史，无截断）；仓单未给起点 = 回看 30 天（逐日抓取），库存未给起点 = 回看 365 天；未给终点 = 当日。滚动窗口下跨日的两批覆盖不同 → diff 报不可比，而非误报删除。东财库存每次只返回最近 500 个交易日：整页且最早日期晚于请求起点 → validation_error（不虚报覆盖）。
+
+**R-007 覆盖对照（内置）**：SC/FU/LU/BU/PG 五品种均内置主力连续日线与交易所仓单日报；FU/LU/BU/PG 另内置库存日报（东财库存数据不含 SC；SC 的交易所库存口径即能源中心仓单日报）。指定合约日线由用户清单绑定 akshare 声明（合约会到期，不宜内置）。
 
 ### 2.2 接口与契约（spec 中所有“见 plan §2.2”的落点）
 
@@ -94,7 +106,7 @@ provides:                    # 必填，非空数组
 | jobs | `jobs register|list|run`（CLI 专属；`jobs register <name> <source_id> <series_id>` 要求该源当前清单声明该序列；last_run = 触发后记录的 UTC 时间） |
 | import | `import <file> [--series <id>] [--source <id>]`（CLI 向导，CSV/Excel 映射；目标 = `implementation: local-file` 的启用源所声明的序列，多目标时交互选择；带时区时间戳换算到目标源声明时区） |
 | serve | `serve [--port N]`（默认 8932，仅 127.0.0.1；启动时打印清单校验失败报告；正常退出删除端点文件并释放写锁） |
-| provenance | `provenance <series_id>`（CLI 开发者工具，AC-005-1 交付入口） |
+| provenance | `provenance <series_id>`（CLI 开发者工具，AC-005-1 交付入口；序列不存在 → not_found，与 fetch_series 同口径；已登记无观测 = 空列表） |
 | diff | `diff <run_a> <run_b>`（CLI 开发者工具，AC-005-2 交付入口） |
 
 **MCP 工具契约（pi 经 MCP 调用；MCP 层参数 `fetch` ↔ 内部 `do_fetch`）**：
@@ -106,11 +118,11 @@ provides:                    # 必填，非空数组
 | list_sources | 无 | `{sources:[{adapter_id, name, enabled, status, reason}]}` |
 | reconcile | `series_id` | `{report:{series_id, checks:[...], warnings:[string]}}` |
 
-**内部只读通道（AC-004-6 判定依据）**：serve 的同一 HTTP 端点提供内部只读子端点 `/internal/sources`、`/internal/search`、`/internal/jobs`、`/internal/reconcile`、`/internal/provenance`、`/internal/diff`（同令牌）；CLI 只读命令（list/jobs list/reconcile/provenance/diff）在写锁被占时经此路由查询。失败返回 HTTP 400 + `{error:{code, message, retryable}}`，CLI 原样输出 message（含 diff 不可比原因）。写锁由非 serve 写命令（fetch/import/config…）持有时无只读通道：只读命令返回“写进程运行中，请稍后重试”（DuckDB 单写者固有限制）。库文件损坏/不可读 → CLI 输出结构化 internal 错误（不抛裸异常、不留写锁）。
+**内部只读通道（AC-004-6 判定依据）**：serve 的同一 HTTP 端点提供内部只读子端点 `/internal/sources`、`/internal/search`、`/internal/jobs`、`/internal/reconcile`、`/internal/provenance`、`/internal/diff`（同令牌）；CLI 只读命令（list/jobs list/reconcile/provenance/diff）在写锁被占时经此路由查询。失败返回 HTTP 400 + `{error:{code, message, retryable}}`，CLI 原样输出 message（含 diff 不可比原因）。写锁由非 serve 写命令（fetch/import/config…）持有时无只读通道（DuckDB 单写者固有限制）：只读命令等待其释放写锁（≤ 30s）后本地读取，超时返回“写进程运行中，请稍后重试”；残留端点文件不可达时按同一规则处理。CLI 不抛裸异常：库文件损坏（“不可读（文件可能损坏）”）、目录库被锁定（“正被其他连接锁定，请稍后重试”）与其他意外错误均输出结构化 internal 错误，且不留写锁（只读/写/serve 三路一致）。
 
 **空数据目录首启（只读命令，AC-004-6/AC-006-4）**：库文件尚不存在（或未初始化）时，只读命令使用内存目录（按当前清单编译）+ 空观测库照常返回，不在磁盘上建库、不取写锁；reconcile 对不存在的序列返回 warnings“无可用序列”。
 
-**错误契约**：`{error:{code, message, retryable}}`；code↔retryable 映射（固定）：not_found=false / unauthorized=false / adapter_error=true / rate_limited=true / validation_error=false / internal=false。失败类别 → code：凭证未声明/缺失/读取/解密失败与上游 401/403 → unauthorized；序列/源/任务不存在、源未绑定取数实现 → not_found；参数/数据校验失败、配置目标不合法、diff 不可比 → validation_error；网络/上游 5xx/解析失败 → adapter_error；上游 429 → rate_limited。
+**错误契约**：`{error:{code, message, retryable}}`；code↔retryable 映射（固定）：not_found=false / unauthorized=false / adapter_error=true / rate_limited=true / validation_error=false / internal=false。失败类别 → code：凭证未声明/缺失/读取/解密失败与上游 401/403 → unauthorized；序列/源/任务不存在、源未绑定取数实现 → not_found；参数/数据校验失败、配置目标不合法、diff 不可比 → validation_error；上游其余 4xx（如 404，序列代码/参数无效）→ validation_error；网络/上游 5xx/解析失败/上游调用超时 → adapter_error；上游 429 → rate_limited。
 
 **MCP 执行模型**：工具与内部端点在工作线程中执行（不阻塞事件循环）；service 的全部数据访问经同一访问锁串行（单连接）；取数的网络阶段不持访问锁（批次创建与提交两段持锁），写路径另由写互斥串行。取数（fetch=true）先在专用单槽限流器上异步排队、再进工作线程：排队不占线程，只读请求的线程容量不被写请求耗尽；上游调用有硬超时，挂起不得长期占住写路径。
 
@@ -187,7 +199,7 @@ creds/                   # DPAPI 加密凭证
 ## 4. 关键流程
 
 1. **冷启动**：service.init() → 扫描内置（包内资源）与用户适配器目录 → manifest 校验：**不可解析或字段非法的 manifest 一律把对应 source 标 error（按 manifest_path 定位：曾存在则原地改 status，未存在则以 adapter_id=文件路径登记虚拟条目；重复 id 的后到者同样标 error），报告路径+字段+原因；error 不影响其他适配器**（AC-001-3/4）→ 对比上次扫描：目录中消失的 source 标 disabled（软删，数据保留）→ 编译序列目录（series_sources 登记 provides 优先级；**编译 = 增/改/软删，不清空既有 series 行——全部 manifest 非法时历史序列仍可查询与对账**）→ 加载别名与覆盖 → **最后计算主源（候选 = status=ok 且 enabled=true 的启用源；enabled=false 视为非启用）**并写 series 派生缓存（unit/freq/tz = 主源值）（以上目录写入 = 单事务；error/disabled 原因写 source_reasons） → 按 `implementation` 绑定取数实例 → 清理超时 running 批次 → 就绪
-2. **按需取数**（do_fetch=true）：建 ingest_run（running，记录 series/range）→ 解析适配器与源符号 → adapter.fetch → 单位归一化检查 → **同一 DuckDB 事务**：写 observations + run=succeeded → 返回；任一步失败 → 无数据行 + 独立事务 run=failed；可重试错误（超时/5xx/限流）支持手动重试 = 新 run
+2. **按需取数**（do_fetch=true）：解析实际请求窗口（effective_range，见 §2.1）→ 建 ingest_run（running，记录 series/实际请求窗口）→ 解析适配器与源符号 → adapter.fetch → 单位归一化检查 → **同一 DuckDB 事务**：写 observations + run=succeeded → 返回；任一步失败 → 无数据行 + 独立事务 run=failed；可重试错误（超时/5xx/限流）支持手动重试 = 新 run
 3. **只读短路**（do_fetch=false）：仅查询现有数据（latest_obs/asof），不创建 run、不触发适配器、不写库
 4. **diff**：两 run 仅当均为 succeeded、series_id 相同、source 相同、[range_start, range_end] 相同、unit/freq/tz 快照一致时可比；否则返回不可比原因（AC-005-2）
 5. **对账**：reconcile(id) → 各源 manifest 声明的 unit/tz/freq 对比 → 报告（不静默换算）；展示口径跟随主源（优先级最低数值者，并列取 series_sources 注册顺序先者）
@@ -211,11 +223,11 @@ creds/                   # DPAPI 加密凭证
 
 | 风险 | 对策 |
 |---|---|
-| akshare 接口漂移/限流/挂起 | 适配器隔离 + 版本锁定 + 失败不回退（AC-004-3）；离线测试用固定响应样本 mock（库存在 SDK 的 HTTP 边界注入，覆盖符号映射与列解析）；SDK 内部请求无超时 → 适配器硬超时（守护线程，超时放弃） |
+| akshare 接口漂移/限流/挂起 | 适配器隔离 + 受测版本约束（`backend/constraints.txt`；pyproject 仅声明兼容下界，升级须回归）+ 失败不回退（AC-004-3）；离线测试用固定响应样本 mock（库存在 SDK 的 HTTP 边界注入，覆盖符号映射与列解析）；SDK 内部请求无超时 → 适配器硬超时（守护线程，超时放弃） |
 | DuckDB 单写者限制 | 写锁（plan §3.3 .lock）：service 持写锁，CLI 写操作遇锁报错；CLI 只读命令经 localhost HTTP 路由（端点发现 = data/mcp_endpoint.json）；MCP 进程内 + 连接互斥串行化（Q-019/Q-029） |
 | Windows 编码/时区坑 | `PYTHONIOENCODING=utf-8`；系统时间（fetched_at/asof/批次时间）= naive UTC；观测 ts = 源声明时区下的时间标签（naive）+ 清单 tz 元数据（spec 非目标：v1 存原始时间戳）；带时区的查询范围/导入时间先换算到声明时区 |
 | pywin32（DPAPI）不可用 | fail closed：拒绝保存/读取并报错（AC-009-1），无降级路径 |
-| Python 3.14 wheel 可用性 | **实施首任务 = 依赖安装冒烟**（全依赖 pip install + import）；失败则调整版本锁定并回 spec |
+| Python 3.14 wheel 可用性 | **实施首任务 = 依赖安装冒烟**（全依赖 pip install + import）；失败则调整版本约束并回 spec |
 | MCP SDK 接口变动 | 锁定 mcp 版本；工具层只依赖 FastMCP 稳定 API；逐工具返回契约固定 |
 
 调度器注记：v1 不引 APScheduler（任务注册表 + 手动触发）；architecture §3.5 已注记收窄，调度器随 daily-report feature 引入。

@@ -82,11 +82,14 @@ def fetch_series(
                 "not_found", f"源 {source} 未绑定取数实现（清单未声明 implementation，仅声明数据）"
             )
         provide = get_provide(cat, series_id, source) if get_provide else None
+        # 批次覆盖 = 适配器实际请求窗口（滚动/截断窗口的源在此解析；diff 可比条件依赖它）
+        resolve = getattr(adapter, "effective_range", None)
+        eff_start, eff_end = resolve(provide, start, end) if resolve else (start, end)
         rid = store.new_run(
-            source, series_id, start, end, decl["unit"], decl["freq"], decl["tz"]
+            source, series_id, eff_start, eff_end, decl["unit"], decl["freq"], decl["tz"]
         )
     try:
-        fetched, raw_payload = adapter.fetch(provide, start, end)
+        fetched, raw_payload = adapter.fetch(provide, eff_start, eff_end)
         validate_rows(fetched)
         rows = [
             (series_id, ts, float(v), decl["unit"], source, _utcnow())

@@ -31,6 +31,7 @@ from test_review_round12 import (
     SC0,
     call_tool,
     cli_run,
+    freeze_today,
     main_df,
     manifest_yaml,
     provide_yaml,
@@ -85,7 +86,8 @@ class TestEiaCredentialRef:
     @pytest.mark.parametrize(
         "status,code,retryable",
         [(401, "unauthorized", False), (403, "unauthorized", False), (429, "rate_limited", True),
-         (500, "adapter_error", True), (503, "adapter_error", True), (404, "adapter_error", True)],
+         (500, "adapter_error", True), (503, "adapter_error", True), (404, "validation_error", False),
+         (400, "validation_error", False)],
     )
     def test_http_status_mapping_at_request_boundary(self, tmp_path, monkeypatch, status, code, retryable):
         class Resp:
@@ -224,6 +226,7 @@ class TestAkshareSdkBoundary:
             ]}})
 
         monkeypatch.setattr(em.requests, "get", fake_get)
+        freeze_today(monkeypatch)
         sid = derive_id({"asset": variety.lower(), "geo": "cn", "measure": "stock", "contract": ""})
         svc = Service(tmp_path).init()
         try:

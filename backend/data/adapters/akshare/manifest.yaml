@@ -76,3 +76,43 @@ provides:
     priority: 100
     fetch: {modes: [on_demand, scheduled], history_days: 3650}
     update: {lag_min: 0, revises: true}
+  - descriptor: {asset: fu, geo: cn, measure: receipt, contract: ""}
+    symbols: ["FU_RECEIPT"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: bu, geo: cn, measure: receipt, contract: ""}
+    symbols: ["BU_RECEIPT"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: lu, geo: cn, measure: receipt, contract: ""}
+    symbols: ["LU_RECEIPT"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: pg, geo: cn, measure: receipt, contract: ""}
+    symbols: ["PG_RECEIPT"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: pg, geo: cn, measure: stock, contract: ""}
+    symbols: ["PG_STOCK"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}

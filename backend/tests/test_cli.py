@@ -151,6 +151,9 @@ class TestSingleWriter:
         setup(tmp_path)
         svc = Service(tmp_path)  # 持写锁
         try:
+            from data.lock import write_endpoint
+
+            write_endpoint(tmp_path / "data", 1, "tok")  # 模拟 serve：持锁且提供只读通道
             ra = svc.store.new_run("akshare", SID, BASE, BASE, "cny_bbl", "1d", "Asia/Shanghai")
             svc.store.commit_run(ra, [(SID, BASE, 1.0, "cny_bbl", "akshare", BASE)])
             calls = []

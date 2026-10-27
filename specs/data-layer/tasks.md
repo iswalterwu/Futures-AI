@@ -21,13 +21,13 @@
 - 上下文：plan §2.1；依赖 T-02
 - 修改范围：`backend/data/manifest.py`
 - 完成标准：AC-001-2（必填字段/枚举/类型/contract 字符集校验；坏件报告路径+字段+原因）；重复 id 检测数据
-- 验证命令：`pytest tests/test_adapters.py::test_manifest_validation -q`
+- 验证命令：`pytest tests/test_adapters.py -q`
 
 ### T-04 观测存储（DuckDB）
 - 上下文：plan §3.2；依赖 T-01
 - 修改范围：`backend/data/store/duck.py`、`backend/data/store/ingest.py`
 - 完成标准：AC-003-1（幂等：同批次重放不重复、不覆盖历史）；ingest_runs 生命周期（running→succeeded/failed）；失败无部分写入
-- 验证命令：`pytest tests/test_store.py::test_idempotent_replay -q`
+- 验证命令：`pytest tests/test_store.py -k Idempotent -q`
 
 ### T-05 择优解析（winners）
 - 上下文：plan §3.2/§3.4；依赖 T-04
@@ -39,13 +39,13 @@
 - 上下文：plan §4.1；依赖 T-03
 - 修改范围：`backend/data/catalog/registry.py`
 - 完成标准：AC-001-1（双目录扫描）、AC-001-3（增量重建/error/disabled 软删、既有序列不清空）、AC-001-4（重复 id 后到者 error）、**AC-002-2（同描述符自动归并，不同 contract 不同序列）**
-- 验证命令：`pytest tests/test_adapters.py::test_registry -q`
+- 验证命令：`pytest tests/test_registry.py -q`
 
 ### T-07 别名映射与裁决
 - 上下文：plan §3.1 aliases；依赖 T-06
 - 修改范围：`backend/data/catalog/aliases.py`
 - 完成标准：AC-002-3（来源作用域；手动 > manifest > 模板 > 模糊；写入低优先级被拒；覆盖持久化）
-- 验证命令：`pytest tests/test_identity.py::test_aliases -q`
+- 验证命令：`pytest tests/test_aliases.py -q`
 
 ### T-08 按需取数与任务注册表
 - 上下文：plan §4.2/§4.3；依赖 T-05/T-06
@@ -75,19 +75,19 @@
 - 上下文：plan §1/§2.1；依赖 T-03/T-08
 - 修改范围：`backend/data/adapters/base.py`、`backend/data/adapters/akshare/`
 - 完成标准：AC-007-1（SC/FU/LU/BU/PG 日线 + 仓单/库存，固定响应样本 mock；在线冒烟可选）
-- 验证命令：`pytest tests/test_adapters_akshare.py -q`
+- 验证命令：`pytest tests/test_adapters_builtin.py -k "Akshare or Receipt" -q`
 
 ### T-13 适配器 EIA
 - 上下文：依赖 T-11/T-12
 - 修改范围：`backend/data/adapters/eia/`
 - 完成标准：AC-007-2（credential_ref 读凭证库、key 失败 fail closed、固定响应样本）
-- 验证命令：`pytest tests/test_adapters_eia.py -q`
+- 验证命令：`pytest tests/test_adapters_builtin.py -k Eia -q`
 
 ### T-14 适配器本地文件 + import 向导
 - 上下文：依赖 T-08
 - 修改范围：`backend/data/adapters/local_file/`
 - 完成标准：AC-007-3（CSV/Excel 向导映射入库、映射模板保存复用）
-- 验证命令：`pytest tests/test_adapters_local.py -q`
+- 验证命令：`pytest tests/test_adapters_builtin.py -k LocalFile -q` + `pytest tests/test_cli.py -k Import -q`
 
 ### T-15 MCP server 与内部只读端点
 - 上下文：plan §2.2/§4.6；依赖 T-05/T-08/T-09
@@ -105,7 +105,7 @@
 - 上下文：plan §3.3/§6；依赖 T-16
 - 修改范围：`backend/data/lock.py`
 - 完成标准：AC-004-6（serve 持锁时写命令报错；只读命令经内部 HTTP 路由；端点发现 mcp_endpoint.json）
-- 验证命令：`pytest tests/test_cli.py::test_single_writer -q`
+- 验证命令：`pytest tests/test_cli.py -k SingleWriter -q` + `pytest tests/test_layout.py -q`
 
 ### T-18 静态扫描（零凭证 + 零手写 ID）
 - 上下文：spec AC-009-2/AC-002-4；依赖 T-01
@@ -178,3 +178,17 @@
 | T-51 | 检索只匹配描述符字段值与别名（不含 JSON 键名）；add-source 骨架 id/name 以字符串写出、eia 凭证引用名 ≤64 | A-P3、R13-B-04 | AC-008-1、AC-004-5 | `pytest R13 -k SearchAndSkeleton -q` | ✅ |
 | T-52 | 库文件损坏 → CLI 结构化 internal 错误（只读/写/serve 三路，不留写锁）；陈旧锁删除失败视为占用；非 serve 写进程持锁时只读提示语义化 | A-P3、B 测试缺口 | AC-004-6、AC-008-3 | `pytest R13 -k CorruptDbAndLockEdges -q` | ✅ |
 | T-53 | 按 AC 补齐断言：提交中途故障整体回滚（AC-004-3）；修订间历史时点与覆盖（AC-003-3/4）；diff 单因素不可比原因（AC-005-2）；主源为空时缓存沿用/无历史置空（AC-006-4，warning 区分两种情形）；Excel 导入与映射复用（AC-007-3）；默认只读不调适配器且不写批次（AC-008-2）；MCP list_sources 含 reason（AC-008-1）；真实 CTRL_BREAK 优雅退出清理端点与写锁（AC-008-4） | A/B 测试缺口 | AC-003-3、AC-003-4、AC-004-3、AC-005-2、AC-006-4、AC-007-3、AC-008-1、AC-008-2、AC-008-4 | `pytest R13 -k AcceptanceGaps -q` + `pytest tests/test_serve_e2e.py -q` | ✅ |
+
+## 追加任务（第十四轮双审发现，Converge 再开）
+
+> 来源：第十四轮复审 A（claude-fable-5-1）通过；B（gpt-6.1-sol）未通过：R14-B-01 仓单滚动窗口未入批次覆盖快照（diff 误报删除）；R14-B-02 PG 仓单/库存属冻结 R-007 范围却未交付，且用户清单按“吨”假设错标 PG 数据。另有 A/B 的 P3 与测试缺口。plan §2.1/§2.2/§4/§6 已先行修订（取消“PG 不内置”的 plan 层收窄，改为正确交付）。
+> R14 = `tests/test_review_round14.py`；修复均做变异验证（11 个变异全部被检出）。
+
+| # | 任务 | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-54 | 批次覆盖 = 实际请求窗口：`Adapter.effective_range` 在建批次前解析（仓单默认 30 天、库存默认 365 天、价格型 None = 全量历史），SDK 请求与批次快照同一窗口；东财库存整页截断且覆盖不到请求起点 → validation_error | R14-B-01（P2） | AC-005-2、D-012 第 10 条 | `pytest R14 -k CoverageSnapshot -q` | ✅ |
+| T-55 | 数量型归一表（SC 桶、FU/BU/LU 吨、PG 手×20 吨）；内置仓单扩至 SC/FU/LU/BU/PG、库存扩至 FU/LU/BU/PG；未登记品种/量纲不匹配在请求上游前 validation_error | R14-B-02（P2） | AC-007-1（R-007 五品种）、AC-006-1 | `pytest R14 -k QuantityUnits -q` | ✅ |
+| T-56 | 被放弃的超时调用迟到返回不回写、不翻转 failed；取消的排队取数不执行、不泄漏限流容量；DPAPI 解密失败经 service/MCP = unauthorized；provenance 不存在序列 = not_found | A/B P3 + 测试缺口 | AC-004-3、AC-004-6、AC-007-2、AC-009-1、AC-008-3、AC-005-1 | `pytest R14 -k Round14Robustness -q` | ✅ |
+| T-57 | CLI 不抛裸异常（写路径意外错误、DuckDB/目录库损坏，覆盖只读/写/serve 三路且不留锁）；锁定与损坏分开提示；只读命令等待非 serve 写进程结束（≤30s，残留端点不可达同规则）；EIA 其余 4xx → validation_error | A/B P3 | AC-008-3、AC-004-6 | `pytest R14 -k CliRound14 -q` + `pytest tests/test_review_round13.py -k http_status -q` | ✅ |
+| T-58 | 交接准确性：早期任务验证命令改为实际测试位置（T-03/04/06/07/12/13/14/17 逐条可执行）；受测版本约束 `backend/constraints.txt`，plan/review 措辞由“版本锁定”改为“受测版本约束” | B P3 | 工作流（AGENTS.md §2 Tasks/Handoff） | 逐条执行 T-01~T-20 验证命令 | ✅ |
+| T-59 | 测试与运行日期解耦：滚动窗口相关测试冻结“今天”（FrozenDate），避免日期推移后误失败 | Converge 自查 | AC-007-1 | `pytest tests/test_review_round12.py -k "builtin_inventory or builtin_receipt" -q` | ✅ |
