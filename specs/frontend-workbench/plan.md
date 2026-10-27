@@ -79,9 +79,9 @@
 
 **三层玻璃**：`src/design/glass.css` 只定义 `.glass-focus`、`.glass-module`、`.glass-drawer` 三个类（各自引面 / 边 / 模糊令牌）；全树 `backdrop-filter` 只许出现在这个文件、且 ≤ 3 条规则（守卫 `glass-tiers`，AC-001-3）。
 
-**字体三族与数值**：`base.css` 定义 `.t-serif / .t-sans / .t-mono`；数值统一类 `.num`（mono + `font-variant-numeric: tabular-nums` + 右对齐）。`shared/format.ts`：`fmtValue(v, {decimals, unit})`、`fmtDelta(v, {decimals, pct})`——先按显示位四舍五入再判零；空值 → `–`（U+2013）；差值正号；零中性（无号、无色、`-0` 归 0）；返回 `{text, tone: 'up'|'down'|'neutral'}`，组件按 `semantic` 选色（market → updown 令牌；analysis → chart.neg = 红、chart.pos = 青雀头黛亮化）。
+**字体三族与数值**：`base.css` 定义 `.t-serif / .t-sans / .t-mono`；数值统一类 `.num`（mono + `font-variant-numeric: tabular-nums` + 右对齐）。`shared/format.ts`：`fmtValue(v, {decimals, unit})`、`fmtDelta(v, {decimals, pct})`——先按显示位四舍五入再判零；空值 → `–`（U+2013）；差值正号；零中性（无号、无色、`-0` 归 0）；返回 `{text, tone: 'up'|'down'|'neutral'}`，组件按 `semantic` 选色（market → updown 令牌；analysis → chart.neg = 红、chart.pos = 青雀头黛亮化）。共享组件 `Num` 只输出语义类（`sem-market` / `sem-analysis` + `is-up` / `is-down` / `is-neutral`）；market 语义类的颜色规则只写在 `src/modules/market-board/updown.css`（焦点带引入同一文件），analysis 语义类的颜色规则在共享样式中引 chart.pos / chart.neg。
 
-**涨跌色作用域**：`--fai-color-updown-*` 只许被 `src/modules/market-board/` 引用（守卫 `updown-scope`，AC-001-5）；其他模块的方向色一律走 analysis 语义。
+**涨跌色作用域**：`--fai-color-updown-*` 只许在 `src/modules/market-board/` 与焦点带 `src/workbench/FocusBand*` 中引用（后者仅用于契约声明为 market 语义的数字，见 §2.3；守卫 `updown-scope`，AC-001-5）；其他模块（含关注列表）的方向色一律走 analysis 语义。
 
 **暗色配色表（Q-003，2026-10-27 Walter 确认：A 等亮）**——方法：彩色在 OKLCH 空间保持色相、把明度抬到下限（序列 0.70、界面语义 0.64–0.70）、按需压或提色度；**有意退后的中性色反向处理**（白底上“浅 = 安静”，黑底上浅色反而最醒目，故改暗 / 降透明度，使其在黑底上同样退后）；D-011 已定的三个值直接采用。对比度按 WCAG 相对亮度、对图实际所在的卡面 `#1D1E20`（玻璃 .045 叠在 `#121315` 上）计。**阈值**：线条与色块（非文字图形，WCAG 1.4.11）≥ 3 : 1；会作文字用的颜色（涨、跌、链接、点睛红、琥珀）≥ 4.5 : 1；有意退后的中性色（其他、区间带）不设下限（白底版同样低于 3 : 1）。对照样张：`specs/frontend-workbench/assets/palette-dark-candidates.html`（白底原色 / 黑底候选并排，可切换单看；同一份数据画年份线、季节图常用形态、类目堆叠、正负柱、十大区）。
 
@@ -118,7 +118,7 @@
 - `nav.ts` 注册表：`[{id, path, zh, en, placeholderOwner?}]` 八项固定序：工作台 `/workbench`、日报 `/daily/:date?`、价格 `/prices`、平衡表 `/balance`、物流 `/logistics`、专题研究 `/research`（子项由 `dataClient.getResearchList()` 驱动，`/research/:id`）、知识库 `/knowledge`、设置 `/settings`；`/` 重定向 `/workbench`；占位页 `pages/PlaceholderPage.vue` 读 `placeholderOwner`（如 `daily-report`）渲染空态文案
 - `Rail.vue`：字标（serif）、分组、当前项（加粗 + 左侧点睛红竖条；塌成顶栏时竖条移到底边）、折叠钮；状态经 `uiStore.railCollapsed` 持久化（key `fai.v1.ui.rail`）
 - `TopBar.vue`：`NewsTicker`（CSS 平移动画循环，`prefers-reduced-motion` 时静止可横滚）+ `SourceStatus`（每源一点：fresh / stale 令牌 + 名称 + 截至时间）
-- 断点来源唯一 = 令牌；`vite` 侧用 `postcss-custom-media`? 否——不引插件：媒体查询阈值由 `tokens-build` 生成 `generated/breakpoints.css` 的注释对照 + `tokens.ts` 常量，CSS 中的 `@media (max-width: 979px)` 等由守卫 `breakpoints-sync` 与令牌对拍（纳入 `tokens-sync`）
+- 断点来源唯一 = 令牌。不引 PostCSS 插件：CSS 中的 `@media` 宽度阈值写像素字面量，守卫 `tokens-sync:media` 扫描全部 `@media (min-width|max-width: Npx)`，要求 N ∈ 令牌断点集合（`max-width` 取断点 − 1，如 979）；脚本侧经 `tokens.ts` 常量 + `matchMedia`
 
 ### 2.3 工作台与焦点带（R-003）
 
@@ -133,7 +133,7 @@
 | id | 中文 | 英文副标 | 默认跨列 | 深度（Q-001 = B） | 形态 |
 |---|---|---|---|---|---|
 | market-board | 行情价格 | Market Board | 2 | 完整 mock | `BoardGrid`：列 = 合约，行 = 日期 + 统计行；格 `{value, state: ok/holiday/pending/missing}` → `休` / `待`（琥珀）/ `–`；涨跌字色 |
-| watchlist | 关注列表 | Watchlist | 1 | 完整 mock | `DataTable` + `Spark`（迷你折线，墨线 + 末点） |
+| watchlist | 关注列表 | Watchlist | 1 | 完整 mock | `DataTable` + `Spark`（迷你折线，墨线 + 末点）；v1 mock 只含分析类序列，方向色走 analysis 语义（涨跌专色仍只在行情价格，R-004） |
 | release-calendar | 数据发布日历 | Release Calendar | 1 | 完整 mock | 日程列表（日期 / 名称 / 来源 / 预计时间 / 新鲜度点） |
 | supply-demand | 库存/供需指标 | Supply & Demand | 1 | 壳 + 占位 | `ModuleSummary`（标题行 + 示例指标 3 条 + "内容随 domain feature 交付"） |
 | logistics-onwater | 物流在途 | Logistics | 1 | 壳 + 占位 | 同上 |
@@ -233,24 +233,26 @@ interface AgentClient {
 }
 ```
 
-- 数值字段统一 `Figure = { label, value: number | null, unit, decimals, freq?: '1d'|'1w'|'1m', delta?: number | null, deltaKind?: 'abs'|'pct', semantic: 'market'|'analysis', asOf: string, seriesId?: string }`——`seriesId` 对齐 data-layer 的序列 ID（溯源）；`MarketBoard.cells[][]` = `{ value, state }`；错误形态 `{ error: { code, message, retryable } }`，code 集合与 data-layer 对齐（not_found / unauthorized / validation_error / internal / adapter_error / rate_limited）
+- 数值字段统一 `Figure = { label, value: number | null, unit, decimals, freq: '1d'|'1w'|'1m', delta?: number | null, deltaKind?: 'abs'|'pct', semantic: 'market'|'analysis', asOf: string, seriesId?: string }`（单位 / 频率 / 语义 / 截至时间四项必填，AC-007-4）——`seriesId` 对齐 data-layer 的序列 ID（溯源）；`MarketBoard.cells[][]` = `{ value, state }`；错误形态 `{ error: { code, message, retryable } }`，code 集合与 data-layer 对齐（not_found / unauthorized / validation_error / internal / adapter_error / rate_limited）
 - `contracts/types.ts` 全部用 zod 定义；`mock/fixtures/*.json` 在单元测试里逐个 `schema.parse`（AC-007-4）；`contract-build.mjs` 由 schema 生成 `contracts/CONTRACT.md`（方法表 + 字段表 + 语义说明 + 错误码表 + `contractVersion`）与 `schema.json`，守卫 `contract-doc` 重生成后 diff（AC-007-3）
-- `mock/index.ts`：场景 `normal / empty / error / slow`（slow = 每次调用延迟 1500 ms；error = 每方法返回固定错误）；选择顺序 URL `?scenario=` > `VITE_MOCK_SCENARIO` > normal
+- `mock/index.ts`：场景 `normal / empty / error / slow`（slow = 每次调用延迟 1500 ms；error = 每方法返回固定错误）；选择顺序 URL `?scenario=` > `VITE_MOCK_SCENARIO` > normal；测试注入：mock 模式下若存在 `window.__FAI_MOCK__`（Playwright `addInitScript` 写入）则按其覆盖对应 fixtures（如研究列表追加一项，AC-002-3）
 - `real/index.ts`：所有方法 `throw new NotImplementedError('api feature')`；守卫 `network-scope` 只允许 `src/contracts/real/` 出现 `fetch(` / `XMLHttpRequest` / `WebSocket` / `EventSource`（AC-007-1）
 
 ### 2.8 静态守卫清单（`pnpm guards`，全部在 `scripts/guards/`）
 
 | 守卫 | 检查 | AC |
 |---|---|---|
-| tokens-sync | 重新生成 tokens.css / tokens.ts / echarts-theme.json / breakpoints 对照并逐字 diff | AC-001-1 |
-| color-literals | 扫 `src/**/*.{vue,ts,css}`：`#hex`、`rgb(a)`、`hsl`、`oklch` 字面量；允许名单 = `tokens.json`、`generated/`；`fixtures/positives/*` 必须全部命中、`negatives/*` 全部不命中；同时核退役色（五个 hex）不在 tokens.json 与源码 | AC-001-2、AC-001-6 |
+| tokens-sync | `generated`：重新生成 tokens.css / tokens.ts / echarts-theme.json 并逐字 diff；`media`：CSS `@media` 宽度阈值 ∈ 令牌断点（max-width 取断点 − 1） | AC-001-1 |
+| color-literals | `literals`：扫 `src/**/*.{vue,ts,css}` 的 `#hex`、`rgb(a)`、`hsl`、`oklch` 字面量，允许名单 = `tokens.json`、`generated/`；`retired`：退役色（五个 hex）不在 tokens.json、生成物与源码 | AC-001-2、AC-001-6 |
 | glass-tiers | `backdrop-filter` 只在 `glass.css` 且 ≤ 3 规则；类名只许三个 | AC-001-3 |
 | updown-scope | `--fai-color-updown-*` / `T.color.updown` 引用只在 `src/modules/market-board/`、`src/workbench/FocusBand*` | AC-001-5 |
 | bare-1fr | `grid-template-columns` 含未包 `minmax()` 的 `1fr`（`.shell` 规则豁免并登记） | AC-004-6 |
 | network-scope | 网络 API 只在 `src/contracts/real/` | AC-007-1 |
 | contract-doc | zod → CONTRACT.md / schema.json 重生成 diff | AC-007-3 |
-| design-registry | `design/ui/*.md`、`design/charts/*.md` front matter 必含 `id / source / migrated / adaptation`，正文含 `## 暗色适配`；tokens.json 每个 `source` 可解析到文件 + 锚 | AC-008-1、AC-008-2、AC-008-3 |
-| theme-contrast | 退役色缺席 + 序列 / 类目色对卡面 ≥ 3、文字用色 ≥ 4.5（中性退后色豁免登记） | AC-006-1、AC-006-2 |
+| design-registry | `entries`：README 登记的 `design/ui/*.md`、`design/charts/*.md` front matter 含 `id / source / migrated / adaptation / adopted / not_adopted`，正文含 `## 暗色适配`；`required`：spec R-008 列名的八份 UI 条目与两份 charts 文件齐备；`palette`：PALETTE_DARK 逐个列出 palette-core 原色的暗色值与对比度；`sources`：tokens.json 每个 `source` 可解析到文件 + 锚；`docs`：designUI.md 中 `design/ui/`、`design/charts/` 下的引用路径全部存在 | AC-008-1、AC-008-2、AC-008-3 |
+| theme-contrast | `retired`：主题不含退役色；`contrast`：序列 / 类目色对卡面 ≥ 3、文字用色 ≥ 4.5（中性退后色豁免登记） | AC-006-1、AC-006-2 |
+
+运行方式：`pnpm guards`（全部）、`pnpm guards <名>`、`pnpm guards <名>:<子检查>`；每个守卫先跑自身 `fixtures/<名>/{positives,negatives}` 自检（阳性须全部命中、阴性须全部不中），再扫真实文件；`--self-test` 只跑自检。
 
 `pnpm test` = `tokens --check && guards && typecheck（vue-tsc）&& lint && test:unit（vitest run）&& test:e2e（playwright）`，一条命令全绿（AC-009-1）。
 
@@ -306,7 +308,7 @@ interface AgentClient {
 | AC-004-1 / -2 | registry + layoutStore + ModuleLibrary | e2e/modules.spec：默认七个；移除 / 添加（末尾）/ 上移下移 → reload 保持 |
 | AC-004-3 | ModuleShell | e2e：遍历注册表，每个模块 DOM 符合 §2.4 契约（选择器逐项存在、data-state 合法） |
 | AC-004-4 | ModuleShell 三态 | component：`scenario=slow/empty/error` 下 loading / empty / error；错误态 `<code>` 文本含 moduleId + code；复制钮调用剪贴板（mock） |
-| AC-004-5 | market-board / watchlist / release-calendar | component：三态格文本 `休 / 待 / –` 与类；数值右对齐与 `.up/.down`；日程排序；人工验收 M-04 |
+| AC-004-5 | market-board / watchlist / release-calendar | component：盘面三态格文本 `休 / 待 / –` 与类、涨跌字色（仅 market-board）；关注列表数值右对齐、千分位与 analysis 方向色；日程排序；人工验收 M-04 |
 | AC-004-6 | 全部 CSS | 守卫 bare-1fr |
 | AC-005-1 | AgentDock + AgentDrawer | e2e/agent.spec：每页输入栏可见；提交 → 抽屉展开 → 用户消息出现 |
 | AC-005-2 | CotTimeline + store | component：回放 success / failure 脚本 → 步骤数、展开详情、终态行 |
@@ -315,7 +317,7 @@ interface AgentClient {
 | AC-005-5 | hint.navigate | e2e：入口按钮 → 路由 / 模块 `data-highlight` |
 | AC-005-6 | events.ts + mock/agent | unit：三脚本每个事件 `AgentEvent.parse` 通过；守卫 contract-doc 覆盖事件类型表 |
 | AC-006-1 / -2 | echarts-theme.json | 守卫 theme-contrast |
-| AC-006-3 / -4 | theme.ts + market-board 样例图 | e2e/theme.spec：`getOption().color` 与 `T.color.chart.series` 相等；`backgroundColor` 透明；人工验收 M-05 |
+| AC-006-3 / -4 | theme.ts + market-board 样例图 | e2e/theme.spec：`getOption().color` 与 `T.color.chart.series` 相等；`backgroundColor` 透明；人工验收 M-08（图表主题） |
 | AC-007-1 | contracts/real | 守卫 network-scope |
 | AC-007-2 | mock/index.ts | e2e：四场景各一用例（normal 渲染 / empty 空态 / error 错误态 / slow loading 态可见） |
 | AC-007-3 | contract-build | 守卫 contract-doc |
