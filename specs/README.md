@@ -20,7 +20,7 @@ specs/<feature>/
 | feature | 状态 | 依赖 | 最近更新 | 备注 |
 |---|---|---|---|---|
 | data-layer | done | 无 | 2026-10-27 | Gate 2 已确认（选项 A）；Handoff：feat/data-layer 经 PR 合并到 main；后续任务见 specs/data-layer/review.md |
-| frontend-workbench | in-progress | 无（与后端唯一接口为 R-007 契约） | 2026-10-27 | Spec 草案 + Clarify 问题（Q-001~Q-005）→ 待 Gate 1 |
+| frontend-workbench | in-progress | 无（与后端唯一接口为 R-007 契约） | 2026-10-27 | Spec 草案 → Clarify 完成（Q-001~Q-005 按推荐裁定）→ 待 Gate 1 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
