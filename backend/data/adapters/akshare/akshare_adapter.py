@@ -8,6 +8,7 @@
 
 仓单/库存为数量型：按品种登记的源侧原始口径（桶/吨/手）折算到清单声明单位（kb/kton），
 未登记品种或量纲不匹配 → validation_error（不产出错标数据）；价格型不换算。
+上期所/能源中心的仓单日报自解析官方页面（akshare 的品种名映射在上游新增品种后会整体崩溃）。
 批次覆盖 = effective_range 解析出的实际请求窗口（仓单/库存为滚动窗口，AC-005-2）。
 上游 SDK 调用有硬超时（SDK 内部请求未设超时，挂起不得长期占住写路径）；
 SDK 在其工作线程内的运行期打印按线程改道 stderr（plan §2.2 CLI 输出契约）。
@@ -41,6 +42,15 @@ _RAW_QUANTITY = {
     "LU": ("ton", 1.0),
     "PG": ("ton", 20.0),
 }
+
+# 上期所/能源中心仓单页面（自解析）：品种 → 页面上的品种名
+SHFE_RECEIPT_URL = "https://www.shfe.com.cn/data/tradedata/future/stockdata/dailystock_{date}/ZH/all.html"
+SHFE_RECEIPT_NAMES = {
+    "SC": "中质含硫原油",
+    "FU": "燃料油",
+    "BU": "石油沥青",
+    "LU": "低硫燃料油",
+}
 # 清单声明单位 → (基准量纲, 除数)
 _DECLARED_QUANTITY = {"kb": ("bbl", 1000.0), "kton": ("ton", 1000.0)}
 
@@ -70,8 +80,9 @@ def _receipt_calendar_last() -> date:
 def _get_receipt(asset: str, start=None, end=None):
     """可注入：交易所仓单日报。
 
-    真实 SDK（akshare get_receipt）返回 var/receipt/receipt_chg/date：
-    取 date 列 + receipt 列（F-03）。请求终点超出 SDK 交易日历 → validation_error（不静默 0 行）。
+    上期所/能源中心（SC/FU/BU/LU）自解析官方页面：akshare.get_receipt 的品种名映射
+    在上游新增品种（如“20号胶”）后会整体崩溃（list.index），自解析只取需要的品种。
+    其他交易所（如大商所 PG）仍用 SDK。请求终点超出 SDK 交易日历 → validation_error（不静默 0 行）。
     """
     import akshare as ak
 
@@ -84,6 +95,8 @@ def _get_receipt(asset: str, start=None, end=None):
             f"请求终点 {end_d:%Y-%m-%d} 超出 akshare 交易日历覆盖（止于 {last:%Y-%m-%d}），"
             "仓单无法可靠抓取；请升级 akshare 并同步更新 backend/constraints.txt 后重试",
         )
+    if asset.upper() in SHFE_RECEIPT_NAMES:
+        return _get_shfe_receipt(asset.upper(), start_d, end_d)
     df = ak.get_receipt(
         start_date=start_d.strftime("%Y%m%d"),
         end_date=end_d.strftime("%Y%m%d"),
@@ -92,6 +105,53 @@ def _get_receipt(asset: str, start=None, end=None):
     if df is None or df.empty:
         return pd.DataFrame(columns=["日期", "值"])
     return df  # 列归一由 fetch 统一处理（date→日期、receipt→值）
+
+def _shfe_page(date_str: str) -> str:
+    """可注入：上期所/能源中心仓单日报页面（HTML）。"""
+    import requests
+    from akshare.futures import cons
+
+    resp = requests.get(SHFE_RECEIPT_URL.format(date=date_str), headers=cons.shfe_headers, timeout=30)
+    resp.raise_for_status()
+    return resp.text
+
+
+def _parse_shfe_receipt(html: str, variety_name: str) -> float | None:
+    """从仓单页面解析某品种的仓单合计（仓库 + 厂库）。页面首表为日期，其后每表一品种。"""
+    import io
+    import re
+
+    total = None
+    for table in pd.read_html(io.StringIO(html))[1:]:
+        if table.shape[1] < 3 or len(table) < 2:
+            continue
+        name = re.sub(r"[（(].*?[）)]", "", str(table.iloc[0, 1])).strip()
+        if name != variety_name:
+            continue
+        try:
+            value = float(str(table.iloc[-1, 2]).replace(",", ""))
+        except (TypeError, ValueError):
+            continue
+        total = value if total is None else total + value
+    return total
+
+
+def _get_shfe_receipt(asset: str, start_d: date, end_d: date):
+    """逐交易日抽上期所页面 → 原始单位（桶/吨）的 日期/值 两列。"""
+    from akshare.futures import receipt as ak_receipt
+
+    name = SHFE_RECEIPT_NAMES[asset]
+    trading = set(ak_receipt.calendar)
+    rows = []
+    day = start_d
+    while day <= end_d:
+        key = day.strftime("%Y%m%d")
+        if key in trading:
+            value = _parse_shfe_receipt(_shfe_page(key), name)
+            if value is not None:
+                rows.append((datetime(day.year, day.month, day.day), value))
+        day += timedelta(days=1)
+    return pd.DataFrame({"日期": [r[0] for r in rows], "值": [r[1] for r in rows]})
 
 
 def _get_stock(asset: str):

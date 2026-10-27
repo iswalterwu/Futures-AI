@@ -68,14 +68,9 @@ class TestCoverageSnapshot:
     """T-54 / R14-B-01：批次覆盖 = 实际请求窗口（滚动窗口在建批次前解析）；diff 不再误报删除。"""
 
     def test_rolling_receipt_windows_not_comparable(self, tmp_path, monkeypatch):
-        import akshare
+        import shfe_html
 
-        def fake_receipt(start_date=None, end_date=None, vars_list=None):
-            # 上游数值恒定：窗口内每天一个值，只受请求窗口影响
-            days = pd.date_range(start_date, end_date, freq="D")
-            return receipt_df("SC", [(d.strftime("%Y%m%d"), 1000) for d in days])
-
-        monkeypatch.setattr(akshare, "get_receipt", fake_receipt)
+        shfe_html.patch(monkeypatch, 1000)  # 上游数值恒定：只有请求窗口在变
         svc = Service(tmp_path).init()
         try:
             rids = []
@@ -143,17 +138,23 @@ class TestQuantityUnits:
         "var,raw,expected", [("PG", 2000, 40.0), ("FU", 12000, 12.0), ("BU", 9000, 9.0), ("LU", 3000, 3.0)]
     )
     def test_builtin_receipts_normalized(self, tmp_path, monkeypatch, var, raw, expected):
-        import akshare
+        import shfe_html
 
-        monkeypatch.setattr(
-            akshare, "get_receipt",
-            lambda start_date=None, end_date=None, vars_list=None: receipt_df(var, [("20261020", raw)]),
-        )
+        if var == "PG":  # 大商所仓单仍走 akshare SDK
+            import akshare
+
+            monkeypatch.setattr(
+                akshare, "get_receipt",
+                lambda start_date=None, end_date=None, vars_list=None: receipt_df(var, [("20261020", raw)]),
+            )
+        else:  # 上期所/能源中心走上期所页面自解析
+            shfe_html.patch(monkeypatch, raw, name=ak_mod.SHFE_RECEIPT_NAMES[var])
         freeze_today(monkeypatch)
         svc = Service(tmp_path).init()
         try:
             res = svc.fetch(sid_of(var.lower(), "receipt"), do_fetch=True)
-            assert [(r[1], r[2]) for r in res["rows"]] == [(expected, "kton")]
+            assert res["rows"] and {r[1] for r in res["rows"]} == {expected}
+            assert {r[2] for r in res["rows"]} == {"kton"}
         finally:
             svc.close()
 

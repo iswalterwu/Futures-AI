@@ -16,8 +16,10 @@ from data.adapters.local_file.local_file_adapter import (
     guess_mapping,
     parse_with_mapping,
 )
+from data.catalog.descriptor import derive_id
 from data.fetch.on_demand import FetchError
 from data.manifest import load
+from data.service import Service
 from pathlib import Path
 
 MANIFEST_DIR = Path(__file__).resolve().parent.parent / "data" / "adapters"
@@ -126,6 +128,46 @@ class TestReceiptSdkShape:
         provide = next(p for p in m.provides if p.symbols[0] == "SC_RECEIPT")
         rows, _ = AkshareAdapter().fetch(provide, None, None)
         assert len(rows) == 1 and rows[0][1] == pytest.approx(32.0)  # 32000 桶 = 32 千桶
+
+
+class TestShfeReceiptSelfParse:
+    """AC-007-1：上期所/能源中心仓单自解析（上游品种名表缺项会让 akshare.get_receipt 整体崩溃）。
+
+    fixture = 2026-10-20 真实仓单页面中相关品种的表格（铜 / 燃料油 / 石油沥青仓库+厂库 / 中质含硫原油 / 低硫燃料油仓库+厂库）。
+    """
+
+    FIXTURE = Path(__file__).resolve().parent / "fixtures" / "shfe_receipt" / "20261020.html"
+    EXPECTED = {"中质含硫原油": 3666000.0, "燃料油": 40000.0, "石油沥青": 77500.0, "低硫燃料油": 11680.0}
+
+    def test_parse_each_variety(self):
+        html = self.FIXTURE.read_text(encoding="utf-8")
+        for name, expected in self.EXPECTED.items():
+            assert ak_mod._parse_shfe_receipt(html, name) == pytest.approx(expected), name
+        assert ak_mod._parse_shfe_receipt(html, "不存在的品种") is None
+
+    def test_end_to_end_normalized(self, tmp_path, monkeypatch):
+        html = self.FIXTURE.read_text(encoding="utf-8")
+        monkeypatch.setattr(ak_mod, "_shfe_page", lambda date_str: html)
+        sid = derive_id({"asset": "sc", "geo": "cn", "measure": "receipt", "contract": ""})
+        svc = Service(tmp_path).init()
+        try:
+            res = svc.fetch(sid, "2026-10-20", "2026-10-20", do_fetch=True)
+            assert [(r[0], r[1], r[2]) for r in res["rows"]] == [
+                (datetime(2026, 10, 20), pytest.approx(3666.0), "kb")
+            ]
+        finally:
+            svc.close()
+
+    def test_missing_variety_yields_empty(self, tmp_path, monkeypatch):
+        only_copper = self.FIXTURE.read_text(encoding="utf-8").split("<table")[1:3]
+        html = "<html><body>" + "".join("<table" + t for t in only_copper) + "</body></html>"
+        monkeypatch.setattr(ak_mod, "_shfe_page", lambda date_str: html)
+        sid = derive_id({"asset": "fu", "geo": "cn", "measure": "receipt", "contract": ""})
+        svc = Service(tmp_path).init()
+        try:
+            assert svc.fetch(sid, "2026-10-20", "2026-10-20", do_fetch=True)["rows"] == []
+        finally:
+            svc.close()
 
 
 class TestIsolation:

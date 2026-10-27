@@ -268,3 +268,19 @@
 | T-91 | serve 关闭 uvicorn 访问日志（MCP/uvicorn 日志级别 WARNING），stdout 无运行期输出；错误仍经 stderr（`data/mcp_server.py`） | R19-A P3-2 | AC-008-4 | `pytest tests/test_serve_e2e.py -k stdout_is_quiet -q` | ✅ |
 | T-92 | 占用识别加入系统错误码 32/33 的本地化消息（ctypes.FormatError），不依赖系统语言（`data/service.py`） | R19-A P3-3 | AC-004-6 | `pytest R19 -k TestBusyMarkers -q` | ✅ |
 | T-93 | 持久回归补齐：服务关闭后端点确定性 503 + CLI 经真实 503 回退（R19-B-02）；BEGIN 中断后独立连接即时可见；真实 serve 启停叠加读者轮询零失败；服务关闭后 MCP 四工具结构化错误；网络阶段后遇屏障的 running 批次冷启动清理 | R19-A/B 测试缺口 | AC-004-3、AC-004-6、AC-008-3、AC-008-4 | `pytest R19 -k "ClosedEndpoint or BeginVisibility or ServeWithReaders or ToolsAfterClose or BarrierAfterNetwork" -q` | ✅ |
+
+## 追加任务（第二十轮 P3 收口 + 发布管线，Gate 2 后续修复）
+
+> 来源：第二十轮双审的 P3（截止时间剩余边界、持久断言缺口）与 Walter 要求的发布管线测试。plan §2.1/§2.2/§6 已先行修订（看门狗、上期所仓单自解析、上游风险）。
+> 发布管线测试暴露出两个真实上游问题，其一本次修复（T-99），其一登记风险（T-101）。
+
+| # | 任务（修改范围） | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-94 | 只读路由加**看门狗**：到达统一截止时间 shutdown 套接字，覆盖连接/响应头/分块帧/Connection: close 全部读取阶段（`data/cli.py`） | R20-A P3-1/P3-2、R20-B-01 | AC-004-6 | `pytest tests/test_review_round19.py -k "HardDeadline or header_and_framing" -q` | ✅ |
+| T-95 | 补齐持久断言：关闭检查在取锁之后（含排队者语义）、冷启动经 init() 自动清理超时批次、截止处占用消息、serve 在 WARNING 级别下错误仍到 stderr（`tests/test_review_round20.py`） | R20-A P3-3、R20-B-02 | AC-004-6、AC-004-3、AC-008-4 | `pytest tests/test_review_round20.py -q` | ✅ |
+| T-96 | 发布检查脚本：wheel 构建、包内容（含三份清单）、隔离安装、入口点、隔离导入、首启/写命令冒烟（`tools/release_check.py`） | Walter 要求发布管线测试 | AC-001-1、AC-009-3（包数据与布局） | `python tools/release_check.py` | ✅ 11/11 |
+| T-97 | 在线冒烟：仓单日历余量（<31 天即失败提示升级）、主力日线、库存日报、仓单日报、EIA 缺 key 显式 skip（`tests/test_smoke_online.py`） | Walter 要求发布管线测试 | AC-007-1、AC-007-2 | `FUTURESAI_ONLINE=1 pytest tests/test_smoke_online.py -q -s` | ✅ 4 passed / 1 skipped |
+| T-98 | 修复真实上游缺陷：akshare 品种名表缺「20 号胶」导致 `get_receipt` 对上期所品种整体崩溃 → 上期所/能源中心仓单改为自解析官方页面（合并仓库+厂库），DCE 仍走 SDK；真实页面 fixture 回归 | 在线冒烟发现（AC-007-1 真实不可用） | AC-007-1 | `pytest tests/test_adapters_builtin.py -k ShfeReceiptSelfParse -q` | ✅ |
+| T-99 | 迁移受影响的 7 处测试到新注入点（默认窗口、滚动窗口、数量归一、日历末日、SDK 打印、真删除、上期所 HTTP 边界） | T-98 的连带修改 | 上述各 AC | `pytest tests/test_review_round13.py tests/test_review_round14.py tests/test_review_round15.py tests/test_review_round16.py -q` | ✅ |
+| T-100 | 记录 akshare 升级策略：1.20.1 已实测未修复上述两个上游问题 → 维持 1.18.63 受测；仅在日历到期或接口漂移导致回归失败时升级，升级后跑全量 + 在线冒烟 | 升级问题澄清 | 工作流 | 阅读 `constraints.txt` 注释与 review.md 风险 | ✅ |
+| T-101 | 登记东财库存日报上游停更风险（最新数据 2025-12-31，1.18.63/1.20.1 皆然）；适配器照常解析并在在线冒烟打印最新日期；替换数据源属新需求（需修订 spec） | 在线冒烟发现 | — | `FUTURESAI_ONLINE=1 pytest tests/test_smoke_online.py -k inventory -q -s` | ✅ |

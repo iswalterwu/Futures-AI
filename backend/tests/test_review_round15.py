@@ -72,18 +72,16 @@ class TestReceiptCalendar:
             svc.close()
 
     def test_window_ending_on_calendar_last_day_allowed(self, tmp_path, monkeypatch):
-        import akshare
+        import shfe_html
 
-        monkeypatch.setattr(
-            akshare, "get_receipt",
-            lambda start_date=None, end_date=None, vars_list=None: receipt_df("SC", [("20261027", 2000)]),
-        )
+        shfe_html.patch(monkeypatch, 2000)
         monkeypatch.setattr(ak_mod, "_receipt_calendar_last", lambda: date(2026, 10, 27))
         freeze_today(monkeypatch)
         svc = Service(tmp_path).init()
         try:
             res = svc.fetch(SC_RECEIPT, do_fetch=True)
-            assert [(r[1], r[2]) for r in res["rows"]] == [(2.0, "kb")]
+            assert res["rows"] and {r[1] for r in res["rows"]} == {2.0}
+            assert {r[2] for r in res["rows"]} == {"kb"}
         finally:
             svc.close()
 
@@ -98,15 +96,13 @@ class TestStdoutPurity:
 
     @staticmethod
     def chatty_receipt(monkeypatch):
-        import akshare
-        import pandas as pd
+        import shfe_html
 
-        def chatty(start_date=None, end_date=None, vars_list=None):
-            for d in pd.date_range(start_date, end_date, freq="D"):
-                print(d.date())  # 与真实 get_receipt 一样逐日打印到 stdout
-            return receipt_df("SC", [("20261020", 1000)])
+        def chatty(date_str):
+            print(date_str)  # 与真实 SDK 一样逐日打印到 stdout
+            return shfe_html.page({date_str: {ak_mod.SHFE_RECEIPT_NAMES["SC"]: 1000}})
 
-        monkeypatch.setattr(akshare, "get_receipt", chatty)
+        monkeypatch.setattr(ak_mod, "_shfe_page", chatty)
         freeze_today(monkeypatch)
 
     def test_fetch_stdout_is_json(self, tmp_path, monkeypatch, capsys):
@@ -114,8 +110,9 @@ class TestStdoutPurity:
         self.chatty_receipt(monkeypatch)
         assert cli_run(tmp_path, "fetch", SC_RECEIPT) == 0
         out = capsys.readouterr()
-        assert json.loads(out.out) == {"series_id": SC_RECEIPT, "count": 1}
-        assert "2026-10-20" in out.err  # SDK 打印未丢失，只是改道 stderr
+        payload = json.loads(out.out)
+        assert payload["series_id"] == SC_RECEIPT and payload["count"] > 0
+        assert "2026" in out.err  # SDK 打印未丢失，只是改道 stderr
 
     def test_jobs_run_stdout_is_json(self, tmp_path, monkeypatch, capsys):
         Service(tmp_path).init().close()
@@ -124,8 +121,8 @@ class TestStdoutPurity:
         capsys.readouterr()
         assert cli_run(tmp_path, "jobs", "run", "j-receipt") == 0
         out = capsys.readouterr()
-        assert json.loads(out.out)["meta"]["count"] == 1
-        assert "2026-10-20" in out.err
+        assert json.loads(out.out)["meta"]["count"] > 0
+        assert "2026" in out.err
 
 
 class TestCliExit:
@@ -221,17 +218,24 @@ class TestGaps15:
             svc.close()
 
     def test_explicit_window_true_deletion_counted(self, tmp_path, monkeypatch):
-        import akshare
+        import shfe_html
 
-        responses = iter([
-            [("20261019", 1000), ("20261020", 1100), ("20261021", 1200)],
-            [("20261020", 1100), ("20261021", 1200)],  # 上游删除首端点
-            [("20261019", 1000), ("20261020", 1100)],  # 上游删除尾端点
-        ])
-        monkeypatch.setattr(
-            akshare, "get_receipt",
-            lambda start_date=None, end_date=None, vars_list=None: receipt_df("SC", next(responses)),
-        )
+        rounds = [
+            {"20261019": 1000, "20261020": 1100, "20261021": 1200},
+            {"20261020": 1100, "20261021": 1200},  # 上游删除首端点
+            {"20261019": 1000, "20261020": 1100},  # 上游删除尾端点
+        ]
+        state = {"round": 0}
+
+        def fake(date_str):
+            value = rounds[min(state["round"], 2)].get(date_str)
+            if date_str == "20261021":
+                state["round"] += 1
+            # 缺该品种的日期也返回带日期表的页面（结构真实，只是没有品种行）
+            varieties = {ak_mod.SHFE_RECEIPT_NAMES["SC"]: value} if value is not None else {}
+            return shfe_html.page({date_str: varieties})
+
+        monkeypatch.setattr(ak_mod, "_shfe_page", fake)
         svc = Service(tmp_path).init()
         try:
             rids = []

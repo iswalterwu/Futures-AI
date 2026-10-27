@@ -13,8 +13,10 @@ import argparse
 import http.client
 import json
 import re
+import socket
 import sqlite3
 import sys
+import threading
 import time
 import urllib.parse
 from pathlib import Path
@@ -73,11 +75,24 @@ def _db_error(e: Exception) -> dict:
     return FetchError("internal", text).to_dict()
 
 
+def _route_timeout() -> TimeoutError:
+    return TimeoutError("只读通道响应超时（超出统一截止时间）")
+
+
+def _shutdown_quietly(sock) -> None:
+    """看门狗：到期 shutdown 套接字，立即解除任何阻塞中的 recv（含响应头、分块帧、Connection: close 型正文）。"""
+    try:
+        sock.shutdown(socket.SHUT_RDWR)
+    except OSError:
+        pass
+
+
 def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TIMEOUT_S):
     """经持锁进程的内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。
 
     端点文件已消失、HTTP 503（关闭屏障：通道即将停止）→ ConnectionError，由调用方按“通道不可用”等待。
-    timeout 是整次请求（连接、响应头、完整响应体）的硬上限：每次读取前按剩余时间重设 socket 超时。
+    timeout 是整次请求的硬上限：看门狗到期直接 shutdown 套接字，覆盖连接、响应头、
+    分块传输帧与 Connection: close 型响应体的全部读取阶段。
     """
     ep = read_endpoint(root / "data")
     if not ep:
@@ -85,21 +100,41 @@ def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TI
     deadline = time.monotonic() + timeout
     qs = urllib.parse.urlencode(params)
     conn = http.client.HTTPConnection("127.0.0.1", ep["port"], timeout=max(0.01, timeout))
+    watchdog = None
+    sock = None
     try:
-        conn.request("GET", path + (f"?{qs}" if qs else ""), headers={"Authorization": f"Bearer {ep['token']}"})
+        conn.connect()
+        sock = conn.sock
+        watchdog = threading.Timer(max(0.0, deadline - time.monotonic()), _shutdown_quietly, args=(sock,))
+        watchdog.daemon = True
+        watchdog.start()
+        conn.request(
+            "GET", path + (f"?{qs}" if qs else ""), headers={"Authorization": f"Bearer {ep['token']}"}
+        )
         resp = conn.getresponse()
         body = bytearray()
         while True:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
-                raise TimeoutError("只读通道响应超时（超出统一截止时间）")
-            if conn.sock is not None:
-                conn.sock.settimeout(remaining)
+                raise _route_timeout()
+            sock.settimeout(remaining)  # 用保存的引用：will_close 时 conn.sock 会变 None
             chunk = resp.read1(65536)  # 至多一次系统调用：每段数据之间都重新核对剩余时间
             if not chunk:
+                if time.monotonic() >= deadline:
+                    raise _route_timeout()
                 break
             body.extend(chunk)
+    except TimeoutError as e:  # 含看门狗触发的读取中断
+        if time.monotonic() >= deadline:
+            raise _route_timeout() from e
+        raise ConnectionError(f"只读通道读取失败：{e}") from e
+    except (OSError, http.client.HTTPException) as e:
+        if time.monotonic() >= deadline:
+            raise _route_timeout() from e
+        raise ConnectionError(f"只读通道读取失败：{e}") from e
     finally:
+        if watchdog is not None:
+            watchdog.cancel()
         conn.close()
     if resp.status == 503:
         raise ConnectionError("只读通道正在关闭")
