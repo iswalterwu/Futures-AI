@@ -2,7 +2,7 @@
 
 > Tasks 阶段产物：每个任务 0.5–2 小时可完成，按依赖顺序执行（Implement 阶段）。
 > **状态：草案第二版（2026-10-27）——Checklist 通过后生效。** 执行前置条件：`checklist.md` 全部勾选。
-> 依据：`spec.md`（Gate 1 冻结版 + Clarify 回流 Q-015 ~ Q-022，待重过 Gate 1；45 条 AC）+ `plan.md`（第二版）。第二版按 Checklist 第一轮双审重排：拆出新增值登记（T-05）、网络守卫（T-09）、agent 回放（T-13），新增 ac-coverage 守卫，补齐守卫依赖。
+> 依据：`spec.md`（Clarify 回流 Q-015 ~ Q-022 修订版，2026-10-27 Gate 1 重新批准、已冻结；45 条 AC）+ `plan.md`（第三版）。第二版按 Checklist 第一轮双审重排：拆出新增值登记（T-05）、网络守卫（T-09）、agent 回放（T-13），新增 ac-coverage 守卫，补齐守卫依赖。
 > 完成标准引用 spec 的 AC 编号；一个 AC 由多个任务分担时标注本任务负责的部分，AC 整体是否满足以 Converge 时相关任务全部完成为准。
 
 ## 约定
@@ -102,16 +102,18 @@
 ### T-08 范围守卫：玻璃层级 / 涨跌色 / 裸 1fr
 
 - **上下文**：plan §2.1（三层玻璃映射、涨跌色四道防线）、§2.4（栅格）、§2.8。先立守卫，后续代码在守卫下生长。
-- **修改范围**：`frontend/scripts/guards/{glass-tiers,updown-scope,bare-1fr}.mjs` 与各自 `fixtures/<名>/{positives,negatives}/`
+- **修改范围**：`frontend/scripts/guards/{glass-tiers,layering,updown-scope,bare-1fr}.mjs` 与各自 `fixtures/<名>/{positives,negatives}/`
 - **依赖**：T-02　**预计**：1.5 h
 - **完成标准**：
   1. `backdrop-filter` 只在 `src/design/glass.css` 且 ≤ 3 条规则（扫描 CSS、`<style>`、内联样式、主题 JSON 字符串值），玻璃类名只许三个（AC-001-3，静态部分）
   2. updown-scope 四个子检查（refs 定义处豁免、color-only、imports 限三处、usage 限三处与 `Num.vue`）按 plan §2.1 判定（AC-001-5，静态部分）
   3. `grid-template-columns` 不含未包 `minmax()` 的 `1fr`，零豁免（AC-004-6）
+  4. layering：带 `backdrop-filter` 的 sticky / fixed 元素只许是登记的三层容器；玻璃容器不得嵌套（带文字元素不得位于两层玻璃之上，plan §2.1 叠层约束）（AC-001-3 / AC-006-2）
 - **验证命令**：
   1. `pnpm -C frontend guards glass-tiers`
   2. `pnpm -C frontend guards updown-scope`
   3. `pnpm -C frontend guards bare-1fr`
+  4. `pnpm -C frontend guards layering`
 
 ### T-09 network-scope 守卫（ESLint 语法级）
 
@@ -196,22 +198,24 @@
 ### T-15 外壳：路由、菜单、侧栏、占位页与深链
 
 - **上下文**：plan §2.2（`nav.ts` 八项、`Rail`、`PlaceholderPage`、就绪后只有 `/` 才跳工作台、持久化 key `fai.v1.ui.rail`）。
-- **修改范围**：`frontend/src/app/{router.ts,nav.ts,AppShell.vue,Rail.vue}`、`frontend/src/pages/PlaceholderPage.vue`、`frontend/src/stores/{app.ts,ui.ts}`（启动阶段与就绪跳转规则；railCollapsed）、`frontend/src/shared/storage.ts`（StorageAdapter，命名空间 `fai.v1.`）、`frontend/src/App.vue`、`frontend/e2e/shell.spec.ts`
+- **修改范围**：`frontend/src/app/{router.ts,nav.ts,AppShell.vue,Rail.vue}`、`frontend/src/pages/PlaceholderPage.vue`、`frontend/src/workbench/WorkbenchPage.vue`（骨架：焦点带占位 + 模块区容器，供 T-16 的启动用例有页面可达；T-19 再填入真实栅格与模块库）、`frontend/src/stores/{app.ts,ui.ts}`（启动阶段与就绪跳转规则；railCollapsed）、`frontend/src/shared/storage.ts`（StorageAdapter，命名空间 `fai.v1.`）、`frontend/src/App.vue`、`frontend/e2e/shell.spec.ts`
 - **依赖**：T-10、T-12　**预计**：2 h
 - **完成标准**：
   1. 八项菜单固定顺序与地址、当前项指示（`aria-current` + 点睛红竖条）、占位页注明归属 feature；直接打开非工作台地址并刷新仍停留该页（AC-002-2）
   2. 侧栏收起 / 展开状态持久化（AC-002-5）
+  3. `/workbench` 路由可渲染工作台页骨架（焦点带占位 + 模块区容器），为 T-16 / T-19 提供页面承接（AC-002-1 / AC-002-2）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-002-2"`
   2. `pnpm -C frontend test:e2e -g "AC-002-5"`
+  3. `pnpm -C frontend test:e2e -g "AC-002-1 skeleton"`
 
 ### T-16 加载页、首帧与启动失败重试
 
 - **上下文**：plan §2.2 启动段（`index.html` 静态骨架与 `LoadingScreen` 同构、首帧样式来自令牌生成块、通知文案、失败原因与重试）、§4 流程 1。
 - **修改范围**：`frontend/index.html`（骨架结构，标记块仍由生成器维护）、`frontend/src/app/LoadingScreen.vue`、`frontend/src/stores/app.ts`（failed + 重试 + notice）、`frontend/src/main.ts`、`frontend/e2e/shell.spec.ts`
-- **依赖**：T-06、T-15　**预计**：1.5 h
+- **依赖**：T-06、T-15（工作台页骨架由 T-15 提供）　**预计**：1.5 h
 - **完成标准**：
-  1. 首帧即加载骨架（主脚本延迟加载时也可见），就绪后进入工作台，期间无空白帧（AC-002-1）
+  1. 首帧即加载骨架（主脚本延迟加载时也可见），就绪后进入工作台页（T-15 骨架，含焦点带占位与模块区容器），期间无空白帧（AC-002-1）
   2. 加载页显示进度与通知文案；`boot-error` 场景下显示原因与重试，重试成功后进入工作台（AC-002-7）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-002-1"`
@@ -244,16 +248,18 @@
 ### T-19 模块栅格、布局与模块库
 
 - **上下文**：plan §2.4（栅格列数、layoutStore 默认 = 目录顺序、模块库列出全部七个并标状态、`.glass-drawer` 面板、持久化 key `fai.v1.layout`）、§4 流程 2。
-- **修改范围**：`frontend/src/workbench/{WorkbenchPage.vue,ModuleGrid.vue,ModuleLibrary.vue}`、`frontend/src/stores/layout.ts`、`frontend/e2e/modules.spec.ts`
+- **修改范围**：`frontend/src/workbench/{WorkbenchPage.vue,ModuleGrid.vue,ModuleLibrary.vue}`（WorkbenchPage 由 T-15 的骨架改为装配 FocusBand + ModuleGrid）、`frontend/src/stores/layout.ts`、`frontend/e2e/modules.spec.ts`
 - **依赖**：T-15、T-18　**预计**：2 h
 - **完成标准**：
   1. 默认布局为七个模块且顺序 = 目录顺序；模块库列出全部七个并标明是否已在工作台，可添加（追加到末尾）与移除（AC-004-1）
-  2. 上移 / 下移 / 移除 / 添加后刷新页面，布局保持（AC-004-2）
-  3. 工作台上全部模块的 DOM 符合模块壳契约（页面级遍历）（AC-004-3，页面部分）
+  2. 模块库每项显示目录中的 `description` 文案；模块默认跨列取目录 `defaultSpan`，列数不足时截断为剩余列数（断言 `grid-column` 计算值）（AC-004-1）
+  3. 上移 / 下移 / 移除 / 添加后刷新页面，布局保持（AC-004-2）
+  4. 工作台上全部模块的 DOM 符合模块壳契约（页面级遍历）（AC-004-3，页面部分）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-004-1"`
-  2. `pnpm -C frontend test:e2e -g "AC-004-2"`
-  3. `pnpm -C frontend test:e2e -g "AC-004-3"`
+  2. `pnpm -C frontend test:e2e -g "AC-004-1 catalog"`
+  3. `pnpm -C frontend test:e2e -g "AC-004-2"`
+  4. `pnpm -C frontend test:e2e -g "AC-004-3"`
 
 ### T-20 今日焦点带（行情 | 指标两段、固定）
 
@@ -285,11 +291,13 @@
   2. 运行时逐令牌对拍通过，且覆盖某变量的阳性自检被检出（AC-001-1，运行时部分）
   3. CSS 媒体查询阈值全部来自令牌断点（AC-001-1，断点部分）
   4. KPI 大数、模块壳标题、正文、数值的计算字体族首项正确（AC-001-4，运行时部分）
+  5. 滚动到模块区底部，任何模块壳的 `getBoundingClientRect()` 与焦点带矩形都不相交（焦点带不重叠内容，plan §2.1 叠层约束；AC-001-3）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-002-6"`
   2. `pnpm -C frontend test:e2e -g "AC-001-1"`
   3. `pnpm -C frontend guards tokens-sync:media`
   4. `pnpm -C frontend test:e2e -g "AC-001-4 computed"`
+  5. `pnpm -C frontend test:e2e -g "AC-001-3 layering"`
 
 ### T-22 行情价格模块（盘面网格）
 
@@ -322,8 +330,8 @@
 ### T-24 图表暗色主题与样例图
 
 - **上下文**：plan §2.6（主题由令牌生成、`registerTheme('fai-dark')`、market-board 头部样例折线、mock 模式测试钩子、theme-contrast 对最不利卡面）；Q-003 已确认 A 等亮。
-- **修改范围**：`frontend/src/design/theme.ts`、`frontend/src/modules/market-board/SampleChart.vue`、`frontend/scripts/guards/theme-contrast.mjs`（子检查 `retired` / `contrast`）+ `fixtures/theme-contrast/`、`frontend/e2e/theme.spec.ts`
-- **依赖**：T-06、T-22　**预计**：1.5 h
+- **修改范围**：`frontend/src/design/theme.ts`、`frontend/src/modules/market-board/{SampleChart.vue,MarketBoard.vue}`（在盘面卡头部接入样例图）、`frontend/scripts/guards/theme-contrast.mjs`（子检查 `retired` / `contrast`）+ `fixtures/theme-contrast/`、`frontend/e2e/theme.spec.ts`
+- **依赖**：T-06、T-19、T-22、T-23（页面、市场模块组件与注册表挂载齐备后才有已渲染的图可断言）　**预计**：1.5 h
 - **完成标准**：
   1. 主题对象与令牌一致，不含退役色（AC-006-1）
   2. 在最不利卡面 `#252629` 上：序列 / 类目色 ≥ 3、文字用色 ≥ 4.5、点睛红 ≥ 3，中性退后色豁免并登记（AC-006-2）

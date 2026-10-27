@@ -1,8 +1,8 @@
 # Feature: frontend-workbench 实施计划（plan.md）
 
 > Plan 阶段产物：由 spec.md 生成的设计成果。需求在 spec.md（what/why），本文承载全部实现机制、契约细则与验收落点。
-> **基线**：spec.md = Gate 1 冻结版 + Clarify 回流 Q-015 ~ Q-022 修订版（2026-10-27，**待 Walter 重过 Gate 1**）；docs 配套变更 D-013、designUI §2.1 / §2.2 已随本次修订提交。
-> **修订记录**：2026-10-27 第二版——落实 Checklist 第一轮双审（`checklist.md`，共识 33 / 86）的全部阻断项与建议项；§2.1 暗色配色值（Q-003，A 等亮）不变。
+> **基线**：spec.md = Clarify 回流 Q-015 ~ Q-022 修订版，**2026-10-27 Walter 重新批准（Gate 1 通过），spec 已冻结**（45 条 AC）；docs 配套变更 D-013、designUI §2.1 / §2.2 已随本次修订提交。
+> **修订记录**：2026-10-27 第二版——落实 Checklist 第一轮双审（`checklist.md`，共识 33 / 86）的全部阻断项与建议项；同日第三版——落实第二轮双审的 R2-01 ~ R2-05 与 R2-F-01 ~ R2-F-10。§2.1 暗色配色值（Q-003，A 等亮）始终不变。
 
 ## 1. 技术方案
 
@@ -94,7 +94,9 @@
 | 二层 | `.glass-module` | `rgba(255,255,255,.045)` | `rgba(255,255,255,.09)` | 18px | 模块壳 |
 | 三层 | `.glass-drawer` | `rgba(24,25,28,.82)` | `rgba(255,255,255,.12)` | 28px | 对话抽屉、模块库面板、Toast |
 
-designUI §2.1 允许的面透明度上限 .06 不使用（最不利卡面上弱文字色会降到 4.3，见下）。`src/design/glass.css` 只定义这三个类；全树 `backdrop-filter` 只许出现在该文件且 ≤ 3 条规则（守卫 `glass-tiers`）。
+designUI §2.1 允许的面透明度上限 .06 不使用（最不利卡面上弱文字色会降到 4.6，见下）。`src/design/glass.css` 只定义这三个类；全树 `backdrop-filter` 只许出现在该文件且 ≤ 3 条规则（守卫 `glass-tiers`）。
+
+**叠层约束（文字只落在一层玻璃上）**：带文字的元素不得叠在两层玻璃之上。焦点带不遮住模块内容（§2.2 布局：焦点带、顶栏、输入栏各占独立行，只有模块区滚动）——否则模块玻璃（.045）与焦点带玻璃（.035）叠加后合成面为 `#2D2E30`（取最亮的三处渐变顶端），弱文字色仅 4.10 : 1（文字次 4.71、涨 4.86、跌 6.19），承诺不成立。抽屉面 `rgba(24,25,28,.82)` 接近不透明（叠在模块玻璃上约 `#1A1B1E`），抽屉内文字安全。此项由静态约束（守卫 `layering`：`position: sticky/fixed` 且带 `backdrop-filter` 的元素只许是登记的三层容器）+ 端到端几何断言（T-21：滚动过程中任何模块壳与焦点带矩形不相交）保证。
 
 **字体三族与数值**（Q-019）：`base.css` 定义 `.t-serif / .t-sans / .t-mono`。衬线：品牌字标、页标题、KPI 大数（`Kpi.vue`，KPI 大数是"数值等宽"的唯一例外）；无衬线：正文、导航、按钮、表格文字、模块壳标题（卡头规则，`type.card_t`）；等宽：其余一切数值（统一类 `.num` = mono + `font-variant-numeric: tabular-nums` + 右对齐）、代码、单位、ticker。`shared/format.ts`：`fmtValue(v, {decimals, unit})`、`fmtDelta(v, {decimals, kind: 'abs'|'pct'})`——先按显示位四舍五入再判零；空值（null）→ `–`（U+2013）；差值正号；零中性（无号、无色、`-0` 归 0）；返回 `{text, tone: 'up'|'down'|'neutral'}`。共享组件 `Num` 只输出语义类（`sem-market` / `sem-analysis` + `is-up` / `is-down` / `is-neutral`）：analysis 语义类的颜色规则在 `shared/num.css`（正 = chart.pos 青雀头黛亮化、负 = chart.neg 茹藘）；market 语义类的颜色规则只在 `src/design/updown.css`。
 
@@ -107,7 +109,7 @@ designUI §2.1 允许的面透明度上限 .06 不使用（最不利卡面上弱
 
 **暗色配色表（Q-003，2026-10-27 Walter 确认：A 等亮；数值不变）**——方法：彩色在 OKLCH 空间保持色相、把明度抬到下限（序列 0.70、界面语义 0.64–0.70）、按需压或提色度；**有意退后的中性色反向处理**（白底上"浅 = 安静"，黑底上浅色反而最醒目，故改暗 / 降透明度）；D-011 已定的三个值直接采用。
 
-对比度按 WCAG 相对亮度计，列两个卡面：**中段卡面** `#1D1E20`（模块玻璃 .045 叠在渐变中段 `#121315`）与**最不利卡面** `#252629`（模块玻璃 .045 叠在渐变顶端 `#1B1C1F`，是带文字卡面中最亮的一块）。**阈值以最不利卡面为准**：线条与色块（非文字图形，WCAG 1.4.11）≥ 3 : 1；作文字用的颜色（涨、跌、正、负、琥珀、链接蓝、文字三级）≥ 4.5 : 1；点睛红只作非文字指示（当前项竖条、锁定环、状态点 / 边框），按 3 : 1 判定；有意退后的中性色（其他、区间带）不设下限（白底版同样低于 3 : 1）。对照样张：`specs/frontend-workbench/assets/palette-dark-candidates.html`。
+对比度按 WCAG 相对亮度计，列两个卡面：**中段卡面** `#1D1E20`（模块玻璃 .045 叠在渐变中段 `#121315`）与**最不利卡面** `#252629`（模块玻璃 .045 叠在渐变顶端 `#1B1C1F`，是**单层**卡面中最亮的一块；叠层情况由上面的叠层约束排除）。**阈值以最不利卡面为准**：线条与色块（非文字图形，WCAG 1.4.11）≥ 3 : 1；作文字用的颜色（涨、跌、正、负、琥珀、链接蓝、文字三级）≥ 4.5 : 1；点睛红只作非文字指示（当前项竖条、锁定环、状态点 / 边框），按 3 : 1 判定；有意退后的中性色（其他、区间带）不设下限（白底版同样低于 3 : 1）。对照样张：`specs/frontend-workbench/assets/palette-dark-candidates.html`。
 
 | 用途 | 原色（PALETTE_CORE） | 暗色值 | 对比度（中段 / 最不利） | 备注 |
 |---|---|---|---|---|
@@ -140,6 +142,7 @@ designUI §2.1 允许的面透明度上限 .06 不使用（最不利卡面上弱
 ### 2.2 应用外壳与导航（R-002）
 
 - `AppShell.vue`：`.shell` 两栏网格（`var(--fai-rail-w) minmax(0,1fr)`，`.content { min-width: 0 }`，无需任何 `1fr` 豁免）+ 顶栏 + 底部 `AgentDock` + `AgentDrawer`；`< 980px` 时切 `.shell--collapsed`：侧栏变顶部横向导航条（可横滚），`.content` 单列
+- `.content` 内部为三行：顶栏 / 路由区 / 输入栏；**工作台页再把路由区拆为“焦点带行 + 可滚动模块区”**（`display: grid; grid-template-rows: auto minmax(0,1fr)`，只有后一层滚），焦点带因此**不重叠**模块内容（§2.1 叠层约束），也不是 `position: sticky` 覆盖层；顶栏同理占独立行
 - **启动与深链**（AC-002-1 / -2 / -7）：`index.html` 内置与 `LoadingScreen.vue` 同构的静态骨架，首帧样式来自 `index.html` 标记块（tokens-build 生成，不手写颜色）；`main.ts` 挂载后 `appStore.phase` 为 `loading` 时继续渲染同一骨架（字标 + 进度文案 + 通知文案位，文案来自 `bootstrap()` 的 `notice` 字段或默认文案）；`bootstrap()` 成功 → `ready`：**只有当前地址为 `/` 时才跳 `/workbench`**，其他合法地址原样保留（路由守卫在 `ready` 前挂起导航、不改地址）；失败 → `failed`：显示原因（错误码 + 消息）与"重试"按钮，重试调用 `bootstrap()`，成功后按同一规则进入
 - `nav.ts` 注册表：`[{id, path, zh, en, placeholderOwner?}]` 八项固定序：工作台 `/workbench`、日报 `/daily/:date?`、价格 `/prices`、平衡表 `/balance`、物流 `/logistics`、专题研究 `/research`（子项由 `dataClient.getResearchList()` 驱动，`/research/:id`）、知识库 `/knowledge`、设置 `/settings`；`/` 重定向 `/workbench`；占位页 `pages/PlaceholderPage.vue` 读 `placeholderOwner`（如 `daily-report`）渲染空态文案
 - `Rail.vue`：字标（serif）、分组、当前项（加粗 + `aria-current="page"` + 左侧点睛红竖条；塌成顶栏时竖条移到底边）、折叠钮；状态经 `uiStore.railCollapsed` 持久化（key `fai.v1.ui.rail`）
@@ -202,8 +205,8 @@ section.fai-module[data-module-id][data-state="loading|ready|empty|error"]
 - `CotTimeline.vue`：按 run 分组的步骤列表；每步一行（类型图标 + 摘要 + 时间）可展开详情（思考全文 / 工具参数与结果摘要 / 文本 / 错误）；终态行（完成 / 失败 / 中止）
 - `agent/store.ts`（Pinia）：`sessions`、`runs: Record<runId, Run>`、`steps`（按 `stepId` 去重合并）；**在 `main.ts` 订阅 `agentClient.subscribe()`（应用级，不随组件卸载）**，所以切页或收起抽屉都不影响事件接收（AC-005-3）；`badgesStore` 监听事件中的 `moduleId` → `running` / `done`，用户点击该模块后 `clear(moduleId)`（AC-005-4）
 - **引导跳转**（AC-005-5，Q-020）：`hint.navigate` → 时间线渲染入口按钮；点击后：
-  - 目标模块在布局中 → `router.push('/workbench')` + 滚动到模块 + `data-highlight`
-  - 目标模块在目录中但已被移除 → 不改布局，Toast"该模块不在工作台"+"添加回工作台"按钮（点击后 `layout.add(id)` 再高亮）
+  - 目标模块在布局中 → 若当前不在工作台先 `router.push('/workbench')`；等目标模块挂载（`nextTick` + 等待 `[data-module-id]` 出现，超时 2 s 则 Toast 报错）→ 滚动到模块 → `data-highlight`
+  - 目标模块在目录中但已被移除 → 不改布局，Toast"该模块不在工作台"+"添加回工作台"按钮；点击后顺序固定为：`layout.add(id)` → 不在工作台则 `router.push('/workbench')` → 等待挂载 → 滚动 → `data-highlight`（可在任意路由发起，包括 `/prices` 等非工作台页）
   - 目标不在目录 / 页面不存在 → Toast"目标不存在"，不跳转
   - 目标为页面且存在 → `router.push(path)`
 
@@ -234,7 +237,7 @@ type AgentEvent =
 | step.text | 同上 `text_delta` / `text_end` |
 | step.tool.call | `tool_execution_start`（toolCallId / toolName / args） |
 | step.tool.result | `tool_execution_end`（result / isError / durationMs） |
-| step.error | assistant `message_end.stopReason = "error"`（errorMessage）；`willRetry` 取后续是否出现 `auto_retry_start` |
+| step.error | `message_end.message.stopReason = "error"`（`errorMessage`）；`willRetry` = 后续出现 `auto_retry_start`（普通重试）**或** `compaction_end.willRetry = true`（溢出恢复）——两者都表示还会继续，不得因只认前者而误判为终态 |
 | run.completed / run.failed / run.aborted | 只在 `agent_settled` 时归约发出一次（见下） |
 | hint.navigate | 无直接对应；候选 = 专用 MCP 工具（如 `ui_navigate_hint`）的 `tool_execution_end`，由 agent-runtime 决定 |
 | moduleId | Backend 按工具名 / 参数映射（如 `fetch_series` 的 series_id → 绑定它的模块） |
@@ -242,7 +245,20 @@ type AgentEvent =
 
 **终态归约规则**：`agent_settled.aborted = true` → `run.aborted`；否则若最后一条助手消息 `stopReason = "error"`，或出现过 `auto_retry_end.success = false` → `run.failed`（error.message = 最后一次 errorMessage，retryable 按错误分类）；否则 → `run.completed`。中间的失败尝试只产生 `step.error`。
 
-**mock 回放** `contracts/mock/agent/`：`success`、`failure`（尝试失败 → 重试 → 最终失败 → `run.failed`）、`long`（≥ 20 步、跨 ≥ 15 s，供切页 / 收起测试）、`retry`（尝试失败 → 重试成功 → `run.completed`）、`abort`（运行中中止 → `run.aborted`）——`[{afterMs, event}]`；脚本选择：URL `?agentScript=<名>` > `window.__FAI_MOCK__.agentScript` > `success`；`MockAgentClient.send()` 返回 runId 并按所选脚本用定时器推送；`abort()` 推 `run.aborted`。
+**归约实现与离线验证**（R2-F-09）：`src/agent/normalize.ts` 提供纯函数 `normalizePiEvents(records: unknown[]): AgentEvent[]`（无 IO、无时钟依赖，输入为 pi `--mode json` 的原始记录序列），把上表与归约规则实现为可测逻辑。测试用**固定原始样本** `tests/fixtures/pi-raw/*.jsonl`（从本机 pi 1.4.0 文档所列记录形状构造，不启动 pi），每份附带期望的 `AgentEvent[]` 快照：
+
+| 样本 | 覆盖 |
+|---|---|
+| `plain-success.jsonl` | 正常一轮：thinking / text / toolcall / tool result → `run.completed` |
+| `retry-then-success.jsonl` | `stopReason=error` → `auto_retry_start` → `auto_retry_end{success:true}` → settled → **唯一** `run.completed`，中间只有 `step.error` |
+| `retry-exhausted.jsonl` | `auto_retry_end{success:false}` + `finalError` → `run.failed` |
+| `aborted.jsonl` | `agent_settled{aborted:true}` → `run.aborted` |
+| `compaction-recovery.jsonl` | `compaction_end{willRetry:true}` → 重试 → settled → `run.completed`（验证 `willRetry` 不只认 `auto_retry_start`） |
+| `nested-paths.jsonl` | 真实嵌套路径 `message_end.message.stopReason / errorMessage`、`tool_execution_end.result` |
+
+断言：每个样本恰好一个终态事件、终态后无该 run 的事件、`stepId` 单调。`MockAgentClient` 的运行中 `abort()` 另加边界用例：取消后不再推送该脚本后续事件与终态（不重复发 `run.aborted`）。
+
+**mock 回放** `contracts/mock/agent/`（预先归一化的 `AgentEvent` 序列，供界面测试；与上面的原始样本归约测试互补）：`success`、`failure`（尝试失败 → 重试 → 最终失败 → `run.failed`）、`long`（≥ 20 步、跨 ≥ 15 s，供切页 / 收起测试）、`retry`（尝试失败 → 重试成功 → `run.completed`）、`abort`（运行中中止 → `run.aborted`）——`[{afterMs, event}]`；脚本选择：URL `?agentScript=<名>` > `window.__FAI_MOCK__.agentScript` > `success`；`MockAgentClient.send()` 返回 runId 并按所选脚本用定时器推送；`abort()` 推 `run.aborted`。
 
 ### 2.6 图表暗色主题（R-006）
 
@@ -280,7 +296,8 @@ interface AgentClient {
 
 - `Figure = { label, value: number | null, unit, decimals, freq: '1d'|'1w'|'1m', delta?: number | null, deltaKind?: 'abs'|'pct', semantic: 'market'|'analysis', asOf: string, seriesId?: string }`；`seriesId` 对齐 data-layer 序列 ID（含可选 contract 的描述符派生，D-012 第 1 条）
 - `MarketBoard = { columns: {contract, name, seriesId}[]; rows: {date, cells: BoardCell[]}[]; stats: {label, cells: BoardCell[]}[] }`，`BoardCell = { state: 'ok'|'holiday'|'pending'|'missing'; figure: Figure | null }`，zod 约束 `state = ok ⇔ figure ≠ null`；行情数值 `semantic = 'market'`
-- `WatchlistTable = { rows: {contract, name, seriesId, last: Figure, change: Figure, changePct: Figure, spark: number[]}[] }`，三个 Figure 均为 market 语义
+- `WatchlistTable = { rows: {contract, name, seriesId, last: Figure, change: Figure, changePct: Figure, spark: SparkSeries}[] }`，三个 Figure 均为 market 语义
+- `SparkSeries = { points: number[], unit, freq: '1d'|'1w'|'1m', semantic: 'market'|'analysis', asOf: string, seriesId }`——迷你折线的点也是业务数值，不能只给 `number[]` 而逃逸元数据；zod `refine`：`spark.semantic === last.semantic`、`spark.seriesId === seriesId`，否则 parse 失败。任何新增数值型字段同样只能取 `Figure` / `BoardCell` / `SparkSeries` 三种形态（AC-007-4）
 - `DailyBrief = { date, conclusions: {title, text}[], figures: Figure[] }`
 - 错误形态 `{ error: { code, message, retryable } }`，code 集合与 data-layer 对齐（not_found / unauthorized / validation_error / internal / adapter_error / rate_limited）
 
@@ -307,7 +324,8 @@ interface AgentClient {
 | bare-1fr | `grid-template-columns` 中不得出现未包 `minmax()` 的 `1fr`，**零豁免** | AC-004-6 |
 | network-scope | 以 ESLint 规则做语法级检查（守卫用 ESLint API 只跑这组规则）：`src/**`（`src/contracts/real/**` 除外）禁止引用全局 `fetch` / `XMLHttpRequest` / `WebSocket` / `EventSource`（`no-restricted-globals`，含 `const f = fetch` 一类别名）、`window.fetch` / `globalThis.fetch` / `navigator.sendBeacon` 及其计算属性写法（`no-restricted-properties` + `no-restricted-syntax`）、导入 HTTP / WebSocket 客户端库（`no-restricted-imports`：axios、ky、ofetch、undici、node-fetch、cross-fetch、ws、socket.io-client 等） | AC-007-1 |
 | contract-doc | zod + `CONTRACT_METHODS` → CONTRACT.md / schema.json 重生成 diff | AC-007-3 |
-| design-registry | `entries`：README 登记的条目文件 front matter 含 `id / source / migrated / adaptation / source_anchors / adopted / not_adopted`，正文含 `## 暗色适配`；`adopted ∪ not_adopted = source_anchors`，且每个锚在文件中有 `### #<锚>` 标题（不采用的锚保留标题 + 一行原因）；`required`：八份 UI 条目、`UI_DARK_ADDITIONS.md` 与两份 charts 文件齐备；`palette`：PALETTE_DARK 逐个列出 palette-core 原色的暗色值与对比度；`sources`：tokens.json 每个 `source` 符合 §2.1 三种形式且锚 / 节号可解析；`docs`：designUI.md 中 `design/ui/`、`design/charts/` 下的引用路径全部存在 | AC-008-1、AC-008-2、AC-008-3 |
+| design-registry | `entries`：README 登记的条目文件 front matter 含 `id / source / migrated / adaptation / source_anchors / adopted / not_adopted`，正文含 `## 暗色适配`；**双向核**：正向 `adopted ∪ not_adopted = source_anchors` 且每个锚在正文有 `### #<锚>` 标题（不采用的保留标题 + 一行原因）；**反向**从正文提取全部 `### #<锚>`，属于源条目的锚必须已分类、新适配锚必须带 `new: true` 标记；锚清单以仓库内固定清单 `design/ui/source_anchors.json`（记录源路径、锚名、数量与核对日期；本次核对：14 / 10 / 4 / 13 / 22 / 5 / 10 / 8 = 86）为准，不依赖 `D:\FTEngine` 绝对路径；`required`：八份 UI 条目、`UI_DARK_ADDITIONS.md` 与两份 charts 文件齐备；`palette`：PALETTE_DARK 逐个列出 palette-core 原色的暗色值与对比度；`sources`：tokens.json 每个 `source` 符合 §2.1 三种形式且锚 / 节号可解析；`docs`：designUI.md 中 `design/ui/`、`design/charts/` 下的引用路径全部存在 | AC-008-1、AC-008-2、AC-008-3 |
+| layering | `sticky-glass`：`position: sticky / fixed` 且带 `backdrop-filter` 的元素只许是登记的三层容器（焦点带行、`.glass-drawer` 面板 / 抽屉 / Toast）；`no-text-on-double`：带文字的组件不得同时位于两层玻璃容器内（`glass-focus` / `glass-module` / `glass-drawer` 嵌套即报错） | AC-001-3、AC-006-2（叠层约束，§2.1） |
 | theme-contrast | `retired`、`contrast`（对最不利卡面，阈值见 §2.1） | AC-006-1、AC-006-2 |
 | ac-coverage | 从 spec.md 抽取全部 AC 编号；扫描 `tests/**`、`e2e/**` 的测试标题与各守卫声明的 `acs`；每个 AC 至少一处，缺失即红（Converge 的机械证据） | 全部 AC（AC-009-1 的一部分） |
 
@@ -370,7 +388,7 @@ interface AgentClient {
 | AC-003-2 | FocusBand + router | e2e：点击 → `/daily/<date>` |
 | AC-003-5 | FocusBand 两段 | component：market 数字只在 `.fai-focus__seg--market`、analysis 只在 `--analysis`，涨跌类只出现在行情段；人工验收 M-03 |
 | AC-003-6 | FocusBand 不在目录 / 布局外 | e2e：模块库无焦点带、焦点带无移除钮；增删模块后焦点带仍在 |
-| AC-004-1 / -2 | catalog + layoutStore + ModuleLibrary | e2e/modules.spec：默认七个且顺序 = 目录顺序；模块库列出七项与状态；移除 / 添加（末尾）/ 上移下移 → reload 保持 |
+| AC-004-1 / -2 | catalog + layoutStore + ModuleLibrary | e2e/modules.spec：默认七个且顺序 = 目录顺序；模块库列出七项与状态，**每项显示目录里的 `description` 文案**（R2-F-10）；默认跨列按目录 `defaultSpan` 生效、且列数不足时截断为剩余列数（断言 `grid-column` 计算值）；移除 / 添加（末尾）/ 上移下移 → reload 保持 |
 | AC-004-3 | ModuleShell | component：逐注册模块结构；e2e：页面遍历每个模块 DOM 符合契约 |
 | AC-004-4 | ModuleShell 三态 + error 场景 | component：loading / empty / error 三态与诊断复制；e2e（T-28）：`?scenario=error` 下工作台可达、模块显示错误态与诊断 |
 | AC-004-5 | market-board / watchlist / release-calendar | component：盘面三态格 `休 / 待 / –`、涨跌字色；关注列表数值右对齐、千分位、红涨绿跌；日程升序；人工验收 M-04 |
@@ -379,7 +397,7 @@ interface AgentClient {
 | AC-005-2 | CotTimeline + store | component：回放 success / failure / retry / abort → 步骤数、展开详情、step.error 呈现、唯一终态行 |
 | AC-005-3 | store 应用级订阅 | e2e：`?agentScript=long`：切到 `/prices` 再返回、以及收起抽屉再展开，两种情况下步骤数增加、同一 runId、无重复 stepId |
 | AC-005-4 | badgesStore + ModuleShell | e2e：带 moduleId 的事件 → `data-ai=running` → `done` → 点击模块 → `none` |
-| AC-005-5 | hint.navigate + Toast | e2e：在布局 → 导航 + `data-highlight`；已移除 → Toast + "添加回工作台"、布局未变，点击后加回并高亮；不存在 → Toast、地址不变 |
+| AC-005-5 | hint.navigate + Toast | e2e：在布局 → 导航 + `data-highlight`；已移除 → Toast + "添加回工作台"、布局未变，点击后从**非工作台路由（如 `/prices`）**也按"加回 → 导航 → 等挂载 → 滚动 → 高亮"完成（R2-F-08）；不存在 → Toast、地址不变 |
 | AC-005-6 | events.ts + mock/agent + CONTRACT.md | unit：五个脚本每个事件 `AgentEvent.parse` 通过且恰好一个终态；文档含十种事件 |
 | AC-005-7 | AgentDrawer + AgentDock + uiStore.drawer | e2e：closed / half / tall 切换并 reload 保持；运行中指示出现、终态后消失 |
 | AC-006-1 / -2 | echarts-theme.json | 守卫 theme-contrast（retired / contrast，最不利卡面） |
@@ -407,4 +425,15 @@ interface AgentClient {
 | ECharts 6 与 vue-echarts 8 peer 不匹配 | 冒烟任务核 peer 警告；不匹配则直接用 `echarts.init`（不依赖 vue-echarts） |
 | 生成物入库漂移 | 守卫 tokens-sync / contract-doc 在 `pnpm test` 前段，漂移即红 |
 
-**回滚**（逐类）：新增的 `frontend/`、`design/`、`specs/frontend-workbench/` 直接删除；`.gitignore` 删除追加的五行；`specs/README.md` 删除本 feature 一行；`docs/designUI.md` 用 `git revert` 撤回本 feature 的提交（§2.1 注、§2.2 作用域、T-30 指针）；`docs/decisions/20261027-updown-scope.md` 不删除，按 ADR 规则新增一份取代它的 ADR；`docs/plan.md` §3 的 D-013 行随取代 ADR 更新。不影响 `backend/` 与任何用户数据。
+**回滚**（按文件 / 改动块，不用提交级 revert——一笔提交同时含 docs 与 specs，整笔 revert 会连带撤回 D-013，与 ADR 历史保留相抵）：
+
+| 対象 | 回滚动作 |
+|---|---|
+| `frontend/`、`design/`、`specs/frontend-workbench/` | 整目录删除（均为本 feature 新增，无其他 feature 引用） |
+| 根 `.gitignore` | 删除本 feature 追加的五条忽略行；其余行不动 |
+| `specs/README.md` | 删除本 feature 的一行状态行；其他 feature 行与表头不动 |
+| `docs/designUI.md` | `git checkout <feature 开工前那个提交> -- docs/designUI.md`，或只回退本 feature 改动的三个位置（§2.1 玻璃边注、§2.2 作用域段、T-30 指针）；不得带回其他提交对 docs 的修改 |
+| `docs/plan.md` §3 | 删除 D-013 那一行（只删本 feature 新增行，不动其他行） |
+| `docs/decisions/20261027-updown-scope.md` | **不删除**（ADR 是历史）；在 `docs/plan.md` §3 把该行标为 superseded，另写一份后继 ADR 说明回滚理由 |
+
+回滚后用 `git log --oneline <起点>..HEAD -- backend/` 为空、`git status` 干净、`pnpm -C frontend` 已不存在三项验证；整个过程不触碰 `backend/` 与任何用户数据。
