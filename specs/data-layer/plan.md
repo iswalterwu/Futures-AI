@@ -1,6 +1,6 @@
 # Feature: data-layer 实施计划（plan.md）
 
-> Plan 阶段产物：由 spec.md（v16，十五轮双审修订后）生成的设计成果。需求在 spec.md，本文只写“怎么做”。
+> Plan 阶段产物：由 spec.md（v18，去技术化版）生成的设计成果。需求在 spec.md（what/why），本文承载全部实现机制与契约细则。
 
 ## 1. 技术方案
 
@@ -68,23 +68,46 @@ provides:                    # 必填，非空数组
 
 枚举规则：**封闭清单，新增枚举值必须先行修订本 spec（§5 登记）并更新本字段契约，不得运行时自动注册**；非法值 = 不在封闭清单中（AC-001-2 判定）。重复 id：按扫描顺序先加载者生效，后到者登记为 sources 表 error 虚拟条目（adapter_id=文件路径）并报告“重复 id”。校验失败 = 拒绝加载并报告文件路径 + 字段 + 原因（AC-001-2）。
 
-### 2.2 service 接口（CLI/MCP 共用）
+### 2.2 接口与契约（spec 中所有“见 plan §2.2”的落点）
+
+**术语定义**：启用源 = status=ok 且 enabled=true；非启用源 = status 非 ok 或 enabled=false。
+
+**service/CLI 接口（CLI/MCP 共用）**：
 
 | 接口 | 签名与语义 |
 |---|---|
-| search_series | `search_series(q) -> {matches:[{series_id, descriptor, unit, freq}]}` |
-| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；source=None = 该序列 status=ok 且 enabled 的启用源中优先级数值最小者（并列取注册顺序先者）；**仅 do_fetch=true 分支：无启用源 → not_found；只读分支忽略 source、不受源状态影响（返回跨源择优历史数据）**；false = 只读短路（不触发适配器、不写库） |
+| search_series | `search_series(q) -> {matches:[{series_id, descriptor, unit, freq}]}`；q 匹配 = 描述符字段（含 contract）与别名的子串匹配；descriptor = 描述符 dict（含 contract，缺省空串） |
+| fetch_series | `fetch_series(series_id, range, do_fetch, source=None)` —— do_fetch **无默认值**；range = `{start: ISO8601, end: ISO8601}`（**end 为闭区间**）；source=None = 启用源中优先级数值最小者（并列取注册顺序先者）；**仅 do_fetch=true 分支：无启用源 → not_found；显式 source 指向非启用源 → validation_error；只读分支忽略 source、不受源状态影响（返回跨源择优历史数据）**；do_fetch=false = 只读短路（不触发适配器、不写库） |
 | list_sources | `list_sources() -> {sources:[{adapter_id, name, enabled, status}]}`（status: ok/disabled/error） |
-| reconcile | `reconcile(series_id) -> {report:{series_id, checks:[...]}}` |
+| reconcile | `reconcile(series_id) -> {report:{series_id, checks:[{kind: unit|tz|freq, source_a, source_b, status: ok|mismatch, detail}], warnings:[string]}}`（warnings = 退化/全局问题，不绑定成对源；**无可用序列时（空目录首启）：返回 warnings 说明“无可用序列”**） |
 | config | `config add-source/alias/priority/credentials …`（CLI 专属；add-source = 在用户适配器目录写 manifest 骨架；只能配置已有 manifest 的源） |
 | jobs | `jobs list/run`（CLI 专属） |
 | import | `import <file>`（CLI 向导，CSV/Excel 映射） |
 | provenance | `provenance <series_id>`（CLI 开发者工具，AC-005-1 交付入口） |
 | diff | `diff <run_a> <run_b>`（CLI 开发者工具，AC-005-2 交付入口） |
 
-### 2.3 8 槽渲染映射（AC-002-5 golden）
+**MCP 工具契约（pi 经 MCP 调用；MCP 层参数 `fetch` ↔ 内部 `do_fetch`）**：
 
-`cat = asset → 槽1；geo → 槽2；槽3/4/5 = "-"；measure → 槽6；contract → 槽7（空串渲染为 "-"）；freq 元数据 → 槽8`。
+| 工具 | 输入 | 成功返回 |
+|---|---|---|
+| search_series | `q: string` | `{matches:[{series_id, descriptor, unit, freq}]}` |
+| fetch_series | `series_id, range, fetch: boolean = false, source?: string` | `{series_id, rows:[{ts, value, unit, source}], meta:{series_id, source, fetched_at, asof, count, range}}`（meta 的 fetched_at/asof = 返回行的 max 值；meta.source = 返回行 source 集合（多源取 `"mixed"`，空结果 = null）；空结果 rows=[]、count=0、fetched_at/asof=null） |
+| list_sources | 无 | `{sources:[{adapter_id, name, enabled, status}]}` |
+| reconcile | `series_id` | `{report:{series_id, checks:[...], warnings:[string]}}` |
+
+**错误契约**：`{error:{code, message, retryable}}`；code↔retryable 映射（固定）：not_found=false / unauthorized=false / adapter_error=true / rate_limited=true / validation_error=false / internal=false。
+
+**realtime 接口签名（AC-004-4 判定依据）**：`base.Adapter` 上存在 `realtime_hint` 属性（文档字符串常量），测试以 import 断言其存在；无网络实现。
+
+**diff 汇总统计量（AC-005-2 判定依据）**：三类计数（新增/修订/删除）；ΣΔvalue = 修订值净变化总和；max|Δ| = 修订值最大绝对变化；新增/删除不计入 Δ。
+
+### 2.3 描述符规范化、ID 派生与 8 槽渲染（AC-002-1/2/5 golden）
+
+**规范化规则**（描述符 → 规范 JSON）：键集恒四键 {asset, geo, measure, contract}（contract 缺省输出空串）；枚举小写；contract 去首尾空白、不转小写；JSON 键排序；UTF-8 编码；`separators=(',',':')`。
+
+**ID 派生**：规范 JSON 字节串 → SHA-256 → 取前 16 字节 → 32 位 hex 字符串。golden 向量随实现提交（含 contract 缺省与 SC2401 样例）。
+
+**8 槽渲染映射**：`cat = asset → 槽1；geo → 槽2；槽3/4/5 = "-"；measure → 槽6；contract → 槽7（空串渲染为 "-"）；freq 元数据 → 槽8`。
 示例：`{asset: sc, geo: world, measure: close, contract: ""} + freq=1d → sc.world.-.-.-.close.-.1d`；
 `contract: "SC2401" → sc.world.-.-.-.close.SC2401.1d`。
 
@@ -147,7 +170,7 @@ creds/                   # DPAPI 加密凭证
 3. **只读短路**（do_fetch=false）：仅查询现有数据（latest_obs/asof），不创建 run、不触发适配器、不写库
 4. **diff**：两 run 仅当均为 succeeded、series_id 相同、source 相同、[range_start, range_end] 相同、unit/freq/tz 快照一致时可比；否则返回不可比原因（AC-005-2）
 5. **对账**：reconcile(id) → 各源 manifest 声明的 unit/tz/freq 对比 → 报告（不静默换算）；展示口径跟随主源（优先级最低数值者，并列取 series_sources 注册顺序先者）
-6. **MCP**：FastMCP 以 streamable HTTP 起在 Backend 进程内（localhost 端口 + 令牌）；**生命周期 = service.start_mcp()/stop_mcp()，v1 经 CLI `serve` 子命令启动**（desktop-shell feature 将由 Backend 进程托管）；pi 的 mcp.json 用 URL 连接；四工具委托 service（**连接互斥串行化**）；逐工具输入/返回契约见 spec R-008
+6. **MCP**：启动/生命周期见 §1（CLI `serve`）；四工具委托 service（连接互斥串行化）；**完整输入/返回/错误契约见 §2.2**
 
 ## 5. 验收对应
 
