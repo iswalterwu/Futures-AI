@@ -239,26 +239,20 @@ class TestAkshareSdkBoundary:
             svc.close()
 
     def test_receipt_default_window_is_recent(self, monkeypatch):
-        import akshare
+        import shfe_html
 
-        seen = {}
-
-        def fake_get_receipt(start_date=None, end_date=None, vars_list=None):
-            seen.update(start=start_date, end=end_date, vars=vars_list)
-            return pd.DataFrame()
-
-        monkeypatch.setattr(akshare, "get_receipt", fake_get_receipt)
         freeze_today(monkeypatch)  # 与运行日期解耦：受测 SDK 交易日历止于 2026-12-31
+        calls = shfe_html.patch(monkeypatch, 1000)  # 上期所仓单逐交易日抓页面
         ak_mod._get_receipt("SC")
         today = ak_mod.date.today()
         assert today == date(2026, 10, 27)
-        assert seen == {
-            "start": (today - timedelta(days=ak_mod.RECEIPT_DEFAULT_DAYS)).strftime("%Y%m%d"),
-            "end": today.strftime("%Y%m%d"),
-            "vars": ["SC"],
-        }
+        assert calls[-1] == today.strftime("%Y%m%d")  # 终点 = 当日
+        earliest = (today - timedelta(days=ak_mod.RECEIPT_DEFAULT_DAYS)).strftime("%Y%m%d")
+        assert min(calls) >= earliest  # 未给起点 → 只回看 RECEIPT_DEFAULT_DAYS 天
+        assert len(calls) < 30  # 非交易日不抓
+        calls.clear()
         ak_mod._get_receipt("SC", datetime(2026, 9, 1), datetime(2026, 9, 30))
-        assert (seen["start"], seen["end"]) == ("20260901", "20260930")
+        assert calls and min(calls) >= "20260901" and max(calls) <= "20260930"  # 显式窗口原样
 
 
 class TestSearchAndSkeleton:

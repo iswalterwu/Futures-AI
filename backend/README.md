@@ -59,5 +59,11 @@ akshare 源符号约定：`SC0` 主力连续、`SC2401` 指定合约、`SC_RECEI
 
 ```bash
 pip install -e . -c constraints.txt   # 受测版本约束（pyproject 仅声明兼容下界）
-python -m pytest tests/ -q
+python -m pytest tests/ -q            # 离线全量（默认跳过在线冒烟）
+
+# 发布管线
+python tools/release_check.py                    # wheel 构建 / 包内容 / 隔离安装 / 入口点 / 首启冒烟
+FUTURESAI_ONLINE=1 python -m pytest tests/test_smoke_online.py -q -s   # 真实 akshare/EIA 在线冒烟
 ```
+
+在线冒烟会打印上游状况（如东财库存日报最新日期、仓单交易日历剩余天数）。日历余量不足 31 天时该测试失败，提示升级 akshare 并同步 `constraints.txt`。

@@ -336,30 +336,24 @@ class TestExitContract:
 class TestRound16Gaps:
     """T-72：上期所/能源中心 HTTP 边界、倒置窗口消息、package-data 声明。"""
 
-    SHFE_HTML = """<html><body>
-<table><tr><td>总计</td><td>-</td></tr></table>
-<table>
-<tr><td>品种</td><td>原油</td><td>仓单</td><td>增减</td></tr>
-<tr><td>上海</td><td>中石化仓库</td><td>4000000</td><td>0</td></tr>
-<tr><td>合计</td><td></td><td>5451000</td><td>1000</td></tr>
-</table>
-<table>
-<tr><td>品种</td><td>燃料油</td><td>仓单</td><td>增减</td></tr>
-<tr><td>合计</td><td></td><td>12000</td><td>0</td></tr>
-</table>
-</body></html>"""
+    # 2026-10-20 真实上期所仓单页面（相关品种表格）：SC=3,666,000 桶、FU=40,000 吨
+    SHFE_FIXTURE = BACKEND / "tests" / "fixtures" / "shfe_receipt" / "20261020.html"
 
     @pytest.mark.parametrize("var,sid,expected", [
-        ("SC", SC_RECEIPT, (5451.0, "kb")),       # 桶 → 千桶
-        ("FU", sid_of("fu", "receipt"), (12.0, "kton")),  # 吨 → 千吨
+        ("SC", SC_RECEIPT, (3666.0, "kb")),       # 桶 → 千桶
+        ("FU", sid_of("fu", "receipt"), (40.0, "kton")),  # 吨 → 千吨
     ])
-    def test_shfe_receipt_through_real_sdk(self, tmp_path, monkeypatch, var, sid, expected):
+    def test_shfe_receipt_through_http_boundary(self, tmp_path, monkeypatch, var, sid, expected):
         import requests
 
         calls = []
+        html = self.SHFE_FIXTURE.read_text(encoding="utf-8")
 
         class Resp:
-            text = self.SHFE_HTML
+            text = html
+
+            def raise_for_status(self):
+                pass
 
         def fake_get(url, headers=None, **kw):
             calls.append(url)
