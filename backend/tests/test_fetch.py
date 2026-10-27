@@ -91,6 +91,14 @@ class TestFetch:
 
 
 class TestJobs:
+    def test_realtime_signature_exists(self):
+        """AC-004-4：realtime 仅定义接口签名（三适配器均有签名，无网络实现）。"""
+        from data.adapters.akshare.akshare_adapter import AkshareAdapter
+        from data.adapters.eia.eia_adapter import EiaAdapter
+        from data.adapters.local_file.local_file_adapter import LocalFileAdapter
+
+        for a in (AkshareAdapter, EiaAdapter, LocalFileAdapter):
+            assert hasattr(a, "realtime_signature") and callable(a.realtime_signature)
     def test_register_list_run(self, tmp_root):
         store, cat = setup(tmp_root)
 

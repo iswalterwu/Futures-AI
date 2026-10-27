@@ -32,6 +32,12 @@ def _call(mcp, name, args):
 
 
 class TestTools:
+    def test_four_tools_registered(self, tmp_path):
+        """AC-008-4：MCP 服务可构建，四工具注册完整。"""
+        svc = setup_service(tmp_path)
+        mcp = mcp_server.build_mcp(svc)
+        names = {t.name for t in mcp._tool_manager.list_tools()}
+        assert names == {"search_series", "fetch_series", "list_sources", "reconcile"}
     def test_search_series_contract(self, tmp_path):
         svc = setup_service(tmp_path)
         out = _call(mcp_server.build_mcp(svc), "search_series", {"q": "sc"})
