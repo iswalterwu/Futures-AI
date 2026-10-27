@@ -7,7 +7,7 @@
 - **语言/框架**：Python 3.14（D-002）；包名 `backend.data`；FastAPI 不参与本 feature（service 门面供未来 API 包装；**不交付前端业务 HTTP 端点，MCP streamable HTTP 与 CLI 只读内部通道除外**）
 - **存储**：DuckDB（observations + ingest_runs，同文件单事务）+ SQLite（目录/别名/源注册/手动覆盖）（D-006；Q-012）
 - **MCP**：官方 Python MCP SDK（FastMCP），**streamable HTTP、localhost、Backend 进程内提供**（pi 经 mcp.json URL 连接；单进程单写者，Q-013）
-- **依赖**：duckdb、pydantic、pyyaml、requests、akshare、openpyxl、pandas、mcp、pywin32（DPAPI）、pytest
+- **依赖**：duckdb、pydantic、pyyaml、requests、akshare、openpyxl、xlrd（EIA 免凭证 `.xls` 解析）、pandas、mcp、pywin32（DPAPI）、pytest
 - **凭证**：Windows DPAPI；保存与读取均 fail closed（拒绝/报错，禁止明文降级）（AC-009-1）
 - **目录（backend/data/）**：
   ```
@@ -75,7 +75,7 @@ provides:                    # 必填，非空数组
 
 **执行绑定（AC-001-1/AC-007-1）**：冷启动时每个合法清单按 `implementation` 绑定一个取数实例（akshare/local-file 无状态；eia 的凭证引用取自**该清单**的 `credentials.credential_ref`）。v1 不加载用户目录中的代码（第三方实现属 Phase 4，spec 非目标）——用户源只能复用内置实现。
 
-**akshare 源符号约定**：`<品种>0` = 主力连续日线（如 `SC0`）；`<合约代码>` = 指定合约日线（如 `SC2401`）；`<品种>_RECEIPT` = 交易所仓单日报；`<品种>_STOCK` = 库存日报（东方财富期货库存数据）。价格型序列不换算。上游 SDK 调用有硬超时（300s，超时 = adapter_error 可重试）。
+**akshare 源符号约定**：`<品种>0` = 主力连续日线（如 `SC0`）；`<合约代码>` = 指定合约日线（如 `SC2401`）；`<品种>_RECEIPT` = 交易所仓单日报（v1 内置库存视图的唯一来源；第三方商业库存 v1 暂缓，见 D-013）。价格型序列不换算。上游 SDK 调用有硬超时（300s，超时 = adapter_error 可重试）。
 
 **数量型（仓单/库存）归一**：按品种登记源侧原始口径并折算到清单声明单位——
 
@@ -87,11 +87,13 @@ provides:                    # 必填，非空数组
 
 未登记品种或声明单位量纲不匹配（如 SC 仓单声明 kton）→ validation_error，在请求上游前拒绝（不产出错标数据）。
 
-**覆盖窗口（AC-005-2）**：批次的覆盖范围 = 适配器在建批次前解析的实际请求窗口（`Adapter.effective_range`）。价格型 = 调用方范围原样（None = 源全量历史，无截断）；仓单未给起点 = 回看 30 天（逐日抓取），库存未给起点 = 回看 365 天；未给终点 = 当日。滚动窗口下跨日的两批覆盖不同 → diff 报不可比，而非误报删除。东财库存每次只返回最近 500 个交易日：整页且最早日期晚于请求起点 → validation_error（不虚报覆盖）。有效窗口倒置（补全后起点晚于终点，如只给未来起点）→ validation_error，不建批次。仓单抓取依赖 akshare 内置静态交易日历（受测版本 1.18.63 止于 2026-12-31，日历外的日期被 SDK 当作非交易日跳过）：请求终点晚于日历末日 → validation_error（提示升级 akshare 并同步受测版本约束），不静默以 0 行成功。
+**覆盖窗口（AC-005-2）**：批次的覆盖范围 = 适配器在建批次前解析的实际请求窗口（`Adapter.effective_range`）。价格型 = 调用方范围原样（None = 源全量历史，无截断）；仓单未给起点 = 回看 30 天（逐日抓取）；未给终点 = 当日。滚动窗口下跨日的两批覆盖不同 → diff 报不可比，而非误报删除。有效窗口倒置（补全后起点晚于终点，如只给未来起点）→ validation_error，不建批次。仓单抓取依赖 akshare 内置静态交易日历（受测版本 1.18.63 止于 2026-12-31，日历外的日期被 SDK 当作非交易日跳过）：请求终点晚于日历末日 → validation_error（提示升级 akshare 并同步受测版本约束），不静默以 0 行成功。
 
 **仓单抓取路径**：上期所/能源中心品种（SC/FU/BU/LU）**自解析交易所官方仓单页面**（`dailystock_<YYYYMMDD>` 的 all.html，逐交易日取「品种合计」并合并仓库+厂库）；大商所等品种（PG）仍用 akshare SDK。原因：akshare 的仓单实现依赖内置品种名表，上游新增品种（如 20 号胶）后 `get_receipt` 会因 `list.index` 整体崩溃（1.18.63 与 1.20.1 均可复现），自解析只取需要的品种、不受影响。品种名映射：SC=中质含硫原油、FU=燃料油、BU=石油沥青、LU=低硫燃料油（plan 层维护，随上游改版调整）。
 
-**R-007 覆盖对照（内置）**：SC/FU/LU/BU/PG 五品种均内置主力连续日线与交易所仓单日报；FU/LU/BU/PG 另内置库存日报（东财库存数据不含 SC；SC 的交易所库存口径即能源中心仓单日报）。指定合约日线由用户清单绑定 akshare 声明（合约会到期，不宜内置）。
+**R-007 覆盖对照（内置）**：SC/FU/LU/BU/PG 五品种均内置主力连续日线与**交易所仓单日报**——交易所口径的注册仓单即该品种的库存视图（D-013）。v1 不再内置第三方库存源；第三方商业库存（社会库存）v1 暂缓，用户可经用户清单/本地文件接入 `measure=stock`（该枚举保留）。指定合约日线由用户清单绑定 akshare 声明（合约会到期，不宜内置）。
+
+**EIA 取数双路径（D-014）**：配置了用户 API key（凭证文件存在）→ 官方 API（`api.eia.gov/v2`，按序列精确取数，agent workflow 首选）；**key 不存在 → 自动回退**官方免凭证历史数据下载（`eia.gov/dnav/pet/hist_xls/<SERIES><freq>.xls`，例：`WDISTUS1w.xls`）；**key 存在但读取/解密失败 → 报错（unauthorized），不回退**。两路径同一 series code、同一单位，可对账。适配器记录本次实际路径（`last_path = "api" | "offline"`），供状态展示（settings R-004）；免凭证路径假定 dnav 单位与清单声明一致（不一致时由对账提示）。
 
 ### 2.2 接口与契约（spec 中所有“见 plan §2.2”的落点）
 
@@ -233,7 +235,8 @@ creds/                   # DPAPI 加密凭证
 | akshare 接口漂移/限流/挂起 | 适配器隔离 + 受测版本约束（`backend/constraints.txt`；pyproject 仅声明兼容下界，升级须回归）+ 失败不回退（AC-004-3）；离线测试用固定响应样本 mock（库存在 SDK 的 HTTP 边界注入，覆盖符号映射与列解析）；SDK 内部请求无超时 → 适配器硬超时（守护线程，超时放弃）；SDK 静态交易日历到期 → 仓单取数显式报错（须在日历末日前升级 akshare 并回归） |
 | DuckDB 单写者限制 | 写锁（plan §3.3 .lock）：service 持写锁，CLI 写操作遇锁报错；持锁进程（serve 或 CLI 写命令）提供 localhost 只读通道，CLI 只读命令经此路由（端点发现 = data/mcp_endpoint.json）；MCP 进程内 + 连接互斥串行化（Q-019/Q-029） |
 | akshare 仓单实现依赖内置品种名表 | 上期所/能源中心仓单自解析官方页面（不经过 akshare 的品种名映射）；页面改版 → 在线冒烟与 fixture 回归同时报警 |
-| 东财库存日报数据陈旧 | 2025-12-31 之后上游未再更新（1.18.63 与 1.20.1 均如此）；适配器照常解析，发布检查打印最新日期；替换数据源需修订 spec（新增源） |
+| 第三方商业库存 v1 暂缓 | 东财「库存」实为注册仓单（与仓单同口径）且有停更/漏厂库问题（D-013）；商业库存数据源（多为付费）后续选源实测后接入，期间用户可经用户清单/本地文件接入 |
+| EIA 免凭证路径随页面改版 | `dnav/pet/hist_xls/<SERIES>.xls` 为官方历史发布页，改版时在线冒烟（无 key 分支）与固定样本回归同时失败；API 路径不受影响 |
 | Windows 编码/时区坑 | `PYTHONIOENCODING=utf-8`；系统时间（fetched_at/asof/批次时间）= naive UTC；观测 ts = 源声明时区下的时间标签（naive）+ 清单 tz 元数据（spec 非目标：v1 存原始时间戳）；带时区的查询范围/导入时间先换算到声明时区 |
 | pywin32（DPAPI）不可用 | fail closed：拒绝保存/读取并报错（AC-009-1），无降级路径 |
 | Python 3.14 wheel 可用性 | **实施首任务 = 依赖安装冒烟**（全依赖 pip install + import）；失败则调整版本约束并回 spec |

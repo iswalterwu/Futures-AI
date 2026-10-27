@@ -374,7 +374,7 @@ class TestRound16Gaps:
         svc = Service(tmp_path).init()
         try:
             with pytest.raises(FetchError) as ei:
-                svc.fetch(sid_of("pg", "stock"), "2026-10-27T10:00:00", do_fetch=True)
+                svc.fetch(sid_of("pg", "receipt"), "2026-10-27T10:00:00", do_fetch=True)
             assert "2026-10-27 10:00:00" in ei.value.message and "2026-10-27 00:00:00" in ei.value.message
         finally:
             svc.close()

@@ -31,7 +31,7 @@ BASE = datetime(2026, 10, 1)
 SC0 = derive_id({"asset": "sc", "geo": "cn", "measure": "close", "contract": ""})
 SC2401 = derive_id({"asset": "sc", "geo": "cn", "measure": "close", "contract": "SC2401"})
 SC_RECEIPT = derive_id({"asset": "sc", "geo": "cn", "measure": "receipt", "contract": ""})
-FU_STOCK = derive_id({"asset": "fu", "geo": "cn", "measure": "stock", "contract": ""})
+FU_RECEIPT = derive_id({"asset": "fu", "geo": "cn", "measure": "receipt", "contract": ""})
 EIA_DIESEL = derive_id({"asset": "diesel", "geo": "na", "measure": "stock", "contract": ""})
 NWE_STOCK = derive_id({"asset": "diesel", "geo": "nwe", "measure": "stock", "contract": ""})
 
@@ -184,17 +184,30 @@ class TestConfigValidation:
 class TestErrorClassification:
     """T-36 / A-P2-3：凭证失败 → unauthorized；未绑定实现 → not_found；均不可重试。"""
 
-    def test_missing_credential_unauthorized_service_and_mcp(self, tmp_path, monkeypatch):
-        called = []
-        monkeypatch.setattr(eia_mod, "_request", lambda *a, **k: called.append(1))
+    def test_missing_credential_falls_back_to_offline(self, tmp_path, monkeypatch):
+        """D-014：未配置凭证 → 自动回退免凭证路径（不报错、不发起 API 请求）。"""
+        import io
+
+        import pandas as pd
+
+        api_calls, offline_calls = [], []
+
+        def fake_xls(series_id, freq):
+            offline_calls.append((series_id, freq))
+            buf = io.BytesIO()
+            pd.DataFrame([[datetime(2026, 10, 16), 104286.0]]).to_excel(
+                buf, sheet_name="Data 1", header=False, index=False
+            )
+            return buf.getvalue()
+
+        monkeypatch.setattr(eia_mod, "_request", lambda *a, **k: api_calls.append(1))
+        monkeypatch.setattr(eia_mod, "_dnav_xls", fake_xls)
         svc = Service(tmp_path).init()
         try:
-            with pytest.raises(FetchError) as ei:
-                svc.fetch(EIA_DIESEL, do_fetch=True, source="eia")
-            assert ei.value.code == "unauthorized" and ei.value.retryable is False
-            assert not called  # 凭证失败不发起网络请求
-            (status,) = svc.store.con.execute("SELECT status FROM ingest_runs").fetchone()
-            assert status == "failed"  # 批次拉取前创建、失败标 failed
+            res = svc.fetch(EIA_DIESEL, do_fetch=True, source="eia")
+            assert [(r[1], r[2]) for r in res["rows"]] == [(104286.0, "kb")]
+            assert offline_calls and not api_calls  # 走了免凭证路径
+            assert svc.adapters["eia"].last_path == "offline"
 
             from data import mcp_server
 
@@ -203,8 +216,7 @@ class TestErrorClassification:
                 "fetch_series",
                 {"series_id": EIA_DIESEL, "range": {}, "fetch": True, "source": "eia"},
             )
-            assert out["error"]["code"] == "unauthorized"
-            assert out["error"]["retryable"] is False
+            assert out["meta"]["count"] == 1 and "error" not in out
         finally:
             svc.close()
 
@@ -251,23 +263,6 @@ class TestBindingContractInventory:
             assert svc.store.count_obs(SC2401) == 2
             match = next(m for m in svc.search("SC2401")["matches"] if m["series_id"] == SC2401)
             assert match["descriptor"]["contract"] == "SC2401"
-        finally:
-            svc.close()
-
-    def test_builtin_inventory_end_to_end(self, tmp_path, monkeypatch):
-        seen = []
-        df = pd.DataFrame(
-            {"日期": ["2026-10-08", "2026-10-09"], "库存": [12000.0, 15000.0], "增减": [0, 3000]}
-        )
-        monkeypatch.setattr(ak_mod, "_get_stock", lambda asset: seen.append(asset) or df)
-        freeze_today(monkeypatch)
-        svc = Service(tmp_path).init()
-        try:
-            res = svc.fetch(FU_STOCK, do_fetch=True)
-            assert seen == ["FU"]
-            assert [r[1] for r in res["rows"]] == [12.0, 15.0]  # 吨 → 千吨（声明 kton）
-            assert {r[2] for r in res["rows"]} == {"kton"}
-            assert svc.store.count_obs(FU_STOCK) == 2
         finally:
             svc.close()
 
