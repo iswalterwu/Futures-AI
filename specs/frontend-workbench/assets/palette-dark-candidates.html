@@ -2,105 +2,316 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>Futures-AI 暗色配色候选（Q-003）</title>
+<title>Futures-AI 配色对照：白底原色 / 黑底候选（Q-003）</title>
 <style>
-  :root { --bg0:#1b1c1f; --bg1:#121315; --bg2:#0f1012; --t1:#e8e6e0; --t2:#9a9892; --t3:#8f8d87; }
-  body { margin:0; font:13px/1.5 "Segoe UI",-apple-system,"PingFang SC","Microsoft YaHei",Arial,sans-serif; color:var(--t1);
-         background:linear-gradient(180deg,var(--bg0) 0%,var(--bg1) 55%,var(--bg2) 100%); min-height:100vh; padding:28px 40px 60px; }
-  h1 { font:700 21px Georgia,"Times New Roman","Songti SC",SimSun,serif; margin:0 0 4px; }
-  h2 { font:700 15px Georgia,"Songti SC",SimSun,serif; margin:28px 0 10px; }
-  .en { font:400 10.5px "Segoe UI",-apple-system,Arial,sans-serif; letter-spacing:.14em; text-transform:uppercase; color:var(--t3); }
-  .meta { color:var(--t2); margin-bottom:14px; }
-  .glass { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09); backdrop-filter:blur(18px); border-radius:2px; padding:14px 16px; }
-  table { border-collapse:collapse; width:100%; }
-  th { text-align:left; font-weight:600; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--t3); padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.12); }
-  td { padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.07); vertical-align:middle; }
-  .mono { font-family:Consolas,"SF Mono",Menlo,"Courier New",monospace; font-variant-numeric:tabular-nums; }
-  .sw { display:inline-block; width:56px; height:22px; border:1px solid rgba(255,255,255,.12); vertical-align:middle; margin-right:8px; }
-  .sw.sm { width:26px; height:16px; margin-right:6px; border-color:rgba(0,0,0,.12); }
-  .light { display:inline-flex; align-items:center; background:#f6f5f1; color:#16191d; padding:3px 8px 3px 4px; border-radius:2px; }
-  .row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
-  .chart { height:220px; }
-  svg text { font-family:"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif; font-size:11px; fill:var(--t2); }
-  .num { font-family:Consolas,"SF Mono",Menlo,monospace; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
-  .up { color:#C98A8F; } .down { color:#8FB8A4; }
-  .badge { display:inline-block; font-size:10px; letter-spacing:.04em; padding:1px 7px; border:1px solid; border-radius:999px; margin-right:6px; }
-  .note { color:var(--t2); font-size:12px; margin-top:8px; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 13px/1.5 "Segoe UI", -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; background: #e4e3df; color: #16191d; }
+  body[data-mode="dark"] { background: #0f1012; color: #e8e6e0; }
+  .pagebar { padding: 18px 28px 14px; }
+  h1 { font: 700 20px Georgia, "Times New Roman", "Songti SC", SimSun, serif; margin: 0; }
+  .en { font: 400 10.5px "Segoe UI", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; opacity: .6; margin-left: 6px; }
+  .meta { margin: 6px 0 0; opacity: .8; max-width: 1180px; }
+  .controls { margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .controls button { font: inherit; padding: 3px 12px; border: 1px solid currentColor; background: transparent; color: inherit; border-radius: 2px; cursor: pointer; opacity: .55; }
+  .controls button.on { opacity: 1; font-weight: 600; }
+  .controls label { margin-left: 14px; }
+  .panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-mode="light"] .panels, body[data-mode="dark"] .panels { grid-template-columns: minmax(0, 1fr); }
+  body[data-mode="light"] .theme-dark, body[data-mode="dark"] .theme-light { display: none; }
+  .panel { padding: 22px 26px 40px; min-width: 0; }
+  .theme-light { background: #f6f5f1; color: #16191d; }
+  .theme-dark { background: linear-gradient(180deg, #1b1c1f 0%, #121315 55%, #0f1012 100%); color: #e8e6e0; }
+  .panel h2 { font: 700 17px Georgia, "Songti SC", SimSun, serif; margin: 0 0 2px; }
+  .panel .sub { font-size: 12px; margin: 0 0 14px; }
+  .theme-light .sub, .theme-light .muted { color: #4d545c; }
+  .theme-dark .sub, .theme-dark .muted { color: #9a9892; }
+  .cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  body[data-mode="light"] .cards, body[data-mode="dark"] .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .card.wide { grid-column: 1 / -1; }
+  .card { border-radius: 2px; padding: 10px 14px 12px; min-width: 0; }
+  .theme-light .card { background: #ffffff; border: 1px solid #e5e2da; }
+  .theme-dark .card { background: rgba(255, 255, 255, .045); border: 1px solid rgba(255, 255, 255, .09); backdrop-filter: blur(18px); }
+  .card h3 { font-size: 12.5px; font-weight: 600; margin: 0 0 6px; }
+  .card h3 .muted { font-weight: 400; font-size: 11px; margin-left: 6px; }
+  .chart { width: 100%; height: auto; display: block; }
+  .tk { font: 11px "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: 11px; }
+  .lg { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .lg i { display: inline-block; width: 18px; height: 10px; }
+  .lg i.ln { height: 0; width: 24px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th { text-align: left; font-weight: 600; font-size: 10.5px; letter-spacing: .06em; padding: 5px 6px; }
+  td { padding: 5px 6px; vertical-align: middle; }
+  .theme-light th { color: #878d95; border-bottom: 1px solid #d3cfc5; }
+  .theme-light td { border-bottom: 1px solid #efede7; }
+  .theme-dark th { color: #8f8d87; border-bottom: 1px solid rgba(255, 255, 255, .12); }
+  .theme-dark td { border-bottom: 1px solid rgba(255, 255, 255, .06); }
+  .sw { display: inline-block; width: 46px; height: 18px; vertical-align: middle; border-radius: 1px; }
+  .mono, .num { font-family: Consolas, "SF Mono", Menlo, "Courier New", monospace; font-variant-numeric: tabular-nums; }
+  .num { text-align: right; white-space: nowrap; }
+  .low { font-weight: 700; }
+  .sem div { margin: 4px 0; }
+  .badge { display: inline-block; font-size: 10px; padding: 1px 7px; border: 1px solid; border-radius: 999px; margin-right: 6px; }
+  .err { background: #fee; color: #900; padding: 8px 12px; margin: 0; }
+  .note { font-size: 11.5px; margin: 8px 0 0; padding: 6px 8px; border-left: 2px solid #C69633; }
+  .theme-dark .note { background: rgba(198, 150, 51, .08); color: #e8e6e0; }
 </style>
 </head>
-<body>
-<h1>暗色配色候选 <span class="en">palette-dark candidates · Q-003</span></h1>
-<div class="meta">背景 = designUI §2.1 渐变（#1b1c1f → #121315 → #0f1012）。方法：OKLCH 保色相、明度抬到下限、按需调色度；对比度按 WCAG 相对亮度对 #121315。D-011 已定的三个值直接采用。</div>
-
-<div class="row">
-  <div class="glass">
-    <h2 style="margin-top:0">序列七色（季节图年份线 / 多序列） <span class="en">series</span></h2>
-    <svg class="chart" viewBox="0 0 520 220" width="100%" height="220">
-      <g stroke="rgba(255,255,255,.08)"><line x1="40" y1="30" x2="500" y2="30"/><line x1="40" y1="80" x2="500" y2="80"/><line x1="40" y1="130" x2="500" y2="130"/><line x1="40" y1="180" x2="500" y2="180"/></g>
-      <line x1="40" y1="180" x2="500" y2="180" stroke="rgba(255,255,255,.28)"/>
-      <polyline fill="none" stroke="#E8E6E0" stroke-width="2.6" points="40,120 100,100 160,110 220,70 280,60 340,80 400,50 460,40 500,45"/>
-      <polyline fill="none" stroke="#C98A8F" stroke-width="1.8" points="40,140 100,130 160,135 220,110 280,100 340,115 400,95 460,90 500,100"/>
-      <polyline fill="none" stroke="#BFA670" stroke-width="1.4" points="40,150 100,155 160,140 220,145 280,125 340,135 400,120 460,125 500,115"/>
-      <polyline fill="none" stroke="#97826C" stroke-width="1.2" points="40,160 100,150 160,165 220,150 280,160 340,145 400,150 460,140 500,150"/>
-      <polyline fill="none" stroke="#6CA7C7" stroke-width="1.2" points="40,100 100,115 160,95 220,120 280,110 340,125 400,105 460,115 500,120"/>
-      <polyline fill="none" stroke="#8FB8A4" stroke-width="1.1" points="40,90 100,85 160,100 220,95 280,85 340,95 400,80 460,85 500,75"/>
-      <polyline fill="none" stroke="#B0D0EB" stroke-width="1.4" points="40,70 100,75 160,60 220,65 280,55 340,65 400,45 460,60 500,55"/>
-      <text x="44" y="200">Jan</text><text x="260" y="200">Jun</text><text x="470" y="200">Dec</text>
-    </svg>
-    <table>
-      <tr><th>rank</th><th>名</th><th>原色（亮色版）</th><th>暗色候选</th><th>对比度</th></tr>
-      <tr><td>0</td><td>墨 → 主序列</td><td class="mono"><span class="light"><span class="sw sm" style="background:#16191D"></span>#16191D</span></td><td class="mono"><span class="sw" style="background:#E8E6E0"></span>#E8E6E0</td><td class="num">14.9（D-011）</td></tr>
-      <tr><td>1</td><td>茹藘</td><td class="mono"><span class="light"><span class="sw sm" style="background:#A35F65"></span>#A35F65</span></td><td class="mono"><span class="sw" style="background:#C98A8F"></span>#C98A8F</td><td class="num">6.7（D-011）</td></tr>
-      <tr><td>2</td><td>沙饧</td><td class="mono"><span class="light"><span class="sw sm" style="background:#BFA670"></span>#BFA670</span></td><td class="mono"><span class="sw" style="background:#BFA670"></span>#BFA670</td><td class="num">7.9</td></tr>
-      <tr><td>3</td><td>苍艾</td><td class="mono"><span class="light"><span class="sw sm" style="background:#5A4B3B"></span>#5A4B3B</span></td><td class="mono"><span class="sw" style="background:#97826C"></span>#97826C</td><td class="num">5.1</td></tr>
-      <tr><td>4</td><td>吐绶蓝</td><td class="mono"><span class="light"><span class="sw sm" style="background:#4182A4"></span>#4182A4</span></td><td class="mono"><span class="sw" style="background:#6CA7C7"></span>#6CA7C7</td><td class="num">7.1</td></tr>
-      <tr><td>5</td><td>缥碧</td><td class="mono"><span class="light"><span class="sw sm" style="background:#80A492"></span>#80A492</span></td><td class="mono"><span class="sw" style="background:#8FB8A4"></span>#8FB8A4</td><td class="num">8.5（D-011）</td></tr>
-      <tr><td>6</td><td>碧落</td><td class="mono"><span class="light"><span class="sw sm" style="background:#AED0EE"></span>#AED0EE</span></td><td class="mono"><span class="sw" style="background:#B0D0EB"></span>#B0D0EB</td><td class="num">11.6</td></tr>
-    </table>
-    <div class="note">七色两两最小 ΔE（OKLab×100）= 8.5（沙饧 / 缥碧）；亮色版为 21.5。</div>
+<body data-mode="both">
+<header class="pagebar">
+  <h1>配色对照：白底原色 / 黑底候选 <span class="en">palette · light vs dark · Q-003</span></h1>
+  <p class="meta">左：FTEngine 10-02 定版原色，画在纸底白卡上——你熟悉的样子，也是将来导出 / 打印的纸底版。右：工作台暗色界面用的候选色，画在暗色玻璃卡上。两边数据完全相同；逐图对照每种颜色的"身份"是否一致、黑底上有没有过亮或过暗的颜色。</p>
+  <div class="controls">
+    <button data-mode="both" class="on">并排</button>
+    <button data-mode="light">只看白底</button>
+    <button data-mode="dark">只看黑底</button>
+    <label><input type="checkbox" id="thick"> 线宽 ×2（只为看清颜色；实际线宽按规范）</label>
   </div>
+</header>
+<main class="panels">
+  <section class="panel theme-light" id="p-light"></section>
+  <section class="panel theme-dark" id="p-dark"></section>
+</main>
+<script>
+window.onerror = function (msg, src, line) {
+  document.body.insertAdjacentHTML('afterbegin', '<pre class="err">' + msg + ' (line ' + line + ')</pre>');
+};
 
-  <div class="glass">
-    <h2 style="margin-top:0">类目 / 辅助 / 界面语义 <span class="en">categories · chrome</span></h2>
-    <table>
-      <tr><th>用途</th><th>原色</th><th>暗色候选</th><th>对比度</th></tr>
-      <tr><td>正 / 类目 1 青雀头黛</td><td class="mono"><span class="light"><span class="sw sm" style="background:#354E6B"></span>#354E6B</span></td><td class="mono"><span class="sw" style="background:#87A1BF"></span>#87A1BF</td><td class="num">7.0</td></tr>
-      <tr><td>分档 窃蓝</td><td class="mono"><span class="light"><span class="sw sm" style="background:#88ABDA"></span>#88ABDA</span></td><td class="mono"><span class="sw" style="background:#8BABD6"></span>#8BABD6</td><td class="num">7.9</td></tr>
-      <tr><td>大区 驼褐</td><td class="mono"><span class="light"><span class="sw sm" style="background:#7C5B3E"></span>#7C5B3E</span></td><td class="mono"><span class="sw" style="background:#B08968"></span>#B08968</td><td class="num">5.9</td></tr>
-      <tr><td>其他 明月珰</td><td class="mono"><span class="light"><span class="sw sm" style="background:#D4D3CA"></span>#D4D3CA</span></td><td class="mono"><span class="sw" style="background:#D4D3CA"></span>不变</td><td class="num">12.4</td></tr>
-      <tr><td>区间带 霜地（α .3）</td><td class="mono"><span class="light"><span class="sw sm" style="background:#C7C6B6"></span>#C7C6B6</span></td><td class="mono"><span class="sw" style="background:rgba(199,198,182,.3)"></span>不变</td><td class="num">10.8</td></tr>
-      <tr><td>均值 / 参照 绍衣</td><td class="mono"><span class="light"><span class="sw sm" style="background:#A8A19C"></span>#A8A19C</span></td><td class="mono"><span class="sw" style="background:#A8A19C"></span>不变</td><td class="num">7.3</td></tr>
-      <tr><td>模型线 齐紫</td><td class="mono"><span class="light"><span class="sw sm" style="background:#6C216D"></span>#6C216D</span></td><td class="mono"><span class="sw" style="background:#C478C3"></span>#C478C3</td><td class="num">6.0</td></tr>
-      <tr><td>界面点睛红（朱）</td><td class="mono"><span class="light"><span class="sw sm" style="background:#C00000"></span>#C00000</span></td><td class="mono"><span class="sw" style="background:#DF5C4D"></span>#DF5C4D</td><td class="num">5.1</td></tr>
-      <tr><td>界面琥珀（非实绩）</td><td class="mono"><span class="light"><span class="sw sm" style="background:#B8860B"></span>#B8860B</span></td><td class="mono"><span class="sw" style="background:#C69633"></span>#C69633</td><td class="num">6.9</td></tr>
-      <tr><td>链接蓝（藏蓝）</td><td class="mono"><span class="light"><span class="sw sm" style="background:#0F4C81"></span>#0F4C81</span></td><td class="mono"><span class="sw" style="background:#6A9DD1"></span>#6A9DD1</td><td class="num">6.5</td></tr>
-    </table>
-    <h2>语义样例 <span class="en">semantics</span></h2>
-    <div>行情模块（红涨绿跌，只涂字色）：
-      <span class="num up">SC2412 &nbsp;612.40 &nbsp;+1.25%</span> &nbsp;·&nbsp;
-      <span class="num down">FU2501 &nbsp;3,012 &nbsp;−0.84%</span> &nbsp;·&nbsp;
-      <span class="num" style="color:#9a9892">LU2501 &nbsp;4,105 &nbsp;0.00%</span>（零中性）</div>
-    <div style="margin-top:6px">分析语义（红 = 负 / 减）：
-      <span class="num" style="color:#87A1BF">库存 Δ +1,240 kb</span> &nbsp;·&nbsp;
-      <span class="num" style="color:#C98A8F">净出口 Δ −310 kb/d</span></div>
-    <div style="margin-top:8px">
-      <span class="badge" style="color:#6CA7C7;border-color:#6CA7C7">● ok</span>
-      <span class="badge" style="color:#C69633;border-color:#C69633">● warn</span>
-      <span class="badge" style="color:#DF5C4D;border-color:#DF5C4D">● bad</span>
-      <span class="badge" style="color:#8f8d87;border-style:dashed">sample</span>
-      &nbsp; 当前项竖条 <span style="display:inline-block;width:3px;height:14px;background:#DF5C4D;vertical-align:middle"></span>
-      &nbsp; 待更新点 <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#C69633;vertical-align:middle"></span>
-    </div>
-    <div class="note">状态语义不用绿色：绿只表示"跌"（行情模块内）。</div>
-  </div>
-</div>
+// ---- palettes ------------------------------------------------------------
+// light = FTEngine design/Graphs/Palette/PALETTE_CORE (2026-10-02)；dark = plan.md §2.1 候选（D-011 定值三个）
+const ROWS = [
+  ['ink', '墨', '最新年 / 主序列 / 主文字'],
+  ['rulv', '茹藘', '上一年 · 负 · 类目 2 · 中国 · 涨'],
+  ['shaxi', '沙饧', '前 2 年 · 类目 3 · 中东'],
+  ['cangai', '苍艾', '前 3 年 · 类目 5 · 非洲'],
+  ['tushou', '吐绶蓝', '前 4 年 · 类目 4 · 西北欧 · 状态 ok'],
+  ['piaobi', '缥碧', '前 5 年 · 前苏联 · 跌'],
+  ['biluo', '碧落', '最老年 · 类目 6 · 拉美'],
+  ['qingque', '青雀头黛', '正 · 类目 1 · 北美'],
+  ['qielan', '窃蓝', '地中海 · 分档'],
+  ['tuohe', '驼褐', '印度'],
+  ['mingyue', '明月珰', '其他 / 残差 · 亚太其他'],
+  ['shuangdi', '霜地', '五年区间带（白底 α .3 / 黑底 α .16）'],
+  ['shaoyi', '绍衣', '五年均值 / 参照线'],
+  ['qizi', '齐紫', '模型 / 推演线'],
+  ['uired', '点睛红', '当前项竖条 · 编号 · 状态 bad'],
+  ['amber', '琥珀', '非实绩 / 待更新 · 状态 warn'],
+  ['link', '链接蓝', '链接']
+];
 
-<h2>文字层级 <span class="en">text</span></h2>
-<div class="glass">
-  <div style="font:700 25px Georgia,'Songti SC',SimSun,serif">612.40 <span style="font-size:12px;color:#9a9892">主序列 / KPI 大数 #E8E6E0（14.9）</span></div>
-  <div style="color:#9a9892">次级文字 #9A9892（6.4）—— 今日焦点带的说明文字、模块副标</div>
-  <div style="color:#8f8d87">辅助文字 #8F8D87（5.6）—— 单位、占位、脚注</div>
-  <div style="margin-top:6px"><a style="color:#6A9DD1">链接样例 #6A9DD1</a> · <span style="color:#C69633">琥珀：可编辑 / 未结算 / 待更新</span> · <span style="color:#DF5C4D">点睛红：编号 01</span></div>
-</div>
+const THEMES = {
+  light: {
+    title: '白底 · 原色', en: 'light · PALETTE_CORE',
+    sub: 'FTEngine 10-02 定版（墨 + 黛驼）。图在白卡上，对比度按白卡 #FFFFFF 计。涨跌 / 状态色为对应映射，仅作参照（亮色主题随导出 feature 定）。',
+    surface: '#FFFFFF', t1: '#16191D', t2: '#4D545C', t3: '#878D95',
+    axis: 'rgba(0,0,0,.28)', grid: 'rgba(0,0,0,.07)', tick: '#6B7178', sep: '#FFFFFF',
+    bandAlpha: 0.3, bandChipAlpha: 0.6,
+    c: { ink: '#16191D', rulv: '#A35F65', shaxi: '#BFA670', cangai: '#5A4B3B', tushou: '#4182A4', piaobi: '#80A492', biluo: '#AED0EE',
+         qingque: '#354E6B', qielan: '#88ABDA', tuohe: '#7C5B3E', mingyue: '#D4D3CA', shuangdi: '#C7C6B6', shaoyi: '#A8A19C', qizi: '#6C216D',
+         uired: '#C00000', amber: '#B8860B', link: '#0F4C81' }
+  },
+  dark: {
+    title: '黑底 · 暗色候选', en: 'dark · candidates',
+    sub: '工作台界面用。D-011 已定：主序列 #E8E6E0、涨（茹藘）#C98A8F、跌（缥碧）#8FB8A4；其余为候选。中性色按“在黑底上同样退后”调整：其他（明月珰）取暗灰、区间带透明度 .16。图在暗色玻璃卡上，对比度按卡面 #1D1E20 计。',
+    surface: '#1D1E20', t1: '#E8E6E0', t2: '#9A9892', t3: '#8F8D87',
+    axis: 'rgba(255,255,255,.28)', grid: 'rgba(255,255,255,.08)', tick: '#8F8D87', sep: '#1D1E20',
+    bandAlpha: 0.16, bandChipAlpha: 0.32,
+    c: { ink: '#E8E6E0', rulv: '#C98A8F', shaxi: '#BFA670', cangai: '#97826C', tushou: '#6CA7C7', piaobi: '#8FB8A4', biluo: '#B0D0EB',
+         qingque: '#87A1BF', qielan: '#8BABD6', tuohe: '#B08968', mingyue: '#54534B', shuangdi: '#C7C6B6', shaoyi: '#A8A19C', qizi: '#C478C3',
+         uired: '#DF5C4D', amber: '#C69633', link: '#6A9DD1' }
+  }
+};
+
+// ---- color math (WCAG relative luminance) --------------------------------
+function hexRgb(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+function lumin(rgb) {
+  const f = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]);
+}
+function contrast(a, b) { const x = lumin(a), y = lumin(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+function mix(fg, bg, a) { return fg.map((v, i) => Math.round(a * v + (1 - a) * bg[i])); }
+function hexA(hex, a) { const [r, g, b] = hexRgb(hex); return `rgba(${r},${g},${b},${a})`; }
+
+// ---- sample data (seeded, identical for both panels) ---------------------
+function rng(seed) {
+  return function () {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const R = rng(20261027);
+const N = 26;
+const YEARS = [2026, 2025, 2024, 2023, 2022, 2021, 2020];
+const WIDTHS = [2.6, 1.8, 1.4, 1.2, 1.2, 1.1, 1.4];
+const yearVals = YEARS.map((yr, i) => Array.from({ length: N }, (_, k) => 100 + 16 * Math.sin(k / N * 2 * Math.PI - 1.1) + (3 - i) * 3.2 + (R() - 0.5) * 9));
+yearVals[0] = yearVals[0].slice(0, 19);
+const band5 = { lo: [], hi: [], mean: [] };
+for (let k = 0; k < N; k++) {
+  const v = yearVals.slice(1, 6).map(a => a[k]);
+  band5.lo.push(Math.min(...v)); band5.hi.push(Math.max(...v)); band5.mean.push(v.reduce((s, x) => s + x, 0) / v.length);
+}
+const lastLatest = yearVals[0][yearVals[0].length - 1];
+const model = Array.from({ length: N - 18 }, (_, j) => lastLatest + j * 0.9 + Math.sin(j / 2) * 2);
+const catVals = [26, 18, 13, 10, 8, 6, 5].map(base => Array.from({ length: 8 }, () => base * (0.75 + R() * 0.5)));
+const signed = Array.from({ length: 16 }, (_, i) => Math.round((Math.sin(i / 2.3) * 9 + (R() - 0.5) * 8) * 10) / 10);
+const REGION_KEYS = ['NA', 'LATAM', 'NWE', 'MED', 'FSU', 'ME', 'AFR', 'IN', 'CN', 'APX'];
+const REGION_ZH = { NA: '北美', LATAM: '拉美', NWE: '西北欧', MED: '地中海', FSU: '前苏联', ME: '中东', AFR: '非洲', IN: '印度', CN: '中国', APX: '亚太其他' };
+const regionRows = ['2024', '2025', '2026E'].map(label => ({ label, parts: REGION_KEYS.map(k => ({ k, v: 4 + R() * 14 })) }));
+const MONTHS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'];
+
+// ---- svg charts -----------------------------------------------------------
+let THICK = 1;
+function frame(t, w, h, m, lo, hi, ticks) {
+  const y = v => (h - m.b) - (v - lo) * (h - m.b - m.t) / (hi - lo);
+  let g = '';
+  for (let k = 0; k <= ticks; k++) {
+    const v = lo + (hi - lo) * k / ticks, yy = y(v);
+    g += `<line x1="${m.l}" x2="${w - m.r}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}" stroke="${t.grid}"/>`;
+    g += `<text x="${m.l - 6}" y="${(yy + 4).toFixed(1)}" text-anchor="end" fill="${t.tick}" class="tk">${v.toFixed(0)}</text>`;
+  }
+  return { y, g };
+}
+function lineChart(t, { lines, band, xTicks, w = 640, h = 240 }) {
+  const m = { l: 36, r: 12, t: 10, b: 24 };
+  const vals = lines.flatMap(s => s.values);
+  if (band) vals.push(...band.lo, ...band.hi);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+  const { y, g: grid } = frame(t, w, h, m, lo, hi, 4);
+  const x = i => m.l + i * (w - m.l - m.r) / (N - 1);
+  let g = grid + `<line x1="${m.l}" x2="${w - m.r}" y1="${h - m.b}" y2="${h - m.b}" stroke="${t.axis}"/>`;
+  if (band) {
+    const top = band.hi.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+    const bot = band.lo.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).reverse();
+    g += `<polygon points="${top.concat(bot).join(' ')}" fill="${band.color}" fill-opacity="${band.alpha}"/>`;
+  }
+  for (const s of [...lines].reverse()) {
+    const pts = s.values.map((v, i) => `${x(i + (s.offset || 0)).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    g += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${(s.width * THICK).toFixed(2)}"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+  }
+  for (const [i, label] of xTicks) g += `<text x="${x(i).toFixed(1)}" y="${h - 7}" text-anchor="middle" fill="${t.tick}" class="tk">${label}</text>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+function stackBar(t, { cats, w = 640, h = 220 }) {
+  const m = { l: 36, r: 12, t: 10, b: 24 };
+  const n = cats[0].values.length;
+  const totals = Array.from({ length: n }, (_, i) => cats.reduce((a, c) => a + c.values[i], 0));
+  const { y, g: grid } = frame(t, w, h, m, 0, Math.max(...totals) * 1.08, 4);
+  const slot = (w - m.l - m.r) / n, bw = slot * 0.62;
+  let g = grid;
+  for (let i = 0; i < n; i++) {
+    let acc = 0;
+    const x0 = m.l + i * slot + (slot - bw) / 2;
+    for (const c of cats) {
+      const y0 = y(acc), y1 = y(acc + c.values[i]);
+      g += `<rect x="${x0.toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${(y0 - y1).toFixed(1)}" fill="${c.color}" stroke="${t.sep}" stroke-width="0.6"/>`;
+      acc += c.values[i];
+    }
+    g += `<text x="${(x0 + bw / 2).toFixed(1)}" y="${h - 7}" text-anchor="middle" fill="${t.tick}" class="tk">${MONTHS[i]}</text>`;
+  }
+  g += `<line x1="${m.l}" x2="${w - m.r}" y1="${h - m.b}" y2="${h - m.b}" stroke="${t.axis}"/>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+function signedBar(t, { values, pos, neg, w = 640, h = 190 }) {
+  const m = { l: 36, r: 12, t: 10, b: 12 };
+  const lim = Math.max(...values.map(Math.abs)) * 1.15;
+  const { y, g: grid } = frame(t, w, h, m, -lim, lim, 4);
+  const slot = (w - m.l - m.r) / values.length, bw = slot * 0.6;
+  let g = grid;
+  values.forEach((v, i) => {
+    const x0 = m.l + i * slot + (slot - bw) / 2, y0 = y(0), y1 = y(v);
+    g += `<rect x="${x0.toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.abs(y0 - y1).toFixed(1)}" fill="${v >= 0 ? pos : neg}"/>`;
+  });
+  g += `<line x1="${m.l}" x2="${w - m.r}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}" stroke="${t.axis}"/>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+function hbar100(t, { rows, colorOf, w = 640, h = 112 }) {
+  const m = { l: 52, r: 12, t: 6, b: 6 };
+  const rh = (h - m.t - m.b) / rows.length, bh = rh * 0.62;
+  let g = '';
+  rows.forEach((r, ri) => {
+    const total = r.parts.reduce((a, p) => a + p.v, 0);
+    const y0 = m.t + ri * rh + (rh - bh) / 2;
+    let acc = 0;
+    g += `<text x="${m.l - 8}" y="${(y0 + bh / 2 + 4).toFixed(1)}" text-anchor="end" fill="${t.tick}" class="tk">${r.label}</text>`;
+    for (const p of r.parts) {
+      const x0 = m.l + acc / total * (w - m.l - m.r), wd = p.v / total * (w - m.l - m.r);
+      g += `<rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${wd.toFixed(1)}" height="${bh.toFixed(1)}" fill="${colorOf(p.k)}" stroke="${t.sep}" stroke-width="0.6"/>`;
+      acc += p.v;
+    }
+  });
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+const chip = (color, label) => `<span class="lg"><i style="background:${color}"></i>${label}</span>`;
+const lineChip = (color, label, width, dash) => `<span class="lg"><i class="ln" style="border-top:${Math.max(2, width * THICK).toFixed(1)}px ${dash ? 'dashed' : 'solid'} ${color}"></i>${label}</span>`;
+
+// ---- panels ---------------------------------------------------------------
+function renderPanel(key) {
+  const t = THEMES[key], c = t.c, surf = hexRgb(t.surface);
+  const series = ['ink', 'rulv', 'shaxi', 'cangai', 'tushou', 'piaobi', 'biluo'].map(k => c[k]);
+  const xTicks = [[0, 'Jan'], [6, 'Apr'], [13, 'Jul'], [19, 'Oct'], [25, 'Dec']];
+  const regionColor = { NA: c.qingque, LATAM: c.biluo, NWE: c.tushou, MED: c.qielan, FSU: c.piaobi, ME: c.shaxi, AFR: c.cangai, IN: c.tuohe, CN: c.rulv, APX: c.mingyue };
+  const catColors = [c.qingque, c.rulv, c.shaxi, c.tushou, c.cangai, c.biluo, c.mingyue];
+  const catNames = ['类目 1', '类目 2', '类目 3', '类目 4', '类目 5', '类目 6', '其他'];
+
+  let h = `<h2>${t.title} <span class="en">${t.en}</span></h2><p class="sub">${t.sub}</p><div class="cards">`;
+  h += `<div class="card"><h3>年份线（季节图，七年）<span class="muted">墨 → 茹藘 → 沙饧 → 苍艾 → 吐绶蓝 → 缥碧 → 碧落</span></h3>`
+    + lineChart(t, { lines: YEARS.map((yr, i) => ({ values: yearVals[i], color: series[i], width: WIDTHS[i] })), xTicks })
+    + `<div class="legend">${YEARS.map((yr, i) => lineChip(series[i], yr, WIDTHS[i])).join('')}</div>`
+    + (key === 'dark' ? `<p class="note">注意：白底上旧年份越来越淡、自然退后；黑底上颜色越浅反而越亮——碧落（2020）对比度 ${contrast(hexRgb(c.biluo), surf).toFixed(1)}，比茹藘（2025）${contrast(hexRgb(c.rulv), surf).toFixed(1)} 还醒目，“最新年 > 上一年 > 更早”的层次变平了。</p>` : '')
+    + `</div>`;
+  h += `<div class="card"><h3>季节图常用形态<span class="muted">最新年 · 上一年 · 五年区间带 · 五年均值 · 推演</span></h3>`
+    + lineChart(t, {
+        lines: [
+          { values: yearVals[0], color: c.ink, width: 2.6 },
+          { values: yearVals[1], color: c.rulv, width: 1.8 },
+          { values: band5.mean, color: c.shaoyi, width: 1.0, dash: '2 3' },
+          { values: model, color: c.qizi, width: 1.6, dash: '6 4', offset: 18 }
+        ],
+        band: { lo: band5.lo, hi: band5.hi, color: c.shuangdi, alpha: t.bandAlpha }, xTicks
+      })
+    + `<div class="legend">${lineChip(c.ink, '2026', 2.6)}${lineChip(c.rulv, '2025', 1.8)}${chip(hexA(c.shuangdi, t.bandChipAlpha), '2021–25 区间')}${lineChip(c.shaoyi, '2021–25 均值', 1, true)}${lineChip(c.qizi, '推演', 1.6, true)}</div></div>`;
+  h += `<div class="card"><h3>类目堆叠柱<span class="muted">按排名取色：类目 1 青雀头黛 · 类目 2 茹藘 … · 其他 明月珰</span></h3>`
+    + stackBar(t, { cats: catVals.map((v, i) => ({ values: v, color: catColors[i] })) })
+    + `<div class="legend">${catNames.map((n, i) => chip(catColors[i], n)).join('')}</div></div>`;
+  h += `<div class="card"><h3>正负柱<span class="muted">正 青雀头黛 · 负 茹藘</span></h3>`
+    + signedBar(t, { values: signed, pos: c.qingque, neg: c.rulv }) + `</div>`;
+  h += `<div class="card"><h3>十大区（占比）</h3>`
+    + hbar100(t, { rows: regionRows, colorOf: k => regionColor[k] })
+    + `<div class="legend">${REGION_KEYS.map(k => chip(regionColor[k], REGION_ZH[k])).join('')}</div></div>`;
+  h += `<div class="card sem"><h3>界面语义</h3>`
+    + `<div>行情（红涨绿跌，只涂字色）：<span class="num" style="color:${c.rulv}">SC2412 612.40 +1.25%</span> · <span class="num" style="color:${c.piaobi}">FU2501 3,012 −0.84%</span> · <span class="num" style="color:${t.t2}">LU2501 4,105 0.00%</span></div>`
+    + `<div>分析（红 = 负 / 减）：<span class="num" style="color:${c.qingque}">库存 Δ +1,240 kb</span> · <span class="num" style="color:${c.rulv}">净出口 Δ −310 kb/d</span></div>`
+    + `<div><span class="badge" style="color:${c.tushou};border-color:${c.tushou}">● ok</span><span class="badge" style="color:${c.amber};border-color:${c.amber}">● warn</span><span class="badge" style="color:${c.uired};border-color:${c.uired}">● bad</span><span class="badge" style="color:${t.t3};border-color:${t.t3};border-style:dashed">sample</span>`
+    + ` 当前项 <span style="display:inline-block;width:3px;height:14px;background:${c.uired};vertical-align:middle"></span> · 待更新 <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.amber};vertical-align:middle"></span> · <a style="color:${c.link}">链接样例</a></div>`
+    + `<div style="color:${t.t1}">主文字 ${t.t1}</div><div style="color:${t.t2}">次级文字 ${t.t2}</div><div style="color:${t.t3}">辅助文字 ${t.t3}</div></div>`;
+  h += `<div class="card wide"><h3>色表<span class="muted">对比度按图所在卡面 ${t.surface} 计；线条 / 色块 ≥ 3:1 可辨（WCAG 非文字），文字需 ≥ 4.5:1；低于 3 的加粗</span></h3>`
+    + `<table><tr><th>色名</th><th>用途</th><th>色块</th><th>色值</th><th class="num">对比度</th></tr>`;
+  for (const [k, name, roles] of ROWS) {
+    const hex = c[k];
+    const isBand = k === 'shuangdi';
+    const rgb = isBand ? mix(hexRgb(hex), surf, t.bandAlpha) : hexRgb(hex);
+    const cr = contrast(rgb, surf);
+    h += `<tr><td>${name}</td><td class="muted">${roles}</td><td><span class="sw" style="background:${isBand ? hexA(hex, t.bandAlpha) : hex}"></span></td>`
+      + `<td class="mono">${hex}${isBand ? `（α ${t.bandAlpha} 叠加后）` : ''}</td><td class="num${cr < 3 ? ' low' : ''}">${cr.toFixed(1)}</td></tr>`;
+  }
+  h += `</table></div></div>`;
+  document.getElementById('p-' + key).innerHTML = h;
+}
+function renderAll() { renderPanel('light'); renderPanel('dark'); }
+
+function setMode(mode) {
+  document.body.dataset.mode = mode;
+  document.querySelectorAll('.controls button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+}
+document.querySelectorAll('.controls button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+document.getElementById('thick').addEventListener('change', e => { THICK = e.target.checked ? 2 : 1; renderAll(); });
+const qs = new URLSearchParams(location.search);
+if (qs.get('thick') === '1') { THICK = 2; document.getElementById('thick').checked = true; }
+renderAll();
+if (qs.get('mode')) setMode(qs.get('mode'));
+</script>
 </body>
 </html>
