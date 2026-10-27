@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>Futures-AI 配色对照：白底原色 / 黑底候选（Q-003）</title>
+<title>Futures-AI 配色对照：白底原色 / 黑底 A 等亮 · B 递暗（Q-003）</title>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font: 13px/1.5 "Segoe UI", -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; background: #e4e3df; color: #16191d; }
@@ -53,13 +53,21 @@
   .sem div { margin: 4px 0; }
   .badge { display: inline-block; font-size: 10px; padding: 1px 7px; border: 1px solid; border-radius: 999px; margin-right: 6px; }
   .err { background: #fee; color: #900; padding: 8px 12px; margin: 0; }
+  .compare-wrap { padding: 2px 28px 22px; }
+  .compare-wrap h2 { font: 700 17px Georgia, "Songti SC", SimSun, serif; margin: 4px 0 2px; }
+  .compare-wrap .lead { margin: 0 0 12px; max-width: 1180px; opacity: .85; }
+  .compare { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .compare > .col { padding: 14px 16px 6px; min-width: 0; }
+  .compare h3.colh { font: 700 14px Georgia, "Songti SC", SimSun, serif; margin: 0 0 8px; }
+  .compare .card { margin-bottom: 12px; }
+  .ctab td { padding: 3px 6px; }
   .note { font-size: 11.5px; margin: 8px 0 0; padding: 6px 8px; border-left: 2px solid #C69633; }
   .theme-dark .note { background: rgba(198, 150, 51, .08); color: #e8e6e0; }
 </style>
 </head>
 <body data-mode="both">
 <header class="pagebar">
-  <h1>配色对照：白底原色 / 黑底候选 <span class="en">palette · light vs dark · Q-003</span></h1>
+  <h1>配色对照：白底原色 / 黑底候选（A 等亮 · B 递暗） <span class="en">palette · light vs dark · Q-003</span></h1>
   <p class="meta">左：FTEngine 10-02 定版原色，画在纸底白卡上——你熟悉的样子，也是将来导出 / 打印的纸底版。右：工作台暗色界面用的候选色，画在暗色玻璃卡上。两边数据完全相同；逐图对照每种颜色的"身份"是否一致、黑底上有没有过亮或过暗的颜色。</p>
   <div class="controls">
     <button data-mode="both" class="on">并排</button>
@@ -68,6 +76,7 @@
     <label><input type="checkbox" id="thick"> 线宽 ×2（只为看清颜色；实际线宽按规范）</label>
   </div>
 </header>
+<section class="compare-wrap" id="compare"></section>
 <main class="panels">
   <section class="panel theme-light" id="p-light"></section>
   <section class="panel theme-dark" id="p-dark"></section>
@@ -160,6 +169,18 @@ const REGION_KEYS = ['NA', 'LATAM', 'NWE', 'MED', 'FSU', 'ME', 'AFR', 'IN', 'CN'
 const REGION_ZH = { NA: '北美', LATAM: '拉美', NWE: '西北欧', MED: '地中海', FSU: '前苏联', ME: '中东', AFR: '非洲', IN: '印度', CN: '中国', APX: '亚太其他' };
 const regionRows = ['2024', '2025', '2026E'].map(label => ({ label, parts: REGION_KEYS.map(k => ({ k, v: 4 + R() * 14 })) }));
 const MONTHS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'];
+const R2 = rng(7); // separate stream: keeps the panel charts' data unchanged
+const TN = 12;
+const termCurves = [0, 1, 2, 3, 4].map(i => Array.from({ length: TN }, (_, k) => 612 - k * (5.5 - i * 0.6) - i * 9 + (R2() - 0.5) * 3));
+
+// ---- year ramps: white original / dark A (equal-light) / dark B (receding) ----
+const RAMPS = {
+  light: { label: '白底 · 原色', theme: 'light', colors: ['#16191D', '#A35F65', '#BFA670', '#5A4B3B', '#4182A4', '#80A492', '#AED0EE'] },
+  darkA: { label: '黑底 A · 等亮（当前候选）', theme: 'dark', colors: ['#E8E6E0', '#C98A8F', '#BFA670', '#97826C', '#6CA7C7', '#8FB8A4', '#B0D0EB'] },
+  darkB: { label: '黑底 B · 递暗（备选）', theme: 'dark', colors: ['#E8E6E0', '#C98A8F', '#A98B49', '#8D8175', '#2F84AD', '#557F6B', '#516C84'] }
+};
+const RAMP_NAMES = ['墨', '茹藘', '沙饧', '苍艾', '吐绶蓝', '缥碧', '碧落'];
+const TERM_LABELS = ['Today', '1W 前', '1M 前', '1Q 前', '1Y 前'];
 
 // ---- svg charts -----------------------------------------------------------
 let THICK = 1;
@@ -173,14 +194,14 @@ function frame(t, w, h, m, lo, hi, ticks) {
   }
   return { y, g };
 }
-function lineChart(t, { lines, band, xTicks, w = 640, h = 240 }) {
+function lineChart(t, { lines, band, xTicks, w = 640, h = 240, n = N }) {
   const m = { l: 36, r: 12, t: 10, b: 24 };
   const vals = lines.flatMap(s => s.values);
   if (band) vals.push(...band.lo, ...band.hi);
   let lo = Math.min(...vals), hi = Math.max(...vals);
   const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
   const { y, g: grid } = frame(t, w, h, m, lo, hi, 4);
-  const x = i => m.l + i * (w - m.l - m.r) / (N - 1);
+  const x = i => m.l + i * (w - m.l - m.r) / (n - 1);
   let g = grid + `<line x1="${m.l}" x2="${w - m.r}" y1="${h - m.b}" y2="${h - m.b}" stroke="${t.axis}"/>`;
   if (band) {
     const top = band.hi.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
@@ -190,6 +211,7 @@ function lineChart(t, { lines, band, xTicks, w = 640, h = 240 }) {
   for (const s of [...lines].reverse()) {
     const pts = s.values.map((v, i) => `${x(i + (s.offset || 0)).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
     g += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${(s.width * THICK).toFixed(2)}"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+    if (s.marker) g += s.values.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${(s.marker * (THICK > 1 ? 1.4 : 1)).toFixed(1)}" fill="${s.color}"/>`).join('');
   }
   for (const [i, label] of xTicks) g += `<text x="${x(i).toFixed(1)}" y="${h - 7}" text-anchor="middle" fill="${t.tick}" class="tk">${label}</text>`;
   return `<svg class="chart" viewBox="0 0 ${w} ${h}">${g}</svg>`;
@@ -260,7 +282,10 @@ function renderPanel(key) {
   h += `<div class="card"><h3>年份线（季节图，七年）<span class="muted">墨 → 茹藘 → 沙饧 → 苍艾 → 吐绶蓝 → 缥碧 → 碧落</span></h3>`
     + lineChart(t, { lines: YEARS.map((yr, i) => ({ values: yearVals[i], color: series[i], width: WIDTHS[i] })), xTicks })
     + `<div class="legend">${YEARS.map((yr, i) => lineChip(series[i], yr, WIDTHS[i])).join('')}</div>`
-    + (key === 'dark' ? `<p class="note">注意：白底上旧年份越来越淡、自然退后；黑底上颜色越浅反而越亮——碧落（2020）对比度 ${contrast(hexRgb(c.biluo), surf).toFixed(1)}，比茹藘（2025）${contrast(hexRgb(c.rulv), surf).toFixed(1)} 还醒目，“最新年 > 上一年 > 更早”的层次变平了。</p>` : '')
+    + (key === 'dark' ? (() => {
+        const L = THEMES.light.c, W = hexRgb(THEMES.light.surface), cw = k => contrast(hexRgb(L[k]), W).toFixed(1), cd = k => contrast(hexRgb(c[k]), surf).toFixed(1);
+        return `<p class="note">注意：白底上，茹藘（上一年）比沙饧、缥碧、碧落三条旧年份更醒目（${cw('rulv')} 对 ${cw('shaxi')} / ${cw('piaobi')} / ${cw('biluo')}）；黑底 A 上这三条反而都比茹藘亮（${cd('shaxi')} / ${cd('piaobi')} / ${cd('biluo')} 对 ${cd('rulv')}），上一年不再突出。递暗版 B 见页首对照。</p>`;
+      })() : '')
     + `</div>`;
   h += `<div class="card"><h3>季节图常用形态<span class="muted">最新年 · 上一年 · 五年区间带 · 五年均值 · 推演</span></h3>`
     + lineChart(t, {
@@ -300,7 +325,30 @@ function renderPanel(key) {
   h += `</table></div></div>`;
   document.getElementById('p-' + key).innerHTML = h;
 }
-function renderAll() { renderPanel('light'); renderPanel('dark'); }
+function renderCompare() {
+  let h = `<h2>递暗版对照 <span class="en">year ramp · A vs B</span></h2>`
+    + `<p class="lead">B 只改有先后的序列线（年份线、期限结构快照、有主次的多序列）；类目、大区、正负、季节图常用形态在 A / B 下完全一样，所以下面两大块面板只按 A 画。`
+    + `B 的规则：最新年、上一年保持 D-011 定值；之后每早一年对比度降一档（5.1 → 4.4 → 4.0 → 3.7 → 3.0），都低于上一年、不低于线条 3:1；色度最多提到原色 1.2 倍，守住黛驼的克制。`
+    + `代价：七条线两两最小色差 8.1（A 为 8.5）；碧落从浅天蓝变成暗灰蓝；年份线上的缥碧与“跌”色（D-011 定值 #8FB8A4）不再同值。</p><div class="compare">`;
+  for (const key of ['light', 'darkA', 'darkB']) {
+    const r = RAMPS[key], t = THEMES[r.theme], surf = hexRgb(t.surface), cs = r.colors;
+    h += `<div class="col theme-${r.theme}"><h3 class="colh">${r.label}</h3>`;
+    h += `<div class="card"><h3>年份线（七年）</h3>`
+      + lineChart(t, { lines: YEARS.map((yr, i) => ({ values: yearVals[i], color: cs[i], width: WIDTHS[i] })), xTicks: [[0, 'Jan'], [13, 'Jul'], [25, 'Dec']], w: 460, h: 230 })
+      + `<div class="legend">${YEARS.map((yr, i) => lineChip(cs[i], yr, WIDTHS[i])).join('')}</div></div>`;
+    h += `<div class="card"><h3>期限结构快照</h3>`
+      + lineChart(t, { lines: termCurves.map((v, i) => ({ values: v, color: cs[i], width: i === 0 ? 2.4 : 1.5, dash: i === 4 ? '2 3' : '', marker: i === 0 ? 2.5 : 0 })), xTicks: [[0, 'M1'], [5, 'M6'], [11, 'M12']], w: 460, h: 200, n: TN })
+      + `<div class="legend">${TERM_LABELS.map((l, i) => lineChip(cs[i], l, i === 0 ? 2.4 : 1.5, i === 4)).join('')}</div></div>`;
+    h += `<div class="card"><table class="ctab"><tr><th>rank</th><th>色名</th><th>色块</th><th>色值</th><th class="num">对比度</th></tr>`;
+    cs.forEach((hex, i) => {
+      const cr = contrast(hexRgb(hex), surf);
+      h += `<tr><td>${i}</td><td>${RAMP_NAMES[i]}</td><td><span class="sw" style="background:${hex}"></span></td><td class="mono">${hex}${r.theme === 'dark' && i < 2 ? '（D-011）' : ''}</td><td class="num${cr < 3 ? ' low' : ''}">${cr.toFixed(1)}</td></tr>`;
+    });
+    h += `</table></div></div>`;
+  }
+  document.getElementById('compare').innerHTML = h + `</div>`;
+}
+function renderAll() { renderCompare(); renderPanel('light'); renderPanel('dark'); }
 
 function setMode(mode) {
   document.body.dataset.mode = mode;
