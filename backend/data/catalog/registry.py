@@ -67,11 +67,6 @@ class Registry:
         # ---- sources 状态机（F-10：既有源按 manifest_path 原地标 error；保留用户 enabled） ----
         seen_ids = set(goods)
         path_to_id = {}  # R6-03：在 goods 更新后重建，避免旧路径误伤
-        for (sid, status) in self.cat.con.execute(
-            "SELECT id, status FROM sources WHERE status != 'error'"
-        ).fetchall():
-            if sid not in seen_ids and status != "disabled":
-                self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [sid])
         for sid, (m, adapter_dir, mf_path) in goods.items():
             self.cat.con.execute(
                 "INSERT INTO sources(id, adapter_id, name, enabled, status, manifest_path) "
@@ -80,6 +75,11 @@ class Registry:
                 "manifest_path=excluded.manifest_path",
                 [sid, sid, m.name, adapter_dir],
             )
+        for (sid, status) in self.cat.con.execute(
+            "SELECT id, status FROM sources WHERE status != 'error'"
+        ).fetchall():
+            if sid not in seen_ids and status != "disabled":
+                self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [sid])
         # R6-03/R7-03：goods 更新后建路径映射；仅纳入本轮实际扫描到的路径
         scanned_dirs = {str(Path(mf).parent) for (_d, mf) in entries}
         path_to_id = {
