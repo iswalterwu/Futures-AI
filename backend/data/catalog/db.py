@@ -116,8 +116,9 @@ class CatalogDB:
             for r in self.con.execute(
                 "SELECT ss.source_id FROM series_sources ss "
                 "JOIN sources s ON s.id = ss.source_id "
+                "LEFT JOIN user_overrides uo ON uo.series_id = ss.series_id AND uo.source_id = ss.source_id "
                 "WHERE ss.series_id=? AND ss.current=1 AND s.status='ok' AND s.enabled=1 "
-                "ORDER BY ss.priority ASC, ss.reg_order ASC",
+                "ORDER BY COALESCE(uo.priority, ss.priority) ASC, ss.reg_order ASC",
                 [series_id],
             ).fetchall()
         ]

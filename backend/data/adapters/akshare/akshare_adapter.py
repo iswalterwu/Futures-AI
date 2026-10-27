@@ -34,7 +34,7 @@ def _get_receipt(asset: str):
     """可注入：交易所仓单/库存日报（返回与日线同形：日期/收盘价 列名归一为 日期/值）。"""
     import akshare as ak
 
-    df = ak.get_receipt(start_day="20260101", end_day="20261231", vars_list=[asset.upper()])
+    df = ak.get_receipt(start_date="20260101", end_date="20261231", vars_list=[asset.upper()])
     if df is None or df.empty:
         return pd.DataFrame(columns=["日期", "值"])
     col = [c for c in df.columns if c not in ("日期", "date")]
@@ -62,6 +62,11 @@ class AkshareAdapter(Adapter):
         if df is None or df.empty:
             return []
         df = df.rename(columns={c: str(c).strip() for c in df.columns})
+        # 合约接口返回 date/close 列名 → 归一（F-03）
+        if "date" in df.columns:
+            df = df.rename(columns={"date": "日期"})
+        if "close" in df.columns and value_col == "收盘价":
+            df = df.rename(columns={"close": "收盘价"})
         date_col = next(c for c in ("日期", "date", "Date") if c in df.columns)
         if value_col not in df.columns:
             raise ValueError(f"响应缺少值列: {value_col}")

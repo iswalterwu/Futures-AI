@@ -27,7 +27,11 @@ def _request(series_id: str, api_key: str, start, end):
         params["start"] = start.strftime("%Y-%m-%dT%H")
     if end:
         params["end"] = end.strftime("%Y-%m-%dT%H")
-    resp = requests.get(url, params=params, timeout=30)
+    try:
+        resp = requests.get(url, params=params, timeout=30)
+    except requests.exceptions.RequestException:
+        # F-07：网络异常不携带 URL/参数（防 key 泄露）
+        raise FetchError("adapter_error", "EIA 网络请求失败")
     if resp.status_code in (401, 403):
         raise FetchError("unauthorized", "EIA 认证失败（请检查 API key）")
     if resp.status_code == 429:

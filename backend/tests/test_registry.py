@@ -27,6 +27,7 @@ MANIFEST_B_SAME_DESC = """
 id: source-b
 name: 源B（同描述符）
 version: 1
+credentials: none
 provides:
   - descriptor: {asset: sc, geo: world, measure: close, contract: ""}
     symbols: ["SC_MAIN"]
@@ -56,6 +57,7 @@ MANIFEST_DUP = """
 id: akshare
 name: 重复 id
 version: 1
+credentials: none
 provides:
   - descriptor: {asset: fu, geo: cn, measure: close}
     symbols: ["FU_MAIN"]

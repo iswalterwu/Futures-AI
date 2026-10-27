@@ -105,6 +105,9 @@ class Registry:
                 )
                 current_errors.add(key)
         for old in stale_errors - current_errors:
+            # F-10：仅当磁盘上已无该路径时才清理 error 记录（重建幂等）
+            if old.startswith("error:") and Path(old[len("error:"):]).exists():
+                continue
             self.cat.con.execute("DELETE FROM sources WHERE id=?", [old])
 
         # ---- series 编译（增量，不清空；同描述符归并 AC-002-2） ----
@@ -138,7 +141,7 @@ class Registry:
         for (series_id,) in self.cat.con.execute("SELECT id FROM series").fetchall():
             n_okish = self.cat.con.execute(
                 "SELECT COUNT(*) FROM series_sources ss JOIN sources s ON s.id = ss.source_id "
-                "WHERE ss.series_id=? AND s.status != 'disabled'",
+                "WHERE ss.series_id=? AND ss.current=1 AND s.status != 'disabled'",
                 [series_id],
             ).fetchone()[0]
             if n_okish == 0:

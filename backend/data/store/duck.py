@@ -30,7 +30,7 @@ FAILED = "failed"
 
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
+    return datetime.now(timezone.utc).replace(tzinfo=None)  # 保留微秒（F-12 可见时间）
 
 
 class DuckStore:

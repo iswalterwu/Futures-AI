@@ -57,4 +57,7 @@ def get(creds_dir: Path, name: str) -> str:
         raise
     except Exception as e:
         raise CredsError(f"凭证解密失败，拒绝返回: {e}") from e
-    return secret.decode("utf-8")
+    secret = secret.decode("utf-8")
+    if not secret:
+        raise CredsError("凭证读取失败：空凭证（拒绝返回空值）")
+    return secret

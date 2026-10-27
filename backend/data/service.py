@@ -21,13 +21,19 @@ from data.store.provenance import diff, provenance
 
 
 def _parse_ts(v):
-    """ISO8601 → datetime；非法输入 → validation_error（F-05）。"""
-    if v is None or isinstance(v, datetime):
-        return v
-    try:
-        return datetime.fromisoformat(str(v))
-    except ValueError as e:
-        raise FetchError("validation_error", f"非法时间参数: {v!r}（须为 ISO8601）") from e
+    """ISO8601 → naive UTC datetime；非法输入 → validation_error（F-05 时区归一）。"""
+    if v is None:
+        return None
+    if isinstance(v, datetime):
+        dt = v
+    else:
+        try:
+            dt = datetime.fromisoformat(str(v))
+        except ValueError as e:
+            raise FetchError("validation_error", f"非法时间参数: {v!r}（须为 ISO8601）") from e
+    if dt.tzinfo is not None:
+        return dt.astimezone(__import__("datetime").timezone.utc).replace(tzinfo=None)
+    return dt  # 无时区 = 视为 UTC
 
 
 class Service:
@@ -122,6 +128,11 @@ class Service:
                 for r in rows
             ]
         }
+
+    def list_jobs(self) -> list:
+        """只读任务列表（N-02：只读 CLI 可用）。"""
+        with self._access_lock:
+            return self.cat.con.execute("SELECT * FROM jobs").fetchall()
 
     def list_sources(self) -> dict:
         with self._access_lock:

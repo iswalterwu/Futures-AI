@@ -102,7 +102,7 @@ def _payload_hash(fetched) -> str:
     import json
 
     canon = json.dumps(
-        [(ts.isoformat(), float(v)) for (ts, v) in fetched],
+        [(ts.isoformat(), v) for (ts, v) in fetched],  # F-12：原始载荷（不做归一）
         ensure_ascii=False,
         sort_keys=True,
     )

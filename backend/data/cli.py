@@ -18,6 +18,7 @@ from data.adapters.local_file.local_file_adapter import guess_mapping, parse_wit
 from data.catalog.descriptor import derive_id
 from data.fetch.on_demand import FetchError
 from data.lock import LockBusy, ensure_layout, read_endpoint, write_endpoint
+from data.store.duck import utcnow
 from data.service import Service
 
 DEFAULT_ROOT = Path.home() / "AppData" / "Local" / "FuturesAI"
@@ -95,8 +96,8 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
         )
         svc.store.commit_run(
             rid,
-            [(sid, ts, v, decl["unit"], "local-file", datetime.now().replace(microsecond=0)) for (ts, v) in rows],
-            payload_hash=_hash_rows(rows),
+            [(sid, ts, v, decl["unit"], "local-file", utcnow()) for (ts, v) in rows],
+            payload_hash=_hash_file(fpath),
         )
     except Exception as e:
         svc.store.fail_run(rid)
@@ -111,13 +112,11 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
     return 0
 
 
-def _hash_rows(rows) -> str:
+def _hash_file(fpath: Path) -> str:
+    """F-12：原始载荷哈希 = 文件原始字节的 SHA-256。"""
     import hashlib
 
-    canon = json.dumps(
-        [(ts.isoformat(), float(v)) for (ts, v) in rows], ensure_ascii=False, sort_keys=True
-    )
-    return hashlib.sha256(canon.encode("utf-8")).hexdigest()
+    return hashlib.sha256(fpath.read_bytes()).hexdigest()
 
 
 def main(argv=None) -> int:
@@ -219,7 +218,7 @@ def main(argv=None) -> int:
                 elif args.what == "sources":
                     _json_out(svc.list_sources())
                 else:
-                    _json_out({"jobs": []})
+                    _json_out({"jobs": svc.list_jobs()})
             elif args.cmd == "reconcile":
                 _json_out(svc.reconcile(args.series_id))
             elif args.cmd == "provenance":

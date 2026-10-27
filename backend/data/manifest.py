@@ -17,7 +17,7 @@ MANIFEST_FILENAME = "manifest.yaml"
 _ASSET_RE = r"^[a-z0-9-]{1,64}$"
 _FREQS = {"1d", "1w", "1m"}
 _MODES = {"scheduled", "on_demand", "realtime"}
-_UNITS = {"cny_bbl", "cny_ton", "usd_bbl", "kb_d", "kton"}
+_UNITS = {"cny_bbl", "cny_ton", "usd_bbl", "kb_d", "kb", "kton"}
 
 
 class Credentials(BaseModel):
@@ -133,7 +133,7 @@ class Manifest(BaseModel):
     id: str
     name: str
     version: int = Field(gt=0)
-    credentials: Credentials = Field(default_factory=Credentials)
+    credentials: Credentials  # F-14/N-03：必填（无默认）
     provides: list[Provide]
 
     @field_validator("id")

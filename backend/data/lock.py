@@ -26,13 +26,20 @@ def ensure_layout(root: Path) -> dict[str, Path]:
 def write_lock(data_dir: Path):
     """写锁：原子独占创建 data/.lock（存在即拒绝）+ 持排它锁（msvcrt）。
 
-    锁状态 = 文件存在且被持有；release 删除文件 → .lock 存在 ⟺ 锁被持有（F-01）。
+    锁状态 = 文件存在且被持有；release 删除文件 → .lock 存在 ⟺ 锁被持有。
+    F-01：写入持有者 PID；发现陈旧锁（进程已死）→ 清理后重试。
     """
     lock_path = data_dir / LOCK_FILENAME
-    try:
-        fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_RDWR)
-    except FileExistsError as e:
-        raise LockBusy("数据目录被另一写进程占用") from e
+    for attempt in (0, 1):
+        try:
+            fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_RDWR)
+            break
+        except FileExistsError as e:
+            if attempt == 0 and _stale(lock_path):
+                lock_path.unlink(missing_ok=True)
+                continue
+            raise LockBusy("数据目录被另一写进程占用") from e
+    os.write(fd, str(os.getpid()).encode())
     f = os.fdopen(fd, "r+")
     f._lock_path = str(lock_path)  # os.fdopen 的 .name 是 fd 整数，记真实路径
     try:
@@ -44,6 +51,30 @@ def write_lock(data_dir: Path):
         lock_path.unlink(missing_ok=True)
         raise LockBusy("数据目录被另一写进程占用") from e
     return f
+
+
+def _stale(lock_path: Path) -> bool:
+    """锁文件存在但持有进程已死 → 陈旧锁。"""
+    try:
+        pid = int(lock_path.read_text(encoding="utf-8", errors="ignore").strip())
+    except (OSError, ValueError):
+        return False
+    if pid <= 0:
+        return False
+    import ctypes
+
+    PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+    STILL_ACTIVE = 259
+    try:
+        h = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not h:
+            return True  # 打不开 → 进程不存在
+        code = ctypes.c_ulong()
+        ctypes.windll.kernel32.GetExitCodeProcess(h, ctypes.byref(code))
+        ctypes.windll.kernel32.CloseHandle(h)
+        return code.value != STILL_ACTIVE
+    except Exception:
+        return False  # 不确定 → 保守视为有效锁
 
 
 def release_lock(f) -> None:

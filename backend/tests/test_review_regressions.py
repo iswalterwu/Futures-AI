@@ -19,6 +19,7 @@ SID = derive_id({"asset": "sc", "geo": "cn", "measure": "close", "contract": ""}
 ALT_MANIFEST_1D = """id: alt-src
 name: Alt
 version: 1
+credentials: none
 provides:
   - descriptor: {asset: sc, geo: cn, measure: close, contract: ""}
     symbols: [S]
@@ -33,6 +34,7 @@ provides:
 VALID_SMALL_MANIFEST = """id: broken-source
 name: x
 version: 1
+credentials: none
 provides:
   - descriptor: {asset: bu, geo: cn, measure: close, contract: ""}
     symbols: [B]
@@ -53,9 +55,9 @@ class TestBatchLifecycle:
         store = DuckStore(tmp_path / "d.duckdb")
         rid = store.new_run("a", "s", BASE, BASE, "u", "1d", "tz")
         store.commit_run(rid, [("s", BASE, 1.0, "u", "a", BASE)])
-        f1 = store.run(rid)[9]
+        f1 = store.run(rid)[10]  # finished_at（索引 10）
         store.commit_run(rid, [("s", BASE, 1.0, "u", "a", BASE)])
-        assert store.run(rid)[9] == f1  # finished_at 不变
+        assert store.run(rid)[10] == f1  # finished_at 不变
 
     def test_empty_batch_succeeds(self, tmp_path):
         store = DuckStore(tmp_path / "d.duckdb")
@@ -90,7 +92,9 @@ class TestPayloadHashAndTime:
                 "SELECT fetched_at, \"asof\", payload_hash FROM observations"
             ).fetchall()
             assert rows[0][2]  # hash 非空
-            assert rows[0][0] == rows[0][1]  # 同一 UTC 基准（提交事务内）
+            # F-12：同一 UTC 基准（naive UTC，相差 < 1s）
+            assert abs((rows[0][0] - rows[0][1]).total_seconds()) < 1
+            assert rows[0][0].tzinfo is None and rows[0][1].tzinfo is None
         finally:
             svc.close()
 
@@ -172,7 +176,7 @@ class TestCredentialRedaction:
 
             eia_mod._request = boom
             creds.put(tmp_path / "creds", "eia_api_key", "sk-REVIEW-SECRET-1234")
-            eia_sid = derive_id({"asset": "diesel", "geo": "world", "measure": "stock", "contract": ""})
+            eia_sid = derive_id({"asset": "diesel", "geo": "na", "measure": "stock", "contract": ""})
             with pytest.raises(FetchError) as ei:
                 svc.fetch(eia_sid, do_fetch=True, source="eia")
             assert "REVIEW-SECRET" not in ei.value.message
@@ -180,6 +184,31 @@ class TestCredentialRedaction:
             assert ei.value.retryable is False
         finally:
             svc.close()
+
+    def test_network_exception_key_redacted(self, tmp_path):
+        """F-07：真实 requests 边界异常（URL 含 key）不得进入错误消息。"""
+        import requests
+
+        from data.adapters.eia import eia_adapter as eia_mod
+
+        def boom(url, params=None, timeout=None):
+            raise requests.exceptions.ConnectionError(
+                f"Connection aborted to {url}?api_key=sk-LEAK-12345678"
+            )
+
+        real_requests_get = requests.get
+        import data.adapters.eia.eia_adapter as mod
+
+        mod.requests.get = boom
+        try:
+            from data.fetch.on_demand import FetchError
+
+            with pytest.raises(FetchError) as ei:
+                # 直接调 _request 真实实现（内部会 catch RequestException）
+                mod._request("WDISTUS1", "sk-LEAK-12345678", None, None)
+            assert "LEAK" not in ei.value.message
+        finally:
+            mod.requests.get = real_requests_get
 
     def test_empty_secret_rejected(self, tmp_path):
         with pytest.raises(creds.CredsError):
