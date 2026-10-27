@@ -10,14 +10,13 @@
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import re
 import sqlite3
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from pathlib import Path
 
 import duckdb
@@ -45,6 +44,7 @@ _SOURCE_ID_RE = re.compile(r"^[a-z0-9-]{1,64}$")  # 同 manifest id（plan §2.1
 READ_WAIT_S = 30  # 只读命令在写进程启停过渡窗口（尚无只读通道）内的等待上限（秒）
 ROUTE_TIMEOUT_S = 10  # 单次内部路由请求超时（秒）
 ROUTE_RETRY_S = 1.0  # 端点不可达/无响应后的重试间隔（秒）
+EXTERNAL_BUSY_S = 2.0  # 无写锁但本地开库持续失败（外部进程占用观测库）的提前失败时长（秒）
 
 
 def _json_out(obj):
@@ -77,24 +77,40 @@ def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TI
     """经持锁进程的内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。
 
     端点文件已消失、HTTP 503（关闭屏障：通道即将停止）→ ConnectionError，由调用方按“通道不可用”等待。
+    timeout 是整次请求（连接、响应头、完整响应体）的硬上限：每次读取前按剩余时间重设 socket 超时。
     """
     ep = read_endpoint(root / "data")
     if not ep:
         raise ConnectionError("端点文件已消失（写进程正在退出）")
+    deadline = time.monotonic() + timeout
     qs = urllib.parse.urlencode(params)
-    url = f"http://127.0.0.1:{ep['port']}{path}" + (f"?{qs}" if qs else "")
-    req = urllib.request.Request(url, headers={"Authorization": f"Bearer {ep['token']}"})
+    conn = http.client.HTTPConnection("127.0.0.1", ep["port"], timeout=max(0.01, timeout))
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        if e.code == 503:
-            raise ConnectionError("只读通道正在关闭") from e
+        conn.request("GET", path + (f"?{qs}" if qs else ""), headers={"Authorization": f"Bearer {ep['token']}"})
+        resp = conn.getresponse()
+        body = bytearray()
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("只读通道响应超时（超出统一截止时间）")
+            if conn.sock is not None:
+                conn.sock.settimeout(remaining)
+            chunk = resp.read1(65536)  # 至多一次系统调用：每段数据之间都重新核对剩余时间
+            if not chunk:
+                break
+            body.extend(chunk)
+    finally:
+        conn.close()
+    if resp.status == 503:
+        raise ConnectionError("只读通道正在关闭")
+    text = bytes(body).decode("utf-8") if body else ""
+    if resp.status >= 400:
         try:
-            err = json.loads(e.read().decode("utf-8"))["error"]
+            err = json.loads(text)["error"]
         except Exception:
-            raise FetchError("internal", f"内部路由 HTTP {e.code}") from e
-        raise FetchError(err.get("code", "internal"), err.get("message", "")) from e
+            raise FetchError("internal", f"内部路由 HTTP {resp.status}")
+        raise FetchError(err.get("code", "internal"), err.get("message", ""))
+    return json.loads(text)
 
 
 def _lock_held(root: Path) -> bool:
@@ -122,13 +138,14 @@ def _readonly(root: Path, args) -> int:
     """
     deadline = time.monotonic() + READ_WAIT_S
     route_err = busy_err = None
-    retry_at = 0.0
+    retry_at, busy_since = 0.0, None
     while True:
         if _lock_held(root):
+            busy_since = None
             remaining = deadline - time.monotonic()
             if read_endpoint(root / "data") and time.monotonic() >= retry_at and remaining > 0:
                 try:
-                    payload = _route_readonly(root, args, timeout=max(0.5, min(ROUTE_TIMEOUT_S, remaining)))
+                    payload = _route_readonly(root, args, timeout=min(ROUTE_TIMEOUT_S, remaining))
                 except FetchError as e:
                     _json_out(e.to_dict())
                     return 1
@@ -145,6 +162,11 @@ def _readonly(root: Path, args) -> int:
                 svc = Service(root, readonly=True)
             except LockBusy as e:
                 svc, busy_err = None, e  # 写进程恰在取锁开库（竞态）→ 回到等待/路由
+                busy_since = busy_since or time.monotonic()
+                if time.monotonic() - busy_since >= EXTERNAL_BUSY_S and not _lock_held(root):
+                    # 持续开库失败且始终无写锁 = 外部进程占用观测库，不再等满截止时间
+                    print(f"错误：{e}", file=sys.stderr)
+                    return 1
             except Exception as e:
                 _json_out(_err_dict(e))
                 return 1

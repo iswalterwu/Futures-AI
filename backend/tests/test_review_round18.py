@@ -227,21 +227,7 @@ class TestShutdownBarrier:
             gate.set()
             releaser.cancel()
 
-    def test_cli_reader_treats_503_as_unavailable(self, tmp_path, monkeypatch, capsys):
-        """内部端点 503（关闭屏障）→ CLI 读者视同通道不可用，写锁释放后本地读取成功。"""
-        Service(tmp_path).init().close()
-        writer = Service(tmp_path)
-        write_endpoint(tmp_path / "data", 1, "tok")
-
-        def closing(*a, **k):
-            threading.Timer(0.5, writer.close).start()  # 写进程随即退出、释放写锁
-            raise urllib.error.HTTPError("http://127.0.0.1:1/", 503, "closing", {}, None)
-
-        real_get = cli._internal_get
-        monkeypatch.setattr(urllib.request, "urlopen", lambda *a, **k: closing())
-        assert cli_run(tmp_path, "list", "sources") == 0
-        assert json.loads(capsys.readouterr().out)["sources"]
-        assert real_get is cli._internal_get
+    # 关闭屏障的 503 路径（服务端真实 503 + CLI 回退）由 test_review_round19.py::TestClosedEndpoint 确定性覆盖
 
 
 class _BeginInterrupt:

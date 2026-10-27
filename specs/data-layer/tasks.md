@@ -255,3 +255,16 @@
 | T-86 | 通道线程的 start() 纳入清理保护（已启动未返回即中断也停止服务）（`data/mcp_server.py`） | R18-B-04 | AC-004-6、AC-008-3 | `pytest R18 -k TestThreadStartInterrupt -q` | ✅ |
 | T-87 | 访问锁覆盖持久断言：连接代理检查 import 向导（含模板复用）、add-source、取数、配置及并发通道读取的全部数据访问均持锁，向导等待输入不持锁；init 中的超时批次清理移入访问锁（`data/service.py`、测试） | R18-A/B 测试缺口 | AC-004-6、AC-007-3、AC-004-5 | `pytest R18 -k TestLockCoverage -q` | ✅ |
 | T-88 | realtime 接口签名参数断言（descriptor, on_update） | R18-B 测试缺口 | AC-004-4 | `pytest R18 -k TestRealtimeSignature -q` | ✅ |
+
+## 追加任务（第十九轮双审 P3 收口，Gate 2 选项 B）
+
+> 来源：第十九轮复审 A、B 均通过（无 P1/P2）；Walter 在 Gate 2 选择 B——先收口 P3 与测试缺口并复审一轮。plan §2.2 已先行修订（硬截止时间、外部占用提前失败、serve 日志流、占用识别不依赖语言）。
+> R19 = `tests/test_review_round19.py`。
+
+| # | 任务（修改范围） | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-89 | 路由统一截止时间为硬上限：连接、响应头与完整响应体读取均受剩余时间约束（每段读取前重设 socket 超时），去掉放大剩余预算的 0.5s 下限（`data/cli.py`） | R19-B-01 | AC-004-6 | `pytest R19 -k TestHardDeadline -q` | ✅ |
+| T-90 | 外部进程（无写锁）长期占用观测库时，只读命令连续约 2s 本地开库失败即提前报占用（`data/cli.py`） | R19-A P3-1 | AC-004-6 | `pytest R19 -k TestExternalHold -q` | ✅ |
+| T-91 | serve 关闭 uvicorn 访问日志（MCP/uvicorn 日志级别 WARNING），stdout 无运行期输出；错误仍经 stderr（`data/mcp_server.py`） | R19-A P3-2 | AC-008-4 | `pytest tests/test_serve_e2e.py -k stdout_is_quiet -q` | ✅ |
+| T-92 | 占用识别加入系统错误码 32/33 的本地化消息（ctypes.FormatError），不依赖系统语言（`data/service.py`） | R19-A P3-3 | AC-004-6 | `pytest R19 -k TestBusyMarkers -q` | ✅ |
+| T-93 | 持久回归补齐：服务关闭后端点确定性 503 + CLI 经真实 503 回退（R19-B-02）；BEGIN 中断后独立连接即时可见；真实 serve 启停叠加读者轮询零失败；服务关闭后 MCP 四工具结构化错误；网络阶段后遇屏障的 running 批次冷启动清理 | R19-A/B 测试缺口 | AC-004-3、AC-004-6、AC-008-3、AC-008-4 | `pytest R19 -k "ClosedEndpoint or BeginVisibility or ServeWithReaders or ToolsAfterClose or BarrierAfterNetwork" -q` | ✅ |

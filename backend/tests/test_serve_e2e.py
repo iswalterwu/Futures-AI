@@ -311,3 +311,33 @@ class TestServeE2E:
                 assert len(rows) == 3 and len({row["ingest_run"] for row in rows}) == 3  # 三个批次各一行
             finally:
                 release.write_text("1", encoding="utf-8")
+
+    def test_serve_stdout_is_quiet(self, tmp_path):
+        """serve 的 stdout 无运行期输出（访问日志关闭）：托管进程无需排空 stdout（R19-A P3-2）。"""
+        root = tmp_path / "root"
+        port = _free_port()
+        env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONPATH=str(BACKEND))
+        with open(tmp_path / "serve.err", "w", encoding="utf-8") as err:
+            proc = subprocess.Popen(
+                [sys.executable, "-m", "data.cli", "--root", str(root), "serve", "--port", str(port)],
+                cwd=str(BACKEND), env=env, stdout=subprocess.PIPE, stderr=err,
+            )
+            try:
+                deadline = time.monotonic() + 90
+                while time.monotonic() < deadline and proc.poll() is None:
+                    if read_endpoint(root / "data") and _listening(port):
+                        break
+                    time.sleep(0.3)
+                token = read_endpoint(root / "data")["token"]
+                for _ in range(5):
+                    req = urllib.request.Request(
+                        f"http://127.0.0.1:{port}/internal/sources", headers={"Authorization": f"Bearer {token}"}
+                    )
+                    with urllib.request.urlopen(req, timeout=10) as r:
+                        assert r.status == 200
+                status, session, _ = _mcp_post(port, INIT, token)
+                assert status == 200 and session
+            finally:
+                proc.kill()
+                out, _ = proc.communicate(timeout=30)
+        assert out.strip() == b"", out[:500]

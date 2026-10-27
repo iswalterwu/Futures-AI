@@ -65,7 +65,22 @@ def _like(q: str) -> str:
 
 # DuckDB 文件被其他进程占用的消息特征：带持有者 PID 的变体（already open）与
 # 持有者已退出、仅剩 Windows 共享冲突文本的变体（英/中文系统）
-_BUSY_MARKERS = ("already open", "being used by another process", "正在使用此文件")
+def _system_sharing_messages() -> tuple[str, ...]:
+    """当前系统语言下 ERROR_SHARING_VIOLATION(32)/ERROR_LOCK_VIOLATION(33) 的消息文本（DuckDB 原样嵌入）。"""
+    try:
+        import ctypes
+
+        return tuple(m.strip() for m in (ctypes.FormatError(32), ctypes.FormatError(33)) if m and m.strip())
+    except Exception:  # 非 Windows 或无法取得系统消息
+        return ()
+
+
+_BUSY_MARKERS = (
+    "already open",
+    "being used by another process",
+    "正在使用此文件",
+    *_system_sharing_messages(),  # 不依赖系统语言
+)
 OPEN_RETRY_S = 5.0  # 写进程开库遇占用的重试窗口（秒）：取锁后新的只读命令不再本地开库
 
 

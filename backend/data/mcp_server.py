@@ -80,6 +80,7 @@ def build_mcp(
         "futuresai-data",
         host=host,
         port=port,
+        log_level="WARNING",  # 关闭 uvicorn 访问日志（默认写 stdout）；错误仍经 stderr，stdout 无运行期输出
         token_verifier=StaticTokenVerifier(token),
         auth=AuthSettings(
             issuer_url=base_url,
