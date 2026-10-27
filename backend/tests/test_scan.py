@@ -15,7 +15,7 @@ REPO_ROOT = BACKEND.parent
 EXCLUDE_DIRS = {"credential_scan_fixtures", "manual_series_id_fixtures"}
 
 CRED_PATTERNS = [
-    re.compile(r"(?i)(api[_-]?key|apikey|secret|token|password)\s*[:=]\s*[\"'][^\"']{8,}[\"']"),
+    re.compile(r"(?i)([\"']?(?:api[_-]?key|apikey|secret|token|password)[\"']?)\s*[:=]\s*[\"'][^\"']{8,}[\"']"),
     re.compile(r"(?i)(api[_-]?key|apikey|secret|token|password)\s*[:=]\s*(?!\s*[A-Za-z0-9_.\-]*\s*\()\s*[A-Za-z0-9_\-]{8,}"),
     re.compile(r"(?i)(api[_-]?key|apikey|secret|token|password)\s*:\s*str\s*=\s*[\"'][^\"']{8,}[\"']"),
 ]

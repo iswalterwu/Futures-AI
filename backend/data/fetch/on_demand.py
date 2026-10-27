@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from data.catalog.db import CatalogDB
-from data.store.duck import DuckStore
+from data.store.duck import DuckStore, utcnow
 from data.store.winners import latest_obs
 
 # 错误码 ↔ retryable 映射（固定，plan §2.2）
@@ -77,10 +77,10 @@ def fetch_series(
         provide = get_provide(cat, series_id, source) if get_provide else None
         fetched = adapter.fetch(provide, start, end)
         rows = [
-            (series_id, ts, float(v), decl["unit"], source, datetime.now().replace(microsecond=0))
+            (series_id, ts, float(v), decl["unit"], source, _utcnow())
             for (ts, v) in fetched
         ]
-        store.commit_run(rid, rows)
+        store.commit_run(rid, rows, payload_hash=_payload_hash(fetched))
     except FetchError:
         store.fail_run(rid)
         raise
@@ -91,6 +91,22 @@ def fetch_series(
     priorities = cat.effective_priorities(series_id)
     rows = latest_obs(store, series_id, priorities, start=start, end=end)
     return {"series_id": series_id, "rows": rows, "meta": _meta(series_id, rows, source, start, end)}
+
+
+def _utcnow():
+    return utcnow()
+
+
+def _payload_hash(fetched) -> str:
+    import hashlib
+    import json
+
+    canon = json.dumps(
+        [(ts.isoformat(), float(v)) for (ts, v) in fetched],
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+    return hashlib.sha256(canon.encode("utf-8")).hexdigest()
 
 
 def _meta(series_id: str, rows: list, source: str | None, start, end) -> dict:

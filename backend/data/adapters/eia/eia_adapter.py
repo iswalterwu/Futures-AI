@@ -1,22 +1,41 @@
-"""EIA 适配器（AC-007-2）：凭证经凭证库读取（fail closed），公开数据集拉取。"""
+"""EIA 适配器（AC-007-2）：凭证经凭证库读取（fail closed），按序列/时间范围请求。
+
+F-04：请求携带 series_id 与时间范围；响应按序列过滤。
+F-07：上游错误脱敏（API key 不进入错误消息）；错误按类型映射。
+"""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
-import pandas as pd
+import requests
 
 from data import creds
 from data.adapters.base import Adapter
+from data.fetch.on_demand import FetchError
 
 
 def _request(series_id: str, api_key: str, start, end):
-    """可 monkeypatch 的请求点（测试注入固定响应样本）。"""
-    import requests
-
+    """可注入的请求点（测试注入固定响应样本）。"""
     url = "https://api.eia.gov/v2/petroleum/stoc/wstk/data/"
-    params = {"api_key": api_key, "frequency": "weekly", "data[0]": "value"}
+    params = {
+        "api_key": api_key,
+        "frequency": "weekly",
+        "data[0]": "value",
+        "facets[series][]": series_id,
+    }
+    if start:
+        params["start"] = start.strftime("%Y-%m-%dT%H")
+    if end:
+        params["end"] = end.strftime("%Y-%m-%dT%H")
     resp = requests.get(url, params=params, timeout=30)
-    resp.raise_for_status()
+    if resp.status_code in (401, 403):
+        raise FetchError("unauthorized", "EIA 认证失败（请检查 API key）")
+    if resp.status_code == 429:
+        raise FetchError("rate_limited", "EIA 限流，请稍后重试")
+    if resp.status_code >= 500:
+        raise FetchError("adapter_error", f"EIA 服务端错误（HTTP {resp.status_code}）")
+    if resp.status_code >= 400:
+        raise FetchError("adapter_error", f"EIA 请求失败（HTTP {resp.status_code}）")
     return resp.json()
 
 
@@ -33,12 +52,19 @@ class EiaAdapter(Adapter):
         payload = _request(provide.symbols[0], api_key, range_start, range_end)
         rows = []
         for item in payload.get("response", {}).get("data", []):
-            ts = datetime.fromisoformat(item["period"])
+            # F-04：按序列过滤（响应可能含多序列/多维度）
+            if item.get("series") and item["series"] != provide.symbols[0]:
+                continue
+            try:
+                ts = datetime.fromisoformat(item["period"])
+                val = float(item["value"])
+            except (KeyError, TypeError, ValueError):
+                continue
             if range_start and ts < range_start:
                 continue
             if range_end and ts > range_end:
                 continue
-            rows.append((ts, float(item["value"])))
+            rows.append((ts, val))
         rows.sort(key=lambda r: r[0])
         return rows
 

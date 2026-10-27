@@ -24,26 +24,40 @@ def ensure_layout(root: Path) -> dict[str, Path]:
 
 
 def write_lock(data_dir: Path):
-    """写锁：原子创建 data/.lock 并持有排它锁（Windows msvcrt）。"""
+    """写锁：原子独占创建 data/.lock（存在即拒绝）+ 持排它锁（msvcrt）。
+
+    锁状态 = 文件存在且被持有；release 删除文件 → .lock 存在 ⟺ 锁被持有（F-01）。
+    """
     lock_path = data_dir / LOCK_FILENAME
-    f = open(lock_path, "a+")
+    try:
+        fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_RDWR)
+    except FileExistsError as e:
+        raise LockBusy("数据目录被另一写进程占用") from e
+    f = os.fdopen(fd, "r+")
+    f._lock_path = str(lock_path)  # os.fdopen 的 .name 是 fd 整数，记真实路径
     try:
         import msvcrt
 
         msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
     except OSError as e:
         f.close()
+        lock_path.unlink(missing_ok=True)
         raise LockBusy("数据目录被另一写进程占用") from e
     return f
 
 
 def release_lock(f) -> None:
+    lock_path = getattr(f, "_lock_path", f.name)
     try:
         import msvcrt
 
         msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
     finally:
         f.close()
+        Path(lock_path).unlink(missing_ok=True)
+
+
+
 
 
 def write_endpoint(data_dir: Path, port: int, token: str) -> Path:

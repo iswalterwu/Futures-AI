@@ -58,7 +58,11 @@ class DescriptorSpec(BaseModel):
     @field_validator("contract")
     @classmethod
     def _contract(cls, v: str) -> str:
+        raw = v
         v = "" if v is None else str(v).strip()
+        # F-14：纯空白输入拒绝（与描述符直接路径一致）
+        if raw is not None and str(raw) != "" and v == "":
+            raise ValueError(f"contract 非法值: {raw!r}（纯空白输入拒绝）")
         if v and not CONTRACT_RE.match(v):
             raise ValueError(f"contract 非法值: {v!r}（1–20 位字母或数字）")
         return v
@@ -155,6 +159,14 @@ class Manifest(BaseModel):
             return {"kind": "none"}
         return v
 
+    @field_validator("credentials", mode="after")
+    @classmethod
+    def _credentials_cond(cls, v: Credentials) -> Credentials:
+        # F-14：api_key 必带有效 credential_ref
+        if v.kind == "api_key" and not (v.credential_ref and str(v.credential_ref).strip()):
+            raise ValueError("kind=api_key 时 credential_ref 必填")
+        return v
+
     @field_validator("provides")
     @classmethod
     def _provides(cls, v: list[Provide]) -> list[Provide]:
@@ -174,12 +186,19 @@ class ManifestError(Exception):
 
 
 def load(path: str) -> Manifest:
-    """加载并校验 manifest 文件；失败抛 ManifestError（含路径+字段+原因）。"""
+    """加载并校验 manifest 文件；失败抛 ManifestError（含路径+字段+原因）。
+
+    读取/解码失败同样隔离为 ManifestError（F-14：坏适配器不影响启动）。
+    """
     try:
         with open(path, "r", encoding="utf-8") as f:
-            raw = yaml.safe_load(f)
+            text = f.read()
     except FileNotFoundError:
         raise ManifestError(path, "-", "文件不存在")
+    except (OSError, UnicodeDecodeError) as e:
+        raise ManifestError(path, "-", f"文件读取/解码失败: {e}")
+    try:
+        raw = yaml.safe_load(text)
     except yaml.YAMLError as e:
         raise ManifestError(path, "-", f"YAML 解析失败: {e}")
     if not isinstance(raw, dict):

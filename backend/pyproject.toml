@@ -27,5 +27,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["data*"]
 
+[tool.setuptools.package-data]
+"data.adapters.akshare" = ["manifest.yaml"]
+"data.adapters.eia" = ["manifest.yaml"]
+"data.adapters.local_file" = ["manifest.yaml"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

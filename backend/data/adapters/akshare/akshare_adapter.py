@@ -1,4 +1,10 @@
-"""akshare 适配器（AC-007-1）：能源品种主力/连续日线与仓单/库存日报。"""
+"""akshare 适配器（AC-007-1）：能源品种主力/连续日线、指定合约、仓单/库存日报。
+
+三个取数点均可注入固定响应样本：
+- `_get_main(symbol)`：主力连续日线（如 SC0）
+- `_get_contract(symbol)`：指定合约日线（如 SC2401）
+- `_get_receipt(asset)`：交易所仓单/库存日报（如 SC）
+"""
 from __future__ import annotations
 
 from datetime import datetime
@@ -7,20 +13,43 @@ import pandas as pd
 
 from data.adapters.base import Adapter
 
-# 源符号 → akshare 接口选择
-_MAIN_SYMBOLS = {"SC0", "FU0", "LU0", "BU0", "PG0"}
+_MAIN_SUFFIX = "0"  # 主力连续符号后缀（SC0/FU0/…）
 
 
-def _get_data(symbol: str):
-    """可 monkeypatch 的取数点（测试注入固定响应样本）。"""
+def _get_main(symbol: str):
+    """可注入：主力连续日线。"""
     import akshare as ak
 
-    if symbol in _MAIN_SYMBOLS:
-        return ak.futures_main_sina(symbol=symbol)
+    return ak.futures_main_sina(symbol=symbol)
+
+
+def _get_contract(symbol: str):
+    """可注入：指定合约日线。"""
+    import akshare as ak
+
+    return ak.futures_zh_daily_sina(symbol=symbol)
+
+
+def _get_receipt(asset: str):
+    """可注入：交易所仓单/库存日报（返回与日线同形：日期/收盘价 列名归一为 日期/值）。"""
+    import akshare as ak
+
+    df = ak.get_receipt(start_day="20260101", end_day="20261231", vars_list=[asset.upper()])
+    if df is None or df.empty:
+        return pd.DataFrame(columns=["日期", "值"])
+    col = [c for c in df.columns if c not in ("日期", "date")]
+    df = df.rename(columns={col[0]: "值", df.columns[0]: "日期"})
+    return df[["日期", "值"]]
+
+
+def _route(symbol: str):
+    """源符号 → (取数函数, 值列名)。"""
     if symbol.endswith("_RECEIPT"):
-        # 仓单/库存日报：v1 经同接口族（receipt 数据源），字段对齐由下方归一
-        return ak.futures_main_sina(symbol=symbol[:2] + "0")
-    raise ValueError(f"未知源符号: {symbol}")
+        return lambda: _get_receipt(symbol.split("_")[0]), "值"
+    if symbol.endswith(_MAIN_SUFFIX) and len(symbol) == 3:
+        return lambda: _get_main(symbol), "收盘价"
+    # 指定合约（如 SC2401）
+    return lambda: _get_contract(symbol), "收盘价"
 
 
 class AkshareAdapter(Adapter):
@@ -28,12 +57,14 @@ class AkshareAdapter(Adapter):
 
     def fetch(self, provide, range_start=None, range_end=None):
         symbol = provide.symbols[0]
-        df = _get_data(symbol)
+        getter, value_col = _route(symbol)
+        df = getter()
         if df is None or df.empty:
             return []
-        df = df.rename(columns={c: c.strip() for c in df.columns})
+        df = df.rename(columns={c: str(c).strip() for c in df.columns})
         date_col = next(c for c in ("日期", "date", "Date") if c in df.columns)
-        close_col = next(c for c in ("收盘价", "close", "Close") if c in df.columns)
+        if value_col not in df.columns:
+            raise ValueError(f"响应缺少值列: {value_col}")
         rows = []
         for _, r in df.iterrows():
             ts = pd.to_datetime(r[date_col]).to_pydatetime()
@@ -41,7 +72,7 @@ class AkshareAdapter(Adapter):
                 continue
             if range_end and ts > range_end:
                 continue
-            rows.append((ts, float(r[close_col])))
+            rows.append((ts, float(r[value_col])))
         return rows
 
     def realtime_signature(self, descriptor, on_update):

@@ -31,7 +31,7 @@ class TestAkshare:
                 "收盘价": [500.0, 512.4, 510.0],
             }
         )
-        monkeypatch.setattr(ak_mod, "_get_data", lambda symbol: df)
+        monkeypatch.setattr(ak_mod, "_get_main", lambda symbol: df)
         m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
         p = m.provides[0]
         rows = AkshareAdapter().fetch(p, None, None)
@@ -39,12 +39,29 @@ class TestAkshare:
 
     def test_range_filter(self, monkeypatch):
         df = pd.DataFrame({"日期": ["2026-10-01", "2026-10-05"], "收盘价": [1.0, 2.0]})
-        monkeypatch.setattr(ak_mod, "_get_data", lambda symbol: df)
+        monkeypatch.setattr(ak_mod, "_get_main", lambda symbol: df)
         m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
         rows = AkshareAdapter().fetch(
             m.provides[0], datetime(2026, 10, 2), datetime(2026, 10, 10)
         )
         assert len(rows) == 1 and rows[0][1] == 2.0
+
+
+class TestReceiptAndContract:
+    def test_receipt_route_not_price(self, monkeypatch):
+        df = pd.DataFrame({"日期": ["2026-10-01"], "值": [32000.0]})
+        monkeypatch.setattr(ak_mod, "_get_receipt", lambda asset: df)
+        m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
+        provide = next(p for p in m.provides if p.symbols[0] == "SC_RECEIPT")
+        rows = AkshareAdapter().fetch(provide, None, None)
+        assert rows[0][1] == pytest.approx(32000.0)
+
+    def test_designated_contract_route(self, monkeypatch):
+        df = pd.DataFrame({"日期": ["2026-10-01"], "收盘价": [499.0]})
+        monkeypatch.setattr(ak_mod, "_get_contract", lambda symbol: df)
+        provide = type("P", (), {"symbols": ["SC2401"]})()
+        rows = AkshareAdapter().fetch(provide, None, None)
+        assert rows[0][1] == pytest.approx(499.0)
 
 
 class TestEia:
@@ -97,7 +114,7 @@ class TestIsolation:
         def boom(*a, **k):
             raise RuntimeError("akshare 网络故障")
 
-        monkeypatch.setattr(ak_mod, "_get_data", boom)
+        monkeypatch.setattr(ak_mod, "_get_main", boom)
         m_ak = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
         payload = {"response": {"data": [{"period": "2026-10-03", "value": "1.0"}]}}
         monkeypatch.setattr(eia_mod, "_request", lambda *a, **k: payload)

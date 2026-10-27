@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS series(
 );
 CREATE TABLE IF NOT EXISTS series_sources(
   series_id TEXT, source_id TEXT, priority INTEGER DEFAULT 100, reg_order INTEGER,
-  unit TEXT, freq TEXT, tz TEXT,
+  unit TEXT, freq TEXT, tz TEXT, current INTEGER DEFAULT 1,
   UNIQUE(series_id, source_id)
 );
 CREATE TABLE IF NOT EXISTS aliases(
@@ -44,11 +44,21 @@ RULE_ORDER = {"manual": 0, "manifest": 1, "template": 2, "fuzzy": 3}
 
 
 class CatalogDB:
-    def __init__(self, path: str | Path):
+    def __init__(self, path: str | Path, read_only: bool = False):
         self.path = str(path)
-        self.con = sqlite3.connect(self.path)
-        self.con.executescript(SCHEMA)
-        self.con.commit()
+        self.read_only = read_only
+        if read_only:
+            self.con = sqlite3.connect(f"file:{self.path}?mode=ro", uri=True)
+        else:
+            self.con = sqlite3.connect(self.path)
+            self.con.executescript(SCHEMA)
+            self.con.commit()
+
+    def close(self):
+        try:
+            self.con.close()
+        except Exception:
+            pass
 
     # ---- 优先级解析（winners 输入） ----
 
@@ -65,13 +75,27 @@ class CatalogDB:
         base.update(over)
         return base
 
+    def effective_priority(self, series_id: str, source_id: str) -> int:
+        row = self.con.execute(
+            "SELECT priority FROM user_overrides WHERE series_id=? AND source_id=?",
+            [series_id, source_id],
+        ).fetchone()
+        if row:
+            return row[0]
+        row = self.con.execute(
+            "SELECT priority FROM series_sources WHERE series_id=? AND source_id=?",
+            [series_id, source_id],
+        ).fetchone()
+        return row[0] if row else 100
+
     def set_series_source(
         self, series_id: str, source_id: str, priority: int, reg_order: int,
         unit: str | None = None, freq: str | None = None, tz: str | None = None,
+        current: int = 1,
     ) -> None:
         self.con.execute(
-            "INSERT OR REPLACE INTO series_sources VALUES (?,?,?,?,?,?,?)",
-            [series_id, source_id, priority, reg_order, unit, freq, tz],
+            "INSERT OR REPLACE INTO series_sources VALUES (?,?,?,?,?,?,?,?)",
+            [series_id, source_id, priority, reg_order, unit, freq, tz, current],
         )
         self.con.commit()
 
@@ -86,13 +110,13 @@ class CatalogDB:
         }
 
     def enabled_sources(self, series_id: str) -> list[str]:
-        """该序列的启用源（status=ok 且 enabled=1）。"""
+        """该序列的启用源（status=ok 且 enabled=1 且 current=1，F-10）。"""
         return [
             r[0]
             for r in self.con.execute(
                 "SELECT ss.source_id FROM series_sources ss "
                 "JOIN sources s ON s.id = ss.source_id "
-                "WHERE ss.series_id=? AND s.status='ok' AND s.enabled=1 "
+                "WHERE ss.series_id=? AND ss.current=1 AND s.status='ok' AND s.enabled=1 "
                 "ORDER BY ss.priority ASC, ss.reg_order ASC",
                 [series_id],
             ).fetchall()

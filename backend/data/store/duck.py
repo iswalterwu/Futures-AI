@@ -30,16 +30,24 @@ FAILED = "failed"
 
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now(timezone.utc).replace(tzinfo=None, microsecond=0)
 
 
 class DuckStore:
     """单写者连接持有者（service 持锁）。"""
 
-    def __init__(self, path: str | Path):
+    def __init__(self, path: str | Path, read_only: bool = False):
         self.path = str(path)
-        self.con = duckdb.connect(self.path)
-        self.con.execute(SCHEMA)
+        self.read_only = read_only
+        self.con = duckdb.connect(self.path, read_only=read_only)
+        if not read_only:
+            self.con.execute(SCHEMA)
+
+    def close(self):
+        try:
+            self.con.close()
+        except Exception:
+            pass
 
     # ---- ingest_run 生命周期 ----
 
@@ -63,17 +71,29 @@ class DuckStore:
         return rid
 
     def commit_run(self, rid: int, rows: list[tuple], payload_hash: str | None = None) -> int:
-        """单事务：写入观测（asof = 提交时刻）+ run 标 succeeded。幂等（冲突忽略）。"""
+        """单事务：写入观测（asof = 提交时刻）+ run 标 succeeded。幂等（冲突忽略）。
+
+        - 仅 RUNNING → SUCCEEDED；已成功批次重放 = no-op（不改 finished_at，F-13）
+        - 空结果可成功提交（F-13）
+        """
+        cur = self.con.execute("SELECT status FROM ingest_runs WHERE ingest_run=?", [rid]).fetchone()
+        if cur is None:
+            raise ValueError(f"批次 {rid} 不存在")
+        if cur[0] == SUCCEEDED:
+            return rid  # 重放不改成功事实
+        if cur[0] != RUNNING:
+            raise ValueError(f"批次 {rid} 已终态（{cur[0]}），不可提交")
         now = utcnow()
         self.con.execute("BEGIN")
         try:
-            stamped = [
-                (sid, ts, val, unit, src, fetched, now, rid, payload_hash)
-                for (sid, ts, val, unit, src, fetched) in rows
-            ]
-            self.con.executemany(
-                "INSERT OR IGNORE INTO observations VALUES (?,?,?,?,?,?,?,?,?)", stamped
-            )
+            if rows:
+                stamped = [
+                    (sid, ts, val, unit, src, fetched, now, rid, payload_hash)
+                    for (sid, ts, val, unit, src, fetched) in rows
+                ]
+                self.con.executemany(
+                    "INSERT OR IGNORE INTO observations VALUES (?,?,?,?,?,?,?,?,?)", stamped
+                )
             self.con.execute(
                 "UPDATE ingest_runs SET status=?, finished_at=?, payload_hash=COALESCE(?, payload_hash) WHERE ingest_run=?",
                 [SUCCEEDED, now, payload_hash, rid],
@@ -85,6 +105,10 @@ class DuckStore:
         return rid
 
     def fail_run(self, rid: int) -> int:
+        """仅 RUNNING → FAILED（成功事实不可回退，F-13）。"""
+        cur = self.con.execute("SELECT status FROM ingest_runs WHERE ingest_run=?", [rid]).fetchone()
+        if cur is None or cur[0] != RUNNING:
+            return rid
         self.con.execute(
             "UPDATE ingest_runs SET status=?, finished_at=? WHERE ingest_run=?",
             [FAILED, utcnow(), rid],

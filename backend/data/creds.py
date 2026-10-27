@@ -20,7 +20,9 @@ def _win32():
 
 
 def put(creds_dir: Path, name: str, secret: str) -> Path:
-    """加密保存；任何失败（含 DPAPI 不可用）→ 报错，绝不写明文。"""
+    """加密保存；任何失败（含 DPAPI 不可用）→ 报错，绝不写明文；空凭证拒绝。"""
+    if not str(secret):
+        raise CredsError("空凭证拒绝保存")
     try:
         win32crypt = _win32()
         blob = win32crypt.CryptProtectData(

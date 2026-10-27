@@ -34,6 +34,19 @@ class Registry:
         self.builtin_dir = builtin_dir
         self.user_dir = user_dir
 
+    def load_provides(self) -> dict[tuple[str, str], object]:
+        """只读扫描（CLI 只读命令用）：加载全部适配器清单，返回 (adapter_id, series_id) → Provide。"""
+        provides_map: dict[tuple[str, str], object] = {}
+        for _dir, mf_path in scan_adapters(self.builtin_dir, self.user_dir):
+            try:
+                m = load(mf_path)
+            except ManifestError:
+                continue
+            for p in m.provides:
+                d = normalize(p.descriptor.model_dump())
+                provides_map[(m.id, derive_id(d))] = p
+        return provides_map
+
     def rebuild(self) -> dict:
         """增量重建。返回 {sources: {...}, series: {...}, errors: [...]}。"""
         entries = scan_adapters(self.builtin_dir, self.user_dir)
@@ -51,35 +64,52 @@ class Registry:
                 continue
             goods[m.id] = (m, adapter_dir)
 
-        # ---- sources 状态机（按 manifest_path 定位；error 按路径虚拟条目） ----
+        # ---- sources 状态机（F-10：既有源按 manifest_path 原地标 error；保留用户 enabled） ----
         seen_ids = set(goods)
-        for (sid,) in self.cat.con.execute("SELECT id FROM sources WHERE status != 'error'").fetchall():
-            if sid not in seen_ids:
+        path_to_id = {
+            r[5]: r[0]
+            for r in self.cat.con.execute(
+                "SELECT * FROM sources WHERE status != 'error'"
+            ).fetchall()
+        }
+        for (sid, status) in self.cat.con.execute(
+            "SELECT id, status FROM sources WHERE status != 'error'"
+        ).fetchall():
+            if sid not in seen_ids and status != "disabled":
                 self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [sid])
         for sid, (m, adapter_dir) in goods.items():
             self.cat.con.execute(
                 "INSERT INTO sources(id, adapter_id, name, enabled, status, manifest_path) "
                 "VALUES (?,?,?,1,'ok',?) "
-                "ON CONFLICT(id) DO UPDATE SET status='ok', enabled=1, name=excluded.name, "
+                "ON CONFLICT(id) DO UPDATE SET status='ok', name=excluded.name, "
                 "manifest_path=excluded.manifest_path",
                 [sid, sid, m.name, adapter_dir],
             )
-        # error 条目（不可解析/非法/重复 id）——路径为键，清理陈旧 error
-        err_keys = [f"error:{e['path']}" for e in errors]
-        self.cat.con.execute(
-            f"DELETE FROM sources WHERE status='error' AND id NOT IN ({','.join('?' * len(err_keys))})",
-            err_keys,
-        ) if err_keys else self.cat.con.execute("DELETE FROM sources WHERE status='error'")
+        # error 条目：按 manifest 路径原地标 error（既有源），否则虚拟条目
+        stale_errors = {r[0] for r in self.cat.con.execute("SELECT id FROM sources WHERE status='error'").fetchall()}
+        current_errors = set()
         for e in errors:
             key = f"error:{e['path']}"
-            self.cat.con.execute(
-                "INSERT INTO sources(id, adapter_id, name, enabled, status, manifest_path) "
-                "VALUES (?,?,?,0,'error',?) "
-                "ON CONFLICT(id) DO UPDATE SET status='error'",
-                [key, key, "error", e["path"]],
-            )
+            existing_id = path_to_id.get(str(Path(e["path"]).parent))
+            if existing_id:
+                self.cat.con.execute(
+                    "UPDATE sources SET status='error' WHERE id=?", [existing_id]
+                )
+                current_errors.add(existing_id)
+            else:
+                self.cat.con.execute(
+                    "INSERT INTO sources(id, adapter_id, name, enabled, status, manifest_path) "
+                    "VALUES (?,?,?,0,'error',?) "
+                    "ON CONFLICT(id) DO UPDATE SET status='error'",
+                    [key, key, "error", e["path"]],
+                )
+                current_errors.add(key)
+        for old in stale_errors - current_errors:
+            self.cat.con.execute("DELETE FROM sources WHERE id=?", [old])
 
         # ---- series 编译（增量，不清空；同描述符归并 AC-002-2） ----
+        # F-10：本轮未被声明的提供关系标 current=0（历史快照保留）
+        self.cat.con.execute("UPDATE series_sources SET current=0")
         reg_counter = [0]
         provided_series: set[str] = set()
         provides_map: dict[tuple[str, str], object] = {}
@@ -98,7 +128,7 @@ class Registry:
                 )
                 reg_counter[0] += 1
                 self.cat.set_series_source(
-                    series_id, sid, p.priority, reg_counter[0], p.unit, p.freq, p.tz
+                    series_id, sid, p.priority, reg_counter[0], p.unit, p.freq, p.tz, current=1
                 )
                 provides_map[(sid, series_id)] = p
                 for sym in p.symbols:
@@ -121,16 +151,34 @@ class Registry:
                     "UPDATE series SET status='active', valid_to=NULL WHERE id=?", [series_id]
                 )
 
-        # ---- 主源派生缓存（unit/freq/tz = 启用源中优先级最小者；无启用源 → 保留现值） ----
+        # ---- 主源派生缓存（F-11：用有效优先级；unit/freq/tz 与显示 ID 一并重算） ----
         for (series_id,) in self.cat.con.execute("SELECT id FROM series").fetchall():
             enabled = self.cat.enabled_sources(series_id)
             if enabled:
+                regs = {
+                    r[0]: r[1]
+                    for r in self.cat.con.execute(
+                        "SELECT source_id, reg_order FROM series_sources WHERE series_id=?",
+                        [series_id],
+                    ).fetchall()
+                }
+                # 有效优先级排序，并列取注册顺序先者
+                primary = min(
+                    enabled,
+                    key=lambda s: (self.cat.effective_priority(series_id, s), regs.get(s, 1 << 30)),
+                )
                 decls = self.cat.source_declarations(series_id)
-                primary = enabled[0]
                 pd = decls[primary]
+                desc_row = self.cat.con.execute(
+                    "SELECT descriptor_json FROM series WHERE id=?", [series_id]
+                ).fetchone()
+                import json as _json
+
+                desc = _json.loads(desc_row[0]) if desc_row and desc_row[0] else {}
+                display = display_8slot(desc, pd["freq"])
                 self.cat.con.execute(
-                    "UPDATE series SET unit=?, freq=?, tz=? WHERE id=?",
-                    [pd["unit"], pd["freq"], pd["tz"], series_id],
+                    "UPDATE series SET unit=?, freq=?, tz=?, display_id_8slot=? WHERE id=?",
+                    [pd["unit"], pd["freq"], pd["tz"], display, series_id],
                 )
 
         self.cat.con.commit()
