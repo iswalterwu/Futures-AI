@@ -92,6 +92,9 @@ class Registry:
         # error 条目：按 manifest 路径原地标 error（既有源），否则虚拟条目
         stale_errors = {r[0] for r in self.cat.con.execute("SELECT id FROM sources WHERE status='error'").fetchall()}
         current_errors = set()
+        goods_dirs = {str(Path(mf).parent) for (_d, mf) in entries if any(
+            mf == g_mf for g_mf in [g[2] for g in goods.values()]
+        )}
         for e in errors:
             key = f"error:{e['path']}"
             existing_id = (
@@ -101,6 +104,9 @@ class Registry:
             )
             # R5-02：该 id 本轮已被其他路径的合法清单接管 → 不误伤
             if existing_id and existing_id in goods:
+                existing_id = None
+            # R8-02：该目录本轮已被其他合法清单占用 → 归属已变，不原地标记
+            if existing_id and str(Path(e["path"]).parent) in goods_dirs:
                 existing_id = None
             if existing_id:
                 self.cat.con.execute(

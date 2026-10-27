@@ -99,14 +99,26 @@ def _utcnow():
 
 
 def validate_rows(fetched) -> None:
-    """R5-01：提交前拒绝空时间/NaT/NaN，整批拒绝入库。"""
+    """R5-01/R8-01：提交前拒绝空时间/NaT/NaN/非有限值，整批拒绝入库。"""
+    import math
+
     import pandas as _pd
 
-    bad = [(ts, v) for (ts, v) in fetched if ts is None or _pd.isna(ts) or _pd.isna(v)]
-    if bad:
+    def bad(v):
+        try:
+            fv = float(v)
+        except (TypeError, ValueError):
+            return True
+        return math.isnan(fv) or math.isinf(fv)
+
+    bad_rows = [
+        (ts, v) for (ts, v) in fetched
+        if ts is None or _pd.isna(ts) or bad(v)
+    ]
+    if bad_rows:
         raise FetchError(
             "validation_error",
-            f"数据含无效时间/数值（{len(bad)} 行），整批拒绝入库（R5-01）",
+            f"数据含无效时间/数值（{len(bad_rows)} 行），整批拒绝入库",
         )
 
 
