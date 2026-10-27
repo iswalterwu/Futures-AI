@@ -31,8 +31,10 @@ def reconcile(cat: CatalogDB, series_id: str | None) -> dict:
 
     decls = cat.source_declarations(series_id)
     enabled = cat.enabled_sources(series_id)
+    # R6-02：对账候选 = 全部当前源（停用/报错源的历史观测仍参与择优，口径差异不得遗漏）
+    candidates = cat.current_sources(series_id)
     checks = []
-    for a, b in combinations(enabled, 2):
+    for a, b in combinations(candidates, 2):
         for kind in KINDS:
             va, vb = decls[a][kind], decls[b][kind]
             checks.append(

@@ -109,6 +109,17 @@ class CatalogDB:
             r[0]: {"priority": r[1], "unit": r[2], "freq": r[3], "tz": r[4]} for r in rows
         }
 
+    def current_sources(self, series_id: str) -> list[str]:
+        """该序列全部当前声明源（current=1，含停用/报错）。"""
+        return [
+            r[0]
+            for r in self.con.execute(
+                "SELECT source_id FROM series_sources WHERE series_id=? AND current=1 "
+                "ORDER BY reg_order ASC",
+                [series_id],
+            ).fetchall()
+        ]
+
     def enabled_sources(self, series_id: str) -> list[str]:
         """该序列的启用源（status=ok 且 enabled=1 且 current=1，F-10）。"""
         return [

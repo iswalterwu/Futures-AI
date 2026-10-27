@@ -61,6 +61,7 @@ class EiaAdapter(Adapter):
         else:  # 兼容测试注入的纯 dict
             payload, raw = result, json.dumps(result, ensure_ascii=False, sort_keys=True)
         rows = []
+        bad = 0
         for item in payload.get("response", {}).get("data", []):
             # F-04：按序列过滤（响应可能含多序列/多维度）
             if item.get("series") and item["series"] != provide.symbols[0]:
@@ -69,12 +70,19 @@ class EiaAdapter(Adapter):
                 ts = datetime.fromisoformat(item["period"])
                 val = float(item["value"])
             except (KeyError, TypeError, ValueError):
-                continue
+                bad += 1
+                continue  # 统计无效行，交由调用方校验层整批拒绝（R6-01）
             if range_start and ts < range_start:
                 continue
             if range_end and ts > range_end:
                 continue
             rows.append((ts, val))
+        if bad and not rows:
+            from data.fetch.on_demand import FetchError
+
+            raise FetchError(
+                "validation_error", f"EIA 响应含 {bad} 行无效数据（空日期/非法值），整批拒绝"
+            )
         rows.sort(key=lambda r: r[0])
         return rows, raw
 
