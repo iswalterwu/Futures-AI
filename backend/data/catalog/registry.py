@@ -84,7 +84,7 @@ class Registry:
         for r in _all:
             if not (r[5] and r[5] in scanned_dirs):
                 continue
-            if r[5] in path_to_id and r[3] == "disabled":  # R10-01：优先非 disabled
+            if r[5] in path_to_id and r[4] == "disabled":  # R10-01/R11-01：r[4]=status，优先非 disabled
                 continue
             path_to_id[r[5]] = r[0]
         # error 条目：按 manifest 路径原地标 error（既有源），否则虚拟条目

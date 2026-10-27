@@ -314,3 +314,49 @@ class TestRound5Regressions:
         rows, raw = parse_with_mapping(str(f), {"date_col": "日期", "value_col": "收盘价"})
         assert hashlib.sha256(f.read_bytes()).hexdigest() == hashlib.sha256(raw).hexdigest()
         assert len(rows) == 1
+
+
+class TestRound11Regressions:
+    def test_dir_reuse_in_place_error_targets_current_id(self, tmp_path):
+        """R11-01/R10-01：目录复用后坏件原地标 error 应指向当前归属源。"""
+        svc = Service(tmp_path).init()
+        try:
+            d = svc.dirs["adapters"] / "shared-dir"
+            d.mkdir(exist_ok=True)
+            mf = d / "manifest.yaml"
+            mf.write_text(
+                "id: src-a\nname: A\nversion: 1\ncredentials: none\nprovides:\n"
+                "  - descriptor: {asset: bu, geo: cn, measure: close, contract: \"\"}\n"
+                "    symbols: [A]\n    unit: cny_ton\n    freq: 1d\n    tz: Asia/Shanghai\n"
+                "    fetch: {modes: [on_demand], history_days: 1}\n"
+                "    update: {lag_min: 0, revises: true}\n",
+                encoding="utf-8",
+            )
+            svc.reg.rebuild()
+            mf.write_text(
+                "id: src-b\nname: B\nversion: 1\ncredentials: none\nprovides:\n"
+                "  - descriptor: {asset: bu, geo: cn, measure: close, contract: \"\"}\n"
+                "    symbols: [B]\n    unit: cny_ton\n    freq: 1d\n    tz: Asia/Shanghai\n"
+                "    fetch: {modes: [on_demand], history_days: 1}\n"
+                "    update: {lag_min: 0, revises: true}\n",
+                encoding="utf-8",
+            )
+            svc.reg.rebuild()
+            mf.write_text(
+                "id: src-a\nname: A\nversion: 1\ncredentials: none\nprovides:\n"
+                "  - descriptor: {asset: bu, geo: cn, measure: close, contract: \"\"}\n"
+                "    symbols: [A]\n    unit: cny_ton\n    freq: 1d\n    tz: Asia/Shanghai\n"
+                "    fetch: {modes: [on_demand], history_days: 1}\n"
+                "    update: {lag_min: 0, revises: true}\n",
+                encoding="utf-8",
+            )
+            svc.reg.rebuild()
+            # 此时 src-a=ok, src-b=disabled；再把清单破坏 → 应原地标 src-a error
+            mf.write_text("id: [broken", encoding="utf-8")
+            svc.reg.rebuild()
+            row = svc.cat.con.execute(
+                "SELECT status FROM sources WHERE id='src-a'"
+            ).fetchone()
+            assert row and row[0] == "error"
+        finally:
+            svc.close()
