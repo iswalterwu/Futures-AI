@@ -44,33 +44,10 @@ def _lock_held(root: Path) -> bool:
 
 
 def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
-    """交互导入（F-08）：复用映射 → 猜测 → 确认/改列 → 目标确认 → 批次生命周期。"""
+    """交互导入（F-08）：目标确认 → 批次先建 → 复用映射/读取/解析全部纳入批次生命周期。"""
     import pandas as pd
 
     cat = svc.cat
-    reuse = cat.con.execute(
-        "SELECT id, column_map_json FROM import_maps ORDER BY id"
-    ).fetchall()
-    mapping = None
-    if reuse:
-        want = input(f"发现已有映射模板 {[r[0] for r in reuse]}，复用？[y/n] ").strip().lower()
-        if want == "y":
-            chosen = input(f"选择模板 id（{reuse[0][0]}）: ").strip() or reuse[0][0]
-            row = cat.con.execute(
-                "SELECT column_map_json FROM import_maps WHERE id=?", [chosen]
-            ).fetchone()
-            if row:
-                mapping = json.loads(row[0])
-    if mapping is None:
-        df = pd.read_csv(fpath) if fpath.suffix == ".csv" else pd.read_excel(fpath)
-        mapping = guess_mapping(df)
-        print(f"猜测映射: {mapping}")
-        adjust = input("确认？[y/修改: date_col=列名,value_col=列名] ").strip()
-        if adjust and adjust.lower() != "y":
-            for part in adjust.split(","):
-                k, _, v = part.partition("=")
-                mapping[k.strip()] = v.strip()
-    print(f"使用映射: {mapping}")
 
     # 目标确认（v1 目标 = local-file 清单声明的 crude/world/close）
     sid = derive_id({"asset": "crude", "geo": "world", "measure": "close", "contract": ""})
@@ -84,9 +61,33 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
         print("已取消", file=sys.stderr)
         return 1
 
-    # F-08：批次先建，解析失败 → fail_run（不产生部分写入）
+    # F-08：批次先建（目标已知），此后任何读取/解析失败都记 failed
     rid = svc.store.new_run("local-file", sid, None, None, decl["unit"], decl["freq"], decl["tz"])
     try:
+        reuse = cat.con.execute(
+            "SELECT id, column_map_json FROM import_maps ORDER BY id"
+        ).fetchall()
+        mapping = None
+        if reuse:
+            want = input(f"发现已有映射模板 {[r[0] for r in reuse]}，复用？[y/n] ").strip().lower()
+            if want == "y":
+                chosen = input(f"选择模板 id（{reuse[0][0]}）: ").strip() or reuse[0][0]
+                row = cat.con.execute(
+                    "SELECT column_map_json FROM import_maps WHERE id=?", [chosen]
+                ).fetchone()
+                if row:
+                    mapping = json.loads(row[0])
+        if mapping is None:
+            df = pd.read_csv(fpath) if fpath.suffix == ".csv" else pd.read_excel(fpath)
+            mapping = guess_mapping(df)
+            print(f"猜测映射: {mapping}")
+            adjust = input("确认？[y/修改: date_col=列名,value_col=列名] ").strip()
+            if adjust and adjust.lower() != "y":
+                for part in adjust.split(","):
+                    k, _, v = part.partition("=")
+                    mapping[k.strip()] = v.strip()
+        print(f"使用映射: {mapping}")
+
         rows, raw = parse_with_mapping(str(fpath), mapping)
         range_start = min((t for t, _ in rows), default=None)
         range_end = max((t for t, _ in rows), default=None)
@@ -204,6 +205,8 @@ def main(argv=None) -> int:
                     _json_out(_internal_get(root, "/internal/reconcile", {"series_id": args.series_id}))
                 elif args.cmd == "provenance":
                     _json_out(_internal_get(root, "/internal/provenance", {"series_id": args.series_id}))
+                elif args.cmd == "jobs":
+                    _json_out(_internal_get(root, "/internal/jobs", {}))
                 else:
                     _json_out(_internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b}))
                 return 0

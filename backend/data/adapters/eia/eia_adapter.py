@@ -42,7 +42,7 @@ def _request(series_id: str, api_key: str, start, end):
         raise FetchError("adapter_error", f"EIA 服务端错误（HTTP {resp.status_code}）")
     if resp.status_code >= 400:
         raise FetchError("adapter_error", f"EIA 请求失败（HTTP {resp.status_code}）")
-    return resp.json()
+    return resp.json(), resp.text
 
 
 class EiaAdapter(Adapter):
@@ -55,8 +55,11 @@ class EiaAdapter(Adapter):
     def fetch(self, provide, range_start=None, range_end=None):
         # 凭证读自 manifest 的 credential_ref（AC-007-2：读取失败 fail closed）
         api_key = creds.get(self.creds_dir, self.credential_ref)
-        payload = _request(provide.symbols[0], api_key, range_start, range_end)
-        raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False, sort_keys=True)
+        result = _request(provide.symbols[0], api_key, range_start, range_end)
+        if isinstance(result, tuple):  # (data, raw_text)
+            payload, raw = result
+        else:  # 兼容测试注入的纯 dict
+            payload, raw = result, json.dumps(result, ensure_ascii=False, sort_keys=True)
         rows = []
         for item in payload.get("response", {}).get("data", []):
             # F-04：按序列过滤（响应可能含多序列/多维度）

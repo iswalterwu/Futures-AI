@@ -50,19 +50,19 @@ class Registry:
     def rebuild(self) -> dict:
         """增量重建。返回 {sources: {...}, series: {...}, errors: [...]}。"""
         entries = scan_adapters(self.builtin_dir, self.user_dir)
-        goods: dict[str, tuple] = {}  # adapter_id → (manifest, adapter_dir)
+        goods: dict[str, tuple] = {}  # adapter_id → (manifest, adapter_dir, mf_path)
         errors: list[dict] = []
 
         for adapter_dir, mf_path in entries:
             try:
                 m = load(mf_path)
             except ManifestError as e:
-                errors.append({"path": mf_path, "reason": str(e)})
+                errors.append({"path": mf_path, "reason": str(e), "kind": "invalid"})
                 continue
             if m.id in goods:
-                errors.append({"path": mf_path, "reason": f"重复 id: {m.id}（后到者拒绝）"})
+                errors.append({"path": mf_path, "reason": f"重复 id: {m.id}（后到者拒绝）", "kind": "dup"})
                 continue
-            goods[m.id] = (m, adapter_dir)
+            goods[m.id] = (m, adapter_dir, mf_path)
 
         # ---- sources 状态机（F-10：既有源按 manifest_path 原地标 error；保留用户 enabled） ----
         seen_ids = set(goods)
@@ -78,7 +78,7 @@ class Registry:
         ).fetchall():
             if sid not in seen_ids and status != "disabled":
                 self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [sid])
-        for sid, (m, adapter_dir) in goods.items():
+        for sid, (m, adapter_dir, mf_path) in goods.items():
             self.cat.con.execute(
                 "INSERT INTO sources(id, adapter_id, name, enabled, status, manifest_path) "
                 "VALUES (?,?,?,1,'ok',?) "
@@ -91,7 +91,7 @@ class Registry:
         current_errors = set()
         for e in errors:
             key = f"error:{e['path']}"
-            existing_id = path_to_id.get(str(Path(e["path"]).parent))
+            existing_id = path_to_id.get(str(Path(e["path"]).parent)) if e.get("kind") == "invalid" else None
             if existing_id:
                 self.cat.con.execute(
                     "UPDATE sources SET status='error' WHERE id=?", [existing_id]
@@ -110,11 +110,11 @@ class Registry:
             if old.startswith("error:") and Path(old[len("error:"):]).exists():
                 continue
             self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [old])
-        # 本次成功加载的清单 → 清理其虚拟 error 残留
-        for sid, (m, adapter_dir) in goods.items():
+        # 本次成功加载的清单 → 清理其虚拟 error 残留（F-10：精确路径）
+        for sid, (m, adapter_dir, mf_path) in goods.items():
             self.cat.con.execute(
                 "DELETE FROM sources WHERE id=? AND status='error'",
-                [f"error:{adapter_dir}/{MANIFEST_FILENAME}"],
+                [f"error:{mf_path}"],
             )
 
         # ---- series 编译（增量，不清空；同描述符归并 AC-002-2） ----
@@ -123,7 +123,7 @@ class Registry:
         reg_counter = [0]
         provided_series: set[str] = set()
         provides_map: dict[tuple[str, str], object] = {}
-        for sid, (m, _dir) in goods.items():
+        for sid, (m, _dir, _mf) in goods.items():
             for p in m.provides:
                 d = normalize(p.descriptor.model_dump())
                 series_id = derive_id(d)
@@ -133,7 +133,7 @@ class Registry:
                     "INSERT INTO series(id, descriptor_json, display_id_8slot, unit, freq, tz, status, valid_to) "
                     "VALUES (?,?,?,NULL,NULL,NULL,'active',NULL) "
                     "ON CONFLICT(id) DO UPDATE SET descriptor_json=excluded.descriptor_json, "
-                    "display_id_8slot=excluded.display_id_8slot, status='active', valid_to=NULL",
+                    "status='active', valid_to=NULL",
                     [series_id, self._desc_json(d), display],
                 )
                 reg_counter[0] += 1

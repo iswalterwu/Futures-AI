@@ -79,14 +79,14 @@ class TestBatchLifecycle:
 class TestPayloadHashAndTime:
     """F-12：真实链路哈希非空、时间 UTC 一致。"""
 
-    def test_fetch_produces_payload_hash(self, tmp_path):
+    def test_fetch_produces_payload_hash(self, tmp_path, monkeypatch):
         svc = Service(tmp_path).init()
         try:
             from data.adapters.akshare import akshare_adapter as ak_mod
             import pandas as pd
 
             df = pd.DataFrame({"日期": ["2026-10-01"], "收盘价": [1.0]})
-            ak_mod._get_main = lambda symbol: df
+            monkeypatch.setattr(ak_mod, "_get_main", lambda symbol: df)
             svc.fetch(SID, do_fetch=True)
             rows = svc.store.con.execute(
                 "SELECT fetched_at, \"asof\", payload_hash FROM observations"
@@ -166,7 +166,7 @@ class TestRegistryStateMachine:
 class TestCredentialRedaction:
     """F-07：上游错误不泄露 key；空凭证拒绝。"""
 
-    def test_eia_error_redacted(self, tmp_path):
+    def test_eia_error_redacted(self, tmp_path, monkeypatch):
         svc = Service(tmp_path).init()
         try:
             from data.adapters.eia import eia_adapter as eia_mod
@@ -174,7 +174,7 @@ class TestCredentialRedaction:
             def boom(series_id, api_key, start, end):
                 raise FetchError("unauthorized", "EIA 认证失败（请检查 API key）")
 
-            eia_mod._request = boom
+            monkeypatch.setattr(eia_mod, "_request", boom)
             creds.put(tmp_path / "creds", "eia_api_key", "sk-REVIEW-SECRET-" + "1234")
             eia_sid = derive_id({"asset": "diesel", "geo": "na", "measure": "stock", "contract": ""})
             with pytest.raises(FetchError) as ei:
@@ -185,30 +185,24 @@ class TestCredentialRedaction:
         finally:
             svc.close()
 
-    def test_network_exception_key_redacted(self, tmp_path):
+    def test_network_exception_key_redacted(self, tmp_path, monkeypatch):
         """F-07：真实 requests 边界异常（URL 含 key）不得进入错误消息。"""
         import requests
-
-        from data.adapters.eia import eia_adapter as eia_mod
 
         def boom(url, params=None, timeout=None):
             raise requests.exceptions.ConnectionError(
                 f"Connection aborted to {url}?api_key=" + ("sk-LEAK-" + "12345678")
             )
 
-        real_requests_get = requests.get
         import data.adapters.eia.eia_adapter as mod
 
-        mod.requests.get = boom
-        try:
-            from data.fetch.on_demand import FetchError
+        monkeypatch.setattr(mod.requests, "get", boom)
+        from data.fetch.on_demand import FetchError
 
-            with pytest.raises(FetchError) as ei:
-                # 直接调 _request 真实实现（内部会 catch RequestException）
-                mod._request("WDISTUS1", "sk-LEAK-" + "12345678", None, None)
-            assert "LEAK" not in ei.value.message
-        finally:
-            mod.requests.get = real_requests_get
+        with pytest.raises(FetchError) as ei:
+            # 直接调 _request 真实实现（内部会 catch RequestException）
+            mod._request("WDISTUS1", "sk-LEAK-" + "12345678", None, None)
+        assert "LEAK" not in ei.value.message
 
     def test_empty_secret_rejected(self, tmp_path):
         with pytest.raises(creds.CredsError):
