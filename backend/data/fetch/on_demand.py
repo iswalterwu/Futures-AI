@@ -76,15 +76,7 @@ def fetch_series(
     try:
         provide = get_provide(cat, series_id, source) if get_provide else None
         fetched, raw_payload = adapter.fetch(provide, start, end)
-        import pandas as _pd
-
-        bad = [(ts, v) for (ts, v) in fetched
-               if ts is None or _pd.isna(ts) or _pd.isna(v)]
-        if bad:
-            raise FetchError(
-                "validation_error",
-                f"数据含无效时间/数值（{len(bad)} 行），整批拒绝入库（R5-01）",
-            )
+        validate_rows(fetched)
         rows = [
             (series_id, ts, float(v), decl["unit"], source, _utcnow())
             for (ts, v) in fetched
@@ -104,6 +96,18 @@ def fetch_series(
 
 def _utcnow():
     return utcnow()
+
+
+def validate_rows(fetched) -> None:
+    """R5-01：提交前拒绝空时间/NaT/NaN，整批拒绝入库。"""
+    import pandas as _pd
+
+    bad = [(ts, v) for (ts, v) in fetched if ts is None or _pd.isna(ts) or _pd.isna(v)]
+    if bad:
+        raise FetchError(
+            "validation_error",
+            f"数据含无效时间/数值（{len(bad)} 行），整批拒绝入库（R5-01）",
+        )
 
 
 def _payload_hash(raw, fetched) -> str:

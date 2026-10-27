@@ -16,7 +16,7 @@ from pathlib import Path
 from data import creds
 from data.adapters.local_file.local_file_adapter import guess_mapping, parse_with_mapping
 from data.catalog.descriptor import derive_id
-from data.fetch.on_demand import FetchError
+from data.fetch.on_demand import FetchError, validate_rows
 from data.lock import LockBusy, ensure_layout, read_endpoint, write_endpoint
 from data.store.duck import utcnow
 from data.service import Service
@@ -89,6 +89,7 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
         print(f"使用映射: {mapping}")
 
         rows, raw = parse_with_mapping(str(fpath), mapping)
+        validate_rows(rows)
         range_start = min((t for t, _ in rows), default=None)
         range_end = max((t for t, _ in rows), default=None)
         svc.store.con.execute(
