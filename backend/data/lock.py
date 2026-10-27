@@ -56,10 +56,22 @@ def write_lock(data_dir: Path):
 
 def _stale(lock_path: Path) -> bool:
     """锁文件存在但持有进程已死 → 陈旧锁。"""
+    import time
+
     try:
-        pid = int(lock_path.read_text(encoding="utf-8", errors="ignore").strip())
-    except (OSError, ValueError):
-        return True  # F-01：空/非法内容 = 创建后写 PID 前崩溃 → 陈旧
+        text = lock_path.read_text(encoding="utf-8", errors="ignore").strip()
+    except OSError:
+        return False
+    if not text:
+        # R10-02：空锁 = 可能正在创建；仅当超过 30 秒才判陈旧（F-01 崩溃恢复）
+        try:
+            return (time.time() - lock_path.stat().st_mtime) > 30
+        except OSError:
+            return False
+    try:
+        pid = int(text)
+    except ValueError:
+        return False
     if pid <= 0:
         return False
     import ctypes

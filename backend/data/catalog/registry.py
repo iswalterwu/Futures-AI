@@ -77,13 +77,16 @@ class Registry:
             )
         # R6-03/R7-03：goods 更新后建路径映射；仅纳入本轮实际扫描到的路径
         scanned_dirs = {str(Path(mf).parent) for (_d, mf) in entries}
-        path_to_id = {
-            r[5]: r[0]
-            for r in self.cat.con.execute(
-                "SELECT * FROM sources"  # F-10：含 error 源（坏件重建幂等）
-            ).fetchall()
-            if r[5] and r[5] in scanned_dirs
-        }
+        _all = self.cat.con.execute(
+            "SELECT * FROM sources"  # F-10：含 error 源（坏件重建幂等）
+        ).fetchall()
+        path_to_id = {}
+        for r in _all:
+            if not (r[5] and r[5] in scanned_dirs):
+                continue
+            if r[5] in path_to_id and r[3] == "disabled":  # R10-01：优先非 disabled
+                continue
+            path_to_id[r[5]] = r[0]
         # error 条目：按 manifest 路径原地标 error（既有源），否则虚拟条目
         stale_errors = {r[0] for r in self.cat.con.execute("SELECT id FROM sources WHERE status='error'").fetchall()}
         current_errors = set()
