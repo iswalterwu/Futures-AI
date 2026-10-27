@@ -35,7 +35,8 @@ class TestReconcile:
         cat.con.execute("UPDATE sources SET enabled=0")
         cat.con.commit()
         rep = reconcile(cat, "s1")["report"]
-        assert rep["checks"] == []
+        # R6-02：对账覆盖全部当前源（含停用），口径差异仍报告；退化 warning 并存
+        assert len(rep["checks"]) == 3
         assert any("主源候选为空" in w for w in rep["warnings"])
 
     def test_unknown_series_warning(self, tmp_path):
