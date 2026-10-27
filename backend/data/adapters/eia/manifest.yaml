@@ -1,0 +1,14 @@
+id: eia
+name: EIA 公开数据
+version: 1
+credentials: {kind: api_key, credential_ref: eia_api_key}
+implementation: eia
+provides:
+  - descriptor: {asset: diesel, geo: na, measure: stock, contract: ""}
+    symbols: ["WDISTUS1"]
+    unit: kb
+    freq: 1w
+    tz: America/New_York
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}

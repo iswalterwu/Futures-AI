@@ -1,0 +1,8 @@
+# 阴性样例：代码中合法的凭证引用写法，任一规则都不得命中
+api_key = os.environ["EIA_API_KEY"]
+token = secrets.token_hex(16)
+secret = creds.get(creds_dir, ref)
+password: str
+api_key = ""
+credentials: {kind: api_key, credential_ref: eia_api_key}
+headers = {"Authorization": f"Bearer {token}"}

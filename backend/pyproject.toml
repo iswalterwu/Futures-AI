@@ -1,0 +1,37 @@
+[project]
+name = "futuresai-data"
+version = "0.1.0"
+description = "Futures-AI 统一数据层（data-layer feature）"
+requires-python = ">=3.14"
+
+dependencies = [
+    "duckdb>=1.1",
+    "pydantic>=2.9",
+    "pyyaml>=6.0",
+    "requests>=2.32",
+    "akshare>=1.14",
+    "openpyxl>=3.1",
+    "pandas>=2.2",
+    "mcp>=1.2,<2",  # FastMCP API（2.x 改名）；升级需迁移评审
+    "anyio>=4.5",  # MCP 工具移入工作线程（to_thread）
+    "pywin32>=308; sys_platform == 'win32'",
+    "pytest>=8.3",
+]
+
+[project.scripts]
+futureai-data = "data.cli:main"
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["data*"]
+
+[tool.setuptools.package-data]
+"data.adapters.akshare" = ["manifest.yaml"]
+"data.adapters.eia" = ["manifest.yaml"]
+"data.adapters.local_file" = ["manifest.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

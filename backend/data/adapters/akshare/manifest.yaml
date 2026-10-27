@@ -1,0 +1,118 @@
+id: akshare
+name: AKShare 行情
+version: 1
+credentials: none
+implementation: akshare
+provides:
+  - descriptor: {asset: sc, geo: cn, measure: close, contract: ""}
+    symbols: ["SC0"]
+    unit: cny_bbl
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: fu, geo: cn, measure: close, contract: ""}
+    symbols: ["FU0"]
+    unit: cny_ton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: lu, geo: cn, measure: close, contract: ""}
+    symbols: ["LU0"]
+    unit: cny_ton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: bu, geo: cn, measure: close, contract: ""}
+    symbols: ["BU0"]
+    unit: cny_ton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: pg, geo: cn, measure: close, contract: ""}
+    symbols: ["PG0"]
+    unit: cny_ton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: sc, geo: cn, measure: receipt, contract: ""}
+    symbols: ["SC_RECEIPT"]
+    unit: kb
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: fu, geo: cn, measure: stock, contract: ""}
+    symbols: ["FU_STOCK"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: bu, geo: cn, measure: stock, contract: ""}
+    symbols: ["BU_STOCK"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: lu, geo: cn, measure: stock, contract: ""}
+    symbols: ["LU_STOCK"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: fu, geo: cn, measure: receipt, contract: ""}
+    symbols: ["FU_RECEIPT"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: bu, geo: cn, measure: receipt, contract: ""}
+    symbols: ["BU_RECEIPT"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: lu, geo: cn, measure: receipt, contract: ""}
+    symbols: ["LU_RECEIPT"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: pg, geo: cn, measure: receipt, contract: ""}
+    symbols: ["PG_RECEIPT"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}
+  - descriptor: {asset: pg, geo: cn, measure: stock, contract: ""}
+    symbols: ["PG_STOCK"]
+    unit: kton
+    freq: 1d
+    tz: Asia/Shanghai
+    priority: 100
+    fetch: {modes: [on_demand, scheduled], history_days: 3650}
+    update: {lag_min: 0, revises: true}

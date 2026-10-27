@@ -1,0 +1,11 @@
+# 阳性样例（假凭证，仅供扫描规则测试）：每行以 ⟨rule-N⟩ 结尾，标注应命中的规则组；扫描时排除本目录
+api_key = "sk-positivesample123456"  ⟨rule-1⟩
+API_KEY = "sk-uppercase-sample-123456"  ⟨rule-1⟩
+apiKey = "sk-camelcase-sample-123456"  ⟨rule-1⟩
+{"api_key": "sk-dict-sample-12345678"}  ⟨rule-1⟩
+token = "tok-positivesample123456"  ⟨rule-1⟩
+api_key: sk-unquoted-yaml-123456  ⟨rule-2⟩
+API_KEY=sk-dotenv-sample-123456  ⟨rule-2⟩
+password = hunter2hunter2  ⟨rule-2⟩
+api_key: str = "sk-annotated-sample-123456"  ⟨rule-3⟩
+secret: str = "s3cr3t-annotated-value"  ⟨rule-3⟩

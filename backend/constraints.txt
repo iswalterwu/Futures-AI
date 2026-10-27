@@ -1,0 +1,14 @@
+# 受测版本约束（2026-10-27，Windows 11 + Python 3.14.2，全量测试绿）
+# 用法：pip install -e . -c constraints.txt
+# pyproject.toml 只声明兼容下界（mcp 另限 <2）；复现受测环境以本文件为准，升级任一包须回归全量测试。
+duckdb==1.5.5
+pydantic==2.12.5
+PyYAML==6.0.3
+requests==2.34.2
+akshare==1.18.63
+openpyxl==3.1.5
+pandas==2.3.3
+mcp==1.30.0
+anyio==4.13.0
+pywin32==311; sys_platform == "win32"
+pytest==9.0.3
