@@ -19,8 +19,8 @@ specs/<feature>/
 
 | feature | 状态 | 依赖 | 最近更新 | 备注 |
 |---|---|---|---|---|
-| data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23 变更（D-013 库存收敛 + D-014 EIA 双路径）待 Gate 1 |
-| settings | in-progress | desktop-shell、data-layer v23 | 2026-10-27 | Spec v1 草案（D-014：用户档案 + 首次启动 + EIA 开通向导），待 Gate 1 |
+| data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
+| settings | in-progress | desktop-shell、data-layer v23 | 2026-10-27 | Spec v1 Gate 1 已批准（档案可稍后填写）→ Plan |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
