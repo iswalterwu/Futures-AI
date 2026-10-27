@@ -224,3 +224,18 @@
 | T-71 | CLI 退出契约：参数用法错误退出码 2；KeyboardInterrupt 原样传播且释放写锁；serve 启动失败（端口被占）→ 结构化 internal、不留锁与端点；Service 构造被任何异常中断均释放写锁（`data/cli.py`、`data/service.py`） | R16-A P3-3、R16-B 测试缺口 | AC-008-3、AC-004-6 | `pytest R16 -k ExitContract -q` | ✅ |
 | T-72 | 测试与日期解耦（第十三轮仓单默认窗口测试冻结今天）；倒置窗口消息带时间；仓单经真实 SDK 至上期所/能源中心 HTTP 边界回归（SC→kb、FU→kton）；package-data 声明断言（`tests/`、`data/fetch/on_demand.py`） | R16-B-05、R16-A P3-2/P3-6、R16-B 测试缺口 | AC-007-1、AC-004-1、AC-001-1 | `pytest R16 -k Round16Gaps -q` + `pytest tests/test_review_round13.py -k receipt_default_window -q` | ✅ |
 | T-73 | tasks.md T-21~T-33 补齐模板字段（修改范围 / 完成标准 AC / 验证命令） | Checklist 第 9 项（A/B） | 工作流（AGENTS.md §2 第 6 步） | 逐条执行 T-21~T-33 验证命令 | ✅ |
+
+## 追加任务（第十七轮审核员 B 发现，Converge 再开）
+
+> 来源：第十七轮复审 B（gpt-6.1-sol）未通过：R17-B-01 写命令退出时只读通道仅 join(5)、Service 关库不持访问锁，在途读取撞上已关闭连接（P2，T-69 引入）；另有 P3 与测试缺口。审核员 A 本轮超时未产出（第十八轮重跑）。plan §2.2 已先行修订（通道排空/降级/重试、serve 停服例外）。
+> R17 = `tests/test_review_round17.py`。
+
+| # | 任务（修改范围） | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-74 | 写命令退出先排空在途只读请求（≤30s，超时强制停服），Service 关库在访问锁保护下进行（`data/mcp_server.py`、`data/service.py`） | R17-B-01（P2） | AC-004-6 | `pytest R17 -k TestChannelDrain -q` | ✅ |
+| T-75 | 通道从线程启动起纳入清理：启动等待中断、端点发布/删除失败不遗留后台线程；无通道时写命令照常并在 stderr 提示（`data/mcp_server.py`、`data/cli.py`） | R17-B-02 | AC-004-6、AC-008-3 | `pytest R17 -k TestChannelCleanup -q` | ✅ |
+| T-76 | 只读命令对同一端点在截止时间内间隔 1s 重试，单次请求超时 10s（`data/cli.py`） | R17-B-03 | AC-004-6 | `pytest R17 -k TestRouteRetry -q` | ✅ |
+| T-77 | 退出契约收准：serve 正常停服（Ctrl+C/Ctrl+Break/SystemExit(0)）为例外，清理后返回 0（plan §2.2、`data/cli.py`） | R17-B-04 | AC-008-3、AC-008-4 | `pytest R17 -k TestServeShutdown -q` | ✅ |
+| T-78 | import 向导等待输入时不持访问锁、经写进程只读通道的读取即时成功（持久回归） | R17-B 测试缺口 | AC-004-6、AC-007-3 | `pytest R17 -k TestWizardChannel -q` | ✅ |
+| T-79 | 凭证部分写入后失败、双写者交错且一方替换失败的持久回归 | R17-B 测试缺口 | AC-009-1 | `pytest R17 -k TestCredentialFailures -q` | ✅ |
+| T-80 | 凭证扫描阳性样例逐条标注规则组并断言各自命中（三组均有样例），补阴性样例（`tests/test_scan.py`、`tests/fixtures/credential_scan_fixtures/`） | R17-B-05 | AC-009-2 | `pytest tests/test_scan.py -q` | ✅ |

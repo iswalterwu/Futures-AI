@@ -43,6 +43,8 @@ DEFAULT_ROOT = Path.home() / "AppData" / "Local" / "FuturesAI"
 
 _SOURCE_ID_RE = re.compile(r"^[a-z0-9-]{1,64}$")  # 同 manifest id（plan §2.1）
 READ_WAIT_S = 30  # 只读命令在写进程启停过渡窗口（尚无只读通道）内的等待上限（秒）
+ROUTE_TIMEOUT_S = 10  # 单次内部路由请求超时（秒）
+ROUTE_RETRY_S = 1.0  # 端点不可达/无响应后的重试间隔（秒）
 
 
 def _json_out(obj):
@@ -71,7 +73,7 @@ def _db_error(e: Exception) -> dict:
     return FetchError("internal", text).to_dict()
 
 
-def _internal_get(root: Path, path: str, params: dict):
+def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TIMEOUT_S):
     """经持锁进程的内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。"""
     ep = read_endpoint(root / "data")
     if not ep:
@@ -80,7 +82,7 @@ def _internal_get(root: Path, path: str, params: dict):
     url = f"http://127.0.0.1:{ep['port']}{path}" + (f"?{qs}" if qs else "")
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {ep['token']}"})
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         try:
@@ -431,19 +433,19 @@ def _dispatch(args) -> int:
 
     if is_readonly:
         # 持锁进程（serve 或 CLI 写命令）提供只读通道：发现端点即路由；写进程启停过渡窗口内尚无端点 →
-        # 短暂等待，端点出现即路由、写锁释放即本地只读；同一端点不可达不重试（只等待写锁释放或新端点）
+        # 短暂等待，端点出现即路由、写锁释放即本地只读；端点不可达/无响应 → 同一截止时间内间隔重试
         deadline = time.monotonic() + READ_WAIT_S
-        route_err, failed_ep = None, None
+        route_err, retry_at = None, 0.0
         while _lock_held(root):
             ep = read_endpoint(root / "data")
-            if ep and ep != failed_ep:
+            if ep and time.monotonic() >= retry_at:
                 try:
                     payload = _route_readonly(root, args)
                 except FetchError as e:
                     _json_out(e.to_dict())
                     return 1
                 except OSError as e:
-                    route_err, failed_ep = e, ep
+                    route_err, retry_at = e, time.monotonic() + ROUTE_RETRY_S
                 except Exception as e:
                     print(f"错误：内部路由失败: {e}", file=sys.stderr)
                     return 1
@@ -491,7 +493,9 @@ def _dispatch(args) -> int:
         from data import mcp_server
 
         # 持锁期间提供内部只读通道：其他进程的只读命令经其路由，不受本写命令影响（AC-004-6）
-        with mcp_server.readonly_channel(svc, root / "data"):
+        with mcp_server.readonly_channel(svc, root / "data") as port:
+            if port is None:
+                print("警告：只读通道未能启动，本命令执行期间其他进程的只读命令需等待其结束", file=sys.stderr)
             return _run_write(svc, root, args)
     except Exception as e:  # 业务错误/库错误/意外错误 → 结构化输出（不抛裸异常）
         _json_out(_err_dict(e))

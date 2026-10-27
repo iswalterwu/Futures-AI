@@ -195,12 +195,33 @@ def build_internal_app(service: Service, token: str):
     )
 
 
+CHANNEL_DRAIN_S = 30.0  # 通道退出时等待在途只读请求完成的上限（秒），超时强制停服
+
+
+def _wait_started(server, thread, timeout: float) -> None:
+    deadline = time.monotonic() + timeout
+    while not server.started and thread.is_alive() and time.monotonic() < deadline:
+        time.sleep(0.01)
+
+
+def _stop(server, thread, drain_timeout: float) -> None:
+    """停止接收新连接并等在途请求完成；超时强制停服。"""
+    server.should_exit = True
+    thread.join(drain_timeout)
+    if thread.is_alive():
+        server.force_exit = True
+        thread.join(5)
+
+
 @contextlib.contextmanager
-def readonly_channel(service: Service, data_dir: Path, startup_timeout: float = 10.0):
+def readonly_channel(
+    service: Service, data_dir: Path, startup_timeout: float = 10.0, drain_timeout: float = CHANNEL_DRAIN_S,
+):
     """非 serve 写进程持锁期间的内部只读通道（AC-004-6）：后台线程 HTTP 服务 + 端点文件。
 
-    仅 127.0.0.1、随机端口、独立令牌；退出时先删端点文件再停服务。起不来不影响写命令本身：
-    yield None，读者回退为等待写锁释放。
+    仅 127.0.0.1、随机端口、独立令牌。退出：先删端点文件，再停止接收并等在途请求完成（之后调用方才可关库）。
+    启动失败或端点发布失败 → 停掉服务并 yield None（写命令照常执行，读者回退为等待写锁释放）。
+    从线程启动起即纳入清理保护：启动等待被中断、发布/删除端点失败均不遗留后台线程。
     """
     import secrets
 
@@ -213,21 +234,28 @@ def readonly_channel(service: Service, data_dir: Path, startup_timeout: float = 
     )
     server = uvicorn.Server(config)
     thread = threading.Thread(target=server.run, name="readonly-channel", daemon=True)
+    published = False
     thread.start()
-    deadline = time.monotonic() + startup_timeout
-    while not server.started and thread.is_alive() and time.monotonic() < deadline:
-        time.sleep(0.01)
-    port = None
-    if server.started and getattr(server, "servers", None):
-        port = server.servers[0].sockets[0].getsockname()[1]
-        write_endpoint(Path(data_dir), port, token)
     try:
+        _wait_started(server, thread, startup_timeout)
+        port = None
+        if server.started and getattr(server, "servers", None):
+            port = server.servers[0].sockets[0].getsockname()[1]
+            try:
+                write_endpoint(Path(data_dir), port, token)
+                published = True
+            except OSError:
+                port = None  # 端点发布失败 → 无人可发现该通道，按“无通道”处理
+        if port is None:
+            _stop(server, thread, drain_timeout)
         yield port
     finally:
-        if port is not None:
-            remove_endpoint(Path(data_dir), token)
-        server.should_exit = True
-        thread.join(5)
+        if published:
+            try:
+                remove_endpoint(Path(data_dir), token)
+            except OSError:
+                pass  # 残留端点由读者按“不可达 → 等待写锁释放”处理
+        _stop(server, thread, drain_timeout)
 
 
 def _meta_json(meta: dict) -> dict:

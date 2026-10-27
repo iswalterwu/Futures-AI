@@ -365,8 +365,10 @@ class Service:
             self._lock_f = None
 
     def close(self):
-        try:
-            self.store.close()
-        finally:
-            self.cat.close()
-            self.release_write_lock()
+        """关库并释放写锁。在访问锁保护下进行：等仍持锁的在途访问（如只读通道请求）结束后才关。"""
+        with self._access_lock:
+            try:
+                self.store.close()
+            finally:
+                self.cat.close()
+                self.release_write_lock()

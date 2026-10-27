@@ -71,17 +71,35 @@ def test_no_manual_series_id():
     assert hits == [], f"手写 series_id 命中: {hits}"
 
 
+CRED_FIXTURES = BACKEND / "tests" / "fixtures" / "credential_scan_fixtures"
+
+
+def _fixture_lines(name: str) -> list[str]:
+    lines = (CRED_FIXTURES / name).read_text(encoding="utf-8").splitlines()
+    return [ln for ln in lines if ln.strip() and not ln.startswith("#")]
+
+
+def test_positive_samples_hit_each_rule():
+    """阳性样例逐条命中其标注的规则组，且三组规则各自有样例（任一组失效即报警）。"""
+    covered = set()
+    for line in _fixture_lines("positives.txt"):
+        body, _, mark = line.rpartition("⟨rule-")
+        n = int(mark.rstrip("⟩"))
+        assert CRED_PATTERNS[n - 1].search(body.strip()), f"规则 {n} 未命中：{body.strip()}"
+        covered.add(n)
+    assert covered == set(range(1, len(CRED_PATTERNS) + 1)), f"缺少阳性样例的规则组：{covered}"
+
+
+def test_negative_samples_not_hit():
+    """合法的凭证引用写法不得被任一规则命中（防误报）。"""
+    lines = _fixture_lines("negatives.txt")
+    assert lines
+    for line in lines:
+        assert not any(p.search(line) for p in CRED_PATTERNS), f"误报：{line}"
+
+
 def test_positive_samples_hit():
-    """阳性样例必须命中规则（防空转）。"""
-    fix = BACKEND / "tests" / "fixtures" / "credential_scan_fixtures"
-    samples = list(fix.glob("*")) if fix.is_dir() else []
-    assert samples, "credential 阳性样例缺失"
-    matched = 0
-    for s in samples:
-        text = s.read_text(encoding="utf-8", errors="replace")
-        if any(pat.search(text) for pat in CRED_PATTERNS):
-            matched += 1
-    assert matched == len(samples), f"{len(samples) - matched} 个阳性样例未命中规则"
+    """手写 series_id 阳性样例必须命中规则（防空转）。"""
     fix2 = BACKEND / "tests" / "fixtures" / "manual_series_id_fixtures"
     samples2 = list(fix2.glob("*")) if fix2.is_dir() else []
     assert samples2, "series_id 阳性样例缺失"
