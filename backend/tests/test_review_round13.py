@@ -248,8 +248,10 @@ class TestAkshareSdkBoundary:
             return pd.DataFrame()
 
         monkeypatch.setattr(akshare, "get_receipt", fake_get_receipt)
+        freeze_today(monkeypatch)  # 与运行日期解耦：受测 SDK 交易日历止于 2026-12-31
         ak_mod._get_receipt("SC")
-        today = date.today()
+        today = ak_mod.date.today()
+        assert today == date(2026, 10, 27)
         assert seen == {
             "start": (today - timedelta(days=ak_mod.RECEIPT_DEFAULT_DAYS)).strftime("%Y%m%d"),
             "end": today.strftime("%Y%m%d"),

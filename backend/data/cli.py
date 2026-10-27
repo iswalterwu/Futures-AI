@@ -1,15 +1,15 @@
 """CLI（plan §2.2，AC-004-5/6、AC-005-1/2 交付入口、AC-007-3 交互向导）。
 
 - 写命令：构造写 Service（先取锁后开库，LockBusy → 报错退出）
+- 写命令执行期间提供内部只读通道（随机端口 + 端点文件），与 serve 一样不阻塞只读命令（AC-004-6）
 - 只读命令：先探测写锁——无锁直接只读 Service（空目录首启 = 内存库，不建库）；
-  有锁（serve 运行中）经内部 HTTP 路由（AC-004-6）
+  有锁经持锁进程的内部只读通道路由；写进程启停过渡窗口内短暂等待
 - 错误：业务错误输出结构化 {error:{code,message,retryable}} 并返回 1；不抛裸异常
 - import：交互式向导（目标选择/确认 → 复用映射/改列）+ 统一批次生命周期（F-08）
 """
 from __future__ import annotations
 
 import argparse
-import contextlib
 import json
 import re
 import sqlite3
@@ -42,7 +42,7 @@ from data.store.provenance import DiffError
 DEFAULT_ROOT = Path.home() / "AppData" / "Local" / "FuturesAI"
 
 _SOURCE_ID_RE = re.compile(r"^[a-z0-9-]{1,64}$")  # 同 manifest id（plan §2.1）
-READ_WAIT_S = 30  # 只读命令等待非 serve 写命令结束的上限（秒）
+READ_WAIT_S = 30  # 只读命令在写进程启停过渡窗口（尚无只读通道）内的等待上限（秒）
 
 
 def _json_out(obj):
@@ -71,22 +71,11 @@ def _db_error(e: Exception) -> dict:
     return FetchError("internal", text).to_dict()
 
 
-def _wait_lock_release(root: Path, timeout: float) -> bool:
-    """非 serve 写命令持锁（无只读通道）：等待其释放写锁；超时 → False。"""
-    deadline = time.monotonic() + timeout
-    while _lock_held(root):
-        if time.monotonic() >= deadline:
-            return False
-        time.sleep(0.2)
-    return True
-
-
 def _internal_get(root: Path, path: str, params: dict):
-    """经 serve 内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。"""
+    """经持锁进程的内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。"""
     ep = read_endpoint(root / "data")
     if not ep:
-        # 写锁被非 serve 写命令（fetch/import/config…）持有：DuckDB 单写者期间不可读
-        raise FetchError("internal", "写进程运行中且未提供只读通道（非 serve 写命令执行中），请稍后重试")
+        raise FetchError("internal", "写进程运行中且尚未提供只读通道，请稍后重试")
     qs = urllib.parse.urlencode(params)
     url = f"http://127.0.0.1:{ep['port']}{path}" + (f"?{qs}" if qs else "")
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {ep['token']}"})
@@ -176,20 +165,24 @@ def _import_wizard(svc: Service, fpath: Path, series: str | None = None, source:
         return 1
     sid, src = t["series_id"], t["source"]
 
-    # F-08：批次先建（目标已知），此后任何读取/解析失败都记 failed
-    rid = svc.store.new_run(src, sid, None, None, t["unit"], t["freq"], t["tz"])
+    # F-08：批次先建（目标已知），此后任何读取/解析失败都记 failed。
+    # 只读通道线程与向导共用连接：每段数据访问持访问锁，等待用户输入时不持锁。
+    with svc.access_lock:
+        rid = svc.store.new_run(src, sid, None, None, t["unit"], t["freq"], t["tz"])
     try:
-        reuse = cat.con.execute(
-            "SELECT id, column_map_json FROM import_maps ORDER BY id"
-        ).fetchall()
+        with svc.access_lock:
+            reuse = cat.con.execute(
+                "SELECT id, column_map_json FROM import_maps ORDER BY id"
+            ).fetchall()
         mapping = None
         if reuse:
             want = input(f"发现已有映射模板 {[r[0] for r in reuse]}，复用？[y/n] ").strip().lower()
             if want == "y":
                 chosen = input(f"选择模板 id（{reuse[0][0]}）: ").strip() or reuse[0][0]
-                row = cat.con.execute(
-                    "SELECT column_map_json FROM import_maps WHERE id=?", [chosen]
-                ).fetchone()
+                with svc.access_lock:
+                    row = cat.con.execute(
+                        "SELECT column_map_json FROM import_maps WHERE id=?", [chosen]
+                    ).fetchone()
                 if row:
                     mapping = json.loads(row[0])
         if mapping is None:
@@ -207,24 +200,32 @@ def _import_wizard(svc: Service, fpath: Path, series: str | None = None, source:
         validate_rows(rows)
         range_start = min((ts for ts, _ in rows), default=None)
         range_end = max((ts for ts, _ in rows), default=None)
-        svc.store.con.execute(
-            "UPDATE ingest_runs SET range_start=?, range_end=? WHERE ingest_run=?",
-            [range_start, range_end, rid],
-        )
-        svc.store.commit_run(
-            rid,
-            [(sid, ts, v, t["unit"], src, utcnow()) for (ts, v) in rows],
-            payload_hash=_hash_bytes(raw),
-        )
-    except Exception as e:
-        svc.store.fail_run(rid)
+        with svc.access_lock:
+            svc.store.con.execute(
+                "UPDATE ingest_runs SET range_start=?, range_end=? WHERE ingest_run=?",
+                [range_start, range_end, rid],
+            )
+            svc.store.commit_run(
+                rid,
+                [(sid, ts, v, t["unit"], src, utcnow()) for (ts, v) in rows],
+                payload_hash=_hash_bytes(raw),
+            )
+    except BaseException as e:  # 含向导中 Ctrl+C：批次标 failed 后，退出类异常原样传播
+        try:
+            with svc.access_lock:
+                svc.store.fail_run(rid)
+        except Exception:
+            pass
+        if not isinstance(e, Exception):
+            raise
         print(f"导入失败: {e}", file=sys.stderr)
         return 1
-    cat.con.execute(
-        "INSERT OR REPLACE INTO import_maps VALUES (?,?,?)",
-        ["user_csv", str(fpath), json.dumps(mapping, ensure_ascii=False)],
-    )
-    cat.con.commit()
+    with svc.access_lock:
+        cat.con.execute(
+            "INSERT OR REPLACE INTO import_maps VALUES (?,?,?)",
+            ["user_csv", str(fpath), json.dumps(mapping, ensure_ascii=False)],
+        )
+        cat.con.commit()
     print(f"已入库 {len(rows)} 行（源 {src}），映射已保存")
     return 0
 
@@ -320,24 +321,25 @@ def _serve(root: Path, port: int) -> int:
         mcp = mcp_server.build_mcp(svc, token, port=port)
         _install_exit_signals()
         write_endpoint(root / "data", port, token)
-        print(f"MCP + 内部只读通道: http://127.0.0.1:{port}/mcp（Bearer 令牌见 data/mcp_endpoint.json）")
+        print(  # 运行日志 → stderr（stdout 只留给结构化输出）
+            f"MCP + 内部只读通道启动中: http://127.0.0.1:{port}/mcp（Bearer 令牌见 data/mcp_endpoint.json）",
+            file=sys.stderr,
+        )
         try:
             mcp.run(transport="streamable-http")
         except KeyboardInterrupt:
             pass
+        except SystemExit as e:  # uvicorn 启动失败（如端口被占）以 sys.exit 退出
+            if e.code not in (0, None):
+                _json_out(FetchError(
+                    "internal", f"serve 启动失败（端口 {port} 可能已被占用，退出码 {e.code}）"
+                ).to_dict())
+                return 1
         finally:
             remove_endpoint(root / "data", token)
     finally:
         svc.close()
     return 0
-
-
-def _sdk_output_to_stderr():
-    """取数期间上游 SDK 的运行期打印改道 stderr：CLI 的 stdout 只输出 JSON（plan §2.2）。
-
-    替换的是全局 sys.stdout，上游调用所在的工作线程同样生效。
-    """
-    return contextlib.redirect_stdout(sys.stderr)
 
 
 def main(argv=None) -> int:
@@ -428,30 +430,34 @@ def _dispatch(args) -> int:
     is_readonly = args.cmd in readonly_cmds or (args.cmd == "jobs" and args.job_cmd == "list")
 
     if is_readonly:
-        if _lock_held(root):
-            route_err = None
-            if read_endpoint(root / "data"):  # serve 持锁 → 内部只读通道
+        # 持锁进程（serve 或 CLI 写命令）提供只读通道：发现端点即路由；写进程启停过渡窗口内尚无端点 →
+        # 短暂等待，端点出现即路由、写锁释放即本地只读；同一端点不可达不重试（只等待写锁释放或新端点）
+        deadline = time.monotonic() + READ_WAIT_S
+        route_err, failed_ep = None, None
+        while _lock_held(root):
+            ep = read_endpoint(root / "data")
+            if ep and ep != failed_ep:
                 try:
                     payload = _route_readonly(root, args)
                 except FetchError as e:
                     _json_out(e.to_dict())
                     return 1
                 except OSError as e:
-                    payload, route_err = None, e  # 端点不可达/无响应 → 等写锁释放后本地只读
+                    route_err, failed_ep = e, ep
                 except Exception as e:
                     print(f"错误：内部路由失败: {e}", file=sys.stderr)
                     return 1
-                if payload is not None:
+                else:
                     _json_out(payload)
                     return 0
-            # 非 serve 写命令持锁：DuckDB 单写者期间不可读 → 等其结束后本地只读
-            if not _wait_lock_release(root, READ_WAIT_S):
+            if time.monotonic() >= deadline:
                 if route_err is not None:
                     msg = f"错误：写进程运行中，只读通道无响应（{route_err}），请稍后重试"
                 else:
-                    msg = "错误：写进程运行中且未提供只读通道（非 serve 写命令执行中），请稍后重试"
+                    msg = "错误：写进程运行中且尚未提供只读通道，请稍后重试"
                 print(msg, file=sys.stderr)
                 return 1
+            time.sleep(0.2)
         try:
             svc = Service(root, readonly=True)
         except LockBusy as e:
@@ -482,36 +488,40 @@ def _dispatch(args) -> int:
         return 1
     try:
         svc.init()
-        if args.cmd == "fetch":
-            with _sdk_output_to_stderr():
-                res = svc.fetch(args.series_id, args.start, args.end, do_fetch=True, source=args.source)
-            _json_out({"series_id": res["series_id"], "count": res["meta"]["count"]})
-        elif args.cmd == "jobs":
-            if args.job_cmd == "register":
-                svc.jobs.register(args.name, args.adapter_id, args.series_id)
-                print("registered")
-            else:
-                with _sdk_output_to_stderr():
-                    res = svc.jobs.run(args.name)
-                _json_out(res)
-        elif args.cmd == "import":
-            return _import_wizard(svc, Path(args.file), args.series, args.source)
-        elif args.cmd == "config":
-            if args.cfg_cmd == "alias":
-                print(svc.set_alias(args.symbol, args.adapter_id, args.series_id))
-            elif args.cfg_cmd == "priority":
-                svc.set_priority(args.series_id, args.source_id, args.priority)
-                print("ok")
-            elif args.cfg_cmd in ("enable", "disable"):
-                svc.set_source_enabled(args.source_id, args.cfg_cmd == "enable")
-                print("ok")
-            else:
-                return _add_source(svc, root, args.id, args.implementation)
+        from data import mcp_server
+
+        # 持锁期间提供内部只读通道：其他进程的只读命令经其路由，不受本写命令影响（AC-004-6）
+        with mcp_server.readonly_channel(svc, root / "data"):
+            return _run_write(svc, root, args)
     except Exception as e:  # 业务错误/库错误/意外错误 → 结构化输出（不抛裸异常）
         _json_out(_err_dict(e))
         return 1
     finally:
         svc.close()
+
+
+def _run_write(svc: Service, root: Path, args) -> int:
+    if args.cmd == "fetch":
+        res = svc.fetch(args.series_id, args.start, args.end, do_fetch=True, source=args.source)
+        _json_out({"series_id": res["series_id"], "count": res["meta"]["count"]})
+    elif args.cmd == "jobs":
+        if args.job_cmd == "register":
+            svc.jobs.register(args.name, args.adapter_id, args.series_id)
+            print("registered")
+        else:
+            _json_out(svc.jobs.run(args.name))
+    elif args.cmd == "import":
+        return _import_wizard(svc, Path(args.file), args.series, args.source)
+    elif args.cfg_cmd == "alias":
+        print(svc.set_alias(args.symbol, args.adapter_id, args.series_id))
+    elif args.cfg_cmd == "priority":
+        svc.set_priority(args.series_id, args.source_id, args.priority)
+        print("ok")
+    elif args.cfg_cmd in ("enable", "disable"):
+        svc.set_source_enabled(args.source_id, args.cfg_cmd == "enable")
+        print("ok")
+    else:
+        return _add_source(svc, root, args.id, args.implementation)
     return 0
 
 
@@ -520,7 +530,8 @@ def _add_source(svc: Service, root: Path, source_id: str, implementation: str | 
     if not _SOURCE_ID_RE.match(source_id):
         print("错误：源 id 须匹配 [a-z0-9-]{1,64}", file=sys.stderr)
         return 1
-    row = svc.cat.source_row(source_id)
+    with svc.access_lock:
+        row = svc.cat.source_row(source_id)
     if row is not None and row[1] != "disabled":
         print(f"错误：源 {source_id} 已存在", file=sys.stderr)
         return 1

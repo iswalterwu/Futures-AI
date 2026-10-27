@@ -119,7 +119,9 @@ provides:                    # 必填，非空数组
 | list_sources | 无 | `{sources:[{adapter_id, name, enabled, status, reason}]}` |
 | reconcile | `series_id` | `{report:{series_id, checks:[...], warnings:[string]}}` |
 
-**内部只读通道（AC-004-6 判定依据）**：serve 的同一 HTTP 端点提供内部只读子端点 `/internal/sources`、`/internal/search`、`/internal/jobs`、`/internal/reconcile`、`/internal/provenance`、`/internal/diff`（同令牌）；CLI 只读命令（list/jobs list/reconcile/provenance/diff）在写锁被占时经此路由查询。失败返回 HTTP 400 + `{error:{code, message, retryable}}`，CLI 原样输出 message（含 diff 不可比原因）。写锁由非 serve 写命令（fetch/import/config…）持有时无只读通道（DuckDB 单写者固有限制；产品形态中唯一写者是 serve，写命令仅开发/测试期使用）：只读命令等待其释放写锁（≤ 30s）后本地读取，超时返回“写进程运行中，请稍后重试”；残留端点文件不可达或 serve 只读通道无响应时同样等待，超时提示“只读通道无响应”（附原因）。CLI 输出契约：stdout 只输出结构化 JSON（取数期间上游 SDK 的运行期打印改道 stderr）；不抛裸异常——库文件损坏（“不可读（文件可能损坏）”）、目录库被锁定（“正被其他连接锁定，请稍后重试”）与其他意外错误（含数据目录不可用、服务构建失败）均经最外层统一出口输出结构化 internal 错误并返回 1，且不留写锁（参数用法错误仍由参数解析报用法）。凭证文件写入失败 = 保存失败报错（fail closed，不留半写文件）。
+**内部只读通道（AC-004-6 判定依据）**：serve 的同一 HTTP 端点提供内部只读子端点 `/internal/sources`、`/internal/search`、`/internal/jobs`、`/internal/reconcile`、`/internal/provenance`、`/internal/diff`（同令牌）；CLI 只读命令（list/jobs list/reconcile/provenance/diff）在写锁被占时经此路由查询。失败返回 HTTP 400 + `{error:{code, message, retryable}}`，CLI 原样输出 message（含 diff 不可比原因）。**持有写锁的任一进程都提供只读通道**：serve 在其 MCP 端口上提供；CLI 写命令（fetch / import / config / jobs register|run）在执行期间于 127.0.0.1 随机端口启动同一组只读端点（独立令牌，不含 MCP）并写端点文件，命令结束前删除。写进程启动（开库、目录重建）与退出的过渡窗口内尚无端点：只读命令短暂等待（≤ 30s），期间端点出现即路由、写锁释放即本地读取，超时返回“写进程运行中，请稍后重试”；端点不可达或无响应时同样等待，超时提示“只读通道无响应”（附原因）。通道线程与命令主线程的全部数据访问经 service 访问锁串行（含 import 向导与 add-source；等待用户输入时不持锁）。
+
+**CLI 输出契约**：查询与取数类命令（list / reconcile / provenance / diff / jobs list / fetch / jobs run）的结果与业务/数据/内部错误以结构化 JSON 输出到 stdout；配置类命令输出简短确认文本（ok / registered / written / 骨架路径），import 向导与 serve 输出交互提示/运行日志；写锁占用、凭证保存与向导/骨架类错误以文本提示输出到 stderr；失败返回码均为 1。上游 SDK 在其工作线程内的运行期打印按线程改道 stderr（含超时被放弃线程的迟到打印），不整体替换 stdout、不影响其他线程。不抛裸异常——库文件损坏（“不可读（文件可能损坏）”）、目录库被锁定（“正被其他连接锁定，请稍后重试”）与其他意外错误（含数据目录不可用、服务构建失败、serve 启动失败如端口被占）均输出结构化 internal 错误并返回 1，且不留写锁与端点文件；参数用法错误由参数解析报用法（退出码 2）；KeyboardInterrupt/SystemExit 等退出类异常不被转换，原样传播，写锁与端点文件由各层 finally 清理。凭证保存 = 同目录独占创建的唯一临时文件写入后原子替换：并发保存互不串写（后完成替换者生效，成功即已写入自己的值），写入失败 = 保存失败报错（fail closed，只清理自己的临时文件，不破坏既有凭证）。
 
 **空数据目录首启（只读命令，AC-004-6/AC-006-4）**：库文件尚不存在（或未初始化）时，只读命令使用内存目录（按当前清单编译）+ 空观测库照常返回，不在磁盘上建库、不取写锁；reconcile 对不存在的序列返回 warnings“无可用序列”。
 
@@ -183,8 +185,8 @@ ingest_runs(ingest_run, adapter_id, series_id, range_start, range_end,
 - **择优解析在 Python 侧（store/winners.py）**：DuckDB 取**全部源**候选行 → SQLite 读 series_sources.priority + user_overrides → 唯一全序：优先级低者胜 → asof 新者胜 → ingest_run 大者胜（自增 BIGINT 数值比较）；**手动覆盖 = 替换该 source 的优先级值，参与同一决胜链**；status 只影响配置角色（主源/默认拉取源/展示口径，Q-027）（AC-003-4）
 - `latest_obs(series_id)` 与 `asof(series_id, t)` 共用同一择优函数；asof(t) = asof ≤ t 的行（AC-003-3）；可见时间比较按 naive UTC 纯算术进行（不经本机时区解释，夏令时不影响全序）
 - **asof = finished_at（批次成功提交时刻）**；fetched_at = 拉取时间；run 提交前数据不可见
-- 原子性：run 建在拉取前（running）；提交 = observations + run=succeeded 同一 DuckDB 事务；失败 = 独立事务标 failed（无部分数据行）；崩溃遗留 running → 冷启动时超时（>60min）标 failed
-- **单写者**：service 打开 DuckDB 时持有数据目录写锁（plan §3.3 .lock）；CLI 写操作遇锁报错提示；CLI 只读命令（list/reconcile/provenance/diff）在锁被占时经 localhost MCP HTTP 路由查询；MCP 在 Backend 进程内，service 连接互斥串行化（Q-019/Q-029）；陈旧锁 = 持有者 PID 已不存在（进程存在但无权查询 → 视为存活）；DuckDB 文件被其他进程打开 → 报单写者占用错误（LockBusy），不抛裸 IO 异常
+- 原子性：run 建在拉取前（running）；提交 = observations + run=succeeded 同一 DuckDB 事务；失败 = 独立事务标 failed（无部分数据行）；提交事务被任何异常中断（含 KeyboardInterrupt/SystemExit）→ 先回滚、再独立标 failed、最后原样传播中断（同一连接可继续使用，重开后仍为 failed）；崩溃遗留 running → 冷启动时超时（>60min）标 failed
+- **单写者**：service 打开 DuckDB 时持有数据目录写锁（plan §3.3 .lock）；CLI 写操作遇锁报错提示；CLI 只读命令（list/reconcile/provenance/diff/jobs list）在锁被占时经持锁进程提供的 localhost 只读通道路由查询（serve 与 CLI 写命令均提供，见 §2.2）；MCP 在 Backend 进程内，service 连接互斥串行化（Q-019/Q-029）；陈旧锁 = 持有者 PID 已不存在（进程存在但无权查询 → 视为存活）；DuckDB 文件被其他进程打开 → 报单写者占用错误（LockBusy），不抛裸 IO 异常
 
 ### 3.3 用户数据目录（权威布局，AC-009-3 指向本节；每安装一套，默认 `%LOCALAPPDATA%/FuturesAI/`）
 
@@ -192,7 +194,7 @@ ingest_runs(ingest_run, adapter_id, series_id, range_start, range_end,
 data/catalog.sqlite
 data/observations.duckdb
 data/.lock               # 单写者写锁
-data/mcp_endpoint.json   # 运行态：serve 端口+令牌（CLI 只读路由的端点发现，AC-004-6）
+data/mcp_endpoint.json   # 运行态：持锁进程（serve 或 CLI 写命令）只读通道的端口+令牌（CLI 只读路由的端点发现，AC-004-6）
 adapters/                # 用户适配器目录（扫描点，manifest.yaml 每适配器一份）
 creds/                   # DPAPI 加密凭证
 ```
@@ -225,7 +227,7 @@ creds/                   # DPAPI 加密凭证
 | 风险 | 对策 |
 |---|---|
 | akshare 接口漂移/限流/挂起 | 适配器隔离 + 受测版本约束（`backend/constraints.txt`；pyproject 仅声明兼容下界，升级须回归）+ 失败不回退（AC-004-3）；离线测试用固定响应样本 mock（库存在 SDK 的 HTTP 边界注入，覆盖符号映射与列解析）；SDK 内部请求无超时 → 适配器硬超时（守护线程，超时放弃）；SDK 静态交易日历到期 → 仓单取数显式报错（须在日历末日前升级 akshare 并回归） |
-| DuckDB 单写者限制 | 写锁（plan §3.3 .lock）：service 持写锁，CLI 写操作遇锁报错；CLI 只读命令经 localhost HTTP 路由（端点发现 = data/mcp_endpoint.json）；MCP 进程内 + 连接互斥串行化（Q-019/Q-029） |
+| DuckDB 单写者限制 | 写锁（plan §3.3 .lock）：service 持写锁，CLI 写操作遇锁报错；持锁进程（serve 或 CLI 写命令）提供 localhost 只读通道，CLI 只读命令经此路由（端点发现 = data/mcp_endpoint.json）；MCP 进程内 + 连接互斥串行化（Q-019/Q-029） |
 | Windows 编码/时区坑 | `PYTHONIOENCODING=utf-8`；系统时间（fetched_at/asof/批次时间）= naive UTC；观测 ts = 源声明时区下的时间标签（naive）+ 清单 tz 元数据（spec 非目标：v1 存原始时间戳）；带时区的查询范围/导入时间先换算到声明时区 |
 | pywin32（DPAPI）不可用 | fail closed：拒绝保存/读取并报错（AC-009-1），无降级路径 |
 | Python 3.14 wheel 可用性 | **实施首任务 = 依赖安装冒烟**（全依赖 pip install + import）；失败则调整版本约束并回 spec |

@@ -111,8 +111,11 @@ class DuckStore:
                 [SUCCEEDED, now, payload_hash, rid],
             )
             self.con.execute("COMMIT")
-        except Exception:
-            self.con.execute("ROLLBACK")
+        except BaseException:  # 含 KeyboardInterrupt/SystemExit：先回滚，由调用方独立标 failed
+            try:
+                self.con.execute("ROLLBACK")
+            except Exception:
+                pass  # 回滚本身失败不得掩盖原异常
             raise
         return rid
 

@@ -9,10 +9,12 @@
 仓单/库存为数量型：按品种登记的源侧原始口径（桶/吨/手）折算到清单声明单位（kb/kton），
 未登记品种或量纲不匹配 → validation_error（不产出错标数据）；价格型不换算。
 批次覆盖 = effective_range 解析出的实际请求窗口（仓单/库存为滚动窗口，AC-005-2）。
-上游 SDK 调用有硬超时（SDK 内部请求未设超时，挂起不得长期占住写路径）。
+上游 SDK 调用有硬超时（SDK 内部请求未设超时，挂起不得长期占住写路径）；
+SDK 在其工作线程内的运行期打印按线程改道 stderr（plan §2.2 CLI 输出契约）。
 """
 from __future__ import annotations
 
+import sys
 import threading
 from datetime import date, datetime, timedelta
 
@@ -99,11 +101,50 @@ def _get_stock(asset: str):
     return ak.futures_inventory_em(symbol=asset.lower())
 
 
+_tls = threading.local()
+
+
+class _SdkStdoutRouter:
+    """sys.stdout 代理：上游 SDK 工作线程内的打印改道 stderr，其余线程照常写入原 stdout。
+
+    akshare 部分接口（如逐日仓单）直接 print；按线程路由而非整体替换 sys.stdout：
+    超时被放弃线程的迟到打印同样落 stderr，CLI 主线程与 serve 的输出不受影响。
+    """
+
+    def __init__(self, target):
+        self._target = target
+
+    def _stream(self):
+        return sys.stderr if getattr(_tls, "sdk_call", False) else self._target
+
+    def write(self, s):
+        stream = self._stream()
+        return stream.write(s) if stream is not None else len(s)
+
+    def flush(self):
+        stream = self._stream()
+        if stream is not None:
+            stream.flush()
+
+    def __getattr__(self, name):
+        return getattr(self._target, name)
+
+
+def _install_stdout_router() -> None:
+    if sys.stdout is not None and not isinstance(sys.stdout, _SdkStdoutRouter):
+        sys.stdout = _SdkStdoutRouter(sys.stdout)
+
+
 def _call_with_timeout(fn, timeout: float):
-    """在守护线程中执行上游调用；超时抛 TimeoutError（可重试的适配器错误），挂起线程被放弃。"""
+    """在守护线程中执行上游调用；超时抛 TimeoutError（可重试的适配器错误），挂起线程被放弃。
+
+    该线程内的打印经 _SdkStdoutRouter 改道 stderr（包括被放弃后的迟到打印）。
+    """
     box: dict = {}
+    _install_stdout_router()
 
     def run():
+        _tls.sdk_call = True
         try:
             box["value"] = fn()
         except BaseException as e:  # 原样转交调用方

@@ -83,7 +83,7 @@ class Service:
             self._lock_f = write_lock(self.dirs["data"])
         try:
             self.cat, self.store = self._open_stores()
-        except Exception:
+        except BaseException:  # 含 KeyboardInterrupt：开库未完成即释放写锁
             if self._lock_f is not None:
                 release_lock(self._lock_f)
                 self._lock_f = None
@@ -347,6 +347,11 @@ class Service:
                     }
                 )
         return out
+
+    @property
+    def access_lock(self):
+        """数据访问锁（单连接串行）：直接访问 cat/store 连接的调用方须持有（plan §2.2）。"""
+        return self._access_lock
 
     # ---- 单写者 ----
 

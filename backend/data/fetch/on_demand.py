@@ -88,7 +88,7 @@ def fetch_series(
         if eff_start is not None and eff_end is not None and eff_start > eff_end:
             raise FetchError(
                 "validation_error",
-                f"有效取数窗口倒置：起点 {eff_start:%Y-%m-%d} 晚于终点 {eff_end:%Y-%m-%d}"
+                f"有效取数窗口倒置：起点 {eff_start.isoformat(sep=' ')} 晚于终点 {eff_end.isoformat(sep=' ')}"
                 "（未给终点时终点 = 当日）",
             )
         rid = store.new_run(
@@ -104,8 +104,11 @@ def fetch_series(
         with guard:
             store.commit_run(rid, rows, payload_hash=_payload_hash(raw_payload, fetched))
     except BaseException as e:  # 任一环节失败 → 失败原子性（批次标 failed，无部分写入）
-        with guard:
-            store.fail_run(rid)
+        try:
+            with guard:
+                store.fail_run(rid)
+        except Exception:
+            pass  # 标 failed 失败不得吞掉原异常；遗留 running 由冷启动超时清理（plan §3.2）
         if isinstance(e, FetchError):
             raise
         if isinstance(e, CredsError):  # 凭证缺失/不可读/解密失败：重试无益

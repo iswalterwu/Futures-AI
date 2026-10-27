@@ -127,21 +127,23 @@
 
 ## 追加任务（独立 Review 发现，Converge 重新打开后完成 ✅）
 
-| # | 任务 | 关联发现 | 状态 |
-|---|---|---|---|
-| T-21 | 锁生命周期前置（先锁后开库）、只读路由生命周期、.lock 释放删除 | F-01 | ✅ 133 tests |
-| T-22 | 单连接业务级串行（Service access_lock） | F-02 | ✅ 并发回归 test_concurrent_provenance_no_crosstalk |
-| T-23 | MCP 主通道 Bearer 鉴权（token_verifier）+ 同端口内部端点 | F-06 | ✅ test_mcp auth |
-| T-24 | ISO8601 范围解析与校验、descriptor 对象返回、do_fetch 显式 | F-05 | ✅ test_iso_range_* |
-| T-25 | akshare 仓单/指定合约真实路由（三取数点注入） | F-03 | ✅ TestReceiptAndContract |
-| T-26 | EIA 序列/时间绑定、错误脱敏与分类 | F-04/F-07 | ✅ TestCredentialRedaction |
-| T-27 | 交互式 import 向导 + 批次生命周期 + 覆盖范围记录 | F-08 | ✅ test_import_* |
-| T-28 | 状态机（原地 error/启停保留/provides 撤销 current=0）+ 主源用有效优先级 + 显示 ID 重算 | F-10/F-11 | ✅ TestRegistryStateMachine |
-| T-29 | 载荷哈希真实链路 + UTC 统一 | F-12 | ✅ TestPayloadHashAndTime |
-| T-30 | 批次终态保护 + 空批次 + 重放 no-op | F-13 | ✅ TestBatchLifecycle |
-| T-31 | manifest 纯空白/条件必填/解码失败隔离 | F-14 | ✅ test_adapters |
-| T-32 | package-data 声明（wheel 含内置清单） | F-09 | ✅ pyproject 已声明；wheel 实测留发布管线 |
-| T-33 | 静态扫描逐条阳性 + 空凭证拒绝 | 评审补充 | ✅ test_scan/test_creds |
+> 第一轮独立评审（F-01~F-15）驱动；第十六轮按 tasks 模板补齐修改范围、AC 完成标准与验证命令（验证命令在 `backend/` 下执行）。
+
+| # | 任务（修改范围） | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-21 | 锁生命周期前置（先锁后开库）、只读路由生命周期、`.lock` 释放删除（`data/lock.py`、`data/service.py`、`data/cli.py`） | F-01 | AC-004-6 | `pytest tests/test_layout.py -k Lock -q` + `pytest tests/test_cli.py -k SingleWriter -q` | ✅ |
+| T-22 | 单连接业务级串行（`data/service.py` 访问锁、`data/mcp_server.py` 内部端点） | F-02 | AC-004-6、AC-008-1 | `pytest tests/test_review_regressions.py -k Concurrency -q` | ✅ |
+| T-23 | MCP 主通道 Bearer 鉴权 + 同端口内部端点（`data/mcp_server.py`） | F-06 | AC-008-1、AC-008-4 | `pytest tests/test_mcp.py -k "requires_token or wrong_token or internal_provenance" -q` | ✅ |
+| T-24 | ISO8601 范围解析与校验、descriptor 对象返回、do_fetch 显式（`data/service.py`、`data/mcp_server.py`） | F-05 | AC-004-1、AC-008-1 | `pytest tests/test_mcp.py -k "iso_range or search_series" -q` | ✅ |
+| T-25 | akshare 仓单/指定合约真实路由，三取数点可注入（`data/adapters/akshare/`） | F-03 | AC-007-1 | `pytest tests/test_adapters_builtin.py -k "Receipt or contract" -q` | ✅ |
+| T-26 | EIA 序列/时间绑定、错误脱敏与分类（`data/adapters/eia/`） | F-04/F-07 | AC-007-2、AC-008-3 | `pytest tests/test_review_regressions.py -k CredentialRedaction -q` | ✅ |
+| T-27 | 交互式 import 向导 + 批次生命周期 + 覆盖范围记录（`data/cli.py`、`data/adapters/local_file/`） | F-08 | AC-007-3、AC-004-3 | `pytest tests/test_cli.py -k Import -q` + `pytest tests/test_review_regressions.py -k empty_date -q` | ✅ |
+| T-28 | 状态机（原地 error/启停保留/provides 撤销 current=0）+ 主源有效优先级 + 显示 ID 重算（`data/catalog/registry.py`、`data/catalog/db.py`） | F-10/F-11 | AC-001-3、AC-003-4、AC-006-1 | `pytest tests/test_review_regressions.py -k RegistryStateMachine -q` | ✅ |
+| T-29 | 载荷哈希真实链路 + UTC 统一（`data/fetch/on_demand.py`、`data/store/duck.py`） | F-12 | AC-005-1、AC-003-3 | `pytest tests/test_review_regressions.py -k PayloadHashAndTime -q` | ✅ |
+| T-30 | 批次终态保护 + 空批次 + 重放 no-op（`data/store/duck.py`） | F-13 | AC-003-1、AC-004-3 | `pytest tests/test_review_regressions.py -k BatchLifecycle -q` | ✅ |
+| T-31 | manifest 纯空白/条件必填/解码失败隔离（`data/manifest.py`） | F-14 | AC-001-2 | `pytest tests/test_adapters.py -q` | ✅ |
+| T-32 | package-data 声明，wheel 含内置清单（`backend/pyproject.toml`） | F-09 | AC-001-1 | `pytest tests/test_review_round16.py -k package_data -q`（wheel 实测留发布管线） | ✅ |
+| T-33 | 静态扫描逐条阳性 + 空凭证拒绝（`tests/test_scan.py`、`data/creds.py`） | 评审补充 | AC-009-1、AC-009-2 | `pytest tests/test_scan.py tests/test_creds.py -q` + `pytest tests/test_review_regressions.py -k empty_secret -q` | ✅ |
 
 ## 追加任务（第十二轮审核员 A 独立评审发现，Converge 重新打开）
 
@@ -207,3 +209,18 @@
 | T-64 | 测试缺口：真实 serve 子进程下排队取数时只读（内部端点/MCP/CLI）照常响应；仓单经真实 `get_receipt` → 大商所 HTTP 边界（PG 手×20 吨）；显式窗口首端点真删除仍计删除；DPAPI 解密失败 service/MCP 各一 failed 批次 | R15-A/B 测试缺口 | AC-004-6、AC-008-1、AC-007-1、AC-005-2、AC-004-3、AC-007-2 | `pytest R15 -k Gaps15 -q` + `pytest tests/test_serve_e2e.py -q` | ✅ |
 | T-65 | 文档：manifest `history_days` = 源历史深度声明（元数据），v1 不用于推导默认窗口 | R15-A P3-4 | AC-001-2（字段契约） | 阅读 plan §2.1 | ✅ |
 | T-66 | Checklist 复选框留痕：由独立审核会话依据 A/B 逐项复核结果按共识勾选（实施者不勾选） | R15-B-03 | AGENTS.md §2 第 5 步 | 阅读 checklist.md | ⬜ |
+
+## 追加任务（第十六轮双审发现，Converge 再开）
+
+> 来源：第十六轮复审 A（claude-fable-5-1）通过；B（gpt-6.1-sol）未通过：R16-B-01 凭证并发保存共用固定临时文件致串写（本轮引入，P2）；R16-B-02 提交事务被 KeyboardInterrupt 中断时未回滚（既有，P2）。另有 A/B 的 P3、测试缺口，以及 Checklist 复核中双方一致判 ❌ 的第 4 项（AC-004-6 与 plan 的非 serve 写窗口限制冲突）与第 9 项（T-21~T-33 模板字段缺失）。plan §2.2/§3.2/§3.3 已先行修订：持锁进程均提供只读通道，取消 plan 层收窄。
+> R16 = `tests/test_review_round16.py`。
+
+| # | 任务（修改范围） | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-67 | 凭证保存改为同目录独占创建的唯一临时文件 + 原子替换，失败只清理自身临时文件（`data/creds.py`）；真实双进程交错保存回归、替换失败保留旧值 | R16-B-01（P2）、R16-A P3-5 | AC-009-1 | `pytest R16 -k CredentialConcurrency -q` | ✅ |
+| T-68 | 提交事务被任何异常（含 KeyboardInterrupt/SystemExit）中断 → 回滚、独立标 failed、原样传播；标 failed 失败不吞掉原异常（`data/store/duck.py`、`data/fetch/on_demand.py`） | R16-B-02（P2） | AC-004-3、AC-003-2 | `pytest R16 -k InterruptedCommit -q` | ✅ |
+| T-69 | 持锁进程均提供只读通道：CLI 写命令执行期间在随机端口启动只读端点并写端点文件，结束前删除；只读命令等待中发现端点即路由；向导/骨架的数据访问经访问锁（`data/mcp_server.py`、`data/cli.py`、`data/service.py`） | Checklist 第 4/5/12 项（A/B）、AC-004-6 | AC-004-6、AC-008-1 | `pytest R16 -k WriterChannel -q` + `pytest tests/test_serve_e2e.py -q` | ✅ |
+| T-70 | 上游 SDK 运行期打印按线程改道 stderr（含超时被放弃线程的迟到打印），移除 CLI 对 sys.stdout 的整体替换；CLI 输出契约按命令类别收准（`data/adapters/akshare/akshare_adapter.py`、`data/cli.py`） | R16-B-03/B-04、R16-A P3-1/P3-4 | AC-008-3 | `pytest R16 -k SdkStdout -q` + `pytest tests/test_review_round15.py -k StdoutPurity -q` | ✅ |
+| T-71 | CLI 退出契约：参数用法错误退出码 2；KeyboardInterrupt 原样传播且释放写锁；serve 启动失败（端口被占）→ 结构化 internal、不留锁与端点；Service 构造被任何异常中断均释放写锁（`data/cli.py`、`data/service.py`） | R16-A P3-3、R16-B 测试缺口 | AC-008-3、AC-004-6 | `pytest R16 -k ExitContract -q` | ✅ |
+| T-72 | 测试与日期解耦（第十三轮仓单默认窗口测试冻结今天）；倒置窗口消息带时间；仓单经真实 SDK 至上期所/能源中心 HTTP 边界回归（SC→kb、FU→kton）；package-data 声明断言（`tests/`、`data/fetch/on_demand.py`） | R16-B-05、R16-A P3-2/P3-6、R16-B 测试缺口 | AC-007-1、AC-004-1、AC-001-1 | `pytest R16 -k Round16Gaps -q` + `pytest tests/test_review_round13.py -k receipt_default_window -q` | ✅ |
+| T-73 | tasks.md T-21~T-33 补齐模板字段（修改范围 / 完成标准 AC / 验证命令） | Checklist 第 9 项（A/B） | 工作流（AGENTS.md §2 第 6 步） | 逐条执行 T-21~T-33 验证命令 | ✅ |

@@ -155,19 +155,19 @@ class TestCliExit:
     def test_credential_write_failure_keeps_old_and_no_partial(self, tmp_path, monkeypatch, capsys):
         cdir = tmp_path / "creds"
         creds.put(cdir, "eia_api_key", "k-" + "old-0001")
-        orig = Path.write_bytes
+        written = []
 
-        def deny(self, data):
-            if self.name.endswith(".tmp"):
-                raise PermissionError("disk full (injected)")
-            return orig(self, data)
+        def deny(src, dst):  # 临时文件已写入、替换时失败（覆盖清理分支）
+            written.append(Path(src).read_bytes())
+            raise PermissionError("target locked (injected)")
 
-        monkeypatch.setattr(Path, "write_bytes", deny)
+        monkeypatch.setattr(creds.os, "replace", deny)
         assert cli_run(tmp_path, "config", "credentials", "eia_api_key", "k-" + "new-0001") == 1
         assert "凭证写入失败" in capsys.readouterr().err
-        monkeypatch.setattr(Path, "write_bytes", orig)
+        monkeypatch.undo()
+        assert written and written[0]  # 临时文件确已落盘后才失败
         assert creds.get(cdir, "eia_api_key") == "k-" + "old-0001"  # 既有凭证未被破坏
-        assert not list(cdir.glob("*.tmp"))  # 不留半写文件
+        assert not [p.name for p in cdir.iterdir() if p.suffix == ".tmp"]  # 自身临时文件已清理
 
     def test_unresponsive_route_wording(self, tmp_path, monkeypatch, capsys):
         Service(tmp_path).init().close()
