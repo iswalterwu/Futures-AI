@@ -1,7 +1,7 @@
 # Feature: frontend-workbench 实施计划（plan.md）
 
 > Plan 阶段产物：由 spec.md（2026-10-27 Gate 1 冻结版）生成的设计成果。需求在 spec.md（what/why），本文承载全部实现机制、契约细则与验收落点。
-> 本文中带 **候选** 标记的数值（§2.1 暗色配色表）按 spec Q-003 的裁定方式：Walter 确认后登记为令牌；确认前实现照候选值走、令牌标 `status: candidate`。
+> §2.1 暗色配色表已按 spec Q-003 的方式由 Walter 确认（2026-10-27：采用 A 等亮，中性色调整一并确认），实现时直接登记为令牌。
 
 ## 1. 技术方案
 
@@ -68,8 +68,8 @@
 | color.glass | 面 `.035 / .045 / .06`（三层）、边 `.07 / .09 / .12`、模糊 18 / 18 / 28 px、抽屉面 `rgba(24,25,28,.82)` | designUI §2.1 |
 | color.text | 主 `#e8e6e0`、次 `#9a9892`、弱 `#8f8d87` | designUI §2.1 |
 | color.updown | 涨 `#C98A8F`、跌 `#8FB8A4` | designUI §2.2 / D-011 |
-| color.accent / amber / link / status | 点睛红、琥珀、链接蓝、ok / warn / bad（§2.1 候选表） | design/ui/UI_COLORS#暗色适配（候选） |
-| color.chart.* | 序列 7 色、正负、类目、区间带、均值、模型线、轴线/网格（白透明 .28 / .08）、浮窗 | design/charts/PALETTE_DARK（候选）；轴线 = FTEngine chart_chrome 反相 |
+| color.accent / amber / link / status | 点睛红、琥珀、链接蓝、ok / warn / bad（§2.1 配色表） | design/ui/UI_COLORS#暗色适配 |
+| color.chart.* | 序列 7 色、正负、类目、区间带、均值、模型线、轴线/网格（白透明 .28 / .08）、浮窗 | design/charts/PALETTE_DARK；轴线 = FTEngine chart_chrome 反相 |
 | font.* | serif / sans / mono 三族栈（原值照搬） | design/ui/UI_FONTS#stacks |
 | type.* | kpi 25、wordmark 24、h1 21、sec_title 17.5、body 13（行高 1.5）、nav 12.5、card_t 12.5、meta 12、tick 11、footnote 11、th 10.5、tag 10、ngroup 9.5；新增 timeline_step 12.5、ticker 12 | design/ui/UI_FONTS#main_scale；新增 = spec:R-005 |
 | space.* | grid_gap 12、section_gap 26、content_pad_x 26、card_h_pad `9px 13px 7px` | design/ui/UI_LAYOUT#spacing |
@@ -83,9 +83,9 @@
 
 **涨跌色作用域**：`--fai-color-updown-*` 只许被 `src/modules/market-board/` 引用（守卫 `updown-scope`，AC-001-5）；其他模块的方向色一律走 analysis 语义。
 
-**暗色配色候选表（Q-003，待 Walter 确认）**——方法：彩色在 OKLCH 空间保持色相、把明度抬到下限（序列 0.70、界面语义 0.64–0.70）、按需压或提色度；**有意退后的中性色反向处理**（白底上“浅 = 安静”，黑底上浅色反而最醒目，故改暗 / 降透明度，使其在黑底上同样退后）；D-011 已定的三个值直接采用。对比度按 WCAG 相对亮度、对图实际所在的卡面 `#1D1E20`（玻璃 .045 叠在 `#121315` 上）计。**阈值**：线条与色块（非文字图形，WCAG 1.4.11）≥ 3 : 1；会作文字用的颜色（涨、跌、链接、点睛红、琥珀）≥ 4.5 : 1；有意退后的中性色（其他、区间带）不设下限（白底版同样低于 3 : 1）。对照样张：`specs/frontend-workbench/assets/palette-dark-candidates.html`（白底原色 / 黑底候选并排，可切换单看；同一份数据画年份线、季节图常用形态、类目堆叠、正负柱、十大区）。
+**暗色配色表（Q-003，2026-10-27 Walter 确认：A 等亮）**——方法：彩色在 OKLCH 空间保持色相、把明度抬到下限（序列 0.70、界面语义 0.64–0.70）、按需压或提色度；**有意退后的中性色反向处理**（白底上“浅 = 安静”，黑底上浅色反而最醒目，故改暗 / 降透明度，使其在黑底上同样退后）；D-011 已定的三个值直接采用。对比度按 WCAG 相对亮度、对图实际所在的卡面 `#1D1E20`（玻璃 .045 叠在 `#121315` 上）计。**阈值**：线条与色块（非文字图形，WCAG 1.4.11）≥ 3 : 1；会作文字用的颜色（涨、跌、链接、点睛红、琥珀）≥ 4.5 : 1；有意退后的中性色（其他、区间带）不设下限（白底版同样低于 3 : 1）。对照样张：`specs/frontend-workbench/assets/palette-dark-candidates.html`（白底原色 / 黑底候选并排，可切换单看；同一份数据画年份线、季节图常用形态、类目堆叠、正负柱、十大区）。
 
-| 用途 | 原色（PALETTE_CORE） | 暗色候选 | 对比度 | 备注 |
+| 用途 | 原色（PALETTE_CORE） | 暗色值 | 对比度 | 备注 |
 |---|---|---|---|---|
 | 主序列 / 主文字（墨） | `#16191D` | `#E8E6E0` | 13.4 | D-011 定值 |
 | 序列 1 茹藘（上一年 / 负 / 红） | `#A35F65` | `#C98A8F` | 6.0 | D-011 定值（= 涨色） |
@@ -105,22 +105,7 @@
 | 界面琥珀（非实绩 / 待更新） | `#B8860B` | `#C69633` | 6.2 | |
 | 链接蓝（藏蓝） | `#0F4C81` | `#6A9DD1` | 5.8 | |
 
-**待裁定的层次问题（随 Q-003 一并确认）**：白底上，茹藘（上一年，4.8）比沙饧 / 缥碧 / 碧落三条旧年份（2.4 / 2.7 / 1.6）醒目；黑底 A 上这三条反而都比茹藘亮（7.1 / 7.6 / 10.4 对 6.0），上一年不再突出。两个选项：
-
-- **A 等亮**（上表）：序列与类目共用一套值；主次靠线宽与主序列亮度区分
-- **B 递暗**：只改有先后的序列线（年份线、期限结构快照、有主次的多序列），类目 / 大区 / 分档 / 正负仍用上表值。规则：rank 0–1 保持 D-011 定值；rank 2–6 保持原色相，对卡面对比度逐档严格下降、全部低于茹藘且 ≥ 3 : 1；色度 ≤ 原色 1.2 倍；在此约束下网格搜索明度 / 色度，最大化七条线两两最小色差。不限色度时最小色差可到 9.6，但沙饧 / 吐绶蓝 / 缥碧会变成芒末黄、亮青蓝，违背黛驼“不刺眼”，弃用
-
-| rank | 色名 | A 等亮 | B 递暗 | B 对比度 |
-|---|---|---|---|---|
-| 0 | 墨 | `#E8E6E0` | `#E8E6E0` | 13.4（D-011） |
-| 1 | 茹藘 | `#C98A8F` | `#C98A8F` | 6.0（D-011） |
-| 2 | 沙饧 | `#BFA670` | `#A98B49` | 5.1 |
-| 3 | 苍艾 | `#97826C` | `#8D8175` | 4.4 |
-| 4 | 吐绶蓝 | `#6CA7C7` | `#2F84AD` | 4.0 |
-| 5 | 缥碧 | `#8FB8A4` | `#557F6B` | 3.7 |
-| 6 | 碧落 | `#B0D0EB` | `#516C84` | 3.0 |
-
-B 的代价：七条线两两最小色差 8.1（A 为 8.5）；碧落从浅天蓝变成暗灰蓝；令牌里序列阶（`color.chart.series`）与类目色（`color.chart.cat`）对同名的五个色分开登记；年份线上的缥碧与“跌”色（D-011 定值 `#8FB8A4`）不再同值。对照见样张页首“递暗版对照”三栏（白底原色 / 黑底 A / 黑底 B，各画年份线与期限结构快照）。
+**年份线层次（已裁定）**：白底上，茹藘（上一年，4.8）比沙饧 / 缥碧 / 碧落三条旧年份（2.4 / 2.7 / 1.6）醒目；黑底上这三条反而都比茹藘亮（7.1 / 7.6 / 10.4 对 6.0），上一年不如白底上突出。对照过两个方案：A 等亮（上表）与 B 递暗（只改有先后的序列线，rank 2–6 对比度逐档降到 3.0：沙饧 `#A98B49` · 苍艾 `#8D8175` · 吐绶蓝 `#2F84AD` · 缥碧 `#557F6B` · 碧落 `#516C84`，色度 ≤ 原色 1.2 倍，最小色差 8.1）。**2026-10-27 Walter 裁定采用 A**。取舍：A 一套值同时服务序列与类目（年份线缥碧与 D-011 跌色同值、令牌不分叉），最小色差 8.5 高于 B；代价是黑底上旧年份不递暗，主次靠线宽（2.6 / 1.8 / 1.4 / …）与主序列亮度区分。对照证据：样张页首“递暗版对照”三栏。
 
 序列七色两两最小 ΔE（OKLab×100）= 8.5（沙饧 / 缥碧），低于 FTEngine 亮色版的 21.5——暗底压缩了可用明度区间，v1 接受，chart-templates feature 画出真实季节图后再复核。
 
@@ -282,7 +267,7 @@ interface AgentClient {
 | design/ui/UI_TABLES.md | UI/Tables/UI_TABLES.md | number_rules、table_data、board + board_three_state、mini | gbal / qsdt / baltbl（平衡表 feature） |
 | design/ui/UI_NAV.md | UI/Navigation/UI_NAV.md | groups（固定序）、active_item、fresh_dot（属性锚法） | 注册表生成、LPG 台 |
 | design/charts/PALETTE_CORE.md | Graphs/Palette/PALETTE_CORE.md | 整份原件（palette-core / palette-retired 块是守卫数据源） | — |
-| design/charts/PALETTE_DARK.md | 本 feature 新建 | §2.1 候选表 + 方法 + 对比度 + ΔE 矩阵 + 状态 | — |
+| design/charts/PALETTE_DARK.md | 本 feature 新建 | §2.1 配色表 + 方法 + 对比度 + ΔE 矩阵 + Q-003 裁定记录（A 等亮采用、B 递暗未采用及取舍）+ 对照样张路径 | — |
 
 每份文件：保留原 front matter（原 `id` 不改）并追加 `source`（原路径）、`source_verified`（原 `verified`）、`migrated`（日期）、`adaptation: dark-glass`、`adopted: [...]`、`not_adopted: [{anchor, reason}]`；正文末尾加 `## 暗色适配` 段（逐锚写"原值 → 新值 / 不变 / 不采用 + 为什么"）。`design/ui/README.md`、`design/charts/README.md` 作索引（文件、来源、日期、采用范围）。`docs/designUI.md` §2.3 / §6 的"随 design/ 移植定稿"字样改为指向这些文件（docs 改动在 Handoff 同 PR）。
 
@@ -299,7 +284,7 @@ interface AgentClient {
 2. **模块布局变更**：`ModuleLibrary.add(id)` / 壳上 `moveUp / moveDown / remove` → `layoutStore` 变更 → `StorageAdapter.set('layout')` → 刷新后 `layoutStore.hydrate()` 还原
 3. **一次 agent 运行**：`AgentDock.submit(text)` → `agentClient.send()` → store 建 run → 事件流：`run.started` → `step.*`（增量合并、`done` 替换）→ `hint.navigate`（渲染入口）→ `run.completed` / `failed` / `aborted`；`moduleId` 事件同步 `badgesStore`；期间路由切换不影响（订阅在应用级）
 4. **窄窗口**：`matchMedia` 监听断点令牌 → `uiStore.viewport`（`cols`、`collapsed`、`focusWide`）→ 栅格列数 / 侧栏形态 / 焦点带卡数切换；CSS 媒体查询与 store 用同一组数值（守卫对拍）
-5. **Q-003 确认流程**：实现 T-02 产出样张页与 PALETTE_DARK.md（候选）→ Walter 浏览 → 确认 / 改值 → 令牌 `status` 去掉 `candidate` → `tokens-build` 重生成 → 守卫全绿
+5. **Q-003 已确认**（2026-10-27，Plan 阶段）：实现 T-02 直接按 §2.1 登记令牌（无 `candidate` 状态），并写 design/charts/PALETTE_DARK.md → `tokens-build` 生成 → 守卫全绿
 
 ## 5. 验收对应
 

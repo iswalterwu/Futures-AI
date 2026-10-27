@@ -69,6 +69,7 @@
 <header class="pagebar">
   <h1>配色对照：白底原色 / 黑底候选（A 等亮 · B 递暗） <span class="en">palette · light vs dark · Q-003</span></h1>
   <p class="meta">左：FTEngine 10-02 定版原色，画在纸底白卡上——你熟悉的样子，也是将来导出 / 打印的纸底版。右：工作台暗色界面用的候选色，画在暗色玻璃卡上。两边数据完全相同；逐图对照每种颜色的"身份"是否一致、黑底上有没有过亮或过暗的颜色。</p>
+  <p class="meta"><b>Q-003 已裁定（2026-10-27）：采用黑底 A 等亮</b>（含中性色调整：其他 #54534B、区间带 α .16）；B 递暗保留作对照记录，未采用。</p>
   <div class="controls">
     <button data-mode="both" class="on">并排</button>
     <button data-mode="light">只看白底</button>
@@ -120,8 +121,8 @@ const THEMES = {
          uired: '#C00000', amber: '#B8860B', link: '#0F4C81' }
   },
   dark: {
-    title: '黑底 · 暗色候选', en: 'dark · candidates',
-    sub: '工作台界面用。D-011 已定：主序列 #E8E6E0、涨（茹藘）#C98A8F、跌（缥碧）#8FB8A4；其余为候选。中性色按“在黑底上同样退后”调整：其他（明月珰）取暗灰、区间带透明度 .16。图在暗色玻璃卡上，对比度按卡面 #1D1E20 计。',
+    title: '黑底 · 暗色（A 等亮，已确认）', en: 'dark · confirmed',
+    sub: '工作台界面用。D-011 已定：主序列 #E8E6E0、涨（茹藘）#C98A8F、跌（缥碧）#8FB8A4；其余经 Q-003 确认（2026-10-27）。中性色按“在黑底上同样退后”调整：其他（明月珰）取暗灰、区间带透明度 .16。图在暗色玻璃卡上，对比度按卡面 #1D1E20 计。',
     surface: '#1D1E20', t1: '#E8E6E0', t2: '#9A9892', t3: '#8F8D87',
     axis: 'rgba(255,255,255,.28)', grid: 'rgba(255,255,255,.08)', tick: '#8F8D87', sep: '#1D1E20',
     bandAlpha: 0.16, bandChipAlpha: 0.32,
@@ -176,8 +177,8 @@ const termCurves = [0, 1, 2, 3, 4].map(i => Array.from({ length: TN }, (_, k) =>
 // ---- year ramps: white original / dark A (equal-light) / dark B (receding) ----
 const RAMPS = {
   light: { label: '白底 · 原色', theme: 'light', colors: ['#16191D', '#A35F65', '#BFA670', '#5A4B3B', '#4182A4', '#80A492', '#AED0EE'] },
-  darkA: { label: '黑底 A · 等亮（当前候选）', theme: 'dark', colors: ['#E8E6E0', '#C98A8F', '#BFA670', '#97826C', '#6CA7C7', '#8FB8A4', '#B0D0EB'] },
-  darkB: { label: '黑底 B · 递暗（备选）', theme: 'dark', colors: ['#E8E6E0', '#C98A8F', '#A98B49', '#8D8175', '#2F84AD', '#557F6B', '#516C84'] }
+  darkA: { label: '黑底 A · 等亮（采用）', theme: 'dark', colors: ['#E8E6E0', '#C98A8F', '#BFA670', '#97826C', '#6CA7C7', '#8FB8A4', '#B0D0EB'] },
+  darkB: { label: '黑底 B · 递暗（未采用）', theme: 'dark', colors: ['#E8E6E0', '#C98A8F', '#A98B49', '#8D8175', '#2F84AD', '#557F6B', '#516C84'] }
 };
 const RAMP_NAMES = ['墨', '茹藘', '沙饧', '苍艾', '吐绶蓝', '缥碧', '碧落'];
 const TERM_LABELS = ['Today', '1W 前', '1M 前', '1Q 前', '1Y 前'];
