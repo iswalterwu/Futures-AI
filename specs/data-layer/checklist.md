@@ -3,13 +3,13 @@
 > Checklist 阶段产物，由审核员生成并勾选。仅当审核员认为某项检查标准得到满足时才标记为通过；
 > 通过只代表需求质量达标，不代表实施完成。实施者不勾选本文件。
 >
-> **审核员**：A = deepseek/deepseek-flash（独立会话；deepseek-v4.1-flash 在已认证 provider 下不存在，以同 provider deepseek-flash 替代，待 Walter 确认）、B = openai/gpt-6.1-sol（独立会话）。
+> **审核员**：A = deepseek/deepseek-flash（✅ Walter 2026-10-26 确认替代 deepseek-v4.1-flash）、B = openai/gpt-6.1-sol。均为独立会话。
 > 共识规则：两审一致通过才算通过；分歧视为未通过。
 >
-> **审核历程**：首轮双审未通过（14 阻断）→ 二至十三轮逐步收敛（设计层缺陷 → 契约细节 → 文档同步）。
-> 第十三轮剩余项已修复（contract 全链路传播、只读通道端点发现、目录不清空口径、留痕基线）。**v16 为验收目标版本。**
+> **审核历程**：首轮双审未通过（14 阻断）→ 二至十五轮逐步收敛（设计层缺陷 → 契约细节 → 语义细化 → 留痕同步）→
+> **v17 = 按 Walter 要求去技术化重写**（spec 只留 what/why 与验收规则，实现机制全部移入 plan.md），待终审。
 
-## 当前状态（v16）
+## 当前状态（v17 去技术化版）
 
 ### 需求完整性
 
@@ -40,6 +40,6 @@
 
 ## 复核条件
 
-1. 第十六轮双审复核通过（v16 闭环）
-2. v15 spec.md 获 **Gate 1 再批准**（Walter）——顺带确认审核员模型替代（deepseek-flash 替代 deepseek-v4.1-flash）
+1. 终审双审复核通过（v17 去技术化版闭环：spec 不含实现机制，验收规则可验证，与 plan 分工清晰）
+2. v17 spec.md 获 **Gate 1 再批准**（Walter）
 3. 注：tasks.md 的“任务粒度 + 验证命令 ↔ AC 一一对应”为 **Tasks 阶段产物自身的质量要求**，在 Analyze 阶段补审（不是进入 Tasks 的前置条件）；review.md 按 Handoff 阶段生成
