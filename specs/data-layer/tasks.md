@@ -208,7 +208,7 @@
 | T-63 | CLI 最外层统一错误出口（数据目录不可用、服务构建失败等未分类异常 → 结构化 internal，返回 1，不留锁）；凭证文件写入失败 → 保存失败报错且不留半写文件；只读通道无响应时的提示措辞 | R15-B-01、R15-A P3-5 | AC-008-3、AC-009-1、AC-004-6 | `pytest R15 -k CliExit -q` | ✅ |
 | T-64 | 测试缺口：真实 serve 子进程下排队取数时只读（内部端点/MCP/CLI）照常响应；仓单经真实 `get_receipt` → 大商所 HTTP 边界（PG 手×20 吨）；显式窗口首端点真删除仍计删除；DPAPI 解密失败 service/MCP 各一 failed 批次 | R15-A/B 测试缺口 | AC-004-6、AC-008-1、AC-007-1、AC-005-2、AC-004-3、AC-007-2 | `pytest R15 -k Gaps15 -q` + `pytest tests/test_serve_e2e.py -q` | ✅ |
 | T-65 | 文档：manifest `history_days` = 源历史深度声明（元数据），v1 不用于推导默认窗口 | R15-A P3-4 | AC-001-2（字段契约） | 阅读 plan §2.1 | ✅ |
-| T-66 | Checklist 复选框留痕：由独立审核会话依据 A/B 逐项复核结果按共识勾选（实施者不勾选） | R15-B-03 | AGENTS.md §2 第 5 步 | 阅读 checklist.md | ⬜ |
+| T-66 | Checklist 复选框留痕：由独立审核会话依据 A/B 逐项复核结果按共识勾选（实施者不勾选） | R15-B-03 | AGENTS.md §2 第 5 步 | 阅读 checklist.md | ✅ 第十九轮 A/B 15 项一致，审核会话 B 勾选 |
 
 ## 追加任务（第十六轮双审发现，Converge 再开）
 
