@@ -51,14 +51,64 @@ def read_state(root: Path) -> dict:
         return {}
 
 
+def _write_json_atomic(path: Path, payload: dict) -> None:
+    """临时文件 + 原子替换：并发/中断不会留下半截 JSON（读侧不会把损坏当空）。"""
+    import os
+    import tempfile
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, path)
+    except OSError:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+
+def _lock_dir(directory: Path, timeout: float = 5.0):
+    """状态目录写锁：并发写短暂排队而不是立刻失败（复用 data-layer 的 PID 锁）。"""
+    import time
+
+    from data.lock import LockBusy, write_lock
+
+    directory.mkdir(parents=True, exist_ok=True)
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            return write_lock(directory)
+        except LockBusy:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.02)
+
+
 def write_state(root: Path, source_id: str, **fields) -> None:
-    """记录开通状态（不含任何凭证内容）。"""
-    p = state_path(root)
-    p.parent.mkdir(parents=True, exist_ok=True)
-    data = read_state(root)
-    entry = data.setdefault(source_id, {})
-    entry.update(fields)
-    p.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+    """记录开通状态（不含任何凭证内容）；读—改—写在同一状态文件锁内，写入原子替换。"""
+    from data.lock import release_lock
+
+    lock = _lock_dir(Path(root) / STATE_DIR)
+    try:
+        data = read_state(root)
+        entry = data.setdefault(source_id, {})
+        entry.update(fields)
+        _write_json_atomic(state_path(root), data)
+    finally:
+        release_lock(lock)
+
+
+ONBOARD_KEY = "onboard"
+
+
+def onboard_state(root: Path) -> dict:
+    """首次启动引导状态：{completed: bool, skipped: bool}（不存在 = 未完成）。"""
+    entry = read_state(root).get(ONBOARD_KEY) or {}
+    return {"completed": bool(entry.get("completed")), "skipped": bool(entry.get("skipped"))}
+
+
+def set_onboard_state(root: Path, *, completed: bool, skipped: bool = False) -> None:
+    write_state(root, ONBOARD_KEY, completed=completed, skipped=skipped)
 
 
 def prepare(root: Path) -> Step:
@@ -103,11 +153,50 @@ def registration_hint() -> Step:
     )
 
 
+class _ProbeError(Exception):
+    """验证失败（自带向导错误码，便于界面给出可操作提示）。"""
+
+    def __init__(self, code: str):
+        super().__init__(code)
+        self.code = code
+
+
 def _probe(key: str) -> None:
-    """真实验证：用该 key 调一次 EIA API（可注入）。成功返回；失败抛 FetchError。"""
-    payload, _raw = eia_adapter._request("WDISTUS1", key, None, None)
+    """真实验证：用该 key 调一次 EIA API（可注入）。
+
+    错误按向导错误码区分：invalid_key / rate_limited / unreachable / server_error / bad_response。
+    请求期间抑制 HTTP 客户端 DEBUG 日志（key 在查询参数里）。
+    """
+    import requests
+
+    params = {
+        "api_key": key,
+        "frequency": "weekly",
+        "data[0]": "value",
+        "facets[series][]": "WDISTUS1",
+        "length": 1,
+    }
+    try:
+        with eia_adapter._suppress_http_debug():
+            resp = requests.get(
+                "https://api.eia.gov/v2/petroleum/stoc/wstk/data/", params=params, timeout=20
+            )
+    except requests.exceptions.RequestException:
+        raise _ProbeError(ERR_UNREACHABLE)
+    if resp.status_code in (401, 403):
+        raise _ProbeError(ERR_INVALID_KEY)
+    if resp.status_code == 429:
+        raise _ProbeError(ERR_RATE_LIMITED)
+    if resp.status_code >= 500:
+        raise _ProbeError(ERR_SERVER)
+    if resp.status_code >= 400:
+        raise _ProbeError(ERR_BAD_RESPONSE)
+    try:
+        payload = resp.json()
+    except ValueError:
+        raise _ProbeError(ERR_BAD_RESPONSE)
     if not isinstance(payload, dict) or not payload.get("response", {}).get("data"):
-        raise FetchError(ERR_BAD_RESPONSE, "EIA 返回中没有数据，无法确认 key 有效")
+        raise _ProbeError(ERR_BAD_RESPONSE)
 
 
 def verify_and_save(root: Path, key: str) -> Step:
@@ -117,7 +206,9 @@ def verify_and_save(root: Path, key: str) -> Step:
         return Step("verify", "校验 key", {"ok": False, "error": "empty_key", "message": "key 不能为空"})
     try:
         _probe(key)
-    except FetchError as e:
+    except _ProbeError as e:
+        code = e.code
+    except FetchError as e:  # 兼容注入的 FetchError
         code = {
             "unauthorized": ERR_INVALID_KEY,
             "rate_limited": ERR_RATE_LIMITED,
@@ -125,6 +216,11 @@ def verify_and_save(root: Path, key: str) -> Step:
             "validation_error": ERR_BAD_RESPONSE,
             "not_found": ERR_BAD_RESPONSE,
         }.get(e.code, ERR_SERVER)
+    except Exception:
+        code = ERR_BAD_RESPONSE
+    else:
+        code = None
+    if code is not None:
         message = {
             ERR_INVALID_KEY: "key 无效或已失效，请确认后重试（未保存）",
             ERR_RATE_LIMITED: "EIA 限流，请稍后重试（未保存）",
@@ -142,7 +238,6 @@ def verify_and_save(root: Path, key: str) -> Step:
         "开通完成",
         {"ok": True, "path": "api", "verified_at": verified_at, "message": "凭证已加密保存并验证通过"},
     )
-
 
 def clear_key(root: Path) -> bool:
     """清除凭证 → 该数据源回到免凭证路径（spec AC-003-5）。返回是否确实删除。"""

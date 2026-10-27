@@ -19,7 +19,7 @@ from settings.profile import (
     load as load_profile,
     mask_email,
     missing_for_registration,
-    save as save_profile,
+    update as update_profile,
 )
 
 DEFAULT_ROOT = Path.home() / "AppData" / "Local" / "FuturesAI"
@@ -54,13 +54,11 @@ def _cmd_profile(args) -> int:
         "reason_for_use": args.reason,
         "display_name": args.display_name,
     }
-    merged = profile.model_dump()
-    merged.update({k: v for k, v in updates.items() if v is not None})
+    fields = {k: v for k, v in updates.items() if v is not None}
     if args.notify is not None:
-        merged["notify"] = args.notify
+        fields["notify"] = args.notify
     try:
-        profile = Profile.model_validate(merged)  # 字段赋值不经校验，此处显式校验
-        save_profile(Path(args.root), profile)
+        profile = update_profile(Path(args.root), **fields)  # 读—合并—校验—写在档案锁内
     except ProfileError as e:
         print(f"错误：{e}", file=sys.stderr)
         return 1
@@ -76,33 +74,37 @@ def _cmd_profile(args) -> int:
 
 def _cmd_onboard(args) -> int:
     root = Path(args.root)
-    profile = load_profile(root)
-    if profile.model_dump() != Profile().model_dump():  # 档案已有内容 → 不再重复引导
-        print("档案已存在，跳过首次启动引导（修改请用 profile set）")
+    state = onboarding.onboard_state(root)
+    if state["completed"]:  # 用明确完成标记判断，而不是"内容是否为空"
+        print("首次启动引导已完成过（修改档案请用 profile set）")
         return 0
     if args.skip:
+        onboarding.set_onboard_state(root, completed=True, skipped=True)
         print("已跳过首次启动引导；档案可稍后填写（免凭证数据源照常可用）")
         return 0
-    print("首次启动配置（全部字段可留空，直接回车跳过；Ctrl+C 中止）")
-    answers = {}
-    try:
-        for label, field in (("名（First Name）", "first_name"), ("姓（Last Name）", "last_name"),
-                             ("邮箱（Email）", "email"), ("组织类型（见下方清单）", "sector")):
-            if field == "sector":
-                for key, text in SECTORS.items():
-                    print(f"  {key}: {text}")
-            answers[field] = input(f"{label}: ").strip()
-            # 每项读完即保存：同一次运行内中断也不丢已填内容（spec AC-002-4）
-            current = load_profile(root)
-            for k, v in answers.items():
-                setattr(current, k, v)
-            save_profile(root, current)
-    except (KeyboardInterrupt, EOFError):
-        print("\n已中止；已填写的内容已保存", file=sys.stderr)
-        return 0
-    except ProfileError as e:
-        print(f"错误：{e}", file=sys.stderr)
-        return 1
+    profile = load_profile(root)
+    print("首次启动配置（全部字段可留空，直接回车跳过；Ctrl+C 中止，已填项会保留）")
+    for label, field in (("名（First Name）", "first_name"), ("姓（Last Name）", "last_name"),
+                         ("邮箱（Email）", "email"), ("组织类型（见下方清单）", "sector")):
+        if field == "sector":
+            for key, text in SECTORS.items():
+                print(f"  {key}: {text}")
+        default = getattr(profile, field, "")
+        for attempt in range(2):
+            try:
+                raw = input(f"{label}" + (f"（{default}）" if default else "") + ": ").strip()
+            except (KeyboardInterrupt, EOFError):
+                # 中断不置 completed：下次 onboard 继续引导（已填项已按项持久化）
+                print("\n已中止；已填写的内容已保存，下次可继续", file=sys.stderr)
+                return 0
+            if not raw:
+                break
+            try:
+                profile = update_profile(root, **{field: raw})  # 逐项校验并落盘（非法不写）
+                break
+            except (ProfileError, ValueError) as e:
+                print(f"输入不合法：{e}" + ("，请重新输入" if attempt == 0 else "（已跳过该项）"), file=sys.stderr)
+    onboarding.set_onboard_state(root, completed=True, skipped=False)
     missing = missing_for_registration(load_profile(root))
     _json_out({"saved": True, "missing_for_registration": missing})
     if missing:
@@ -139,8 +141,16 @@ def _cmd_source(args) -> int:
         print(f"  - {note}", file=sys.stderr)
     try:
         import getpass
+        import warnings
 
-        key = getpass.getpass("\n把收到的 API key 粘贴到此处（不回显）: ")
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            key = getpass.getpass("\n把收到的 API key 粘贴到此处（不回显）: ")
+        if any(issubclass(w.category, getpass.GetPassWarning) for w in caught):
+            # 终端不支持隐藏输入：继续会有明文回显风险 → 中止，不验证、不保存
+            print("错误：无法在此终端隐藏输入（可能被回显），已中止且未保存。"
+                  "请在图形界面或支持不回显的终端中执行", file=sys.stderr)
+            return 1
     except (KeyboardInterrupt, EOFError):
         print("\n已取消，未保存任何内容", file=sys.stderr)
         return 1
@@ -185,6 +195,9 @@ def main(argv=None) -> int:
             return _cmd_onboard(args)
         return _cmd_source(args)
     except ProfileError as e:
+        print(f"错误：{e}", file=sys.stderr)
+        return 1
+    except Exception as e:  # 含数据目录被写进程占用等：结构化提示，不抛裸异常
         print(f"错误：{e}", file=sys.stderr)
         return 1
 

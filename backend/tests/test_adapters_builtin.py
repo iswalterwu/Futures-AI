@@ -77,6 +77,34 @@ class TestEia:
         rows, _ = EiaAdapter(tmp_path / "creds").fetch(m.provides[0], None, None)
         assert len(rows) == 1 and rows[0][1] == pytest.approx(120.5)
 
+    def test_api_request_suppresses_http_debug_logs(self, monkeypatch):
+        """EIA key 在查询参数里：API 请求期间 HTTP 客户端日志压到 WARNING（F-07）。"""
+        import logging
+
+        import requests
+
+        levels = []
+
+        class Resp:
+            status_code = 200
+            text = "{}"
+
+            def json(self):
+                return {"response": {"data": []}}
+
+        def fake_get(url, params=None, timeout=None):
+            levels.append(logging.getLogger("urllib3.connectionpool").level)
+            return Resp()
+
+        monkeypatch.setattr(requests, "get", fake_get)
+        logger = logging.getLogger("urllib3.connectionpool")
+        logger.setLevel(logging.DEBUG)
+        try:
+            eia_mod._request("WDISTUS1", "k-" + "log-test-0001", None, None)
+        finally:
+            logger.setLevel(logging.WARNING)
+        assert levels == [logging.WARNING]
+
     def test_key_present_uses_api(self, tmp_path, monkeypatch):
         """D-014：配置了 key → 走官方 API（不触碰免凭证路径）。"""
         creds.put(tmp_path / "creds", "eia_api_key", "k-" + "api-path-0001")

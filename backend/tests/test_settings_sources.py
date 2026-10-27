@@ -1,6 +1,8 @@
 """settings R-004：数据源状态（spec AC-004-1~3，plan §2.3）。"""
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from data import creds
@@ -52,7 +54,8 @@ class TestPaths:
         (d / "eia_api_key.bin").write_bytes(b"not-base64!!!")
         row = _by_id(sources.list_with_status(tmp_path))["eia"]
         assert row["credential_state"] == "unreadable"
-        assert row["path"] == "offline"  # 路径推导仍显示回退，但原因说明为故障
+        assert row["path"] == sources.PATH_BLOCKED  # 凭证故障：不是"未配置"，不得显示为回退
+        assert row["status"] == "error"  # 清单 ok ≠ 可用
         assert "读取/解密失败" in row["reason"]
 
     def test_declaration_only_source(self, tmp_path, monkeypatch):
@@ -73,3 +76,76 @@ class TestPaths:
         # 仅当该源存在于 data-layer 列表时才有意义：直接断言推导函数的语义
         assert mod.PATH_DECLARATION_ONLY == "declaration_only"
         assert isinstance(rows, list)
+
+
+class TestRuntime:
+    """F-02/F-03/F-06：运行态与写锁场景。"""
+
+    def test_last_fetch_reported(self, tmp_path):
+        """最近一次取数（成功）出现在状态里，而不是只有向导的 verified_at。"""
+        from datetime import datetime
+
+        from data.service import Service
+
+        svc = Service(tmp_path).init()
+        try:
+            from data.adapters.akshare import akshare_adapter as ak_mod
+
+            ak_mod._get_main = lambda symbol: __import__("pandas").DataFrame(
+                {"日期": ["2026-10-01"], "收盘价": [1.0]}
+            )
+            sid = __import__("data.catalog.descriptor", fromlist=["derive_id"]).derive_id(
+                {"asset": "sc", "geo": "cn", "measure": "close", "contract": ""}
+            )
+            svc.fetch(sid, do_fetch=True)
+        finally:
+            svc.close()
+        row = _by_id(sources.list_with_status(tmp_path))["akshare"]
+        assert row["last_fetch_status"] == "succeeded"
+        assert row["last_fetch_at"]
+
+    def test_works_while_write_process_running(self, tmp_path):
+        """F-03：写进程（持锁 + 已发布只读通道）运行时，状态查询仍可用。"""
+        from data import mcp_server
+        from data.service import Service
+
+        svc = Service(tmp_path).init()
+        try:
+            with mcp_server.readonly_channel(svc, tmp_path / "data") as port:
+                assert port
+                rows = sources.list_with_status(tmp_path)  # 经内部通道路由，不另开库
+                assert {r["adapter_id"] for r in rows} >= {"akshare", "eia"}
+                assert all(r.get("runtime_note") for r in rows)  # 运行态由写进程持有
+        finally:
+            svc.close()
+
+    def test_write_process_without_channel_fails_cleanly(self, tmp_path, capsys):
+        """写进程已开启观测库但未发布只读通道：结构化提示，不抛裸 traceback。"""
+        import os
+        import subprocess
+        import sys
+
+        from settings import cli
+
+        backend = str(Path(__file__).resolve().parent.parent)
+        env = dict(os.environ, PYTHONPATH=backend, PYTHONIOENCODING="utf-8")
+        code = chr(10).join([
+            "import sys, time",
+            "from pathlib import Path",
+            "from data.service import Service",
+            "s = Service(Path(sys.argv[1])).init()",
+            "print('held', flush=True)",
+            "time.sleep(30)",
+        ])
+        holder = subprocess.Popen(
+            [sys.executable, "-c", code, str(tmp_path)],
+            env=env, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+        )
+        try:
+            assert holder.stdout.readline().strip() == "held"
+            assert cli.main(["--root", str(tmp_path), "source", "list"]) == 1
+            err = capsys.readouterr().err
+            assert "错误：" in err and "Traceback" not in err
+        finally:
+            holder.kill()
+            holder.wait()

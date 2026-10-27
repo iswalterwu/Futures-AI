@@ -9,6 +9,7 @@ F-07：上游错误脱敏（API key 不进入错误消息）；错误按类型�
 """
 from __future__ import annotations
 
+import contextlib
 import io
 import json
 from datetime import datetime
@@ -26,6 +27,22 @@ _FREQ_CODES = {"1w": "w", "1m": "m", "1d": "d"}
 _DNAV_SHEET = "Data 1"
 
 
+@contextlib.contextmanager
+def _suppress_http_debug():
+    """请求期间把 urllib3/requests 的日志压到 WARNING：key 在查询参数里，DEBUG 日志会记录完整 URL。"""
+    import logging
+
+    names = ("urllib3", "urllib3.connectionpool", "requests")
+    saved = {n: logging.getLogger(n).level for n in names}
+    try:
+        for n in names:
+            logging.getLogger(n).setLevel(logging.WARNING)
+        yield
+    finally:
+        for n, level in saved.items():
+            logging.getLogger(n).setLevel(level)
+
+
 def _request(series_id: str, api_key: str, start, end):
     """可注入的请求点（测试注入固定响应样本）。"""
     url = "https://api.eia.gov/v2/petroleum/stoc/wstk/data/"
@@ -40,7 +57,8 @@ def _request(series_id: str, api_key: str, start, end):
     if end:
         params["end"] = end.strftime("%Y-%m-%dT%H")
     try:
-        resp = requests.get(url, params=params, timeout=30)
+        with _suppress_http_debug():
+            resp = requests.get(url, params=params, timeout=30)
     except requests.exceptions.RequestException:
         # F-07：网络异常不携带 URL/参数（防 key 泄露）
         raise FetchError("adapter_error", "EIA 网络请求失败")

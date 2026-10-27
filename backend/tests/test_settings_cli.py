@@ -1,4 +1,4 @@
-"""settings CLI（spec AC-002-1~4、AC-003-*，plan §2.4）。
+"""settings CLI（spec AC-002-1~4、AC-003-*，plan §2.4），含引导状态与非法输入回归。
 
 `onboard` 的交互通过 monkeypatch `builtins.input` / `getpass.getpass` 驱动，不读真实终端。
 """
@@ -21,7 +21,14 @@ def run(root, *argv):
 
 def _feed(monkeypatch, answers):
     it = iter(answers)
-    monkeypatch.setattr("builtins.input", lambda prompt="": next(it))
+
+    def fake(prompt=""):
+        try:
+            return next(it)
+        except StopIteration:
+            raise AssertionError(f"多余输入：{prompt}")
+
+    monkeypatch.setattr("builtins.input", fake)
 
 
 class TestSkeleton:
@@ -33,7 +40,6 @@ class TestSkeleton:
 
 class TestProfileCli:
     def test_partial_set_and_show(self, tmp_path, capsys):
-        """AC-001-1：部分更新与展示（邮箱遮蔽）。"""
         assert run(tmp_path, "profile", "set", "--first-name", "Walter", "--email", "walter@example.com") == 0
         capsys.readouterr()
         assert run(tmp_path, "profile", "show") == 0
@@ -41,9 +47,10 @@ class TestProfileCli:
         assert out["first_name"] == "Walter" and out["email"] == "wa***@example.com"
         assert out["missing_for_registration"] == ["last_name", "sector"]
 
-    def test_invalid_input_reported(self, tmp_path, capsys):
+    def test_invalid_input_reported_and_not_saved(self, tmp_path, capsys):
         assert run(tmp_path, "profile", "set", "--email", "bad") == 1
         assert "邮箱格式不合法" in capsys.readouterr().err
+        assert load_profile(tmp_path).email == ""  # 非法值不落盘
 
     def test_clear(self, tmp_path, capsys):
         save_profile(tmp_path, FULL)
@@ -52,30 +59,47 @@ class TestProfileCli:
 
 
 class TestOnboard:
-    def test_first_run_collects_and_saves(self, tmp_path, capsys):
-        """AC-002-1/2：无档案进引导；留空也可完成。"""
-        _feed(monkeypatch_factory := pytest.MonkeyPatch(), ["Walter", "", "walter@example.com", "research"])
-        try:
-            assert run(tmp_path, "onboard") == 0
-        finally:
-            monkeypatch_factory.undo()
+    def test_first_run_collects_and_saves(self, tmp_path, monkeypatch, capsys):
+        """AC-002-1/2：无档案进引导；逐项保存。"""
+        _feed(monkeypatch, ["Walter", "", "walter@example.com", "research"])
+        assert run(tmp_path, "onboard") == 0
         p = load_profile(tmp_path)
         assert p.first_name == "Walter" and p.last_name == ""
         assert p.email == "walter@example.com"
+        assert onboarding.onboard_state(tmp_path)["completed"] is True
 
-    def test_skip_returns_zero(self, tmp_path, capsys):
-        """AC-002-3：可直接跳过，进入主界面语义（返回 0）。"""
+    def test_all_empty_still_completes(self, tmp_path, monkeypatch, capsys):
+        """AC-002-2：全部留空也可完成（档案可稍后填写，非必填）。"""
+        _feed(monkeypatch, ["", "", "", ""])
+        assert run(tmp_path, "onboard") == 0
+        assert onboarding.onboard_state(tmp_path)["completed"] is True
+        assert run(tmp_path, "onboard") == 0
+        assert "已完成过" in capsys.readouterr().out  # 全空完成后不再重复引导
+
+    def test_completed_not_repeated(self, tmp_path, capsys):
+        save_profile(tmp_path, FULL)
+        onboarding.set_onboard_state(tmp_path, completed=True)
+        assert run(tmp_path, "onboard") == 0
+        assert "已完成过" in capsys.readouterr().out
+
+    def test_profile_without_onboard_still_guides(self, tmp_path, monkeypatch):
+        """档案已存在但引导未完成（profile set 预填或上次中断）→ 继续引导并预填。"""
+        save_profile(tmp_path, Profile(first_name="Walter"))
+        _feed(monkeypatch, ["", "", "", ""])
+        assert run(tmp_path, "onboard") == 0
+        assert load_profile(tmp_path).first_name == "Walter"
+        assert onboarding.onboard_state(tmp_path)["completed"] is True
+
+    def test_skip_marks_completed(self, tmp_path, capsys):
+        """AC-002-3：可直接跳过（返回 0），且不再重复引导。"""
         assert run(tmp_path, "onboard", "--skip") == 0
         assert "已跳过" in capsys.readouterr().out
-        assert load_profile(tmp_path) == Profile()
-
-    def test_existing_profile_not_repeated(self, tmp_path, capsys):
-        save_profile(tmp_path, FULL)
+        assert onboarding.onboard_state(tmp_path) == {"completed": True, "skipped": True}
         assert run(tmp_path, "onboard") == 0
-        assert "已存在" in capsys.readouterr().out
+        assert "已完成过" in capsys.readouterr().out
 
-    def test_interrupt_keeps_filled_fields(self, tmp_path, monkeypatch, capsys):
-        """AC-002-4：中断后本次已填内容不丢。"""
+    def test_interrupt_keeps_filled_and_resumes(self, tmp_path, monkeypatch, capsys):
+        """AC-002-4：中断不丢已填项、不标记完成；下次继续引导。"""
         answers = iter(["Walter"])
 
         def feed(prompt=""):
@@ -86,7 +110,28 @@ class TestOnboard:
 
         monkeypatch.setattr("builtins.input", feed)
         assert run(tmp_path, "onboard") == 0
-        assert load_profile(tmp_path).first_name == "Walter"  # 逐项保存
+        assert load_profile(tmp_path).first_name == "Walter"
+        assert onboarding.onboard_state(tmp_path)["completed"] is False  # 未完成 → 下次继续
+
+        _feed(monkeypatch, ["", "", "", ""])  # 继续：其余直接回车（保留已填默认）
+        assert run(tmp_path, "onboard") == 0
+        assert onboarding.onboard_state(tmp_path)["completed"] is True
+        assert load_profile(tmp_path).first_name == "Walter"
+
+    def test_invalid_email_rejected_then_retry(self, tmp_path, monkeypatch, capsys):
+        """F-01：非法输入不落盘，提示后重试；档案保持可读。"""
+        _feed(monkeypatch, ["Walter", "", "not-an-email", "walter@example.com", "research"])
+        assert run(tmp_path, "onboard") == 0
+        assert "输入不合法" in capsys.readouterr().err
+        p = load_profile(tmp_path)
+        assert p.email == "walter@example.com"  # 重试后写入合法值
+        assert p.first_name == "Walter"
+
+    def test_invalid_twice_skips_field(self, tmp_path, monkeypatch, capsys):
+        _feed(monkeypatch, ["Walter", "", "bad", "also-bad", "", ""])
+        assert run(tmp_path, "onboard") == 0
+        assert load_profile(tmp_path).email == ""  # 两次非法 → 跳过，不写非法值
+        assert "已跳过该项" in capsys.readouterr().err
 
 
 class TestSourceCli:
@@ -136,3 +181,23 @@ class TestSourceCli:
         assert run(tmp_path, "source", "clear", "eia") == 0
         assert "免凭证回退" in capsys.readouterr().out
         assert not onboarding.has_key(tmp_path)
+
+
+class TestEchoSafety:
+    def test_aborts_when_echo_cannot_be_hidden(self, tmp_path, monkeypatch, capsys):
+        """F-08：终端无法隐藏输入（GetPassWarning）→ 中止，不验证、不保存。"""
+        import getpass
+        import warnings
+
+        save_profile(tmp_path, FULL)
+
+        def warn_getpass(prompt=""):
+            warnings.warn(getpass.GetPassWarning("Can not control echo on the terminal."))
+            return "k-" + "echo-0001"
+
+        probed = []
+        monkeypatch.setattr("getpass.getpass", warn_getpass)
+        monkeypatch.setattr(onboarding, "_probe", lambda key: probed.append(key))
+        assert run(tmp_path, "source", "open", "eia") == 1
+        assert "无法在此终端隐藏输入" in capsys.readouterr().err
+        assert probed == [] and not onboarding.has_key(tmp_path)

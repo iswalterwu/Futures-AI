@@ -95,3 +95,101 @@ class TestClearKey:
         assert onboarding.has_key(tmp_path) is False
         assert onboarding.read_state(tmp_path)["eia"]["verified_at"] is None
         assert onboarding.clear_key(tmp_path) is False  # 再清除是空操作
+
+
+class TestStateFile:
+    """F-04：状态文件原子写；并发写不产生无法解析的 JSON。"""
+
+    def test_concurrent_state_writes_stay_valid(self, tmp_path):
+        import json
+        import threading
+
+        from settings import onboarding as ob
+
+        def write(i):
+            ob.write_state(tmp_path, f"src{i}", verified_at=f"t{i}")
+
+        threads = [threading.Thread(target=write, args=(i,)) for i in range(8)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join(30)
+        data = json.loads(ob.state_path(tmp_path).read_text(encoding="utf-8"))
+        assert len([k for k in data if k.startswith("src")]) == 8  # 串行化：全部写入且文件可解析
+
+    def test_onboard_state_roundtrip(self, tmp_path):
+        from settings import onboarding as ob
+
+        assert ob.onboard_state(tmp_path) == {"completed": False, "skipped": False}
+        ob.set_onboard_state(tmp_path, completed=True, skipped=True)
+        assert ob.onboard_state(tmp_path) == {"completed": True, "skipped": True}
+
+
+class TestProbeClassification:
+    """F-07/F-11：真实请求的错误分类与日志脱敏（不替换 `_probe`）。"""
+
+    @staticmethod
+    def _inject(monkeypatch, status=200, payload=None, raise_json=False):
+        import requests
+
+        class Resp:
+            status_code = status
+            text = "{}"
+
+            def json(self):
+                if raise_json:
+                    raise ValueError("not json")
+                return payload if payload is not None else {"response": {"data": [{"period": "2026-10-16", "value": "1"}]}}
+
+        calls = []
+
+        def fake_get(url, params=None, timeout=None):
+            calls.append((url, dict(params or {})))
+            return Resp()
+
+        monkeypatch.setattr(requests, "get", fake_get)
+        return calls
+
+    @pytest.mark.parametrize(
+        "status,payload,raise_json,expected",
+        [
+            (401, None, False, "invalid_key"),
+            (403, None, False, "invalid_key"),
+            (429, None, False, "rate_limited"),
+            (503, None, False, "server_error"),
+            (200, {"response": {"data": []}}, False, "bad_response"),
+            (200, None, True, "bad_response"),
+        ],
+    )
+    def test_error_codes(self, tmp_path, monkeypatch, status, payload, raise_json, expected):
+        self._inject(monkeypatch, status, payload, raise_json)
+        step = onboarding.verify_and_save(tmp_path, "k-" + "probe-0001")
+        assert step.detail["ok"] is False and step.detail["error"] == expected
+        assert not onboarding.has_key(tmp_path)
+
+    def test_http_debug_logs_suppressed_and_restored(self, tmp_path, monkeypatch):
+        """F-07：请求期间 HTTP 客户端日志压到 WARNING，结束后恢复（key 在查询参数里）。"""
+        import logging
+
+        levels = []
+        import requests
+
+        class Resp:
+            status_code = 200
+
+            def json(self):
+                return {"response": {"data": [{"period": "2026-10-16", "value": "1"}]}}
+
+        def fake_get(url, params=None, timeout=None):
+            levels.append(logging.getLogger("urllib3.connectionpool").level)
+            return Resp()
+
+        monkeypatch.setattr(requests, "get", fake_get)
+        logger = logging.getLogger("urllib3.connectionpool")
+        logger.setLevel(logging.DEBUG)
+        try:
+            step = onboarding.verify_and_save(tmp_path, "k-" + "log-0001")
+        finally:
+            logger.setLevel(logging.WARNING)
+        assert step.detail["ok"] is True
+        assert levels == [logging.WARNING]

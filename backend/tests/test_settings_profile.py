@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import socket
+from pathlib import Path
 
 import pytest
 
@@ -90,3 +91,61 @@ class TestMasking:
     def test_mask_email(self):
         assert mask_email("walter@example.com") == "wa***@example.com"
         assert mask_email("") == ""
+
+
+class TestUpdate:
+    """F-01/F-04：非法不落盘；并发部分更新不丢字段。"""
+
+    def test_invalid_update_does_not_touch_file(self, tmp_path):
+        from settings.profile import update
+
+        save(tmp_path, Profile(first_name="Walter", email="walter@example.com"))
+        with pytest.raises(ValueError):
+            update(tmp_path, email="not-an-email")
+        assert load(tmp_path).email == "walter@example.com"  # 原档案未受影响
+
+    def test_exists_distinguishes_empty_profile(self, tmp_path):
+        from settings.profile import exists
+
+        assert exists(tmp_path) is False
+        save(tmp_path, Profile())  # 全空也算建立
+        assert exists(tmp_path) is True
+
+    def test_two_processes_keep_both_fields(self, tmp_path):
+        """并发 set 不同字段：排队执行，两者都保留。"""
+        import os
+        import subprocess
+        import sys
+
+        backend = str(Path(__file__).resolve().parent.parent)
+        env = dict(os.environ, PYTHONPATH=backend, PYTHONIOENCODING="utf-8")
+        code = chr(10).join([
+            "import sys",
+            "from pathlib import Path",
+            "from settings.profile import update",
+            "update(Path(sys.argv[1]), **{sys.argv[2]: sys.argv[3]})",
+        ])
+        procs = [
+            subprocess.Popen([sys.executable, "-c", code, str(tmp_path), field, value],
+                             env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            for field, value in (("first_name", "Walter"), ("last_name", "Wu"))
+        ]
+        outs = [(p.wait(timeout=120), p.stderr.read()) for p in procs]
+        assert all(rc == 0 for rc, _ in outs), outs
+        p = load(tmp_path)
+        assert (p.first_name, p.last_name) == ("Walter", "Wu")
+
+
+class TestSectorsMatchOfficialForm:
+    """F-09 / AC-001-2 / Q-004：组织类型清单与官方注册表单选项一致（fixture 为 2026-10-27 抓取）。"""
+
+    def test_matches_official_options(self):
+        fixture = Path(__file__).resolve().parent / "fixtures" / "eia_register" / "sectors.txt"
+        official = [
+            ln.strip() for ln in fixture.read_text(encoding="utf-8").splitlines()
+            if ln.strip() and not ln.startswith("#")
+        ]
+        assert sorted(SECTORS.values()) == sorted(official)
+
+    def test_library_present(self):
+        assert Profile(sector="library").sector == "library"
