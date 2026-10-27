@@ -19,7 +19,7 @@ specs/<feature>/
 
 | feature | 状态 | 依赖 | 最近更新 | 备注 |
 |---|---|---|---|---|
-| data-layer | in-progress | 无 | 2026-10-27 | Review 完成：第二十轮双审共识通过（316 tests 绿），Checklist 15 项共识勾选 → 待 Gate 2 |
+| data-layer | done | 无 | 2026-10-27 | Gate 2 已确认（选项 A）；Handoff：feat/data-layer 经 PR 合并到 main；后续任务见 specs/data-layer/review.md |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
