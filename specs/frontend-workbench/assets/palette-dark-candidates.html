@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Futures-AI 暗色配色候选（Q-003）</title>
+<style>
+  :root { --bg0:#1b1c1f; --bg1:#121315; --bg2:#0f1012; --t1:#e8e6e0; --t2:#9a9892; --t3:#8f8d87; }
+  body { margin:0; font:13px/1.5 "Segoe UI",-apple-system,"PingFang SC","Microsoft YaHei",Arial,sans-serif; color:var(--t1);
+         background:linear-gradient(180deg,var(--bg0) 0%,var(--bg1) 55%,var(--bg2) 100%); min-height:100vh; padding:28px 40px 60px; }
+  h1 { font:700 21px Georgia,"Times New Roman","Songti SC",SimSun,serif; margin:0 0 4px; }
+  h2 { font:700 15px Georgia,"Songti SC",SimSun,serif; margin:28px 0 10px; }
+  .en { font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--t3); }
+  .meta { color:var(--t2); margin-bottom:14px; }
+  .glass { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09); backdrop-filter:blur(18px); border-radius:2px; padding:14px 16px; }
+  table { border-collapse:collapse; width:100%; }
+  th { text-align:left; font-weight:600; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--t3); padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.12); }
+  td { padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.07); vertical-align:middle; }
+  .mono { font-family:Consolas,"SF Mono",Menlo,"Courier New",monospace; font-variant-numeric:tabular-nums; }
+  .sw { display:inline-block; width:56px; height:22px; border:1px solid rgba(255,255,255,.12); vertical-align:middle; margin-right:8px; }
+  .light { background:#f6f5f1; padding:2px 6px; border-radius:2px; }
+  .row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+  .chart { height:220px; }
+  svg text { font-family:"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif; font-size:11px; fill:var(--t2); }
+  .num { font-family:Consolas,"SF Mono",Menlo,monospace; font-variant-numeric:tabular-nums; text-align:right; }
+  .up { color:#C98A8F; } .down { color:#8FB8A4; }
+  .badge { display:inline-block; font-size:10px; letter-spacing:.04em; padding:1px 7px; border:1px solid; border-radius:999px; margin-right:6px; }
+  .note { color:var(--t2); font-size:12px; margin-top:8px; }
+</style>
+</head>
+<body>
+<h1>暗色配色候选 <span class="en">palette-dark candidates · Q-003</span></h1>
+<div class="meta">背景 = designUI §2.1 渐变（#1b1c1f → #121315 → #0f1012）。方法：OKLCH 保色相、明度抬到下限、按需调色度；对比度按 WCAG 相对亮度对 #121315。D-011 已定的三个值直接采用。</div>
+
+<div class="row">
+  <div class="glass">
+    <h2 style="margin-top:0">序列七色（季节图年份线 / 多序列） <span class="en">series</span></h2>
+    <svg class="chart" viewBox="0 0 520 220" width="100%" height="220">
+      <g stroke="rgba(255,255,255,.08)"><line x1="40" y1="30" x2="500" y2="30"/><line x1="40" y1="80" x2="500" y2="80"/><line x1="40" y1="130" x2="500" y2="130"/><line x1="40" y1="180" x2="500" y2="180"/></g>
+      <line x1="40" y1="180" x2="500" y2="180" stroke="rgba(255,255,255,.28)"/>
+      <polyline fill="none" stroke="#E8E6E0" stroke-width="2.6" points="40,120 100,100 160,110 220,70 280,60 340,80 400,50 460,40 500,45"/>
+      <polyline fill="none" stroke="#C98A8F" stroke-width="1.8" points="40,140 100,130 160,135 220,110 280,100 340,115 400,95 460,90 500,100"/>
+      <polyline fill="none" stroke="#BFA670" stroke-width="1.4" points="40,150 100,155 160,140 220,145 280,125 340,135 400,120 460,125 500,115"/>
+      <polyline fill="none" stroke="#97826C" stroke-width="1.2" points="40,160 100,150 160,165 220,150 280,160 340,145 400,150 460,140 500,150"/>
+      <polyline fill="none" stroke="#6CA7C7" stroke-width="1.2" points="40,100 100,115 160,95 220,120 280,110 340,125 400,105 460,115 500,120"/>
+      <polyline fill="none" stroke="#8FB8A4" stroke-width="1.1" points="40,90 100,85 160,100 220,95 280,85 340,95 400,80 460,85 500,75"/>
+      <polyline fill="none" stroke="#B0D0EB" stroke-width="1.4" points="40,70 100,75 160,60 220,65 280,55 340,65 400,45 460,60 500,55"/>
+      <text x="44" y="200">Jan</text><text x="260" y="200">Jun</text><text x="470" y="200">Dec</text>
+    </svg>
+    <table>
+      <tr><th>rank</th><th>名</th><th>原色（亮色版）</th><th>暗色候选</th><th>对比度</th></tr>
+      <tr><td>0</td><td>墨 → 主序列</td><td class="mono"><span class="light">#16191D</span></td><td class="mono"><span class="sw" style="background:#E8E6E0"></span>#E8E6E0</td><td class="num">14.9（D-011）</td></tr>
+      <tr><td>1</td><td>茹藘</td><td class="mono"><span class="light">#A35F65</span></td><td class="mono"><span class="sw" style="background:#C98A8F"></span>#C98A8F</td><td class="num">6.7（D-011）</td></tr>
+      <tr><td>2</td><td>沙饧</td><td class="mono"><span class="light">#BFA670</span></td><td class="mono"><span class="sw" style="background:#BFA670"></span>#BFA670</td><td class="num">7.9</td></tr>
+      <tr><td>3</td><td>苍艾</td><td class="mono"><span class="light">#5A4B3B</span></td><td class="mono"><span class="sw" style="background:#97826C"></span>#97826C</td><td class="num">5.1</td></tr>
+      <tr><td>4</td><td>吐绶蓝</td><td class="mono"><span class="light">#4182A4</span></td><td class="mono"><span class="sw" style="background:#6CA7C7"></span>#6CA7C7</td><td class="num">7.1</td></tr>
+      <tr><td>5</td><td>缥碧</td><td class="mono"><span class="light">#80A492</span></td><td class="mono"><span class="sw" style="background:#8FB8A4"></span>#8FB8A4</td><td class="num">8.5（D-011）</td></tr>
+      <tr><td>6</td><td>碧落</td><td class="mono"><span class="light">#AED0EE</span></td><td class="mono"><span class="sw" style="background:#B0D0EB"></span>#B0D0EB</td><td class="num">11.6</td></tr>
+    </table>
+    <div class="note">七色两两最小 ΔE（OKLab×100）= 8.5（沙饧 / 缥碧）；亮色版为 21.5。</div>
+  </div>
+
+  <div class="glass">
+    <h2 style="margin-top:0">类目 / 辅助 / 界面语义 <span class="en">categories · chrome</span></h2>
+    <table>
+      <tr><th>用途</th><th>原色</th><th>暗色候选</th><th>对比度</th></tr>
+      <tr><td>正 / 类目 1 青雀头黛</td><td class="mono"><span class="light">#354E6B</span></td><td class="mono"><span class="sw" style="background:#87A1BF"></span>#87A1BF</td><td class="num">7.0</td></tr>
+      <tr><td>分档 窃蓝</td><td class="mono"><span class="light">#88ABDA</span></td><td class="mono"><span class="sw" style="background:#8BABD6"></span>#8BABD6</td><td class="num">7.9</td></tr>
+      <tr><td>大区 驼褐</td><td class="mono"><span class="light">#7C5B3E</span></td><td class="mono"><span class="sw" style="background:#B08968"></span>#B08968</td><td class="num">5.9</td></tr>
+      <tr><td>其他 明月珰</td><td class="mono"><span class="light">#D4D3CA</span></td><td class="mono"><span class="sw" style="background:#D4D3CA"></span>不变</td><td class="num">12.4</td></tr>
+      <tr><td>区间带 霜地（α .3）</td><td class="mono"><span class="light">#C7C6B6</span></td><td class="mono"><span class="sw" style="background:rgba(199,198,182,.3)"></span>不变</td><td class="num">10.8</td></tr>
+      <tr><td>均值 / 参照 绍衣</td><td class="mono"><span class="light">#A8A19C</span></td><td class="mono"><span class="sw" style="background:#A8A19C"></span>不变</td><td class="num">7.3</td></tr>
+      <tr><td>模型线 齐紫</td><td class="mono"><span class="light">#6C216D</span></td><td class="mono"><span class="sw" style="background:#C478C3"></span>#C478C3</td><td class="num">6.0</td></tr>
+      <tr><td>界面点睛红（朱）</td><td class="mono"><span class="light">#C00000</span></td><td class="mono"><span class="sw" style="background:#DF5C4D"></span>#DF5C4D</td><td class="num">5.1</td></tr>
+      <tr><td>界面琥珀（非实绩）</td><td class="mono"><span class="light">#B8860B</span></td><td class="mono"><span class="sw" style="background:#C69633"></span>#C69633</td><td class="num">6.9</td></tr>
+      <tr><td>链接蓝（藏蓝）</td><td class="mono"><span class="light">#0F4C81</span></td><td class="mono"><span class="sw" style="background:#6A9DD1"></span>#6A9DD1</td><td class="num">6.5</td></tr>
+    </table>
+    <h2>语义样例 <span class="en">semantics</span></h2>
+    <div>行情模块（红涨绿跌，只涂字色）：
+      <span class="num up">SC2412 &nbsp;612.40 &nbsp;+1.25%</span> &nbsp;·&nbsp;
+      <span class="num down">FU2501 &nbsp;3 012 &nbsp;−0.84%</span> &nbsp;·&nbsp;
+      <span class="num" style="color:#9a9892">LU2501 &nbsp;4 105 &nbsp;0.00%</span>（零中性）</div>
+    <div style="margin-top:6px">分析语义（红 = 负 / 减）：
+      <span class="num" style="color:#87A1BF">库存 Δ +1 240 kb</span> &nbsp;·&nbsp;
+      <span class="num" style="color:#C98A8F">净出口 Δ −310 kb/d</span></div>
+    <div style="margin-top:8px">
+      <span class="badge" style="color:#6CA7C7;border-color:#6CA7C7">● ok</span>
+      <span class="badge" style="color:#C69633;border-color:#C69633">● warn</span>
+      <span class="badge" style="color:#DF5C4D;border-color:#DF5C4D">● bad</span>
+      <span class="badge" style="color:#8f8d87;border-style:dashed">sample</span>
+      &nbsp; 当前项竖条 <span style="display:inline-block;width:3px;height:14px;background:#DF5C4D;vertical-align:middle"></span>
+      &nbsp; 待更新点 <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#C69633;vertical-align:middle"></span>
+    </div>
+    <div class="note">状态语义不用绿色：绿只表示"跌"（行情模块内）。</div>
+  </div>
+</div>
+
+<h2>文字层级 <span class="en">text</span></h2>
+<div class="glass">
+  <div style="font:700 25px Georgia,'Songti SC',SimSun,serif">612.40 <span style="font-size:12px;color:#9a9892">主序列 / KPI 大数 #E8E6E0（14.9）</span></div>
+  <div style="color:#9a9892">次级文字 #9A9892（6.4）—— 今日焦点带的说明文字、模块副标</div>
+  <div style="color:#8f8d87">辅助文字 #8F8D87（5.6）—— 单位、占位、脚注</div>
+  <div style="margin-top:6px"><a style="color:#6A9DD1">链接样例 #6A9DD1</a> · <span style="color:#C69633">琥珀：可编辑 / 未结算 / 待更新</span> · <span style="color:#DF5C4D">点睛红：编号 01</span></div>
+</div>
+</body>
+</html>
