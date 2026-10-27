@@ -9,7 +9,7 @@
          background:linear-gradient(180deg,var(--bg0) 0%,var(--bg1) 55%,var(--bg2) 100%); min-height:100vh; padding:28px 40px 60px; }
   h1 { font:700 21px Georgia,"Times New Roman","Songti SC",SimSun,serif; margin:0 0 4px; }
   h2 { font:700 15px Georgia,"Songti SC",SimSun,serif; margin:28px 0 10px; }
-  .en { font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--t3); }
+  .en { font:400 10.5px "Segoe UI",-apple-system,Arial,sans-serif; letter-spacing:.14em; text-transform:uppercase; color:var(--t3); }
   .meta { color:var(--t2); margin-bottom:14px; }
   .glass { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.09); backdrop-filter:blur(18px); border-radius:2px; padding:14px 16px; }
   table { border-collapse:collapse; width:100%; }
@@ -17,11 +17,12 @@
   td { padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.07); vertical-align:middle; }
   .mono { font-family:Consolas,"SF Mono",Menlo,"Courier New",monospace; font-variant-numeric:tabular-nums; }
   .sw { display:inline-block; width:56px; height:22px; border:1px solid rgba(255,255,255,.12); vertical-align:middle; margin-right:8px; }
-  .light { background:#f6f5f1; padding:2px 6px; border-radius:2px; }
+  .sw.sm { width:26px; height:16px; margin-right:6px; border-color:rgba(0,0,0,.12); }
+  .light { display:inline-flex; align-items:center; background:#f6f5f1; color:#16191d; padding:3px 8px 3px 4px; border-radius:2px; }
   .row { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
   .chart { height:220px; }
   svg text { font-family:"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif; font-size:11px; fill:var(--t2); }
-  .num { font-family:Consolas,"SF Mono",Menlo,monospace; font-variant-numeric:tabular-nums; text-align:right; }
+  .num { font-family:Consolas,"SF Mono",Menlo,monospace; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
   .up { color:#C98A8F; } .down { color:#8FB8A4; }
   .badge { display:inline-block; font-size:10px; letter-spacing:.04em; padding:1px 7px; border:1px solid; border-radius:999px; margin-right:6px; }
   .note { color:var(--t2); font-size:12px; margin-top:8px; }
@@ -48,13 +49,13 @@
     </svg>
     <table>
       <tr><th>rank</th><th>名</th><th>原色（亮色版）</th><th>暗色候选</th><th>对比度</th></tr>
-      <tr><td>0</td><td>墨 → 主序列</td><td class="mono"><span class="light">#16191D</span></td><td class="mono"><span class="sw" style="background:#E8E6E0"></span>#E8E6E0</td><td class="num">14.9（D-011）</td></tr>
-      <tr><td>1</td><td>茹藘</td><td class="mono"><span class="light">#A35F65</span></td><td class="mono"><span class="sw" style="background:#C98A8F"></span>#C98A8F</td><td class="num">6.7（D-011）</td></tr>
-      <tr><td>2</td><td>沙饧</td><td class="mono"><span class="light">#BFA670</span></td><td class="mono"><span class="sw" style="background:#BFA670"></span>#BFA670</td><td class="num">7.9</td></tr>
-      <tr><td>3</td><td>苍艾</td><td class="mono"><span class="light">#5A4B3B</span></td><td class="mono"><span class="sw" style="background:#97826C"></span>#97826C</td><td class="num">5.1</td></tr>
-      <tr><td>4</td><td>吐绶蓝</td><td class="mono"><span class="light">#4182A4</span></td><td class="mono"><span class="sw" style="background:#6CA7C7"></span>#6CA7C7</td><td class="num">7.1</td></tr>
-      <tr><td>5</td><td>缥碧</td><td class="mono"><span class="light">#80A492</span></td><td class="mono"><span class="sw" style="background:#8FB8A4"></span>#8FB8A4</td><td class="num">8.5（D-011）</td></tr>
-      <tr><td>6</td><td>碧落</td><td class="mono"><span class="light">#AED0EE</span></td><td class="mono"><span class="sw" style="background:#B0D0EB"></span>#B0D0EB</td><td class="num">11.6</td></tr>
+      <tr><td>0</td><td>墨 → 主序列</td><td class="mono"><span class="light"><span class="sw sm" style="background:#16191D"></span>#16191D</span></td><td class="mono"><span class="sw" style="background:#E8E6E0"></span>#E8E6E0</td><td class="num">14.9（D-011）</td></tr>
+      <tr><td>1</td><td>茹藘</td><td class="mono"><span class="light"><span class="sw sm" style="background:#A35F65"></span>#A35F65</span></td><td class="mono"><span class="sw" style="background:#C98A8F"></span>#C98A8F</td><td class="num">6.7（D-011）</td></tr>
+      <tr><td>2</td><td>沙饧</td><td class="mono"><span class="light"><span class="sw sm" style="background:#BFA670"></span>#BFA670</span></td><td class="mono"><span class="sw" style="background:#BFA670"></span>#BFA670</td><td class="num">7.9</td></tr>
+      <tr><td>3</td><td>苍艾</td><td class="mono"><span class="light"><span class="sw sm" style="background:#5A4B3B"></span>#5A4B3B</span></td><td class="mono"><span class="sw" style="background:#97826C"></span>#97826C</td><td class="num">5.1</td></tr>
+      <tr><td>4</td><td>吐绶蓝</td><td class="mono"><span class="light"><span class="sw sm" style="background:#4182A4"></span>#4182A4</span></td><td class="mono"><span class="sw" style="background:#6CA7C7"></span>#6CA7C7</td><td class="num">7.1</td></tr>
+      <tr><td>5</td><td>缥碧</td><td class="mono"><span class="light"><span class="sw sm" style="background:#80A492"></span>#80A492</span></td><td class="mono"><span class="sw" style="background:#8FB8A4"></span>#8FB8A4</td><td class="num">8.5（D-011）</td></tr>
+      <tr><td>6</td><td>碧落</td><td class="mono"><span class="light"><span class="sw sm" style="background:#AED0EE"></span>#AED0EE</span></td><td class="mono"><span class="sw" style="background:#B0D0EB"></span>#B0D0EB</td><td class="num">11.6</td></tr>
     </table>
     <div class="note">七色两两最小 ΔE（OKLab×100）= 8.5（沙饧 / 缥碧）；亮色版为 21.5。</div>
   </div>
@@ -63,24 +64,24 @@
     <h2 style="margin-top:0">类目 / 辅助 / 界面语义 <span class="en">categories · chrome</span></h2>
     <table>
       <tr><th>用途</th><th>原色</th><th>暗色候选</th><th>对比度</th></tr>
-      <tr><td>正 / 类目 1 青雀头黛</td><td class="mono"><span class="light">#354E6B</span></td><td class="mono"><span class="sw" style="background:#87A1BF"></span>#87A1BF</td><td class="num">7.0</td></tr>
-      <tr><td>分档 窃蓝</td><td class="mono"><span class="light">#88ABDA</span></td><td class="mono"><span class="sw" style="background:#8BABD6"></span>#8BABD6</td><td class="num">7.9</td></tr>
-      <tr><td>大区 驼褐</td><td class="mono"><span class="light">#7C5B3E</span></td><td class="mono"><span class="sw" style="background:#B08968"></span>#B08968</td><td class="num">5.9</td></tr>
-      <tr><td>其他 明月珰</td><td class="mono"><span class="light">#D4D3CA</span></td><td class="mono"><span class="sw" style="background:#D4D3CA"></span>不变</td><td class="num">12.4</td></tr>
-      <tr><td>区间带 霜地（α .3）</td><td class="mono"><span class="light">#C7C6B6</span></td><td class="mono"><span class="sw" style="background:rgba(199,198,182,.3)"></span>不变</td><td class="num">10.8</td></tr>
-      <tr><td>均值 / 参照 绍衣</td><td class="mono"><span class="light">#A8A19C</span></td><td class="mono"><span class="sw" style="background:#A8A19C"></span>不变</td><td class="num">7.3</td></tr>
-      <tr><td>模型线 齐紫</td><td class="mono"><span class="light">#6C216D</span></td><td class="mono"><span class="sw" style="background:#C478C3"></span>#C478C3</td><td class="num">6.0</td></tr>
-      <tr><td>界面点睛红（朱）</td><td class="mono"><span class="light">#C00000</span></td><td class="mono"><span class="sw" style="background:#DF5C4D"></span>#DF5C4D</td><td class="num">5.1</td></tr>
-      <tr><td>界面琥珀（非实绩）</td><td class="mono"><span class="light">#B8860B</span></td><td class="mono"><span class="sw" style="background:#C69633"></span>#C69633</td><td class="num">6.9</td></tr>
-      <tr><td>链接蓝（藏蓝）</td><td class="mono"><span class="light">#0F4C81</span></td><td class="mono"><span class="sw" style="background:#6A9DD1"></span>#6A9DD1</td><td class="num">6.5</td></tr>
+      <tr><td>正 / 类目 1 青雀头黛</td><td class="mono"><span class="light"><span class="sw sm" style="background:#354E6B"></span>#354E6B</span></td><td class="mono"><span class="sw" style="background:#87A1BF"></span>#87A1BF</td><td class="num">7.0</td></tr>
+      <tr><td>分档 窃蓝</td><td class="mono"><span class="light"><span class="sw sm" style="background:#88ABDA"></span>#88ABDA</span></td><td class="mono"><span class="sw" style="background:#8BABD6"></span>#8BABD6</td><td class="num">7.9</td></tr>
+      <tr><td>大区 驼褐</td><td class="mono"><span class="light"><span class="sw sm" style="background:#7C5B3E"></span>#7C5B3E</span></td><td class="mono"><span class="sw" style="background:#B08968"></span>#B08968</td><td class="num">5.9</td></tr>
+      <tr><td>其他 明月珰</td><td class="mono"><span class="light"><span class="sw sm" style="background:#D4D3CA"></span>#D4D3CA</span></td><td class="mono"><span class="sw" style="background:#D4D3CA"></span>不变</td><td class="num">12.4</td></tr>
+      <tr><td>区间带 霜地（α .3）</td><td class="mono"><span class="light"><span class="sw sm" style="background:#C7C6B6"></span>#C7C6B6</span></td><td class="mono"><span class="sw" style="background:rgba(199,198,182,.3)"></span>不变</td><td class="num">10.8</td></tr>
+      <tr><td>均值 / 参照 绍衣</td><td class="mono"><span class="light"><span class="sw sm" style="background:#A8A19C"></span>#A8A19C</span></td><td class="mono"><span class="sw" style="background:#A8A19C"></span>不变</td><td class="num">7.3</td></tr>
+      <tr><td>模型线 齐紫</td><td class="mono"><span class="light"><span class="sw sm" style="background:#6C216D"></span>#6C216D</span></td><td class="mono"><span class="sw" style="background:#C478C3"></span>#C478C3</td><td class="num">6.0</td></tr>
+      <tr><td>界面点睛红（朱）</td><td class="mono"><span class="light"><span class="sw sm" style="background:#C00000"></span>#C00000</span></td><td class="mono"><span class="sw" style="background:#DF5C4D"></span>#DF5C4D</td><td class="num">5.1</td></tr>
+      <tr><td>界面琥珀（非实绩）</td><td class="mono"><span class="light"><span class="sw sm" style="background:#B8860B"></span>#B8860B</span></td><td class="mono"><span class="sw" style="background:#C69633"></span>#C69633</td><td class="num">6.9</td></tr>
+      <tr><td>链接蓝（藏蓝）</td><td class="mono"><span class="light"><span class="sw sm" style="background:#0F4C81"></span>#0F4C81</span></td><td class="mono"><span class="sw" style="background:#6A9DD1"></span>#6A9DD1</td><td class="num">6.5</td></tr>
     </table>
     <h2>语义样例 <span class="en">semantics</span></h2>
     <div>行情模块（红涨绿跌，只涂字色）：
       <span class="num up">SC2412 &nbsp;612.40 &nbsp;+1.25%</span> &nbsp;·&nbsp;
-      <span class="num down">FU2501 &nbsp;3 012 &nbsp;−0.84%</span> &nbsp;·&nbsp;
-      <span class="num" style="color:#9a9892">LU2501 &nbsp;4 105 &nbsp;0.00%</span>（零中性）</div>
+      <span class="num down">FU2501 &nbsp;3,012 &nbsp;−0.84%</span> &nbsp;·&nbsp;
+      <span class="num" style="color:#9a9892">LU2501 &nbsp;4,105 &nbsp;0.00%</span>（零中性）</div>
     <div style="margin-top:6px">分析语义（红 = 负 / 减）：
-      <span class="num" style="color:#87A1BF">库存 Δ +1 240 kb</span> &nbsp;·&nbsp;
+      <span class="num" style="color:#87A1BF">库存 Δ +1,240 kb</span> &nbsp;·&nbsp;
       <span class="num" style="color:#C98A8F">净出口 Δ −310 kb/d</span></div>
     <div style="margin-top:8px">
       <span class="badge" style="color:#6CA7C7;border-color:#6CA7C7">● ok</span>
