@@ -124,3 +124,21 @@
 - 修改范围：全量测试跑通、backend/README.md、docs 同步（architecture §3 锚点核对）
 - 完成标准：全部 36 条 AC 有测试断言且通过；`pytest -q` 全绿
 - 验证命令：`cd backend && pytest -q`
+
+## 追加任务（独立 Review 发现，Converge 重新打开后完成 ✅）
+
+| # | 任务 | 关联发现 | 状态 |
+|---|---|---|---|
+| T-21 | 锁生命周期前置（先锁后开库）、只读路由生命周期、.lock 释放删除 | F-01 | ✅ 133 tests |
+| T-22 | 单连接业务级串行（Service access_lock） | F-02 | ✅ 并发回归 test_concurrent_provenance_no_crosstalk |
+| T-23 | MCP 主通道 Bearer 鉴权（token_verifier）+ 同端口内部端点 | F-06 | ✅ test_mcp auth |
+| T-24 | ISO8601 范围解析与校验、descriptor 对象返回、do_fetch 显式 | F-05 | ✅ test_iso_range_* |
+| T-25 | akshare 仓单/指定合约真实路由（三取数点注入） | F-03 | ✅ TestReceiptAndContract |
+| T-26 | EIA 序列/时间绑定、错误脱敏与分类 | F-04/F-07 | ✅ TestCredentialRedaction |
+| T-27 | 交互式 import 向导 + 批次生命周期 + 覆盖范围记录 | F-08 | ✅ test_import_* |
+| T-28 | 状态机（原地 error/启停保留/provides 撤销 current=0）+ 主源用有效优先级 + 显示 ID 重算 | F-10/F-11 | ✅ TestRegistryStateMachine |
+| T-29 | 载荷哈希真实链路 + UTC 统一 | F-12 | ✅ TestPayloadHashAndTime |
+| T-30 | 批次终态保护 + 空批次 + 重放 no-op | F-13 | ✅ TestBatchLifecycle |
+| T-31 | manifest 纯空白/条件必填/解码失败隔离 | F-14 | ✅ test_adapters |
+| T-32 | package-data 声明（wheel 含内置清单） | F-09 | ✅ pyproject 已声明；wheel 实测留发布管线 |
+| T-33 | 静态扫描逐条阳性 + 空凭证拒绝 | 评审补充 | ✅ test_scan/test_creds |

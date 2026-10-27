@@ -30,6 +30,19 @@ provides:
     update: {lag_min: 0, revises: true}
 """
 
+VALID_SMALL_MANIFEST = """id: broken-source
+name: x
+version: 1
+provides:
+  - descriptor: {asset: bu, geo: cn, measure: close, contract: ""}
+    symbols: [B]
+    unit: cny_ton
+    freq: 1d
+    tz: Asia/Shanghai
+    fetch: {modes: [on_demand], history_days: 1}
+    update: {lag_min: 0, revises: true}
+"""
+
 ALT_MANIFEST_1W = ALT_MANIFEST_1D.replace("freq: 1d", "freq: 1w").replace("priority: 10", "priority: 200")
 
 
@@ -103,7 +116,7 @@ class TestRegistryStateMachine:
         try:
             mf = svc.dirs["adapters"] / "broken" / "manifest.yaml"
             mf.parent.mkdir(exist_ok=True)
-            mf.write_text("id: broken-source\nname: x\nversion: 1\nprovides: []\n", encoding="utf-8")
+            mf.write_text(VALID_SMALL_MANIFEST, encoding="utf-8")
             svc.reg.rebuild()
             mf.write_text("id: [broken", encoding="utf-8")
             svc.reg.rebuild()
