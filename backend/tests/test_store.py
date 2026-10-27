@@ -88,7 +88,7 @@ class TestWinnerRule:
         r2 = self._ingest(store, "b", "s1", BASE, 2.0)
         store.con.execute('UPDATE observations SET "asof"=? WHERE ingest_run IN (?,?)', [BASE, r1, r2])
         got = latest(store, "s1", cat.effective_priorities("s1"))
-        assert got[5] == max(r1, r2)  # ingest_run 大者胜
+        assert got[6] == max(r1, r2)  # ingest_run 大者胜
 
     def test_manual_override_replaces_priority(self, env):
         store, cat = env

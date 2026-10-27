@@ -15,7 +15,7 @@ def _pick(cands: list[tuple], priorities: dict[str, int]) -> tuple | None:
     if not cands:
         return None
     def key(row):
-        _, _, _, source, asof_ts, ingest_run = row
+        _, _, _, source, _fetched, asof_ts, ingest_run = row
         return (
             priorities.get(source, 100),
             -asof_ts.timestamp() if hasattr(asof_ts, "timestamp") else -float(asof_ts),
@@ -31,7 +31,7 @@ def latest_obs(
     start: datetime | None = None,
     end: datetime | None = None,
 ) -> list[tuple]:
-    """每 (series_id, ts) 的择优值。行 = (ts, value, unit, source, asof, ingest_run)。"""
+    """每 (series_id, ts) 的择优值。行 = (ts, value, unit, source, fetched_at, asof, ingest_run)。"""
     rows = store.candidates(series_id, start=start, end=end)
     by_ts: dict = {}
     for row in rows:

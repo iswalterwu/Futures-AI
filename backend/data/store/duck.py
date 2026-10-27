@@ -114,7 +114,7 @@ class DuckStore:
         end: datetime | None = None,
     ) -> list[tuple]:
         """候选行：可选 asof ≤ t、ts 区间过滤。行 = (ts, value, unit, source, asof, ingest_run)。"""
-        sql = "SELECT ts, value, unit, source, \"asof\", ingest_run FROM observations WHERE series_id=?"
+        sql = "SELECT ts, value, unit, source, fetched_at, \"asof\", ingest_run FROM observations WHERE series_id=?"
         args: list = [series_id]
         if asof is not None:
             sql += " AND \"asof\" <= ?"
