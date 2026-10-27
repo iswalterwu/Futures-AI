@@ -142,3 +142,24 @@
 | T-31 | manifest 纯空白/条件必填/解码失败隔离 | F-14 | ✅ test_adapters |
 | T-32 | package-data 声明（wheel 含内置清单） | F-09 | ✅ pyproject 已声明；wheel 实测留发布管线 |
 | T-33 | 静态扫描逐条阳性 + 空凭证拒绝 | 评审补充 | ✅ test_scan/test_creds |
+
+## 追加任务（第十二轮审核员 A 独立评审发现，Converge 重新打开）
+
+> 来源：审核员 A（claude-fable-5-1，首次参与）第十二轮复核 5 项 P2 + P3 + 测试缺口。方案变更已先写入 plan（§2.1 执行绑定/akshare 符号约定、§2.2 config/import/serve/内部通道/首启/错误分类/执行模型、§3.1 source_reasons 与 reg_order、§6 时间语义）。
+> 验证命令在 `backend/` 下执行（R12 = `tests/test_review_round12.py`）；全量 `python -m pytest tests/ -q` 为准。关键修复均做过变异验证（注入旧行为 → 对应测试必失败）。
+
+| # | 任务 | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-34 | 只读命令空目录首启：库文件不存在/未初始化 → 内存目录（按清单编译）+ 空观测库，不建库、不取锁；diff/provenance/reconcile/list 均不抛裸异常 | A-P2-1 | AC-004-6（只读命令不受影响）、AC-006-3/AC-006-4（reconcile 首启返回 warnings） | `pytest R12 -k FreshRoot -q` | ✅ |
+| T-35 | 配置入口存在性校验：priority/alias/enable/disable/jobs register 仅接受已有清单的真实源与存在的序列；负向测试（且不落库） | A-P2-2 | AC-004-5（只能配置已有清单的源）、AC-004-2 | `pytest R12 -k ConfigValidation -q` | ✅ |
+| T-36 | 错误分类：凭证缺失/读取失败 → unauthorized（retryable=false）；源未绑定取数实现 → not_found；service 与 MCP 两路断言 | A-P2-3 | AC-008-3、AC-007-2 | `pytest R12 -k ErrorClassification -q` | ✅ |
+| T-37 | 用户清单执行绑定（manifest `implementation`）+ akshare 库存日报（FU/BU/LU，`_STOCK`）+ 指定合约经用户清单全链路入库 + 导入向导目标选择（local-file 绑定源，多目标选择/`--series`） | A-P2-4 | AC-001-1（用户目录加载）、AC-007-1（指定合约/库存日报入库）、AC-007-3 | `pytest R12 -k "Binding or ImportTargets" -q` | ✅ |
+| T-38 | R-001 单源启停入口：`config enable/disable <source_id>`（持久化、重启生效、刷新主源）；修正“停用源历史仍可见”空断言测试 | A-P2-5 + 测试缺口 | AC-004-5、AC-004-1（默认拉取源随启停变化）、AC-003-2/AC-003-4（停用不影响历史可见与择优） | `pytest R12 -k EnableDisable -q` + `pytest tests/test_store.py -k disabled_source -q` | ✅ |
+| T-39 | 清单校验原因用户可见：source_reasons 持久化、list_sources.reason、serve 启动打印 | A-P3 + 测试缺口 AC-001-2 | AC-001-2（被拒并报告原因） | `pytest R12 -k ManifestReason -q` | ✅ |
+| T-40 | serve 生命周期：`--port`（默认 8932）、issuer 与实际端口一致、退出删除端点文件；真实 serve 子进程端到端（MCP 握手/工具调用、CLI 只读经 HTTP、写命令被拒、强杀后陈旧锁回收） | A-P3 + 测试缺口 AC-008-4/AC-004-6 | AC-008-4、AC-004-6 | `pytest tests/test_serve_e2e.py -q` + `pytest R12 -k "serve_reports or exit_signals" -q` | ✅ |
+| T-41 | MCP 工具/内部端点移出事件循环（工作线程）；取数网络阶段不持访问锁；SQLite 跨线程访问经访问锁串行 | A-P3 | AC-008-1、AC-004-6（只读不受写阻塞） | `pytest R12 -k NonBlocking -q` | ✅ |
+| T-42 | 健壮性：择优可见时间纯算术比较（不经本机时区）、对账跳过无声明源并 warning、检索 LIKE 转义、reg_order 首次登记持久、目录重建单事务、死代码清理、内部端点常量时间令牌比较与结构化错误 | A-P3 | AC-003-4、AC-006-3、AC-008-1、AC-001-3 | `pytest R12 -k TestRobustness -q` | ✅ |
+| T-43 | 锁健壮性：OpenProcess 拒绝访问不判陈旧；陈旧锁删除失败视为占用；DuckDB 文件被占用映射 LockBusy | A-P3 | AC-004-6 | `pytest R12 -k LockRobustness -q` | ✅ |
+| T-44 | 时间语义：带时区 range 换算到序列主源声明时区；本地导入带时区时间戳换算到目标源声明时区 | A-P3 | AC-004-1、AC-007-3 | `pytest R12 -k "TimeSemantics or choose_among" -q` | ✅ |
+| T-45 | CLI 小项：credentials 交互输入（不入 shell 历史、不需写锁）、凭证名校验（防路径穿越）、CSV 后缀大小写、jobs last_run UTC 且触发后记录、add-source id 校验（防路径穿越）与骨架补全、diff 不可比原因输出、内部路由错误透传、mcp<2 锁定入 pyproject | A-P3 | AC-009-1、AC-007-3、AC-004-2、AC-004-5、AC-005-2 | `pytest R12 -k CliMisc -q` + `pytest tests/test_cli.py -q` | ✅ |
+| T-46 | 内置清单 SC 仓单单位修正（cny_ton → kb，原始桶 ÷1000），与库存日报同一数量型归一规则 | Converge 自查（随 T-37 发现） | AC-007-1、AC-006-1（口径声明权威） | `pytest tests/test_adapters_builtin.py -q` + `pytest R12 -k builtin_receipt -q` | ✅ |

@@ -1,68 +1,152 @@
 """CLI（plan §2.2，AC-004-5/6、AC-005-1/2 交付入口、AC-007-3 交互向导）。
 
 - 写命令：构造写 Service（先取锁后开库，LockBusy → 报错退出）
-- 只读命令：先探测写锁——无锁直接只读 Service；有锁（serve 运行中）经内部 HTTP 路由（AC-004-6）
-- import：交互式向导（确认/改列/复用映射）+ 统一批次生命周期（F-08）
+- 只读命令：先探测写锁——无锁直接只读 Service（空目录首启 = 内存库，不建库）；
+  有锁（serve 运行中）经内部 HTTP 路由（AC-004-6）
+- 错误：业务错误输出结构化 {error:{code,message,retryable}} 并返回 1；不抛裸异常
+- import：交互式向导（目标选择/确认 → 复用映射/改列）+ 统一批次生命周期（F-08）
 """
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
+import urllib.error
+import urllib.parse
 import urllib.request
-from datetime import datetime
 from pathlib import Path
 
 from data import creds
 from data.adapters.local_file.local_file_adapter import guess_mapping, parse_with_mapping
-from data.catalog.descriptor import derive_id
 from data.fetch.on_demand import FetchError, validate_rows
-from data.lock import LockBusy, ensure_layout, lock_held, read_endpoint, write_endpoint
-from data.store.duck import utcnow
+from data.lock import (
+    DEFAULT_SERVE_PORT,
+    LockBusy,
+    ensure_layout,
+    lock_held,
+    read_endpoint,
+    remove_endpoint,
+    write_endpoint,
+)
+from data.manifest import IMPLEMENTATIONS
 from data.service import Service
+from data.store.duck import utcnow
+from data.store.provenance import DiffError
 
 DEFAULT_ROOT = Path.home() / "AppData" / "Local" / "FuturesAI"
+
+_SOURCE_ID_RE = re.compile(r"^[a-z0-9-]{1,64}$")  # 同 manifest id（plan §2.1）
 
 
 def _json_out(obj):
     print(json.dumps(obj, ensure_ascii=False, default=str, indent=1))
 
 
+def _err_dict(e: Exception) -> dict:
+    if isinstance(e, FetchError):
+        return e.to_dict()
+    if isinstance(e, DiffError):
+        return FetchError("validation_error", f"不可比：{e.reason}").to_dict()
+    return FetchError("internal", str(e)).to_dict()
+
+
 def _internal_get(root: Path, path: str, params: dict):
+    """经 serve 内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。"""
     ep = read_endpoint(root / "data")
     if not ep:
         raise FetchError("internal", "serve 未运行且未发现端点文件")
-    qs = "&".join(f"{k}={v}" for k, v in params.items())
-    url = f"http://127.0.0.1:{ep['port']}{path}?{qs}"
+    qs = urllib.parse.urlencode(params)
+    url = f"http://127.0.0.1:{ep['port']}{path}" + (f"?{qs}" if qs else "")
     req = urllib.request.Request(url, headers={"Authorization": f"Bearer {ep['token']}"})
-    with urllib.request.urlopen(req, timeout=10) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        try:
+            err = json.loads(e.read().decode("utf-8"))["error"]
+        except Exception:
+            raise FetchError("internal", f"内部路由 HTTP {e.code}") from e
+        raise FetchError(err.get("code", "internal"), err.get("message", "")) from e
 
 
 def _lock_held(root: Path) -> bool:
     return lock_held(root / "data")  # R9-02：陈旧锁回收，真实持锁才路由
 
 
-def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
-    """交互导入（F-08）：目标确认 → 批次先建 → 复用映射/读取/解析全部纳入批次生命周期。"""
+def _route_readonly(root: Path, args) -> object:
+    if args.cmd == "list":
+        path = {"series": "/internal/search", "sources": "/internal/sources", "jobs": "/internal/jobs"}
+        return _internal_get(root, path[args.what], {})
+    if args.cmd == "jobs":
+        return _internal_get(root, "/internal/jobs", {})
+    if args.cmd == "reconcile":
+        return _internal_get(root, "/internal/reconcile", {"series_id": args.series_id})
+    if args.cmd == "provenance":
+        return _internal_get(root, "/internal/provenance", {"series_id": args.series_id})
+    return _internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b})
+
+
+def _local_readonly(svc: Service, args) -> object:
+    if args.cmd == "list":
+        if args.what == "series":
+            return svc.search("")
+        if args.what == "sources":
+            return svc.list_sources()
+        return {"jobs": svc.list_jobs()}
+    if args.cmd == "jobs":
+        return {"jobs": svc.list_jobs()}
+    if args.cmd == "reconcile":
+        return svc.reconcile(args.series_id)
+    if args.cmd == "provenance":
+        return svc.provenance(args.series_id)
+    return svc.diff(args.run_a, args.run_b)
+
+
+def _choose_import_target(svc: Service, series: str | None, source: str | None) -> dict | None:
+    """导入目标 = implementation=local-file 的启用源所声明的序列；多目标交互选择。"""
+    targets = svc.import_targets()
+    if series:
+        targets = [t for t in targets if t["series_id"] == series]
+    if source:
+        targets = [t for t in targets if t["source"] == source]
+    if not targets:
+        print(
+            "错误：无可导入目标（需要 implementation: local-file 的已启用源声明该序列）",
+            file=sys.stderr,
+        )
+        return None
+    if len(targets) == 1:
+        t = targets[0]
+    else:
+        for i, cand in enumerate(targets, 1):
+            print(f"  [{i}] {cand['display']}（源 {cand['source']}，{cand['unit']}/{cand['freq']}/{cand['tz']}）")
+        ans = input(f"选择目标序列 [1-{len(targets)}]: ").strip()
+        if not ans.isdigit() or not 1 <= int(ans) <= len(targets):
+            print("错误：无效选择", file=sys.stderr)
+            return None
+        t = targets[int(ans) - 1]
+    ok = input(
+        f"目标序列: {t['display']}（{t['series_id'][:12]}…，源 {t['source']}）确认？[y/n] "
+    ).strip().lower()
+    if ok not in ("y", ""):
+        print("已取消", file=sys.stderr)
+        return None
+    return t
+
+
+def _import_wizard(svc: Service, fpath: Path, series: str | None = None, source: str | None = None) -> int:
+    """交互导入（F-08）：目标选择/确认 → 批次先建 → 复用映射/读取/解析全部纳入批次生命周期。"""
     import pandas as pd
 
     cat = svc.cat
-
-    # 目标确认（v1 目标 = local-file 清单声明的 crude/world/close）
-    sid = derive_id({"asset": "crude", "geo": "world", "measure": "close", "contract": ""})
-    decls = cat.source_declarations(sid)
-    decl = decls.get("local-file")
-    if decl is None:
-        print("错误：local-file 适配器未注册目标序列", file=sys.stderr)
+    t = _choose_import_target(svc, series, source)
+    if t is None:
         return 1
-    ok = input(f"目标序列: {sid[:12]}…（crude/world/close，local-file 源）确认？[y/n] ").strip().lower()
-    if ok not in ("y", ""):
-        print("已取消", file=sys.stderr)
-        return 1
+    sid, src = t["series_id"], t["source"]
 
     # F-08：批次先建（目标已知），此后任何读取/解析失败都记 failed
-    rid = svc.store.new_run("local-file", sid, None, None, decl["unit"], decl["freq"], decl["tz"])
+    rid = svc.store.new_run(src, sid, None, None, t["unit"], t["freq"], t["tz"])
     try:
         reuse = cat.con.execute(
             "SELECT id, column_map_json FROM import_maps ORDER BY id"
@@ -78,7 +162,7 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
                 if row:
                     mapping = json.loads(row[0])
         if mapping is None:
-            df = pd.read_csv(fpath) if fpath.suffix == ".csv" else pd.read_excel(fpath)
+            df = pd.read_csv(fpath) if fpath.suffix.lower() == ".csv" else pd.read_excel(fpath)
             mapping = guess_mapping(df)
             print(f"猜测映射: {mapping}")
             adjust = input("确认？[y/修改: date_col=列名,value_col=列名] ").strip()
@@ -88,17 +172,17 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
                     mapping[k.strip()] = v.strip()
         print(f"使用映射: {mapping}")
 
-        rows, raw = parse_with_mapping(str(fpath), mapping)
+        rows, raw = parse_with_mapping(str(fpath), mapping, tz=t["tz"])
         validate_rows(rows)
-        range_start = min((t for t, _ in rows), default=None)
-        range_end = max((t for t, _ in rows), default=None)
+        range_start = min((ts for ts, _ in rows), default=None)
+        range_end = max((ts for ts, _ in rows), default=None)
         svc.store.con.execute(
             "UPDATE ingest_runs SET range_start=?, range_end=? WHERE ingest_run=?",
             [range_start, range_end, rid],
         )
         svc.store.commit_run(
             rid,
-            [(sid, ts, v, decl["unit"], "local-file", utcnow()) for (ts, v) in rows],
+            [(sid, ts, v, t["unit"], src, utcnow()) for (ts, v) in rows],
             payload_hash=_hash_bytes(raw),
         )
     except Exception as e:
@@ -110,7 +194,7 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
         ["user_csv", str(fpath), json.dumps(mapping, ensure_ascii=False)],
     )
     cat.con.commit()
-    print(f"已入库 {len(rows)} 行，映射已保存")
+    print(f"已入库 {len(rows)} 行（源 {src}），映射已保存")
     return 0
 
 
@@ -121,12 +205,96 @@ def _hash_bytes(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def _skeleton(source_id: str, implementation: str | None) -> str:
+    """清单骨架（plan §2.2）：除 provides 外字段齐全；provides 待填（填写前该源登记为 error 并给出原因）。"""
+    if implementation == "eia":
+        cred = f"{{kind: api_key, credential_ref: {source_id.replace('-', '_')}_key}}"
+    else:
+        cred = "none"
+    impl_line = (
+        f"implementation: {implementation}\n"
+        if implementation
+        else "# implementation: akshare      # 可选：akshare | eia | local-file；缺省 = 仅声明源（不可取数）\n"
+    )
+    return (
+        f"id: {source_id}\n"
+        f"name: {source_id}\n"
+        "version: 1\n"
+        f"credentials: {cred}\n"
+        f"{impl_line}"
+        "provides: []   # 待填：至少一项（字段契约见 specs/data-layer/plan.md §2.1），示例：\n"
+        "#  - descriptor: {asset: sc, geo: cn, measure: close, contract: SC2401}\n"
+        '#    symbols: ["SC2401"]\n'
+        "#    unit: cny_bbl\n"
+        "#    freq: 1d\n"
+        "#    tz: Asia/Shanghai\n"
+        "#    priority: 100\n"
+        "#    fetch: {modes: [on_demand], history_days: 3650}\n"
+        "#    update: {lag_min: 0, revises: true}\n"
+    )
+
+
+def _port(v: str) -> int:
+    n = int(v)
+    if not 1 <= n <= 65535:
+        raise argparse.ArgumentTypeError("端口须在 1–65535")
+    return n
+
+
+def _install_exit_signals() -> None:
+    """uvicorn 优雅退出后会重新触发所捕获的信号；SIGBREAK/SIGTERM 的默认动作是直接终止进程
+    （跳过清理）→ 改为抛 KeyboardInterrupt，走 finally 删除端点文件并释放写锁。"""
+    import signal
+
+    def _raise(signum, frame):
+        raise KeyboardInterrupt
+
+    for name in ("SIGBREAK", "SIGTERM"):
+        sig = getattr(signal, name, None)
+        if sig is None:
+            continue
+        try:
+            signal.signal(sig, _raise)
+        except (ValueError, OSError):
+            pass
+
+
+def _serve(root: Path, port: int) -> int:
+    from data import mcp_server
+    import secrets
+
+    try:
+        svc = Service(root)
+    except LockBusy:
+        print("错误：数据目录已被另一写进程占用", file=sys.stderr)
+        return 1
+    try:
+        svc.init()
+        for e in svc.manifest_errors:  # AC-001-2：清单校验失败启动即报告
+            print(f"清单校验失败（已隔离）：{e['reason']}", file=sys.stderr)
+        token = secrets.token_hex(16)
+        mcp = mcp_server.build_mcp(svc, token, port=port)
+        _install_exit_signals()
+        write_endpoint(root / "data", port, token)
+        print(f"MCP + 内部只读通道: http://127.0.0.1:{port}/mcp（Bearer 令牌见 data/mcp_endpoint.json）")
+        try:
+            mcp.run(transport="streamable-http")
+        except KeyboardInterrupt:
+            pass
+        finally:
+            remove_endpoint(root / "data", token)
+    finally:
+        svc.close()
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="futureai-data")
     p.add_argument("--root", default=str(DEFAULT_ROOT))
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    sub.add_parser("serve")
+    srv = sub.add_parser("serve")
+    srv.add_argument("--port", type=_port, default=DEFAULT_SERVE_PORT)
 
     cfg = sub.add_parser("config")
     cfg_sub = cfg.add_subparsers(dest="cfg_cmd", required=True)
@@ -135,9 +303,13 @@ def main(argv=None) -> int:
     c_prio = cfg_sub.add_parser("priority")
     c_prio.add_argument("series_id"); c_prio.add_argument("source_id"); c_prio.add_argument("priority", type=int)
     c_cred = cfg_sub.add_parser("credentials")
-    c_cred.add_argument("name"); c_cred.add_argument("secret")
+    c_cred.add_argument("name")
+    c_cred.add_argument("secret", nargs="?", default=None, help="省略则交互输入（不回显，不进入 shell 历史）")
     c_src = cfg_sub.add_parser("add-source")
     c_src.add_argument("id")
+    c_src.add_argument("--implementation", choices=sorted(IMPLEMENTATIONS), default=None)
+    c_en = cfg_sub.add_parser("enable"); c_en.add_argument("source_id")
+    c_dis = cfg_sub.add_parser("disable"); c_dis.add_argument("source_id")
 
     f = sub.add_parser("fetch")
     f.add_argument("series_id"); f.add_argument("--start"); f.add_argument("--end"); f.add_argument("--source")
@@ -156,6 +328,8 @@ def main(argv=None) -> int:
 
     im = sub.add_parser("import")
     im.add_argument("file")
+    im.add_argument("--series", default=None, help="目标序列 id（缺省交互选择）")
+    im.add_argument("--source", default=None, help="目标源 id（implementation: local-file）")
 
     pr = sub.add_parser("provenance"); pr.add_argument("series_id")
 
@@ -166,26 +340,21 @@ def main(argv=None) -> int:
     ensure_layout(root)
 
     if args.cmd == "serve":
-        from data import mcp_server
-        import secrets
+        return _serve(root, args.port)
 
+    # 凭证：只写 creds/（不涉及数据库，不取写锁）；省略 secret → 不回显交互输入
+    if args.cmd == "config" and args.cfg_cmd == "credentials":
+        secret = args.secret
+        if secret is None:
+            import getpass
+
+            secret = getpass.getpass(f"输入凭证 {args.name}（不回显）: ")
         try:
-            svc = Service(root)
-        except LockBusy:
-            print("错误：数据目录已被另一写进程占用", file=sys.stderr)
+            creds.put(root / "creds", args.name, secret)
+        except creds.CredsError as e:
+            print(f"错误：{e}", file=sys.stderr)
             return 1
-        svc.init()
-        token = secrets.token_hex(16)
-        mcp = mcp_server.build_mcp(svc, token)
-        try:
-            port = mcp.settings.port
-            write_endpoint(root / "data", port, token)
-            print(f"MCP + 内部只读通道: http://127.0.0.1:{port} (Bearer {token})")
-            mcp.run(transport="streamable-http")
-        except KeyboardInterrupt:
-            pass
-        finally:
-            svc.close()
+        print("ok")
         return 0
 
     # 只读命令：无锁 → 本地只读；有锁 → 内部路由（含 jobs list，R2-04）
@@ -195,46 +364,30 @@ def main(argv=None) -> int:
     if is_readonly:
         if _lock_held(root):
             try:
-                if args.cmd == "list":
-                    if args.what == "series":
-                        _json_out(_internal_get(root, "/internal/search", {}))
-                    elif args.what == "sources":
-                        _json_out(_internal_get(root, "/internal/sources", {}))
-                    else:
-                        _json_out(_internal_get(root, "/internal/jobs", {}))
-                elif args.cmd == "reconcile":
-                    _json_out(_internal_get(root, "/internal/reconcile", {"series_id": args.series_id}))
-                elif args.cmd == "provenance":
-                    _json_out(_internal_get(root, "/internal/provenance", {"series_id": args.series_id}))
-                elif args.cmd == "jobs":
-                    _json_out(_internal_get(root, "/internal/jobs", {}))
-                else:
-                    _json_out(_internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b}))
-                return 0
+                payload = _route_readonly(root, args)
+            except FetchError as e:
+                _json_out(e.to_dict())
+                return 1
             except Exception as e:
                 print(f"错误：内部路由失败: {e}", file=sys.stderr)
                 return 1
-        svc = Service(root, readonly=True)
-        svc.init()
-        try:
-            if args.cmd == "list":
-                if args.what == "series":
-                    _json_out(svc.search(""))
-                elif args.what == "sources":
-                    _json_out(svc.list_sources())
-                else:
-                    _json_out({"jobs": svc.list_jobs()})
-            elif args.cmd == "jobs":
-                _json_out({"jobs": svc.list_jobs()})
-            elif args.cmd == "reconcile":
-                _json_out(svc.reconcile(args.series_id))
-            elif args.cmd == "provenance":
-                _json_out(svc.provenance(args.series_id))
-            else:
-                _json_out(svc.diff(args.run_a, args.run_b))
+            _json_out(payload)
             return 0
+        try:
+            svc = Service(root, readonly=True)
+        except LockBusy as e:
+            print(f"错误：{e}（写进程运行中但未发现可用端点，请稍后重试）", file=sys.stderr)
+            return 1
+        try:
+            svc.init()
+            payload = _local_readonly(svc, args)
+        except (FetchError, DiffError) as e:
+            _json_out(_err_dict(e))
+            return 1
         finally:
             svc.close()
+        _json_out(payload)
+        return 0
 
     # 写命令：构造写 Service（先锁后库）
     try:
@@ -251,38 +404,48 @@ def main(argv=None) -> int:
             if args.job_cmd == "register":
                 svc.jobs.register(args.name, args.adapter_id, args.series_id)
                 print("registered")
-            elif args.job_cmd == "list":
-                _json_out({"jobs": svc.jobs.list()})
             else:
                 _json_out(svc.jobs.run(args.name))
         elif args.cmd == "import":
-            return _import_wizard(svc, root, Path(args.file))
+            return _import_wizard(svc, Path(args.file), args.series, args.source)
         elif args.cmd == "config":
             if args.cfg_cmd == "alias":
-                print(svc.cat.write_alias(args.symbol, args.adapter_id, args.series_id, "manual"))
+                print(svc.set_alias(args.symbol, args.adapter_id, args.series_id))
             elif args.cfg_cmd == "priority":
-                svc.cat.set_override(args.series_id, args.source_id, args.priority)
-                svc.reg.rebuild()  # F-11：覆盖后刷新主源派生缓存与显示 ID
+                svc.set_priority(args.series_id, args.source_id, args.priority)
                 print("ok")
-            elif args.cfg_cmd == "credentials":
-                creds.put(root / "creds", args.name, args.secret)
+            elif args.cfg_cmd in ("enable", "disable"):
+                svc.set_source_enabled(args.source_id, args.cfg_cmd == "enable")
                 print("ok")
             else:
-                target = root / "adapters" / args.id
-                if (target / "manifest.yaml").exists():
-                    print("错误：该源已存在", file=sys.stderr)
-                    return 1
-                target.mkdir(parents=True, exist_ok=True)
-                (target / "manifest.yaml").write_text(
-                    f"id: {args.id}\nname: {args.id}\nversion: 1\nprovides: []\n",
-                    encoding="utf-8",
-                )
-                print(f"manifest 骨架已写入 {target / 'manifest.yaml'}（provides 待填）")
+                return _add_source(svc, root, args.id, args.implementation)
     except FetchError as e:
         _json_out(e.to_dict())
         return 1
     finally:
         svc.close()
+    return 0
+
+
+def _add_source(svc: Service, root: Path, source_id: str, implementation: str | None) -> int:
+    """AC-004-5：新增源 = 在用户适配器目录生成清单骨架。"""
+    if not _SOURCE_ID_RE.match(source_id):
+        print("错误：源 id 须匹配 [a-z0-9-]{1,64}", file=sys.stderr)
+        return 1
+    row = svc.cat.source_row(source_id)
+    if row is not None and row[1] != "disabled":
+        print(f"错误：源 {source_id} 已存在", file=sys.stderr)
+        return 1
+    target = root / "adapters" / source_id
+    if (target / "manifest.yaml").exists():
+        print("错误：该源已存在", file=sys.stderr)
+        return 1
+    target.mkdir(parents=True, exist_ok=True)
+    (target / "manifest.yaml").write_text(_skeleton(source_id, implementation), encoding="utf-8")
+    print(
+        f"manifest 骨架已写入 {target / 'manifest.yaml'}；填写 provides 后重启生效"
+        "（填写前该源显示为 error，原因见 list sources）"
+    )
     return 0
 
 

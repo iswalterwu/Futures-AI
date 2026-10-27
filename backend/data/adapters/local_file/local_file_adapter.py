@@ -24,10 +24,19 @@ def guess_mapping(df: pd.DataFrame) -> dict:
     return {"date_col": date_col, "value_col": value_col}
 
 
-def parse_with_mapping(path: str, mapping: dict, start=None, end=None) -> tuple[list[tuple], bytes]:
-    """按映射解析文件 → ([(ts, value)], raw_bytes)。时区统一 naive UTC（R2-01）。"""
+def parse_with_mapping(
+    path: str, mapping: dict, start=None, end=None, tz: str | None = None
+) -> tuple[list[tuple], bytes]:
+    """按映射解析文件 → ([(ts, value)], raw_bytes)。
+
+    观测 ts = 目标源声明时区下的 naive 时间标签（plan §6）：带时区的时间戳换算到 tz
+    （未给 tz 时换算到 UTC）；不带时区的原样保留。
+    """
     import io as _io
     from pathlib import Path
+    from zoneinfo import ZoneInfo
+
+    target_tz = ZoneInfo(tz) if tz else ZoneInfo("UTC")
 
     raw = Path(path).read_bytes()  # 单次读取快照（R5-03）
     if str(path).lower().endswith(".csv"):
@@ -40,7 +49,7 @@ def parse_with_mapping(path: str, mapping: dict, start=None, end=None) -> tuple[
     for _, r in df.iterrows():
         ts = pd.to_datetime(r[mapping["date_col"]])
         if getattr(ts, "tzinfo", None) is not None:
-            ts = ts.tz_convert("UTC").tz_localize(None)  # aware → naive UTC
+            ts = ts.tz_convert(target_tz).tz_localize(None)  # aware → 声明时区 naive
         ts = ts.to_pydatetime()
         if start and ts < start:
             continue

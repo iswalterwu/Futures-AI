@@ -49,6 +49,14 @@ class DuckStore:
         except Exception:
             pass
 
+    def is_initialized(self) -> bool:
+        """库文件已建表（首启/中途崩溃留下的空文件 → False）。"""
+        n = self.con.execute(
+            "SELECT COUNT(*) FROM information_schema.tables "
+            "WHERE table_name IN ('observations', 'ingest_runs')"
+        ).fetchone()[0]
+        return n == 2
+
     # ---- ingest_run 生命周期 ----
 
     def new_run(

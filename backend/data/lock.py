@@ -9,6 +9,7 @@ LAYOUT = ["data", "adapters", "creds"]  # plan §3.3 权威布局（data/.lock �
 
 LOCK_FILENAME = ".lock"
 ENDPOINT_FILENAME = "mcp_endpoint.json"
+DEFAULT_SERVE_PORT = 8932  # serve 默认端口（仅 127.0.0.1；可用 --port 覆盖）
 
 
 class LockBusy(Exception):
@@ -36,7 +37,10 @@ def write_lock(data_dir: Path):
             break
         except FileExistsError as e:
             if attempt == 0 and _stale(lock_path):
-                lock_path.unlink(missing_ok=True)
+                try:
+                    lock_path.unlink(missing_ok=True)
+                except OSError:  # 删除失败 = 文件仍被持有 → 并非陈旧
+                    raise LockBusy("数据目录被另一写进程占用") from e
                 continue
             raise LockBusy("数据目录被另一写进程占用") from e
     os.write(fd, str(os.getpid()).encode())
@@ -54,8 +58,35 @@ def write_lock(data_dir: Path):
     return f
 
 
+def _pid_alive(pid: int) -> bool:
+    """进程是否存在。仅“进程不存在”（OpenProcess 返回 ERROR_INVALID_PARAMETER）判死；
+    拒绝访问等其他失败 = 进程存在但无权查询 → 视为存活（保守，不误删他人锁）。"""
+    import ctypes
+    from ctypes import wintypes
+
+    PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+    STILL_ACTIVE = 259
+    ERROR_INVALID_PARAMETER = 87
+    k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    k32.OpenProcess.restype = wintypes.HANDLE
+    k32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    k32.GetExitCodeProcess.restype = wintypes.BOOL
+    k32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+    k32.CloseHandle.argtypes = [wintypes.HANDLE]
+    h = k32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+    if not h:
+        return ctypes.get_last_error() != ERROR_INVALID_PARAMETER
+    try:
+        code = wintypes.DWORD()
+        if not k32.GetExitCodeProcess(h, ctypes.byref(code)):
+            return True
+        return code.value == STILL_ACTIVE
+    finally:
+        k32.CloseHandle(h)
+
+
 def _stale(lock_path: Path) -> bool:
-    """锁文件存在但持有进程已死 → 陈旧锁。"""
+    """锁文件存在但持有进程已不存在 → 陈旧锁。"""
     import time
 
     try:
@@ -74,18 +105,8 @@ def _stale(lock_path: Path) -> bool:
         return False
     if pid <= 0:
         return False
-    import ctypes
-
-    PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
-    STILL_ACTIVE = 259
     try:
-        h = ctypes.windll.kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-        if not h:
-            return True  # 打不开 → 进程不存在
-        code = ctypes.c_ulong()
-        ctypes.windll.kernel32.GetExitCodeProcess(h, ctypes.byref(code))
-        ctypes.windll.kernel32.CloseHandle(h)
-        return code.value != STILL_ACTIVE
+        return not _pid_alive(pid)
     except Exception:
         return False  # 不确定 → 保守视为有效锁
 
@@ -96,7 +117,10 @@ def lock_held(data_dir: Path) -> bool:
     if not lock_path.exists():
         return False
     if _stale(lock_path):
-        lock_path.unlink(missing_ok=True)
+        try:
+            lock_path.unlink(missing_ok=True)
+        except OSError:  # 删除失败 = 仍被持有
+            return True
         return False
     return True
 
@@ -113,9 +137,6 @@ def release_lock(f) -> None:
         Path(lock_path).unlink(missing_ok=True)
 
 
-
-
-
 def write_endpoint(data_dir: Path, port: int, token: str) -> Path:
     """serve 启动时写端点发现文件（AC-004-6 只读路由）。"""
     p = data_dir / ENDPOINT_FILENAME
@@ -124,6 +145,13 @@ def write_endpoint(data_dir: Path, port: int, token: str) -> Path:
         encoding="utf-8",
     )
     return p
+
+
+def remove_endpoint(data_dir: Path, token: str) -> None:
+    """serve 退出时删除端点文件（仅删除本进程写入的那份：令牌一致）。"""
+    ep = read_endpoint(data_dir)
+    if ep and ep.get("token") == token:
+        (data_dir / ENDPOINT_FILENAME).unlink(missing_ok=True)
 
 
 def read_endpoint(data_dir: Path) -> dict | None:

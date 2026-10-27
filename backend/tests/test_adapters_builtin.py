@@ -54,7 +54,9 @@ class TestReceiptAndContract:
         m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
         provide = next(p for p in m.provides if p.symbols[0] == "SC_RECEIPT")
         rows, _ = AkshareAdapter().fetch(provide, None, None)
-        assert rows[0][1] == pytest.approx(32000.0)
+        # T-46：数量型按声明单位归一（SC 仓单原始单位 = 桶，声明 kb → ÷1000）
+        assert provide.unit == "kb"
+        assert rows[0][1] == pytest.approx(32.0)
 
     def test_designated_contract_route(self, monkeypatch):
         df = pd.DataFrame({"日期": ["2026-10-01"], "收盘价": [499.0]})
@@ -123,7 +125,7 @@ class TestReceiptSdkShape:
         m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
         provide = next(p for p in m.provides if p.symbols[0] == "SC_RECEIPT")
         rows, _ = AkshareAdapter().fetch(provide, None, None)
-        assert len(rows) == 1 and rows[0][1] == pytest.approx(32000)
+        assert len(rows) == 1 and rows[0][1] == pytest.approx(32.0)  # 32000 桶 = 32 千桶
 
 
 class TestIsolation:

@@ -2,6 +2,7 @@ id: eia
 name: EIA 公开数据
 version: 1
 credentials: {kind: api_key, credential_ref: eia_api_key}
+implementation: eia
 provides:
   - descriptor: {asset: diesel, geo: na, measure: stock, contract: ""}
     symbols: ["WDISTUS1"]

@@ -18,6 +18,8 @@ _ASSET_RE = r"^[a-z0-9-]{1,64}$"
 _FREQS = {"1d", "1w", "1m"}
 _MODES = {"scheduled", "on_demand", "realtime"}
 _UNITS = {"cny_bbl", "cny_ton", "usd_bbl", "kb_d", "kb", "kton"}
+# v1 内置取数实现（封闭）：用户清单经 implementation 复用，不加载用户目录代码（plan §2.1）
+IMPLEMENTATIONS = {"akshare", "eia", "local-file"}
 
 
 class Credentials(BaseModel):
@@ -134,6 +136,7 @@ class Manifest(BaseModel):
     name: str
     version: int = Field(gt=0)
     credentials: Credentials  # F-14/N-03：必填（无默认）
+    implementation: str | None = None  # 缺省 = 仅声明源（不可取数）
     provides: list[Provide]
 
     @field_validator("id")
@@ -143,6 +146,16 @@ class Manifest(BaseModel):
 
         if not re.match(_ASSET_RE, v):
             raise ValueError(f"id 非法值: {v!r}（[a-z0-9-]{{1,64}}）")
+        return v
+
+    @field_validator("implementation")
+    @classmethod
+    def _implementation(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        v = str(v).strip()
+        if v not in IMPLEMENTATIONS:
+            raise ValueError(f"implementation 非法值: {v!r}（v1 内置实现: {sorted(IMPLEMENTATIONS)}）")
         return v
 
     @field_validator("name")

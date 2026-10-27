@@ -1,23 +1,28 @@
 """MCP server（plan §2.2/§4.6，AC-008-1/2/3/4）与内部只读通道（AC-004-6）。
 
-- MCP streamable HTTP + 内部只读端点 = **同一端口**（FastMCP custom_route）
+- MCP streamable HTTP + 内部只读端点 = **同一端口**（FastMCP custom_route），仅监听 127.0.0.1
 - 主 MCP 通道与内部端点均要求 Bearer token（F-06）
-- 内部端点每请求独立只读连接（F-02 并发串线）
+- 工具与内部端点在工作线程执行，不阻塞事件循环；数据访问由 service 访问锁串行（F-02）
 """
 from __future__ import annotations
 
+import hmac
 import json
 import time
-from pathlib import Path
 
-from mcp.server.auth.provider import AccessToken, TokenVerifier
+import anyio
+from mcp.server.auth.provider import AccessToken
+from mcp.server.auth.settings import AuthSettings
 from mcp.server.fastmcp import FastMCP
 from starlette.responses import JSONResponse
 
 from data.fetch.on_demand import FetchError
+from data.lock import DEFAULT_SERVE_PORT
 from data.service import Service
-from data.store.duck import DuckStore
-from data.store.provenance import diff, provenance
+from data.store.provenance import DiffError
+
+DEFAULT_HOST = "127.0.0.1"
+DEFAULT_PORT = DEFAULT_SERVE_PORT
 
 
 class StaticTokenVerifier:
@@ -25,7 +30,7 @@ class StaticTokenVerifier:
         self.token = token
 
     async def verify_token(self, token: str) -> AccessToken | None:
-        if token != self.token:
+        if not hmac.compare_digest(token.encode("utf-8"), self.token.encode("utf-8")):
             return None
         return AccessToken(
             token=token,
@@ -35,40 +40,59 @@ class StaticTokenVerifier:
         )
 
 
-# 内部端点直接调用 service（Service._access_lock 串行化单连接，F-02）
-
-
 def _jsonable(obj):
     return json.loads(json.dumps(obj, ensure_ascii=False, default=str))
 
 
-def build_mcp(service: Service, token: str) -> FastMCP:
-    from mcp.server.auth.settings import AuthSettings
+def _error(e: Exception) -> dict:
+    """异常 → 结构化错误（AC-008-3：不抛裸异常给模型）。"""
+    if isinstance(e, FetchError):
+        return e.to_dict()
+    if isinstance(e, DiffError):
+        return FetchError("validation_error", f"不可比：{e.reason}").to_dict()
+    return FetchError("internal", str(e)).to_dict()
 
+
+def _int_param(params, name: str) -> int:
+    try:
+        return int(params[name])
+    except (KeyError, ValueError) as e:
+        raise FetchError("validation_error", f"参数 {name} 须为整数") from e
+
+
+async def _in_thread(fn, *args):
+    """同步 service 调用移入工作线程（取数的网络等待不阻塞事件循环）。"""
+    return await anyio.to_thread.run_sync(fn, *args)
+
+
+def build_mcp(
+    service: Service, token: str, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT
+) -> FastMCP:
+    base_url = f"http://{host}:{port}"
     mcp = FastMCP(
         "futuresai-data",
+        host=host,
+        port=port,
         token_verifier=StaticTokenVerifier(token),
         auth=AuthSettings(
-            issuer_url="http://127.0.0.1:8932",
-            resource_server_url="http://127.0.0.1:8932",
+            issuer_url=base_url,
+            resource_server_url=base_url,
             validate_token_resource=False,
         ),
     )
 
     @mcp.tool()
-    def search_series(q: str) -> dict:
+    async def search_series(q: str) -> dict:
         try:
-            return service.search(q)
-        except FetchError as e:
-            return e.to_dict()
+            return await _in_thread(service.search, q)
         except Exception as e:
-            return {"error": {"code": "internal", "message": str(e), "retryable": False}}
+            return _error(e)
 
     @mcp.tool()
-    def fetch_series(
+    async def fetch_series(
         series_id: str, range: dict, fetch: bool = False, source: str | None = None
     ) -> dict:
-        try:
+        def call():
             rng = range or {}
             res = service.fetch(
                 series_id, rng.get("start"), rng.get("end"), do_fetch=fetch, source=source
@@ -77,105 +101,56 @@ def build_mcp(service: Service, token: str) -> FastMCP:
                 {"ts": r[0], "value": r[1], "unit": r[2], "source": r[3]} for r in res["rows"]
             ]
             return {"series_id": series_id, "rows": rows, "meta": _meta_json(res["meta"])}
-        except FetchError as e:
-            return e.to_dict()
+
+        try:
+            return await _in_thread(call)
         except Exception as e:
-            return {"error": {"code": "internal", "message": str(e), "retryable": False}}
+            return _error(e)
 
     @mcp.tool()
-    def list_sources() -> dict:
+    async def list_sources() -> dict:
         try:
-            return service.list_sources()
+            return await _in_thread(service.list_sources)
         except Exception as e:
-            return {"error": {"code": "internal", "message": str(e), "retryable": False}}
+            return _error(e)
 
     @mcp.tool()
-    def reconcile(series_id: str) -> dict:
+    async def reconcile(series_id: str) -> dict:
         try:
-            return service.reconcile(series_id)
+            return await _in_thread(service.reconcile, series_id)
         except Exception as e:
-            return {"error": {"code": "internal", "message": str(e), "retryable": False}}
+            return _error(e)
 
-    # ---- 内部只读端点（与 MCP 同端口，同令牌） ----
+    # ---- 内部只读端点（与 MCP 同端口，同令牌；CLI 只读命令在写锁被占时经此路由） ----
 
-    def _auth(request) -> bool:
-        return request.headers.get("authorization", "") == f"Bearer {token}"
+    expected_auth = f"Bearer {token}".encode("utf-8")
 
-    @mcp.custom_route("/internal/provenance", methods=["GET"])
-    async def internal_provenance(request):
-        if not _auth(request):
-            return JSONResponse({"error": "unauthorized"}, status_code=403)
-        series_id = request.query_params.get("series_id", "")
-        try:
-            payload = service.provenance(series_id)
+    def _authorized(request) -> bool:
+        got = request.headers.get("authorization", "").encode("utf-8")
+        return hmac.compare_digest(got, expected_auth)
+
+    def _internal(path: str, handler) -> None:
+        @mcp.custom_route(path, methods=["GET"])
+        async def endpoint(request):
+            if not _authorized(request):
+                return JSONResponse(
+                    FetchError("unauthorized", "令牌无效").to_dict(), status_code=403
+                )
+            try:
+                payload = await _in_thread(handler, request.query_params)
+            except Exception as e:
+                return JSONResponse(_error(e), status_code=400)
             return JSONResponse(_jsonable(payload))
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=400)
 
-    @mcp.custom_route("/internal/diff", methods=["GET"])
-    async def internal_diff(request):
-        if not _auth(request):
-            return JSONResponse({"error": "unauthorized"}, status_code=403)
-        try:
-            payload = service.diff(int(request.query_params["a"]), int(request.query_params["b"]))
-            return JSONResponse(_jsonable(payload))
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=400)
-
-
-
-        rows = cat.con.execute(
-            "SELECT id, descriptor_json, unit, freq FROM series "
-            "WHERE display_id_8slot LIKE ? OR descriptor_json LIKE ? OR id IN "
-            "(SELECT series_id FROM aliases WHERE source_symbol LIKE ?) "
-            "ORDER BY id LIMIT 50",
-            [f"%{q}%", f"%{q}%", f"%{q}%"],
-        ).fetchall()
-        return {
-            "matches": [
-                {"series_id": r[0], "descriptor": _json.loads(r[1]) if r[1] else {}, "unit": r[2], "freq": r[3]}
-                for r in rows
-            ]
-        }
-
-    @mcp.custom_route("/internal/search", methods=["GET"])
-    async def internal_search(request):
-        if not _auth(request):
-            return JSONResponse({"error": "unauthorized"}, status_code=403)
-        q = request.query_params.get("q", "")
-        try:
-            return JSONResponse(_jsonable(service.search(q)))
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=400)
-
-    @mcp.custom_route("/internal/sources", methods=["GET"])
-    async def internal_sources(request):
-        if not _auth(request):
-            return JSONResponse({"error": "unauthorized"}, status_code=403)
-        try:
-            return JSONResponse(_jsonable(service.list_sources()))
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=400)
-
-    @mcp.custom_route("/internal/jobs", methods=["GET"])
-    async def internal_jobs(request):
-        if not _auth(request):
-            return JSONResponse({"error": "unauthorized"}, status_code=403)
-        try:
-            return JSONResponse(_jsonable({"jobs": service.jobs.list() if service.jobs else []}))
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=400)
-
-    @mcp.custom_route("/internal/reconcile", methods=["GET"])
-    async def internal_reconcile(request):
-        if not _auth(request):
-            return JSONResponse({"error": "unauthorized"}, status_code=403)
-        sid = request.query_params.get("series_id")
-        try:
-            return JSONResponse(_jsonable(service.reconcile(sid)))
-        except Exception as e:
-            return JSONResponse({"error": str(e)}, status_code=400)
-
+    _internal("/internal/sources", lambda qp: service.list_sources())
+    _internal("/internal/search", lambda qp: service.search(qp.get("q", "")))
+    _internal("/internal/jobs", lambda qp: {"jobs": service.list_jobs()})
+    _internal("/internal/reconcile", lambda qp: service.reconcile(qp.get("series_id")))
+    _internal("/internal/provenance", lambda qp: service.provenance(qp.get("series_id", "")))
+    _internal(
+        "/internal/diff",
+        lambda qp: service.diff(_int_param(qp, "a"), _int_param(qp, "b")),
+    )
     return mcp
 
 

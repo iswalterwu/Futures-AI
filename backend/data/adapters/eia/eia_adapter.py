@@ -53,7 +53,12 @@ class EiaAdapter(Adapter):
         self.credential_ref = credential_ref
 
     def fetch(self, provide, range_start=None, range_end=None):
-        # 凭证读自 manifest 的 credential_ref（AC-007-2：读取失败 fail closed）
+        # 凭证读自本源清单的 credential_ref（AC-007-2：读取失败 fail closed → unauthorized）
+        if not self.credential_ref:
+            raise FetchError(
+                "unauthorized",
+                "该源清单未声明凭证引用（credentials: {kind: api_key, credential_ref: <名>}）",
+            )
         api_key = creds.get(self.creds_dir, self.credential_ref)
         result = _request(provide.symbols[0], api_key, range_start, range_end)
         if isinstance(result, tuple):  # (data, raw_text)

@@ -1,9 +1,10 @@
 """按需取数（plan §4.2/§4.3，AC-004-1/3）与任务注册表（AC-004-2）。"""
 from __future__ import annotations
 
-from datetime import datetime
+from contextlib import nullcontext
 
 from data.catalog.db import CatalogDB
+from data.creds import CredsError
 from data.store.duck import DuckStore, utcnow
 from data.store.winners import latest_obs
 
@@ -36,62 +37,75 @@ def fetch_series(
     store: DuckStore,
     adapters: dict[str, object],
     series_id: str,
-    start: datetime | None,
-    end: datetime | None,
+    start,
+    end,
     do_fetch: bool,
     source: str | None = None,
     get_provide=None,
+    guard=None,
 ):
     """统一取数入口。
 
     - do_fetch 无默认值（Python 层强制传参）；只读分支忽略 source，返回跨源择优结果
     - do_fetch=True：source=None → 启用源中优先级最小者（无 → not_found）；
-      显式 source 指向非启用源 → validation_error
+      显式 source 指向非启用源 → validation_error；源未绑定取数实现 → not_found
+    - guard = 数据访问锁（service 传入）：批次创建/提交/读取持锁，适配器网络阶段不持锁
+      （plan §2.2 MCP 执行模型；写路径由调用方的写互斥串行）
+    - 失败分类：凭证失败 → unauthorized；其余非 FetchError 异常 → adapter_error（可重试）
     """
-    priorities = cat.effective_priorities(series_id)
-    if not do_fetch:
-        rows = latest_obs(store, series_id, priorities, start=start, end=end)
-        return {"series_id": series_id, "rows": rows, "meta": _meta(series_id, rows, None, start, end)}
+    guard = guard if guard is not None else nullcontext()
+    with guard:
+        priorities = cat.effective_priorities(series_id)
+        if not do_fetch:
+            rows = latest_obs(store, series_id, priorities, start=start, end=end)
+            return {"series_id": series_id, "rows": rows, "meta": _meta(series_id, rows, None, start, end)}
 
-    # —— 取数分支 ——
-    if source is None:
-        enabled = cat.enabled_sources(series_id)
-        if not enabled:
-            raise FetchError("not_found", f"序列 {series_id} 无启用源")
-        source = enabled[0]
-    else:
-        if source not in cat.enabled_sources(series_id):
-            raise FetchError("validation_error", f"源 {source} 非启用（status 非 ok 或未启用）")
-    decls = cat.source_declarations(series_id)
-    decl = decls.get(source)
-    if decl is None:
-        raise FetchError("not_found", f"源 {source} 未提供序列 {series_id}")
-    adapter = adapters.get(source)
-    if adapter is None:
-        raise FetchError("adapter_error", f"适配器 {source} 未加载")
-
-    rid = store.new_run(
-        source, series_id, start, end, decl["unit"], decl["freq"], decl["tz"]
-    )
-    try:
+        # —— 取数分支 ——
+        if source is None:
+            enabled = cat.enabled_sources(series_id)
+            if not enabled:
+                raise FetchError("not_found", f"序列 {series_id} 无启用源")
+            source = enabled[0]
+        else:
+            if source not in cat.enabled_sources(series_id):
+                raise FetchError("validation_error", f"源 {source} 非启用（status 非 ok 或未启用）")
+        decls = cat.source_declarations(series_id)
+        decl = decls.get(source)
+        if decl is None:
+            raise FetchError("not_found", f"源 {source} 未提供序列 {series_id}")
+        adapter = adapters.get(source)
+        if adapter is None:
+            raise FetchError(
+                "not_found", f"源 {source} 未绑定取数实现（清单未声明 implementation，仅声明数据）"
+            )
         provide = get_provide(cat, series_id, source) if get_provide else None
+        rid = store.new_run(
+            source, series_id, start, end, decl["unit"], decl["freq"], decl["tz"]
+        )
+    try:
         fetched, raw_payload = adapter.fetch(provide, start, end)
         validate_rows(fetched)
         rows = [
             (series_id, ts, float(v), decl["unit"], source, _utcnow())
             for (ts, v) in fetched
         ]
-        store.commit_run(rid, rows, payload_hash=_payload_hash(raw_payload, fetched))
-    except FetchError:
-        store.fail_run(rid)
+        with guard:
+            store.commit_run(rid, rows, payload_hash=_payload_hash(raw_payload, fetched))
+    except BaseException as e:  # 任一环节失败 → 失败原子性（批次标 failed，无部分写入）
+        with guard:
+            store.fail_run(rid)
+        if isinstance(e, FetchError):
+            raise
+        if isinstance(e, CredsError):  # 凭证缺失/不可读/解密失败：重试无益
+            raise FetchError("unauthorized", f"{e}（请先配置凭证：config credentials <名>）") from e
+        if isinstance(e, Exception):  # 网络/解析等适配器错误 → 可重试
+            raise FetchError("adapter_error", str(e)) from e
         raise
-    except Exception as e:  # 网络/解析等适配器错误 → 失败原子性 + 可重试
-        store.fail_run(rid)
-        raise FetchError("adapter_error", str(e)) from e
 
-    priorities = cat.effective_priorities(series_id)
-    rows = latest_obs(store, series_id, priorities, start=start, end=end)
-    return {"series_id": series_id, "rows": rows, "meta": _meta(series_id, rows, source, start, end)}
+    with guard:
+        priorities = cat.effective_priorities(series_id)
+        rows = latest_obs(store, series_id, priorities, start=start, end=end)
+        return {"series_id": series_id, "rows": rows, "meta": _meta(series_id, rows, source, start, end)}
 
 
 def _utcnow():
@@ -157,24 +171,44 @@ def _meta(series_id: str, rows: list, source: str | None, start, end) -> dict:
 class JobRegistry:
     """AC-004-2：任务注册表骨架（注册/查看/手动触发，不引调度器）。"""
 
-    def __init__(self, cat: CatalogDB, run_fn):
+    def __init__(self, cat: CatalogDB, run_fn, guard=None):
         self.cat = cat
         self._run_fn = run_fn
+        self._guard = guard if guard is not None else nullcontext()
 
     def register(self, name: str, adapter_id: str, series_id: str, schedule_spec: str | None = None) -> None:
-        self.cat.con.execute(
-            "INSERT OR REPLACE INTO jobs VALUES (?,?,?,?,?)",
-            [name, adapter_id, series_id, schedule_spec, None],
-        )
-        self.cat.con.commit()
+        """AC-004-5：只接受“当前清单声明了该序列”的真实源（不存在 → not_found，未声明 → validation_error）。"""
+        if not str(name).strip():
+            raise FetchError("validation_error", "任务名不能为空")
+        with self._guard:
+            if not self.cat.series_exists(series_id):
+                raise FetchError("not_found", f"序列 {series_id} 不存在")
+            if self.cat.source_row(adapter_id) is None:
+                raise FetchError("not_found", f"源 {adapter_id} 不存在（只能使用已有清单的源）")
+            if not self.cat.source_declares(series_id, adapter_id):
+                raise FetchError("validation_error", f"源 {adapter_id} 的当前清单未声明序列 {series_id}")
+            self.cat.con.execute(
+                "INSERT OR REPLACE INTO jobs VALUES (?,?,?,?,?)",
+                [name, adapter_id, series_id, schedule_spec, None],
+            )
+            self.cat.con.commit()
 
     def list(self) -> list[tuple]:
-        return self.cat.con.execute("SELECT * FROM jobs").fetchall()
+        with self._guard:
+            return self.cat.con.execute("SELECT * FROM jobs").fetchall()
 
     def run(self, name: str):
-        row = self.cat.con.execute("SELECT * FROM jobs WHERE name=?", [name]).fetchone()
+        with self._guard:
+            row = self.cat.con.execute("SELECT * FROM jobs WHERE name=?", [name]).fetchone()
         if not row:
             raise FetchError("not_found", f"任务 {name} 不存在")
-        self.cat.con.execute("UPDATE jobs SET last_run=? WHERE name=?", [datetime.now(), name])
-        self.cat.con.commit()
-        return self._run_fn(row[1], row[2])
+        try:
+            return self._run_fn(row[1], row[2])
+        finally:
+            # 触发后记录（成功或失败均记），UTC
+            with self._guard:
+                self.cat.con.execute(
+                    "UPDATE jobs SET last_run=? WHERE name=?",
+                    [utcnow().isoformat(sep=" ", timespec="seconds"), name],
+                )
+                self.cat.con.commit()

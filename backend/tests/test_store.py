@@ -123,9 +123,19 @@ class TestWinnerRule:
         assert before == []
 
     def test_disabled_source_history_still_visible(self, env):
+        """AC-003-2/AC-003-4：择优候选 = 全部源观测；停用/清单移除只改配置角色。"""
         store, cat = env
-        cat.set_series_source("s1", "a", 100, 1)
+        cat.con.execute("INSERT INTO sources(id, adapter_id, name) VALUES ('a','a','A')")
+        cat.con.execute("INSERT INTO sources(id, adapter_id, name) VALUES ('b','b','B')")
+        cat.set_series_source("s1", "a", 10, 1)
+        cat.set_series_source("s1", "b", 100, 2)
         self._ingest(store, "a", "s1", BASE, 1.0)
-        # 源被停用不影响历史可见性（配置层角色不影响行）
+        self._ingest(store, "b", "s1", BASE, 2.0)
+        cat.set_source_enabled("a", False)  # 停用 a（R-001 启停入口同一写法）
+        assert cat.enabled_sources("s1") == ["b"]  # 配置角色：a 不再是启用源
         rows = latest_obs(store, "s1", cat.effective_priorities("s1"))
-        assert len(rows) == 1
+        assert len(rows) == 1 and rows[0][3] == "a" and rows[0][1] == 1.0  # 历史可见且按优先级胜出
+        cat.con.execute("UPDATE sources SET status='disabled' WHERE id='a'")  # 清单移除（registry 软删）
+        cat.con.commit()
+        got = latest(store, "s1", cat.effective_priorities("s1"))
+        assert got[3] == "a" and got[1] == 1.0

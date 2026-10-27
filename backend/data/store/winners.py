@@ -5,22 +5,27 @@
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from data.store.duck import DuckStore
 
+_EPOCH = datetime(1970, 1, 1)
+
+
+def _asof_key(asof_ts) -> timedelta:
+    """可见时间越新键越小。naive UTC 纯算术（不经本机时区解释，夏令时不影响全序）。"""
+    if isinstance(asof_ts, datetime):
+        return -(asof_ts.replace(tzinfo=None) - _EPOCH)
+    return timedelta.max  # 缺失可见时间 → 视为最旧
+
 
 def _pick(cands: list[tuple], priorities: dict[str, int]) -> tuple | None:
-    """候选中选唯一赢家。cands 行 = (ts, value, unit, source, asof, ingest_run)。"""
+    """候选中选唯一赢家。cands 行 = (ts, value, unit, source, fetched_at, asof, ingest_run)。"""
     if not cands:
         return None
     def key(row):
         _, _, _, source, _fetched, asof_ts, ingest_run = row
-        return (
-            priorities.get(source, 100),
-            -asof_ts.timestamp() if hasattr(asof_ts, "timestamp") else -float(asof_ts),
-            -ingest_run,
-        )
+        return (priorities.get(source, 100), _asof_key(asof_ts), -ingest_run)
     return min(cands, key=key)
 
 

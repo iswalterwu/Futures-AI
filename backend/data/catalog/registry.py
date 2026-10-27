@@ -1,17 +1,21 @@
-"""目录编译与源状态机（plan §4.1，AC-001-1/3/4、AC-002-2）。
+"""目录编译与源状态机（plan §4.1，AC-001-1/2/3/4、AC-002-2）。
 
 扫描顺序 = 内置目录先、用户目录后；重复 id 先加载者生效、后到者 error。
 增量重建：既有 series 行不清空；error 虚拟条目按路径登记。
+整次重建 = SQLite 单事务（中途失败整体回滚，并发只读进程不见中间态）；
+error/disabled 原因写 source_reasons（AC-001-2 用户可见报告）。
 """
 from __future__ import annotations
 
 from pathlib import Path
 
-from data.catalog.db import CatalogDB
+from data.catalog.db import ERROR_PREFIX, CatalogDB
 from data.catalog.descriptor import derive_id, display_8slot, normalize
 from data.manifest import MANIFEST_FILENAME, ManifestError, load
 
 BUILTIN_ADAPTERS_DIR = Path(__file__).resolve().parent.parent / "adapters"
+
+REASON_REMOVED = "清单已从适配器目录移除（软删，历史数据保留）"
 
 
 def scan_adapters(builtin_dir: Path, user_dir: Path) -> list[tuple[str, str]]:
@@ -48,7 +52,16 @@ class Registry:
         return provides_map
 
     def rebuild(self) -> dict:
-        """增量重建。返回 {sources: {...}, series: {...}, errors: [...]}。"""
+        """增量重建（单事务）。返回 {sources, series, errors, provides, manifests}。"""
+        try:
+            res = self._rebuild()
+            self.cat.con.commit()
+        except BaseException:
+            self.cat.con.rollback()
+            raise
+        return res
+
+    def _rebuild(self) -> dict:
         entries = scan_adapters(self.builtin_dir, self.user_dir)
         goods: dict[str, tuple] = {}  # adapter_id → (manifest, adapter_dir, mf_path)
         errors: list[dict] = []
@@ -75,6 +88,7 @@ class Registry:
                 "manifest_path=excluded.manifest_path",
                 [sid, sid, m.name, adapter_dir],
             )
+            self.cat.set_reason(sid, None)
         # R6-03/R7-03：goods 更新后建路径映射；仅纳入本轮实际扫描到的路径
         scanned_dirs = {str(Path(mf).parent) for (_d, mf) in entries}
         _all = self.cat.con.execute(
@@ -94,7 +108,7 @@ class Registry:
             mf == g_mf for g_mf in [g[2] for g in goods.values()]
         )}
         for e in errors:
-            key = f"error:{e['path']}"
+            key = f"{ERROR_PREFIX}{e['path']}"
             existing_id = (
                 path_to_id.get(str(Path(e["path"]).parent))
                 if e.get("kind") == "invalid"
@@ -117,6 +131,7 @@ class Registry:
                 self.cat.con.execute(
                     "UPDATE sources SET status='error' WHERE id=?", [existing_id]
                 )
+                self.cat.set_reason(existing_id, e["reason"])
                 current_errors.add(existing_id)
             else:
                 self.cat.con.execute(
@@ -125,29 +140,33 @@ class Registry:
                     "ON CONFLICT(id) DO UPDATE SET status='error'",
                     [key, key, "error", e["path"]],
                 )
+                self.cat.set_reason(key, e["reason"])
                 current_errors.add(key)
         for old in stale_errors - current_errors:
             # F-10：路径仍在磁盘 → 保留 error；路径消失 → disabled（保配置，不物理删除）
-            if old.startswith("error:") and Path(old[len("error:"):]).exists():
+            if old.startswith(ERROR_PREFIX) and Path(old[len(ERROR_PREFIX):]).exists():
                 continue
             self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [old])
+            self.cat.set_reason(old, REASON_REMOVED)
         # 本次成功加载的清单 → 清理其虚拟 error 残留（F-10：精确路径）
         for sid, (m, adapter_dir, mf_path) in goods.items():
-            self.cat.con.execute(
+            purged = self.cat.con.execute(
                 "DELETE FROM sources WHERE id=? AND status='error'",
-                [f"error:{mf_path}"],
-            )
+                [f"{ERROR_PREFIX}{mf_path}"],
+            ).rowcount
+            if purged:
+                self.cat.set_reason(f"{ERROR_PREFIX}{mf_path}", None)
 
         for (sid, status) in self.cat.con.execute(
             "SELECT id, status FROM sources WHERE status != 'error'"
         ).fetchall():
             if sid not in seen_ids and status != "disabled":
                 self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [sid])
+                self.cat.set_reason(sid, REASON_REMOVED)
 
         # ---- series 编译（增量，不清空；同描述符归并 AC-002-2） ----
         # F-10：本轮未被声明的提供关系标 current=0（历史快照保留）
         self.cat.con.execute("UPDATE series_sources SET current=0")
-        reg_counter = [0]
         provided_series: set[str] = set()
         provides_map: dict[tuple[str, str], object] = {}
         for sid, (m, _dir, _mf) in goods.items():
@@ -163,13 +182,13 @@ class Registry:
                     "status='active', valid_to=NULL",
                     [series_id, self._desc_json(d), display],
                 )
-                reg_counter[0] += 1
+                # reg_order 沿用首次登记顺序（并列决胜不随目录改名/新增重排）
                 self.cat.set_series_source(
-                    series_id, sid, p.priority, reg_counter[0], p.unit, p.freq, p.tz, current=1
+                    series_id, sid, p.priority, None, p.unit, p.freq, p.tz, current=1, commit=False
                 )
                 provides_map[(sid, series_id)] = p
                 for sym in p.symbols:
-                    self.cat.write_alias(sym, sid, series_id, "manifest")
+                    self.cat.write_alias(sym, sid, series_id, "manifest", commit=False)
 
         # ---- soft_deleted：无任何非 disabled 源的 series ----
         for (series_id,) in self.cat.con.execute("SELECT id FROM series").fetchall():
@@ -218,12 +237,12 @@ class Registry:
                     [pd["unit"], pd["freq"], pd["tz"], display, series_id],
                 )
 
-        self.cat.con.commit()
         return {
             "sources": seen_ids,
             "series": sorted(provided_series),
             "errors": errors,
             "provides": provides_map,
+            "manifests": {sid: m for sid, (m, _d, _mf) in goods.items()},
         }
 
     @staticmethod

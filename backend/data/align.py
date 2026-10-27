@@ -43,6 +43,11 @@ def reconcile(cat: CatalogDB, series_id: str | None, store=None) -> dict:
         for s in obs_sources:
             if s not in candidates:
                 candidates.append(s)
+    # 有观测但无任何口径声明的源：无从比对，进 warnings 而非抛错
+    undeclared = [s for s in candidates if s not in decls]
+    if undeclared:
+        warnings.append(f"以下源有观测但无口径声明，未参与口径比对：{', '.join(undeclared)}")
+        candidates = [s for s in candidates if s in decls]
     checks = []
     for a, b in combinations(candidates, 2):
         for kind in KINDS:

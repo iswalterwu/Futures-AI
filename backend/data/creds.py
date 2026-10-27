@@ -3,11 +3,20 @@ from __future__ import annotations
 
 import base64
 import binascii
+import re
 from pathlib import Path
+
+_NAME_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")  # 凭证名 = 文件名，禁止路径分隔与穿越
 
 
 class CredsError(Exception):
     pass
+
+
+def _path(creds_dir: Path, name: str) -> Path:
+    if not _NAME_RE.match(str(name or "")):
+        raise CredsError(f"凭证名非法: {name!r}（须匹配 [A-Za-z0-9_-]{{1,64}}）")
+    return Path(creds_dir) / f"{name}.bin"
 
 
 def _win32():
@@ -21,6 +30,7 @@ def _win32():
 
 def put(creds_dir: Path, name: str, secret: str) -> Path:
     """加密保存；任何失败（含 DPAPI 不可用）→ 报错，绝不写明文；空凭证拒绝。"""
+    out = _path(creds_dir, name)
     if not str(secret):
         raise CredsError("空凭证拒绝保存")
     try:
@@ -32,16 +42,14 @@ def put(creds_dir: Path, name: str, secret: str) -> Path:
         raise
     except Exception as e:
         raise CredsError(f"凭证加密失败，拒绝保存: {e}") from e
-    creds_dir = Path(creds_dir)
-    creds_dir.mkdir(parents=True, exist_ok=True)
-    out = creds_dir / f"{name}.bin"
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(base64.b64encode(blob))
     return out
 
 
 def get(creds_dir: Path, name: str) -> str:
     """解密读取；读取/解密失败 → 报错，禁止返回明文或 None。"""
-    p = Path(creds_dir) / f"{name}.bin"
+    p = _path(creds_dir, name)
     try:
         raw = p.read_bytes()
     except OSError as e:

@@ -2,6 +2,7 @@ id: local-file
 name: 本地文件导入
 version: 1
 credentials: none
+implementation: local-file
 provides:
   - descriptor: {asset: crude, geo: world, measure: close, contract: ""}
     symbols: ["user_csv"]
