@@ -75,12 +75,12 @@ def fetch_series(
     )
     try:
         provide = get_provide(cat, series_id, source) if get_provide else None
-        fetched = adapter.fetch(provide, start, end)
+        fetched, raw_payload = adapter.fetch(provide, start, end)
         rows = [
             (series_id, ts, float(v), decl["unit"], source, _utcnow())
             for (ts, v) in fetched
         ]
-        store.commit_run(rid, rows, payload_hash=_payload_hash(fetched))
+        store.commit_run(rid, rows, payload_hash=_payload_hash(raw_payload, fetched))
     except FetchError:
         store.fail_run(rid)
         raise
@@ -97,12 +97,17 @@ def _utcnow():
     return utcnow()
 
 
-def _payload_hash(fetched) -> str:
+def _payload_hash(raw, fetched) -> str:
+    """F-12：原始载荷优先；无原始载荷时回退归一化行。"""
     import hashlib
     import json
 
+    if raw is not None:
+        if isinstance(raw, bytes):
+            return hashlib.sha256(raw).hexdigest()
+        return hashlib.sha256(str(raw).encode("utf-8")).hexdigest()
     canon = json.dumps(
-        [(ts.isoformat(), v) for (ts, v) in fetched],  # F-12：原始载荷（不做归一）
+        [(ts.isoformat(), v) for (ts, v) in fetched],
         ensure_ascii=False,
         sort_keys=True,
     )

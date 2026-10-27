@@ -5,7 +5,11 @@ from datetime import datetime
 
 
 class Adapter:
-    """取数实现基类。fetch 返回 [(ts, value)]（已按源口径归一）。"""
+    """取数实现基类。fetch 返回 (rows, raw_payload)。
+
+    rows = [(ts, value)]（已按源口径归一）；raw_payload = 源响应原始载荷
+    （str/bytes，供原始载荷哈希 AC-005-1）。
+    """
 
     id: str = ""
 
@@ -14,7 +18,7 @@ class Adapter:
         provide,
         range_start: datetime | None,
         range_end: datetime | None,
-    ) -> list[tuple]:
+    ) -> tuple[list[tuple], str | bytes | None]:
         raise NotImplementedError
 
     def realtime_signature(self, descriptor: dict, on_update) -> None:

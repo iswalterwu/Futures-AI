@@ -34,14 +34,14 @@ class TestAkshare:
         monkeypatch.setattr(ak_mod, "_get_main", lambda symbol: df)
         m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
         p = m.provides[0]
-        rows = AkshareAdapter().fetch(p, None, None)
+        rows, _ = AkshareAdapter().fetch(p, None, None)
         assert len(rows) == 3 and rows[1][1] == pytest.approx(512.4)
 
     def test_range_filter(self, monkeypatch):
         df = pd.DataFrame({"日期": ["2026-10-01", "2026-10-05"], "收盘价": [1.0, 2.0]})
         monkeypatch.setattr(ak_mod, "_get_main", lambda symbol: df)
         m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
-        rows = AkshareAdapter().fetch(
+        rows, _ = AkshareAdapter().fetch(
             m.provides[0], datetime(2026, 10, 2), datetime(2026, 10, 10)
         )
         assert len(rows) == 1 and rows[0][1] == 2.0
@@ -53,14 +53,14 @@ class TestReceiptAndContract:
         monkeypatch.setattr(ak_mod, "_get_receipt", lambda asset, start=None, end=None: df)
         m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
         provide = next(p for p in m.provides if p.symbols[0] == "SC_RECEIPT")
-        rows = AkshareAdapter().fetch(provide, None, None)
+        rows, _ = AkshareAdapter().fetch(provide, None, None)
         assert rows[0][1] == pytest.approx(32000.0)
 
     def test_designated_contract_route(self, monkeypatch):
         df = pd.DataFrame({"日期": ["2026-10-01"], "收盘价": [499.0]})
         monkeypatch.setattr(ak_mod, "_get_contract", lambda symbol: df)
         provide = type("P", (), {"symbols": ["SC2401"]})()
-        rows = AkshareAdapter().fetch(provide, None, None)
+        rows, _ = AkshareAdapter().fetch(provide, None, None)
         assert rows[0][1] == pytest.approx(499.0)
 
 
@@ -70,7 +70,7 @@ class TestEia:
         monkeypatch.setattr(eia_mod, "_request", lambda *a, **k: payload)
         creds.put(tmp_path / "creds", "eia_api_key", "sk-fake-key-12345678")
         m = load(str(MANIFEST_DIR / "eia" / "manifest.yaml"))
-        rows = EiaAdapter(tmp_path / "creds").fetch(m.provides[0], None, None)
+        rows, _ = EiaAdapter(tmp_path / "creds").fetch(m.provides[0], None, None)
         assert len(rows) == 1 and rows[0][1] == pytest.approx(120.5)
 
     def test_key_missing_fail_closed(self, tmp_path, monkeypatch):
@@ -89,7 +89,7 @@ class TestLocalFile:
         df = pd.read_csv(f)
         mp = guess_mapping(df)
         assert mp == {"date_col": "日期", "value_col": "收盘价"}
-        rows = parse_with_mapping(str(f), mp)
+        rows, _ = parse_with_mapping(str(f), mp)
         assert len(rows) == 2 and rows[0][1] == pytest.approx(70.5)
 
     def test_incomplete_mapping_rejected(self, tmp_path):
@@ -122,7 +122,7 @@ class TestReceiptSdkShape:
         monkeypatch.setattr(ak_mod, "_get_receipt", lambda asset, start=None, end=None: df)
         m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
         provide = next(p for p in m.provides if p.symbols[0] == "SC_RECEIPT")
-        rows = AkshareAdapter().fetch(provide, None, None)
+        rows, _ = AkshareAdapter().fetch(provide, None, None)
         assert len(rows) == 1 and rows[0][1] == pytest.approx(32000)
 
 
@@ -140,5 +140,5 @@ class TestIsolation:
         m_eia = load(str(MANIFEST_DIR / "eia" / "manifest.yaml"))
         with pytest.raises(Exception):
             AkshareAdapter().fetch(m_ak.provides[0], None, None)
-        rows = EiaAdapter(tmp_path / "creds").fetch(m_eia.provides[0], None, None)
+        rows, _ = EiaAdapter(tmp_path / "creds").fetch(m_eia.provides[0], None, None)
         assert len(rows) == 1  # EIA 不受影响

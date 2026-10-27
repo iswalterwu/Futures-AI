@@ -58,7 +58,7 @@ provides:                    # 必填，非空数组
       contract: ""           #     可选，缺省空串 = 主力/连续；非空 = 指定合约（去首尾空白、不转小写）
                             #     字符集 `[A-Za-z0-9]{1,20}`；含非法字符/纯空白/超长 → 校验拒绝（AC-001-2）
     symbols: ["futures_daily_SC"]   # 必填，非空：源侧符号，自动注册别名（rule_kind=manifest）
-    unit: cny_bbl            #   必填，v1 enum: cny_bbl/cny_ton/usd_bbl/kb_d/kton
+    unit: cny_bbl            #   必填，v1 enum: cny_bbl/cny_ton/usd_bbl/kb_d/kb/kton（kb 于 2026-10-26 评审后新增：库存存量单位）
     freq: 1d                 #   必填，enum: 1d/1w/1m
     tz: Asia/Shanghai        #   必填，IANA 时区
     priority: 100            #   可选，int ≥0，默认 100（越小越优先；落库到 series_sources）

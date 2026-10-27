@@ -9,6 +9,8 @@ from datetime import datetime
 
 import requests
 
+import json
+
 from data import creds
 from data.adapters.base import Adapter
 from data.fetch.on_demand import FetchError
@@ -54,6 +56,7 @@ class EiaAdapter(Adapter):
         # 凭证读自 manifest 的 credential_ref（AC-007-2：读取失败 fail closed）
         api_key = creds.get(self.creds_dir, self.credential_ref)
         payload = _request(provide.symbols[0], api_key, range_start, range_end)
+        raw = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False, sort_keys=True)
         rows = []
         for item in payload.get("response", {}).get("data", []):
             # F-04：按序列过滤（响应可能含多序列/多维度）
@@ -70,7 +73,7 @@ class EiaAdapter(Adapter):
                 continue
             rows.append((ts, val))
         rows.sort(key=lambda r: r[0])
-        return rows
+        return rows, raw
 
     def realtime_signature(self, descriptor, on_update):
         raise NotImplementedError

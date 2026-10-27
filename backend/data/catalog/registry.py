@@ -106,10 +106,16 @@ class Registry:
                 )
                 current_errors.add(key)
         for old in stale_errors - current_errors:
-            # F-10：仅当磁盘上已无该路径时才清理 error 记录（重建幂等）
+            # F-10：路径仍在磁盘 → 保留 error；路径消失 → disabled（保配置，不物理删除）
             if old.startswith("error:") and Path(old[len("error:"):]).exists():
                 continue
-            self.cat.con.execute("DELETE FROM sources WHERE id=?", [old])
+            self.cat.con.execute("UPDATE sources SET status='disabled' WHERE id=?", [old])
+        # 本次成功加载的清单 → 清理其虚拟 error 残留
+        for sid, (m, adapter_dir) in goods.items():
+            self.cat.con.execute(
+                "DELETE FROM sources WHERE id=? AND status='error'",
+                [f"error:{adapter_dir}/{MANIFEST_FILENAME}"],
+            )
 
         # ---- series 编译（增量，不清空；同描述符归并 AC-002-2） ----
         # F-10：本轮未被声明的提供关系标 current=0（历史快照保留）

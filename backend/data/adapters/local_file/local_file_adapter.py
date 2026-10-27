@@ -24,20 +24,26 @@ def guess_mapping(df: pd.DataFrame) -> dict:
     return {"date_col": date_col, "value_col": value_col}
 
 
-def parse_with_mapping(path: str, mapping: dict, start=None, end=None) -> list[tuple]:
-    """按映射解析文件 → [(ts, value)]。"""
+def parse_with_mapping(path: str, mapping: dict, start=None, end=None) -> tuple[list[tuple], bytes]:
+    """按映射解析文件 → ([(ts, value)], raw_bytes)。时区统一 naive UTC（R2-01）。"""
+    from pathlib import Path
+
+    raw = Path(path).read_bytes()
     df = pd.read_csv(path) if str(path).lower().endswith(".csv") else pd.read_excel(path)
     if not mapping.get("date_col") or not mapping.get("value_col"):
         raise FetchError("validation_error", "列映射不完整，请先完成向导确认")
     rows = []
     for _, r in df.iterrows():
-        ts = pd.to_datetime(r[mapping["date_col"]]).to_pydatetime()
+        ts = pd.to_datetime(r[mapping["date_col"]])
+        if getattr(ts, "tzinfo", None) is not None:
+            ts = ts.tz_convert("UTC").tz_localize(None)  # aware → naive UTC
+        ts = ts.to_pydatetime()
         if start and ts < start:
             continue
         if end and ts > end:
             continue
         rows.append((ts, float(r[mapping["value_col"]])))
-    return rows
+    return rows, raw
 
 
 class LocalFileAdapter(Adapter):

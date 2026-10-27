@@ -22,7 +22,7 @@ class FakeAdapter:
     def fetch(self, provide, range_start, range_end):
         if self.fail:
             raise RuntimeError("网络超时")
-        return self.data
+        return self.data, None
 
 
 def setup(tmp_root):

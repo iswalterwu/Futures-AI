@@ -87,7 +87,7 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
     # F-08：批次先建，解析失败 → fail_run（不产生部分写入）
     rid = svc.store.new_run("local-file", sid, None, None, decl["unit"], decl["freq"], decl["tz"])
     try:
-        rows = parse_with_mapping(str(fpath), mapping)
+        rows, raw = parse_with_mapping(str(fpath), mapping)
         range_start = min((t for t, _ in rows), default=None)
         range_end = max((t for t, _ in rows), default=None)
         svc.store.con.execute(
@@ -97,7 +97,7 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
         svc.store.commit_run(
             rid,
             [(sid, ts, v, decl["unit"], "local-file", utcnow()) for (ts, v) in rows],
-            payload_hash=_hash_file(fpath),
+            payload_hash=_hash_bytes(raw),
         )
     except Exception as e:
         svc.store.fail_run(rid)
@@ -112,11 +112,11 @@ def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:
     return 0
 
 
-def _hash_file(fpath: Path) -> str:
-    """F-12：原始载荷哈希 = 文件原始字节的 SHA-256。"""
+def _hash_bytes(raw: bytes) -> str:
+    """F-12：原始载荷哈希 = 原始字节 SHA-256。"""
     import hashlib
 
-    return hashlib.sha256(fpath.read_bytes()).hexdigest()
+    return hashlib.sha256(raw).hexdigest()
 
 
 def main(argv=None) -> int:
@@ -186,10 +186,11 @@ def main(argv=None) -> int:
             svc.close()
         return 0
 
-    # 只读命令：无锁 → 本地只读；有锁 → 内部路由
+    # 只读命令：无锁 → 本地只读；有锁 → 内部路由（含 jobs list，R2-04）
     readonly_cmds = {"list", "reconcile", "provenance", "diff"}
+    is_readonly = args.cmd in readonly_cmds or (args.cmd == "jobs" and args.job_cmd == "list")
 
-    if args.cmd in readonly_cmds:
+    if is_readonly:
         if _lock_held(root):
             try:
                 if args.cmd == "list":
@@ -219,6 +220,8 @@ def main(argv=None) -> int:
                     _json_out(svc.list_sources())
                 else:
                     _json_out({"jobs": svc.list_jobs()})
+            elif args.cmd == "jobs":
+                _json_out({"jobs": svc.list_jobs()})
             elif args.cmd == "reconcile":
                 _json_out(svc.reconcile(args.series_id))
             elif args.cmd == "provenance":

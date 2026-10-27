@@ -66,8 +66,9 @@ class AkshareAdapter(Adapter):
             df = getter(range_start, range_end)
         else:
             df = getter()
+        raw = df.to_json(force_ascii=False) if df is not None else None
         if df is None or df.empty:
-            return []
+            return [], raw
         df = df.rename(columns={c: str(c).strip() for c in df.columns})
         # 列名归一：SDK 变体 → 规范列（F-03）
         if "date" in df.columns:
@@ -87,7 +88,7 @@ class AkshareAdapter(Adapter):
             if range_end and ts > range_end:
                 continue
             rows.append((ts, float(r[value_col])))
-        return rows
+        return rows, raw
 
     def realtime_signature(self, descriptor, on_update):
         raise NotImplementedError

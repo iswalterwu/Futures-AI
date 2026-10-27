@@ -54,15 +54,27 @@ class Service:
                 self._lock_f = None
             raise
         self.reg = Registry(self.cat, builtin_dir or BUILTIN_ADAPTERS_DIR, self.dirs["adapters"])
+        eia_ref = self._eia_credential_ref()
         self.adapters = {
             "akshare": AkshareAdapter(),
-            "eia": EiaAdapter(self.dirs["creds"]),
+            "eia": EiaAdapter(self.dirs["creds"], credential_ref=eia_ref),
             "local-file": LocalFileAdapter(),
         }
         self.jobs = JobRegistry(self.cat, self._run_job) if not readonly else None
         self._provides: dict[tuple[str, str], object] = {}
         self._write_mutex = threading.Lock()  # F-02：写路径业务级串行
         self._access_lock = threading.RLock()  # F-02：全部数据访问串行（duckdb 单连接）
+
+    def _eia_credential_ref(self) -> str:
+        """R2-02：凭证引用以内置 eia manifest 声明为准。"""
+        from data.manifest import load as _ml
+
+        mf = BUILTIN_ADAPTERS_DIR / "eia" / "manifest.yaml"
+        try:
+            m = _ml(str(mf))
+            return m.credentials.credential_ref or "eia_api_key"
+        except Exception:
+            return "eia_api_key"
 
     def init(self) -> "Service":
         if self.readonly:
