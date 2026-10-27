@@ -23,34 +23,29 @@ def run(*argv):
     return cli.main([*args])
 
 
+from data.catalog.descriptor import derive_id
+
+SID = derive_id({"asset": "sc", "geo": "cn", "measure": "close", "contract": ""})
+
+
 def setup(tmp_path):
-    svc = Service(tmp_path).init()
-    svc.cat.con.execute(
-        "INSERT INTO series VALUES ('s1','{}','sc.world.-.-.-.close.-.1d','cny_bbl','1d','Asia/Shanghai','active',NULL)"
-    )
-    svc.cat.set_series_source("s1", "akshare", 100, 1, "cny_bbl", "1d", "Asia/Shanghai")
-    # 测试序列绑定真实 akshare provide（取数需要 symbols）
-    from pathlib import Path
-
-    from data.manifest import load as mload
-
-    mf = Path(__file__).resolve().parent.parent / "data" / "adapters" / "akshare" / "manifest.yaml"
-    svc._provides[("akshare", "s1")] = mload(str(mf)).provides[0]
+    svc = Service(tmp_path).init()  # registry 已注册 akshare 真实序列
+    assert any(sid == SID for (_a, sid) in svc._provides)
     return svc
 
 
 class TestConfig:
     def test_priority_persists(self, tmp_path):
         setup(tmp_path)
-        assert run("config", "priority", "s1", "akshare", "5", "--root", str(tmp_path)) == 0
+        assert run("config", "priority", SID, "akshare", "5", "--root", str(tmp_path)) == 0
         cat = CatalogDB(tmp_path / "data" / "catalog.sqlite")
-        assert cat.effective_priorities("s1")["akshare"] == 5
+        assert cat.effective_priorities(SID)["akshare"] == 5
 
     def test_alias_persists(self, tmp_path):
         setup(tmp_path)
-        assert run("config", "alias", "MY_SYM", "akshare", "s1", "--root", str(tmp_path)) == 0
+        assert run("config", "alias", "MY_SYM", "akshare", SID, "--root", str(tmp_path)) == 0
         cat = CatalogDB(tmp_path / "data" / "catalog.sqlite")
-        assert cat.resolve_alias("MY_SYM", "akshare") == "s1"
+        assert cat.resolve_alias("MY_SYM", "akshare") == SID
 
     def test_credentials_roundtrip(self, tmp_path):
         assert run("config", "credentials", "eia_api_key", "sk-test-12345678", "--root", str(tmp_path)) == 0
@@ -71,11 +66,11 @@ class TestJobs:
 
         df = __import__("pandas").DataFrame({"日期": ["2026-10-01"], "收盘价": [1.0]})
         monkeypatch.setattr(ak_mod, "_get_data", lambda symbol: df)
-        assert run("jobs", "register", "daily-sc", "akshare", "s1", "--root", str(tmp_path)) == 0
+        assert run("jobs", "register", "daily-sc", "akshare", SID, "--root", str(tmp_path)) == 0
         assert run("jobs", "list", "--root", str(tmp_path)) == 0
         assert run("jobs", "run", "daily-sc", "--root", str(tmp_path)) == 0
         # 但 jobs.run 用 source=akshare 取 s1——akshare 适配器 fetch 返回 mock 数据
-        assert svc.store.count_obs("s1") == 1
+        assert svc.store.count_obs(SID) == 1
 
 
 class TestFetchAndList:
@@ -85,7 +80,7 @@ class TestFetchAndList:
 
         df = __import__("pandas").DataFrame({"日期": ["2026-10-01"], "收盘价": [1.0]})
         monkeypatch.setattr(ak_mod, "_get_data", lambda symbol: df)
-        assert run("fetch", "s1", "--root", str(tmp_path)) == 0
+        assert run("fetch", SID, "--root", str(tmp_path)) == 0
 
     def test_list_series_sources(self, tmp_path, capsys):
         setup(tmp_path)
@@ -112,11 +107,11 @@ class TestImport:
 class TestProvenanceDiff:
     def test_provenance_diff_cli(self, tmp_path, capsys):
         svc = setup(tmp_path)
-        ra = svc.store.new_run("akshare", "s1", BASE, BASE, "cny_bbl", "1d", "Asia/Shanghai")
-        svc.store.commit_run(ra, [("s1", BASE, 1.0, "cny_bbl", "akshare", BASE)])
-        rb = svc.store.new_run("akshare", "s1", BASE, BASE, "cny_bbl", "1d", "Asia/Shanghai")
-        svc.store.commit_run(rb, [("s1", BASE, 2.0, "cny_bbl", "akshare", BASE)])
-        assert run("provenance", "s1", "--root", str(tmp_path)) == 0
+        ra = svc.store.new_run("akshare", SID, BASE, BASE, "cny_bbl", "1d", "Asia/Shanghai")
+        svc.store.commit_run(ra, [(SID, BASE, 1.0, "cny_bbl", "akshare", BASE)])
+        rb = svc.store.new_run("akshare", SID, BASE, BASE, "cny_bbl", "1d", "Asia/Shanghai")
+        svc.store.commit_run(rb, [(SID, BASE, 2.0, "cny_bbl", "akshare", BASE)])
+        assert run("provenance", SID, "--root", str(tmp_path)) == 0
         assert run("diff", str(ra), str(rb), "--root", str(tmp_path)) == 0
         out = capsys.readouterr().out
         assert '"revised": 1' in out or "revised" in out
@@ -126,22 +121,22 @@ class TestSingleWriter:
     def test_write_command_blocked_when_locked(self, tmp_path, capsys):
         svc = setup(tmp_path)
         svc.acquire_write_lock()  # 模拟 serve 持写锁
-        rc = run("fetch", "s1", "--root", str(tmp_path))
+        rc = run("fetch", SID, "--root", str(tmp_path))
         assert rc == 1
         assert "占用" in capsys.readouterr().err
         svc.release_write_lock()
 
     def test_readonly_routes_via_internal_when_locked(self, tmp_path, capsys):
         svc = setup(tmp_path)
-        ra = svc.store.new_run("akshare", "s1", BASE, BASE, "cny_bbl", "1d", "Asia/Shanghai")
-        svc.store.commit_run(ra, [("s1", BASE, 1.0, "cny_bbl", "akshare", BASE)])
+        ra = svc.store.new_run("akshare", SID, BASE, BASE, "cny_bbl", "1d", "Asia/Shanghai")
+        svc.store.commit_run(ra, [(SID, BASE, 1.0, "cny_bbl", "akshare", BASE)])
         from data.lock import write_endpoint
 
         svc.acquire_write_lock()
         srv = mcp_server.start_internal(svc, 0, "tok")
         try:
             write_endpoint(tmp_path / "data", srv.server_address[1], "tok")
-            assert run("provenance", "s1", "--root", str(tmp_path)) == 0
+            assert run("provenance", SID, "--root", str(tmp_path)) == 0
             out = capsys.readouterr().out
             assert "akshare" in out
         finally:

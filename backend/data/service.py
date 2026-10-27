@@ -40,7 +40,15 @@ class Service:
 
     def fetch(self, series_id, start=None, end=None, do_fetch=False, source=None):
         return fetch_series(
-            self.cat, self.store, self.adapters, series_id, start, end, do_fetch, source
+            self.cat,
+            self.store,
+            self.adapters,
+            series_id,
+            start,
+            end,
+            do_fetch,
+            source,
+            get_provide=lambda cat, sid, src: self._provides.get((src, sid)),
         )
 
     def search(self, q: str) -> dict:
