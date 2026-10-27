@@ -81,13 +81,13 @@ class Registry:
                 [sid, sid, m.name, adapter_dir],
             )
         # R6-03/R7-03：goods 更新后建路径映射；仅纳入本轮实际扫描到的路径
-        scanned_paths = {mf for (_d, mf) in entries}
+        scanned_dirs = {str(Path(mf).parent) for (_d, mf) in entries}
         path_to_id = {
             r[5]: r[0]
             for r in self.cat.con.execute(
                 "SELECT * FROM sources"  # F-10：含 error 源（坏件重建幂等）
             ).fetchall()
-            if r[5] and r[5] in scanned_paths
+            if r[5] and r[5] in scanned_dirs
         }
         # error 条目：按 manifest 路径原地标 error（既有源），否则虚拟条目
         stale_errors = {r[0] for r in self.cat.con.execute("SELECT id FROM sources WHERE status='error'").fetchall()}
