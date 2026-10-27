@@ -43,10 +43,16 @@ class Service:
         self.readonly = readonly
         self._lock_f = None
         if not readonly:
-            # F-01：先取写锁，再开任何可写存储
+            # F-01：先取写锁，再开任何可写存储；开库失败必须释放锁
             self._lock_f = write_lock(self.dirs["data"])
-        self.cat = CatalogDB(self.dirs["data"] / "catalog.sqlite", read_only=readonly)
-        self.store = DuckStore(self.dirs["data"] / "observations.duckdb", read_only=readonly)
+        try:
+            self.cat = CatalogDB(self.dirs["data"] / "catalog.sqlite", read_only=readonly)
+            self.store = DuckStore(self.dirs["data"] / "observations.duckdb", read_only=readonly)
+        except Exception:
+            if self._lock_f is not None:
+                release_lock(self._lock_f)
+                self._lock_f = None
+            raise
         self.reg = Registry(self.cat, builtin_dir or BUILTIN_ADAPTERS_DIR, self.dirs["adapters"])
         self.adapters = {
             "akshare": AkshareAdapter(),

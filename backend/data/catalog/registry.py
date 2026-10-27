@@ -69,8 +69,9 @@ class Registry:
         path_to_id = {
             r[5]: r[0]
             for r in self.cat.con.execute(
-                "SELECT * FROM sources WHERE status != 'error'"
+                "SELECT * FROM sources"  # F-10：含 error 源（坏件重建幂等）
             ).fetchall()
+            if r[5]
         }
         for (sid, status) in self.cat.con.execute(
             "SELECT id, status FROM sources WHERE status != 'error'"

@@ -50,7 +50,7 @@ class TestAkshare:
 class TestReceiptAndContract:
     def test_receipt_route_not_price(self, monkeypatch):
         df = pd.DataFrame({"日期": ["2026-10-01"], "值": [32000.0]})
-        monkeypatch.setattr(ak_mod, "_get_receipt", lambda asset: df)
+        monkeypatch.setattr(ak_mod, "_get_receipt", lambda asset, start=None, end=None: df)
         m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
         provide = next(p for p in m.provides if p.symbols[0] == "SC_RECEIPT")
         rows = AkshareAdapter().fetch(provide, None, None)
@@ -106,6 +106,24 @@ class TestLocalFile:
         with pytest.raises(FetchError) as ei:
             LocalFileAdapter().fetch(m.provides[0], None, None)
         assert "import" in ei.value.message
+
+
+class TestReceiptSdkShape:
+    def test_receipt_real_column_shape(self, monkeypatch):
+        """F-03：真实 akshare 仓单列结构（var/receipt/receipt_chg/date）。"""
+        df = pd.DataFrame(
+            {
+                "var": ["SC"],
+                "receipt": [32000],
+                "receipt_chg": [100],
+                "date": ["2026-10-01"],
+            }
+        )
+        monkeypatch.setattr(ak_mod, "_get_receipt", lambda asset, start=None, end=None: df)
+        m = load(str(MANIFEST_DIR / "akshare" / "manifest.yaml"))
+        provide = next(p for p in m.provides if p.symbols[0] == "SC_RECEIPT")
+        rows = AkshareAdapter().fetch(provide, None, None)
+        assert len(rows) == 1 and rows[0][1] == pytest.approx(32000)
 
 
 class TestIsolation:

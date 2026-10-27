@@ -255,6 +255,7 @@ def main(argv=None) -> int:
                 print(svc.cat.write_alias(args.symbol, args.adapter_id, args.series_id, "manual"))
             elif args.cfg_cmd == "priority":
                 svc.cat.set_override(args.series_id, args.source_id, args.priority)
+                svc.reg.rebuild()  # F-11：覆盖后刷新主源派生缓存与显示 ID
                 print("ok")
             elif args.cfg_cmd == "credentials":
                 creds.put(root / "creds", args.name, args.secret)

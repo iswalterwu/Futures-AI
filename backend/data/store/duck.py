@@ -83,17 +83,21 @@ class DuckStore:
             return rid  # 重放不改成功事实
         if cur[0] != RUNNING:
             raise ValueError(f"批次 {rid} 已终态（{cur[0]}），不可提交")
-        now = utcnow()
         self.con.execute("BEGIN")
         try:
             if rows:
                 stamped = [
-                    (sid, ts, val, unit, src, fetched, now, rid, payload_hash)
+                    (sid, ts, val, unit, src, fetched, None, rid, payload_hash)
                     for (sid, ts, val, unit, src, fetched) in rows
                 ]
                 self.con.executemany(
                     "INSERT OR IGNORE INTO observations VALUES (?,?,?,?,?,?,?,?,?)", stamped
                 )
+            now = utcnow()  # F-12：插入后、提交前取可见时间（asof = 提交时刻）
+            self.con.execute(
+                'UPDATE observations SET "asof"=? WHERE ingest_run=? AND "asof" IS NULL',
+                [now, rid],
+            )
             self.con.execute(
                 "UPDATE ingest_runs SET status=?, finished_at=?, payload_hash=COALESCE(?, payload_hash) WHERE ingest_run=?",
                 [SUCCEEDED, now, payload_hash, rid],

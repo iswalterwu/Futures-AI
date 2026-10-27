@@ -45,7 +45,8 @@ def write_lock(data_dir: Path):
     try:
         import msvcrt
 
-        msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        os.lseek(fd, 64, os.SEEK_SET)  # 锁区域避开 PID 字节（读者可读 PID 判陈旧）
+        msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
     except OSError as e:
         f.close()
         lock_path.unlink(missing_ok=True)
@@ -58,7 +59,7 @@ def _stale(lock_path: Path) -> bool:
     try:
         pid = int(lock_path.read_text(encoding="utf-8", errors="ignore").strip())
     except (OSError, ValueError):
-        return False
+        return True  # F-01：空/非法内容 = 创建后写 PID 前崩溃 → 陈旧
     if pid <= 0:
         return False
     import ctypes
@@ -82,6 +83,7 @@ def release_lock(f) -> None:
     try:
         import msvcrt
 
+        os.lseek(f.fileno(), 64, os.SEEK_SET)
         msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
     finally:
         f.close()
