@@ -54,7 +54,7 @@
 ### T-04 规范资产移植（二）：Components / Cards / Tables / Nav 与图表配色
 
 - **上下文**：plan §2.9 后续行；`PALETTE_CORE.md` 的 `palette-core` / `palette-retired` 块是 color-literals 与 theme-contrast 守卫的数据源；`PALETTE_DARK.md` 记录 Q-003 裁定（A 等亮）。
-- **修改范围**：`design/ui/UI_COMPONENTS.md`、`design/ui/UI_CARDS.md`、`design/ui/UI_TABLES.md`、`design/ui/UI_NAV.md`、`design/ui/README.md`（补登四份）、`design/charts/PALETTE_CORE.md`（原件逐字复制 + 追加 front matter 字段与 `## 暗色适配` 指向 PALETTE_DARK）、`design/charts/PALETTE_DARK.md`（plan §2.1 配色表——每个用途一个 `### #<锚>`、方法、两个卡面的对比度、ΔE2000、Q-003 裁定记录、样张路径）、`design/charts/README.md`
+- **修改范围**：`design/ui/UI_COMPONENTS.md`、`design/ui/UI_CARDS.md`、`design/ui/UI_TABLES.md`、`design/ui/UI_NAV.md`、`design/ui/README.md`（补登四份）、`design/charts/PALETTE_CORE.md`（原件逐字复制 + 追加 front matter 字段与 `## 暗色适配` 指向 PALETTE_DARK）、`design/charts/PALETTE_DARK.md`（plan §2.1 配色表里 **palette-core 原色**的暗色值——每个用途一个 `### #<锚>`、方法、两个卡面的对比度、ΔE2000、Q-003 裁定记录、样张路径；界面三色不入此文件）、`design/charts/README.md`
 - **依赖**：T-03　**预计**：2 h
 - **完成标准**：
   1. 四份 UI 条目（共 45 个原锚全覆盖）与两份 charts 文件格式合规（AC-008-1）
@@ -161,7 +161,7 @@
 - **完成标准**：
   1. 全部 fixtures 通过 zod 校验；关注列表为关注的合约价格（AC-007-4，示例数据部分）
   2. `semantic: 'market'` 只出现在 `daily-brief.json`、`market-board.json`、`watchlist.json`（AC-001-5，数据来源部分）
-  3. 五种场景可经配置切换，行为符合 plan §2.7（error 下 bootstrap 成功、业务方法失败；boot-error 首次失败重试成功）（AC-007-2，单元部分）
+  3. 五种场景可经配置切换，按 plan §2.7 场景 × 方法矩阵逐格成立（`bootstrap()` 与 `getModuleCatalog()` 在 normal / empty / error / slow 下均成功且目录含七个；empty 空数据、error 业务方法报错、slow 延迟、boot-error 首次失败重试成功）（AC-007-2，单元部分）
   4. real 实现只有桩，网络调用只出现在 `src/contracts/real/`（AC-007-1）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-007-4 fixtures"`
@@ -375,10 +375,10 @@
 
 - **上下文**：plan §2.7（场景 normal / empty / error / slow，URL `?scenario=` 覆盖）、§2.1 涨跌色第 4 道防线的运行时部分。
 - **修改范围**：`frontend/e2e/scenarios.spec.ts`、`frontend/e2e/semantics.spec.ts`
-- **依赖**：T-16、T-17、T-20、T-23、T-25　**预计**：1.5 h
+- **依赖**：T-16、T-17、T-20、T-22、T-23、T-25　**预计**：1.5 h
 - **完成标准**：
   1. 四个场景各一用例：normal 正常渲染、empty 空态、error 工作台可达且模块显示错误态、slow 先见加载态后就绪（AC-007-2，端到端部分）
-  2. error 场景下模块错误态的诊断信息可见可复制（AC-004-4，端到端部分）
+  2. error 场景下模块错误态的诊断信息可见可复制；同一场景下焦点带显示错误态（AC-004-4，端到端部分）
   3. 页面上每个 `.sem-market` 元素都在登记容器内，且计算后的背景色不是涨跌色（AC-001-5，运行时部分）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-007-2"`

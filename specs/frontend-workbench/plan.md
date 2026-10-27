@@ -103,7 +103,7 @@ designUI §2.1 允许的面透明度上限 .06 不使用（最不利卡面上弱
 1. 涨跌令牌（`--fai-color-updown-*` / `T.color.updown`）只在 `src/design/updown.css` 中被引用；定义处（`tokens.json`、`generated/*`）豁免
 2. `updown.css` 中引用涨跌令牌的声明只能是 `color` 属性（不得用于 background / border / fill / box-shadow 等）
 3. `updown.css` 只许被登记的行情语义位置引入：`src/modules/market-board/`、`src/modules/watchlist/`、`src/workbench/FocusBand*`
-4. 行情语义的来源受控：fixtures 中 `semantic: 'market'` 只许出现在 `daily-brief.json`、`market-board.json`、`watchlist.json`（单元测试）；源码中硬编码 `'market'` 语义或 `sem-market` 类名只许出现在上述三处与 `Num.vue`（静态检查）；端到端断言页面上每个 `.sem-market` 元素都位于登记容器内（`[data-module-id=market-board]`、`[data-module-id=watchlist]`、`.fai-focus__seg--market`），且其计算后的 `background-color` 不等于涨跌色
+4. 行情语义的来源受控：fixtures 中 `semantic: 'market'` 只许出现在 `daily-brief.json`、`market-board.json`、`watchlist.json`（单元测试）；`sem-market` 类名与 `'market'` 字面量在 `.vue` / `.ts` 中只许出现在三个行情模块目录、`src/workbench/FocusBand*`、以及 `Num.vue` / `Kpi.vue`（`Kpi` 组合 `Num`；守卫不扫 `src/contracts/`——zod 枚举与 mock 数据必须写该字面量，其约束分别由 AC-007-4 类型测试与上一条 fixtures 单测承担）；端到端断言页面上每个 `.sem-market` 元素都位于登记容器内（`[data-module-id=market-board]`、`[data-module-id=watchlist]`、`.fai-focus__seg--market`），且其计算后的 `background-color` 不等于涨跌色
 
 **暗色配色表（Q-003，2026-10-27 Walter 确认：A 等亮；数值不变）**——方法：彩色在 OKLCH 空间保持色相、把明度抬到下限（序列 0.70、界面语义 0.64–0.70）、按需压或提色度；**有意退后的中性色反向处理**（白底上"浅 = 安静"，黑底上浅色反而最醒目，故改暗 / 降透明度）；D-011 已定的三个值直接采用。
 
@@ -125,9 +125,9 @@ designUI §2.1 允许的面透明度上限 .06 不使用（最不利卡面上弱
 | 五年区间带 霜地 | `#C7C6B6`（α .3） | `#C7C6B6`（α .16） | 1.4 / 1.5（叠加后） | 有意退后：白底叠加后 1.2；黑底若仍用 α .3 为 2.1，成一大块灰 |
 | 均值 / 参照 绍衣 | `#A8A19C` | 不变 | 6.5 / 5.9 | 细点线，黑底上可辨不抢活 |
 | 模型线 齐紫 | `#6C216D` | `#C478C3` | 5.4 / 4.9 | |
-| 界面点睛红（朱） | `#C00000` | `#DF5C4D` | 4.6 / 4.2 | 只作非文字指示（当前项竖条、锁定环、bad 状态点与边框）；与涨色 ΔE 11 |
-| 界面琥珀（非实绩 / 待更新） | `#B8860B` | `#C69633` | 6.2 / 5.6 | |
-| 链接蓝（藏蓝） | `#0F4C81` | `#6A9DD1` | 5.8 / 5.3 | |
+| 界面点睛红（朱） | `#C00000` | `#DF5C4D` | 4.6 / 4.2 | 界面色，登记在 `design/ui/UI_COLORS.md#status_colors` 暗色适配段、不进 PALETTE_DARK；只作非文字指示（当前项竖条、锁定环、bad 状态点与边框）；与涨色 ΔE 11 |
+| 界面琥珀（非实绩 / 待更新） | `#B8860B` | `#C69633` | 6.2 / 5.6 | 界面色，登记在 UI_COLORS 暗色适配段，不进 PALETTE_DARK |
+| 链接蓝（藏蓝） | `#0F4C81` | `#6A9DD1` | 5.8 / 5.3 | 界面色，登记在 UI_COLORS 暗色适配段，不进 PALETTE_DARK |
 
 文字三级（designUI §2.1 定值）：主 `#E8E6E0` 13.4 / 12.1、次 `#9A9892` 5.8 / 5.2、弱 `#8F8D87` 5.0 / 4.6——在最不利卡面上全部 ≥ 4.5（这正是不使用 .06 玻璃面的原因：.06 叠在渐变顶端为 `#292A2C`，弱文字色只有 4.3）。
 
@@ -156,7 +156,7 @@ designUI §2.1 允许的面透明度上限 .06 不使用（最不利卡面上弱
 ### 2.3 工作台与焦点带（R-003）
 
 - `WorkbenchPage.vue` = `FocusBand`（`.glass-focus`，sticky 顶部）+ `ModuleGrid`
-- `FocusBand.vue`：读 `dataClient.getDailyBrief()` → `{brief, reason}`；结论 ≤ 3 条（serif 标题 + sans 正文首句）；数字卡按 `figure.semantic` 分入**"行情 | 指标"两段**（Q-016，D-013）：行情段（`.fai-focus__seg--market`，引入 `src/design/updown.css`，红涨绿跌）在左，指标段（`.fai-focus__seg--analysis`，红 = 负）在右，两段之间用玻璃边色竖线分隔，各带双语段标（行情 MARKET / 指标 INDICATORS）；每段张数按 §2.2 断点表截取（超出不挤占另一段）；整带可点 → `router.push('/daily/' + brief.date)`；`brief = null` → 空态（文案 = 契约 `reason`）
+- `FocusBand.vue`：读 `dataClient.getDailyBrief()` → `{brief, reason}`；错误 → 复用 `ErrorState`（含诊断，与模块壳同款，属 plan 行为，spec R-003 只要求空态）；结论 ≤ 3 条（serif 标题 + sans 正文首句）；数字卡按 `figure.semantic` 分入**"行情 | 指标"两段**（Q-016，D-013）：行情段（`.fai-focus__seg--market`，引入 `src/design/updown.css`，红涨绿跌）在左，指标段（`.fai-focus__seg--analysis`，红 = 负）在右，两段之间用玻璃边色竖线分隔，各带双语段标（行情 MARKET / 指标 INDICATORS）；每段张数按 §2.2 断点表截取（超出不挤占另一段）；整带可点 → `router.push('/daily/' + brief.date)`；`brief = null` → 空态（文案 = 契约 `reason`）
 - **焦点带固定**（AC-003-6）：不在模块注册表与模块目录中，模块库不显示、不可移除；`layoutStore` 的任何变更不触及焦点带
 
 ### 2.4 模块系统（R-004）
@@ -290,7 +290,8 @@ interface AgentClient {
 
 **mock**（`mock/index.ts`）：
 
-- 数据场景：`normal`；`empty`（列表为空、`brief = null` 带原因）；`error`（**`bootstrap()` 成功**，其后各业务方法返回固定错误，模块错误态可达）；`slow`（每次调用延迟 1500 ms）；`boot-error`（`bootstrap()` 首次失败、重试成功，供 AC-002-7）。选择：URL `?scenario=` > `VITE_MOCK_SCENARIO` > `normal`
+- 数据场景：`normal`；`empty`；`error`；`slow`（每次调用延迟 1500 ms）；`boot-error`（`bootstrap()` 首次失败、重试成功，供 AC-002-7）。选择：URL `?scenario=` > `VITE_MOCK_SCENARIO` > `normal`
+- **场景 × 方法矩阵**（写入 `mock/index.ts` 头注与 CONTRACT.md；T-12 用例逐格断言）：`bootstrap()` 与 `getModuleCatalog()` 在 `normal` / `empty` / `error` / `slow` 下**全部成功**（目录始终返回七个模块，否则工作台无模块、错误态与空态都不可达）；`empty` 下各模块数据方法返回空集、`getDailyBrief` 返回 `brief = null` 带原因；`error` 下各模块数据方法返回固定错误（模块壳错误态可达）、`getDailyBrief` 返回错误；`slow` 下两者均延迟 1500 ms 后成功；只有 `boot-error` 让 `bootstrap()` 首次失败
 - 测试注入：mock 模式下若存在 `window.__FAI_MOCK__`（Playwright `addInitScript` 写入），按其覆盖对应 fixtures 或选择回放脚本（如研究列表追加一项，AC-002-3）
 - fixtures 中 `semantic: 'market'` 只许出现在 `daily-brief.json`、`market-board.json`、`watchlist.json`（单元测试，§2.1 防线 4）
 - `real/index.ts`：所有方法 `throw new NotImplementedError('api feature')`；网络调用只许出现在 `src/contracts/real/`（守卫 `network-scope`，§2.8）
@@ -330,7 +331,7 @@ interface AgentClient {
 | design/ui/UI_NAV.md | UI/Navigation/UI_NAV.md（8） | groups（固定序思想）、active_item、fresh_dot（属性锚法） | nav_table（注册表生成机制）、lpg_nav、exempt（FTEngine 多台站点）、nav_order、usforecast_realdem（FTEngine 待裁定条目） |
 | design/ui/UI_DARK_ADDITIONS.md | 本 feature 新建 | glass_tiers、worst_surface、accent_non_text、type_additions、radius_additions、z_layers、window（每锚含 规定 / 为什么 / 落点） | — |
 | design/charts/PALETTE_CORE.md | Graphs/Palette/PALETTE_CORE.md | 整份原件（`palette-core` / `palette-retired` 块是守卫数据源） | — |
-| design/charts/PALETTE_DARK.md | 本 feature 新建 | §2.1 配色表（每个用途一个 `### #<锚>`）+ 方法 + 两个卡面的对比度 + ΔE2000 + Q-003 裁定记录（A 采用、B 未采用及取舍）+ 样张路径 | — |
+| design/charts/PALETTE_DARK.md | 本 feature 新建 | **只收 palette-core 原色**的暗色值（每个用途一个 `### #<锚>`）+ 方法 + 两个卡面的对比度 + ΔE2000 + Q-003 裁定记录（A 采用、B 未采用及取舍）+ 样张路径 | 界面三色（点睛红 / 琥珀 / 链接蓝）不进本文件——它们不是图表数据色（`UI_COLORS#ui_vs_chart_colors`），按 `values_once` 只在 UI_COLORS 的暗色适配段登记（样张页仍展示它们，仅作对照） |
 
 每份移植文件：保留原 front matter（原 `id` 不改）并追加 `source`（原路径）、`source_verified`（原 `verified`）、`migrated`（日期）、`adaptation: dark-glass`、`source_anchors`（原文全部锚）、`adopted`、`not_adopted: [{anchor, reason}]`；采用的锚保留"规定 / 为什么 / 落点"结构，不采用的锚保留标题与一行原因；正文末尾 `## 暗色适配` 段逐锚写"原值 → 新值 / 不变 / 不采用 + 为什么"。`design/ui/README.md`、`design/charts/README.md` 作索引（文件、来源、移植日期、采用范围）。`docs/designUI.md` §2.3 / §6 / §8 的"随 design/ 移植"字样改为指向具体条目（T-30）。
 
