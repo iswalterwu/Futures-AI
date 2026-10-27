@@ -17,7 +17,7 @@ from data import creds
 from data.adapters.local_file.local_file_adapter import guess_mapping, parse_with_mapping
 from data.catalog.descriptor import derive_id
 from data.fetch.on_demand import FetchError, validate_rows
-from data.lock import LockBusy, ensure_layout, read_endpoint, write_endpoint
+from data.lock import LockBusy, ensure_layout, lock_held, read_endpoint, write_endpoint
 from data.store.duck import utcnow
 from data.service import Service
 
@@ -40,7 +40,7 @@ def _internal_get(root: Path, path: str, params: dict):
 
 
 def _lock_held(root: Path) -> bool:
-    return (root / "data" / ".lock").exists()
+    return lock_held(root / "data")  # R9-02：陈旧锁回收，真实持锁才路由
 
 
 def _import_wizard(svc: Service, root: Path, fpath: Path) -> int:

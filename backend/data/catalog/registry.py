@@ -108,6 +108,13 @@ class Registry:
             # R8-02：该目录本轮已被其他合法清单占用 → 归属已变，不原地标记
             if existing_id and str(Path(e["path"]).parent) in goods_dirs:
                 existing_id = None
+            # R9-01：候选源已 disabled（目录曾被复用）→ 不原地标记，归属本轮实际源
+            if existing_id:
+                st = self.cat.con.execute(
+                    "SELECT status FROM sources WHERE id=?", [existing_id]
+                ).fetchone()
+                if st and st[0] == "disabled":
+                    existing_id = None
             if existing_id:
                 self.cat.con.execute(
                     "UPDATE sources SET status='error' WHERE id=?", [existing_id]

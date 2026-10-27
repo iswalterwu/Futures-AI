@@ -78,6 +78,17 @@ def _stale(lock_path: Path) -> bool:
         return False  # 不确定 → 保守视为有效锁
 
 
+def lock_held(data_dir: Path) -> bool:
+    """锁是否真实被持有（存在且进程存活）；陈旧锁自动回收。"""
+    lock_path = data_dir / LOCK_FILENAME
+    if not lock_path.exists():
+        return False
+    if _stale(lock_path):
+        lock_path.unlink(missing_ok=True)
+        return False
+    return True
+
+
 def release_lock(f) -> None:
     lock_path = getattr(f, "_lock_path", f.name)
     try:
