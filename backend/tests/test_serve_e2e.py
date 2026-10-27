@@ -4,11 +4,13 @@
 """
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import socket
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -51,7 +53,7 @@ def _listening(port: int) -> bool:
     return True
 
 
-def _mcp_post(port, body, bearer=None, session=None):
+def _mcp_post(port, body, bearer=None, session=None, timeout=15):
     hdr = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream"}
     if bearer:
         hdr["Authorization"] = f"Bearer {bearer}"
@@ -61,7 +63,7 @@ def _mcp_post(port, body, bearer=None, session=None):
         f"http://127.0.0.1:{port}/mcp", data=json.dumps(body).encode(), headers=hdr, method="POST"
     )
     try:
-        with urllib.request.urlopen(req, timeout=15) as r:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
             return r.status, r.headers.get("mcp-session-id"), r.read().decode("utf-8", "replace")
     except urllib.error.HTTPError as e:
         return e.code, None, e.read().decode("utf-8", "replace")
@@ -106,15 +108,52 @@ out.write_text(json.dumps(res), encoding="utf-8")
 '''
 
 
-@pytest.fixture()
-def serve_proc(tmp_path):
+def _tool_result(body: str) -> dict:
+    """tools/call 响应（SSE 或 JSON）→ 工具返回的 dict。"""
+    text = body.strip()
+    if not text.startswith("{"):
+        text = next(line[len("data:"):].strip() for line in text.splitlines() if line.startswith("data:"))
+    return json.loads(json.loads(text)["result"]["content"][0]["text"])
+
+
+# 引导脚本：在 serve 子进程内把主力日线上游换成“首次调用停在网络等待”的桩，再进入真实 CLI
+BOOT_SLOW_UPSTREAM = r'''
+import sys, time
+from pathlib import Path
+
+import pandas as pd
+
+from data.adapters.akshare import akshare_adapter as m
+
+flags = Path(sys.argv[1])
+
+
+def slow(symbol):
+    release = flags / "release"
+    if not release.exists():
+        (flags / "entered").write_text("1", encoding="utf-8")
+        while not release.exists():
+            time.sleep(0.05)
+    return pd.DataFrame({"日期": ["2026-10-01"], "收盘价": [1.0]})
+
+
+m._get_main = slow
+from data import cli
+
+sys.exit(cli.main(sys.argv[2:]))
+'''
+
+
+@contextlib.contextmanager
+def _spawn_serve(tmp_path, launcher):
+    """启动真实 serve 子进程并等到端口就绪；launcher = CLI 参数之前的启动命令。"""
     root = tmp_path / "root"
     port = _free_port()
     log_path = tmp_path / "serve.log"
     env = dict(os.environ, PYTHONIOENCODING="utf-8", PYTHONPATH=str(BACKEND))
     with open(log_path, "w", encoding="utf-8") as log:
         proc = subprocess.Popen(
-            [sys.executable, "-m", "data.cli", "--root", str(root), "serve", "--port", str(port)],
+            [*launcher, "--root", str(root), "serve", "--port", str(port)],
             cwd=str(BACKEND), env=env, stdout=log, stderr=subprocess.STDOUT,
         )
         try:
@@ -133,6 +172,12 @@ def serve_proc(tmp_path):
             if proc.poll() is None:
                 proc.kill()
                 proc.wait(15)
+
+
+@pytest.fixture()
+def serve_proc(tmp_path):
+    with _spawn_serve(tmp_path, [sys.executable, "-m", "data.cli"]) as handle:
+        yield handle
 
 
 class TestServeE2E:
@@ -198,3 +243,71 @@ class TestServeE2E:
         assert json.loads(out.read_text(encoding="utf-8")) == {
             "ready": True, "rc": 0, "lock": False, "endpoint": False,
         }
+
+    def test_queued_fetches_do_not_block_reads(self, tmp_path, capsys):
+        """AC-004-6 / AC-008-1：真实 serve 中多个 fetch=true 排队（首个停在上游等待）时，
+        内部只读端点、MCP 只读工具与 CLI 只读命令照常响应；放行后全部取数成功。"""
+        boot = tmp_path / "boot.py"
+        boot.write_text(BOOT_SLOW_UPSTREAM, encoding="utf-8")
+        flags = tmp_path / "flags"
+        flags.mkdir()
+        release = flags / "release"
+        with _spawn_serve(tmp_path, [sys.executable, str(boot), str(flags)]) as (root, port, proc):
+            try:
+                token = read_endpoint(root / "data")["token"]
+                status, session, body = _mcp_post(port, INIT, token)
+                assert status == 200 and session, body
+                _mcp_post(port, {"jsonrpc": "2.0", "method": "notifications/initialized"}, token, session)
+
+                results: dict = {}
+
+                def call_fetch(i):
+                    msg = {"jsonrpc": "2.0", "id": 100 + i, "method": "tools/call",
+                           "params": {"name": "fetch_series",
+                                      "arguments": {"series_id": SC0, "range": {}, "fetch": True}}}
+                    results[i] = _mcp_post(port, msg, token, session, timeout=120)
+
+                workers = [threading.Thread(target=call_fetch, args=(i,), daemon=True) for i in range(3)]
+                for w in workers:
+                    w.start()
+                deadline = time.monotonic() + 60
+                while not (flags / "entered").exists():
+                    assert time.monotonic() < deadline, "首个取数未进入上游等待"
+                    time.sleep(0.05)
+                time.sleep(0.5)  # 其余取数进入排队
+
+                t0 = time.monotonic()
+                req = urllib.request.Request(
+                    f"http://127.0.0.1:{port}/internal/sources", headers={"Authorization": f"Bearer {token}"}
+                )
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    assert r.status == 200
+                status, _, body = _mcp_post(
+                    port,
+                    {"jsonrpc": "2.0", "id": 200, "method": "tools/call",
+                     "params": {"name": "list_sources", "arguments": {}}},
+                    token, session, timeout=10,
+                )
+                assert status == 200 and _tool_result(body)["sources"]
+                assert cli.main(["--root", str(root), "list", "sources"]) == 0  # CLI 只读经 HTTP 路由
+                assert json.loads(capsys.readouterr().out)["sources"]
+                assert time.monotonic() - t0 < 10
+                assert all(w.is_alive() for w in workers)  # 取数仍在等待/排队
+
+                release.write_text("1", encoding="utf-8")
+                for w in workers:
+                    w.join(120)
+                assert sorted(results) == [0, 1, 2]
+                for status, _, body in results.values():
+                    assert status == 200
+                    out = _tool_result(body)
+                    assert "error" not in out and out["meta"]["count"] == 1
+                req = urllib.request.Request(
+                    f"http://127.0.0.1:{port}/internal/provenance?series_id={SC0}",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    rows = json.loads(r.read().decode("utf-8"))
+                assert len(rows) == 3 and len({row["ingest_run"] for row in rows}) == 3  # 三个批次各一行
+            finally:
+                release.write_text("1", encoding="utf-8")

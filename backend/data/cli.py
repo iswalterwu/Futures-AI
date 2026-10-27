@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import re
 import sqlite3
@@ -331,7 +332,24 @@ def _serve(root: Path, port: int) -> int:
     return 0
 
 
+def _sdk_output_to_stderr():
+    """取数期间上游 SDK 的运行期打印改道 stderr：CLI 的 stdout 只输出 JSON（plan §2.2）。
+
+    替换的是全局 sys.stdout，上游调用所在的工作线程同样生效。
+    """
+    return contextlib.redirect_stdout(sys.stderr)
+
+
 def main(argv=None) -> int:
+    args = _parser().parse_args(argv)  # 用法错误由 argparse 报用法（SystemExit）
+    try:
+        return _dispatch(args)
+    except Exception as e:  # 最外层统一出口：未分类异常 → 结构化 internal（plan §2.2）
+        _json_out(_err_dict(e))
+        return 1
+
+
+def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="futureai-data")
     p.add_argument("--root", default=str(DEFAULT_ROOT))
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -380,8 +398,10 @@ def main(argv=None) -> int:
     pr = sub.add_parser("provenance"); pr.add_argument("series_id")
 
     d = sub.add_parser("diff"); d.add_argument("run_a", type=int); d.add_argument("run_b", type=int)
+    return p
 
-    args = p.parse_args(argv)
+
+def _dispatch(args) -> int:
     root = Path(args.root)
     ensure_layout(root)
 
@@ -409,14 +429,15 @@ def main(argv=None) -> int:
 
     if is_readonly:
         if _lock_held(root):
+            route_err = None
             if read_endpoint(root / "data"):  # serve 持锁 → 内部只读通道
                 try:
                     payload = _route_readonly(root, args)
                 except FetchError as e:
                     _json_out(e.to_dict())
                     return 1
-                except OSError:
-                    payload = None  # 端点不可达（残留端点文件）→ 按非 serve 写进程处理
+                except OSError as e:
+                    payload, route_err = None, e  # 端点不可达/无响应 → 等写锁释放后本地只读
                 except Exception as e:
                     print(f"错误：内部路由失败: {e}", file=sys.stderr)
                     return 1
@@ -425,10 +446,11 @@ def main(argv=None) -> int:
                     return 0
             # 非 serve 写命令持锁：DuckDB 单写者期间不可读 → 等其结束后本地只读
             if not _wait_lock_release(root, READ_WAIT_S):
-                print(
-                    "错误：写进程运行中且未提供只读通道（非 serve 写命令执行中），请稍后重试",
-                    file=sys.stderr,
-                )
+                if route_err is not None:
+                    msg = f"错误：写进程运行中，只读通道无响应（{route_err}），请稍后重试"
+                else:
+                    msg = "错误：写进程运行中且未提供只读通道（非 serve 写命令执行中），请稍后重试"
+                print(msg, file=sys.stderr)
                 return 1
         try:
             svc = Service(root, readonly=True)
@@ -461,14 +483,17 @@ def main(argv=None) -> int:
     try:
         svc.init()
         if args.cmd == "fetch":
-            res = svc.fetch(args.series_id, args.start, args.end, do_fetch=True, source=args.source)
+            with _sdk_output_to_stderr():
+                res = svc.fetch(args.series_id, args.start, args.end, do_fetch=True, source=args.source)
             _json_out({"series_id": res["series_id"], "count": res["meta"]["count"]})
         elif args.cmd == "jobs":
             if args.job_cmd == "register":
                 svc.jobs.register(args.name, args.adapter_id, args.series_id)
                 print("registered")
             else:
-                _json_out(svc.jobs.run(args.name))
+                with _sdk_output_to_stderr():
+                    res = svc.jobs.run(args.name)
+                _json_out(res)
         elif args.cmd == "import":
             return _import_wizard(svc, Path(args.file), args.series, args.source)
         elif args.cmd == "config":

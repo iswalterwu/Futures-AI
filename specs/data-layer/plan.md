@@ -67,6 +67,7 @@ provides:                    # 必填，非空数组
     tz: Asia/Shanghai        #   必填，IANA 时区
     priority: 100            #   可选，int ≥0，默认 100（越小越优先；落库到 series_sources）
     fetch: {modes: [on_demand], history_days: 3650}   # 必填：modes ⊂ {scheduled, on_demand, realtime}；history_days int ≥0
+                                                      #   （源可提供历史深度的声明，元数据；v1 不用于推导默认取数窗口，默认窗口见下文“覆盖窗口”）
     update: {lag_min: 0, revises: true}               # 必填：lag_min int ≥0（分钟）；revises bool
 ```
 
@@ -86,7 +87,7 @@ provides:                    # 必填，非空数组
 
 未登记品种或声明单位量纲不匹配（如 SC 仓单声明 kton）→ validation_error，在请求上游前拒绝（不产出错标数据）。
 
-**覆盖窗口（AC-005-2）**：批次的覆盖范围 = 适配器在建批次前解析的实际请求窗口（`Adapter.effective_range`）。价格型 = 调用方范围原样（None = 源全量历史，无截断）；仓单未给起点 = 回看 30 天（逐日抓取），库存未给起点 = 回看 365 天；未给终点 = 当日。滚动窗口下跨日的两批覆盖不同 → diff 报不可比，而非误报删除。东财库存每次只返回最近 500 个交易日：整页且最早日期晚于请求起点 → validation_error（不虚报覆盖）。
+**覆盖窗口（AC-005-2）**：批次的覆盖范围 = 适配器在建批次前解析的实际请求窗口（`Adapter.effective_range`）。价格型 = 调用方范围原样（None = 源全量历史，无截断）；仓单未给起点 = 回看 30 天（逐日抓取），库存未给起点 = 回看 365 天；未给终点 = 当日。滚动窗口下跨日的两批覆盖不同 → diff 报不可比，而非误报删除。东财库存每次只返回最近 500 个交易日：整页且最早日期晚于请求起点 → validation_error（不虚报覆盖）。有效窗口倒置（补全后起点晚于终点，如只给未来起点）→ validation_error，不建批次。仓单抓取依赖 akshare 内置静态交易日历（受测版本 1.18.63 止于 2026-12-31，日历外的日期被 SDK 当作非交易日跳过）：请求终点晚于日历末日 → validation_error（提示升级 akshare 并同步受测版本约束），不静默以 0 行成功。
 
 **R-007 覆盖对照（内置）**：SC/FU/LU/BU/PG 五品种均内置主力连续日线与交易所仓单日报；FU/LU/BU/PG 另内置库存日报（东财库存数据不含 SC；SC 的交易所库存口径即能源中心仓单日报）。指定合约日线由用户清单绑定 akshare 声明（合约会到期，不宜内置）。
 
@@ -118,7 +119,7 @@ provides:                    # 必填，非空数组
 | list_sources | 无 | `{sources:[{adapter_id, name, enabled, status, reason}]}` |
 | reconcile | `series_id` | `{report:{series_id, checks:[...], warnings:[string]}}` |
 
-**内部只读通道（AC-004-6 判定依据）**：serve 的同一 HTTP 端点提供内部只读子端点 `/internal/sources`、`/internal/search`、`/internal/jobs`、`/internal/reconcile`、`/internal/provenance`、`/internal/diff`（同令牌）；CLI 只读命令（list/jobs list/reconcile/provenance/diff）在写锁被占时经此路由查询。失败返回 HTTP 400 + `{error:{code, message, retryable}}`，CLI 原样输出 message（含 diff 不可比原因）。写锁由非 serve 写命令（fetch/import/config…）持有时无只读通道（DuckDB 单写者固有限制）：只读命令等待其释放写锁（≤ 30s）后本地读取，超时返回“写进程运行中，请稍后重试”；残留端点文件不可达时按同一规则处理。CLI 不抛裸异常：库文件损坏（“不可读（文件可能损坏）”）、目录库被锁定（“正被其他连接锁定，请稍后重试”）与其他意外错误均输出结构化 internal 错误，且不留写锁（只读/写/serve 三路一致）。
+**内部只读通道（AC-004-6 判定依据）**：serve 的同一 HTTP 端点提供内部只读子端点 `/internal/sources`、`/internal/search`、`/internal/jobs`、`/internal/reconcile`、`/internal/provenance`、`/internal/diff`（同令牌）；CLI 只读命令（list/jobs list/reconcile/provenance/diff）在写锁被占时经此路由查询。失败返回 HTTP 400 + `{error:{code, message, retryable}}`，CLI 原样输出 message（含 diff 不可比原因）。写锁由非 serve 写命令（fetch/import/config…）持有时无只读通道（DuckDB 单写者固有限制；产品形态中唯一写者是 serve，写命令仅开发/测试期使用）：只读命令等待其释放写锁（≤ 30s）后本地读取，超时返回“写进程运行中，请稍后重试”；残留端点文件不可达或 serve 只读通道无响应时同样等待，超时提示“只读通道无响应”（附原因）。CLI 输出契约：stdout 只输出结构化 JSON（取数期间上游 SDK 的运行期打印改道 stderr）；不抛裸异常——库文件损坏（“不可读（文件可能损坏）”）、目录库被锁定（“正被其他连接锁定，请稍后重试”）与其他意外错误（含数据目录不可用、服务构建失败）均经最外层统一出口输出结构化 internal 错误并返回 1，且不留写锁（参数用法错误仍由参数解析报用法）。凭证文件写入失败 = 保存失败报错（fail closed，不留半写文件）。
 
 **空数据目录首启（只读命令，AC-004-6/AC-006-4）**：库文件尚不存在（或未初始化）时，只读命令使用内存目录（按当前清单编译）+ 空观测库照常返回，不在磁盘上建库、不取写锁；reconcile 对不存在的序列返回 warnings“无可用序列”。
 
@@ -223,7 +224,7 @@ creds/                   # DPAPI 加密凭证
 
 | 风险 | 对策 |
 |---|---|
-| akshare 接口漂移/限流/挂起 | 适配器隔离 + 受测版本约束（`backend/constraints.txt`；pyproject 仅声明兼容下界，升级须回归）+ 失败不回退（AC-004-3）；离线测试用固定响应样本 mock（库存在 SDK 的 HTTP 边界注入，覆盖符号映射与列解析）；SDK 内部请求无超时 → 适配器硬超时（守护线程，超时放弃） |
+| akshare 接口漂移/限流/挂起 | 适配器隔离 + 受测版本约束（`backend/constraints.txt`；pyproject 仅声明兼容下界，升级须回归）+ 失败不回退（AC-004-3）；离线测试用固定响应样本 mock（库存在 SDK 的 HTTP 边界注入，覆盖符号映射与列解析）；SDK 内部请求无超时 → 适配器硬超时（守护线程，超时放弃）；SDK 静态交易日历到期 → 仓单取数显式报错（须在日历末日前升级 akshare 并回归） |
 | DuckDB 单写者限制 | 写锁（plan §3.3 .lock）：service 持写锁，CLI 写操作遇锁报错；CLI 只读命令经 localhost HTTP 路由（端点发现 = data/mcp_endpoint.json）；MCP 进程内 + 连接互斥串行化（Q-019/Q-029） |
 | Windows 编码/时区坑 | `PYTHONIOENCODING=utf-8`；系统时间（fetched_at/asof/批次时间）= naive UTC；观测 ts = 源声明时区下的时间标签（naive）+ 清单 tz 元数据（spec 非目标：v1 存原始时间戳）；带时区的查询范围/导入时间先换算到声明时区 |
 | pywin32（DPAPI）不可用 | fail closed：拒绝保存/读取并报错（AC-009-1），无降级路径 |

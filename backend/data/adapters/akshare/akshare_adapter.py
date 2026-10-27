@@ -57,16 +57,31 @@ def _get_contract(symbol: str):
     return ak.futures_zh_daily_sina(symbol=symbol)
 
 
+def _receipt_calendar_last() -> date:
+    """可注入：akshare 仓单抓取所用静态交易日历的末日（日历外的日期被 SDK 当作非交易日跳过）。"""
+    from akshare.futures import receipt as ak_receipt
+
+    last = max(ak_receipt.calendar)
+    return date(int(last[:4]), int(last[4:6]), int(last[6:8]))
+
+
 def _get_receipt(asset: str, start=None, end=None):
     """可注入：交易所仓单日报。
 
     真实 SDK（akshare get_receipt）返回 var/receipt/receipt_chg/date：
-    取 date 列 + receipt 列（F-03）。
+    取 date 列 + receipt 列（F-03）。请求终点超出 SDK 交易日历 → validation_error（不静默 0 行）。
     """
     import akshare as ak
 
     end_d = end.date() if end else date.today()
     start_d = start.date() if start else end_d - timedelta(days=RECEIPT_DEFAULT_DAYS)
+    last = _receipt_calendar_last()
+    if end_d > last:
+        raise FetchError(
+            "validation_error",
+            f"请求终点 {end_d:%Y-%m-%d} 超出 akshare 交易日历覆盖（止于 {last:%Y-%m-%d}），"
+            "仓单无法可靠抓取；请升级 akshare 并同步更新 backend/constraints.txt 后重试",
+        )
     df = ak.get_receipt(
         start_date=start_d.strftime("%Y%m%d"),
         end_date=end_d.strftime("%Y%m%d"),

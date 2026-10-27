@@ -85,6 +85,12 @@ def fetch_series(
         # 批次覆盖 = 适配器实际请求窗口（滚动/截断窗口的源在此解析；diff 可比条件依赖它）
         resolve = getattr(adapter, "effective_range", None)
         eff_start, eff_end = resolve(provide, start, end) if resolve else (start, end)
+        if eff_start is not None and eff_end is not None and eff_start > eff_end:
+            raise FetchError(
+                "validation_error",
+                f"有效取数窗口倒置：起点 {eff_start:%Y-%m-%d} 晚于终点 {eff_end:%Y-%m-%d}"
+                "（未给终点时终点 = 当日）",
+            )
         rid = store.new_run(
             source, series_id, eff_start, eff_end, decl["unit"], decl["freq"], decl["tz"]
         )

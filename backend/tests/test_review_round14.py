@@ -300,8 +300,9 @@ class TestRound14Robustness:
             )
             assert (out["error"]["code"], out["error"]["retryable"]) == ("unauthorized", False)
             assert not called and svc.store.count_obs(EIA_DIESEL) == 0
-            statuses = {r[0] for r in svc.store.con.execute("SELECT status FROM ingest_runs").fetchall()}
-            assert statuses == {"failed"}
+            statuses = [r[0] for r in svc.store.con.execute(
+                "SELECT status FROM ingest_runs ORDER BY ingest_run").fetchall()]
+            assert statuses == ["failed", "failed"]  # service、MCP 两次各建一个批次并标 failed
         finally:
             svc.close()
 

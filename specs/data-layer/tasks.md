@@ -192,3 +192,18 @@
 | T-57 | CLI 不抛裸异常（写路径意外错误、DuckDB/目录库损坏，覆盖只读/写/serve 三路且不留锁）；锁定与损坏分开提示；只读命令等待非 serve 写进程结束（≤30s，残留端点不可达同规则）；EIA 其余 4xx → validation_error | A/B P3 | AC-008-3、AC-004-6 | `pytest R14 -k CliRound14 -q` + `pytest tests/test_review_round13.py -k http_status -q` | ✅ |
 | T-58 | 交接准确性：早期任务验证命令改为实际测试位置（T-03/04/06/07/12/13/14/17 逐条可执行）；受测版本约束 `backend/constraints.txt`，plan/review 措辞由“版本锁定”改为“受测版本约束” | B P3 | 工作流（AGENTS.md §2 Tasks/Handoff） | 逐条执行 T-01~T-20 验证命令 | ✅ |
 | T-59 | 测试与运行日期解耦：滚动窗口相关测试冻结“今天”（FrozenDate），避免日期推移后误失败 | Converge 自查 | AC-007-1 | `pytest tests/test_review_round12.py -k "builtin_inventory or builtin_receipt" -q` | ✅ |
+
+## 追加任务（第十五轮双审 P3 收口，Converge 再开）
+
+> 来源：第十五轮复审 A、B 均通过（无 P1/P2）。为免交接后另走一轮完整流程，收口两份报告中低成本且有实质价值的 P3 与测试缺口；plan §2.1/§2.2/§6 已先行修订。
+> R15 = `tests/test_review_round15.py`。
+
+| # | 任务 | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-60 | 有效窗口倒置（补全后起点晚于终点）→ validation_error，不建批次 | R15-A P3-1、R15-B-02 | AC-004-1、AC-005-2 | `pytest R15 -k InvertedWindow -q` | ✅ |
+| T-61 | 仓单交易日历覆盖检查：请求终点晚于 akshare 静态日历末日 → validation_error（提示升级），不静默 0 行成功；review.md 风险登记日历到期日 | R15-A P3-3 | AC-007-1、AC-004-3 | `pytest R15 -k ReceiptCalendar -q` | ✅ |
+| T-62 | CLI stdout 只输出 JSON：fetch / jobs run 期间上游 SDK 打印改道 stderr | R15-A P3-2 | AC-008-3（CLI 契约）、AC-004-2 | `pytest R15 -k StdoutPurity -q` | ✅ |
+| T-63 | CLI 最外层统一错误出口（数据目录不可用、服务构建失败等未分类异常 → 结构化 internal，返回 1，不留锁）；凭证文件写入失败 → 保存失败报错且不留半写文件；只读通道无响应时的提示措辞 | R15-B-01、R15-A P3-5 | AC-008-3、AC-009-1、AC-004-6 | `pytest R15 -k CliExit -q` | ✅ |
+| T-64 | 测试缺口：真实 serve 子进程下排队取数时只读（内部端点/MCP/CLI）照常响应；仓单经真实 `get_receipt` → 大商所 HTTP 边界（PG 手×20 吨）；显式窗口首端点真删除仍计删除；DPAPI 解密失败 service/MCP 各一 failed 批次 | R15-A/B 测试缺口 | AC-004-6、AC-008-1、AC-007-1、AC-005-2、AC-004-3、AC-007-2 | `pytest R15 -k Gaps15 -q` + `pytest tests/test_serve_e2e.py -q` | ✅ |
+| T-65 | 文档：manifest `history_days` = 源历史深度声明（元数据），v1 不用于推导默认窗口 | R15-A P3-4 | AC-001-2（字段契约） | 阅读 plan §2.1 | ✅ |
+| T-66 | Checklist 复选框留痕：由独立审核会话依据 A/B 逐项复核结果按共识勾选（实施者不勾选） | R15-B-03 | AGENTS.md §2 第 5 步 | 阅读 checklist.md | ⬜ |

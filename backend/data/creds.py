@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import os
 import re
 from pathlib import Path
 
@@ -42,8 +43,18 @@ def put(creds_dir: Path, name: str, secret: str) -> Path:
         raise
     except Exception as e:
         raise CredsError(f"凭证加密失败，拒绝保存: {e}") from e
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_bytes(base64.b64encode(blob))
+    # 先写临时文件再原子替换：写入失败不留半写文件、不破坏既有凭证
+    tmp = out.with_name(out.name + ".tmp")
+    try:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        tmp.write_bytes(base64.b64encode(blob))
+        os.replace(tmp, out)
+    except OSError as e:
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise CredsError(f"凭证写入失败，拒绝保存: {e}") from e
     return out
 
 
