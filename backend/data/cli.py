@@ -150,16 +150,16 @@ def main(argv=None) -> int:
             _json_out(svc.reconcile(args.series_id))
         elif args.cmd == "provenance":
             svc.init()
-            try:
-                _json_out(svc.provenance(args.series_id))
-            except LockBusy:
+            if (root / "data" / ".lock").exists():
                 _json_out(_internal_get(root, "/internal/provenance", {"series_id": args.series_id}))
+            else:
+                _json_out(svc.provenance(args.series_id))
         elif args.cmd == "diff":
             svc.init()
-            try:
-                _json_out(svc.diff(args.run_a, args.run_b))
-            except LockBusy:
+            if (root / "data" / ".lock").exists():
                 _json_out(_internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b}))
+            else:
+                _json_out(svc.diff(args.run_a, args.run_b))
         elif args.cmd == "jobs":
             svc.init()
             if args.job_cmd == "register":

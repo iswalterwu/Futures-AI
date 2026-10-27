@@ -82,6 +82,7 @@ class Registry:
         # ---- series 编译（增量，不清空；同描述符归并 AC-002-2） ----
         reg_counter = [0]
         provided_series: set[str] = set()
+        provides_map: dict[tuple[str, str], object] = {}
         for sid, (m, _dir) in goods.items():
             for p in m.provides:
                 d = normalize(p.descriptor.model_dump())
@@ -99,6 +100,7 @@ class Registry:
                 self.cat.set_series_source(
                     series_id, sid, p.priority, reg_counter[0], p.unit, p.freq, p.tz
                 )
+                provides_map[(sid, series_id)] = p
                 for sym in p.symbols:
                     self.cat.write_alias(sym, sid, series_id, "manifest")
 
@@ -132,7 +134,12 @@ class Registry:
                 )
 
         self.cat.con.commit()
-        return {"sources": seen_ids, "series": sorted(provided_series), "errors": errors}
+        return {
+            "sources": seen_ids,
+            "series": sorted(provided_series),
+            "errors": errors,
+            "provides": provides_map,
+        }
 
     @staticmethod
     def _desc_json(d: dict) -> str:

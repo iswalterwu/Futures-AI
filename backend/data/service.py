@@ -31,7 +31,8 @@ class Service:
         self._lock_f = None
 
     def init(self) -> "Service":
-        self.reg.rebuild()
+        res = self.reg.rebuild()
+        self._provides = res["provides"]
         self.store.stale_running()
         return self
 
@@ -79,7 +80,15 @@ class Service:
 
     def _run_job(self, adapter_id, series_id):
         return fetch_series(
-            self.cat, self.store, self.adapters, series_id, None, None, True, source=adapter_id
+            self.cat,
+            self.store,
+            self.adapters,
+            series_id,
+            None,
+            None,
+            True,
+            source=adapter_id,
+            get_provide=lambda cat, sid, src: self._provides.get((src, sid)),
         )
 
     # ---- 单写者 ----
