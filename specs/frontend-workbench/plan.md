@@ -31,6 +31,7 @@
   │   │   ├── tokens.json       # 令牌唯一来源（§2.1）
   │   │   ├── tokens.schema.json
   │   │   ├── glass.css         # 三层玻璃的唯一定义处
+  │   │   ├── updown.css        # market 语义（红涨绿跌）颜色规则的唯一定义处
   │   │   ├── base.css          # 背景渐变、字体、数值规则、reset
   │   │   ├── generated/        # tokens.css / tokens.ts / echarts-theme.json（生成物，入库，守卫对拍）
   │   │   └── theme.ts          # registerTheme('fai-dark') + 样例图 option
@@ -79,9 +80,9 @@
 
 **三层玻璃**：`src/design/glass.css` 只定义 `.glass-focus`、`.glass-module`、`.glass-drawer` 三个类（各自引面 / 边 / 模糊令牌）；全树 `backdrop-filter` 只许出现在这个文件、且 ≤ 3 条规则（守卫 `glass-tiers`，AC-001-3）。
 
-**字体三族与数值**：`base.css` 定义 `.t-serif / .t-sans / .t-mono`；数值统一类 `.num`（mono + `font-variant-numeric: tabular-nums` + 右对齐）。`shared/format.ts`：`fmtValue(v, {decimals, unit})`、`fmtDelta(v, {decimals, pct})`——先按显示位四舍五入再判零；空值 → `–`（U+2013）；差值正号；零中性（无号、无色、`-0` 归 0）；返回 `{text, tone: 'up'|'down'|'neutral'}`，组件按 `semantic` 选色（market → updown 令牌；analysis → chart.neg = 红、chart.pos = 青雀头黛亮化）。共享组件 `Num` 只输出语义类（`sem-market` / `sem-analysis` + `is-up` / `is-down` / `is-neutral`）；market 语义类的颜色规则只写在 `src/modules/market-board/updown.css`（焦点带引入同一文件），analysis 语义类的颜色规则在共享样式中引 chart.pos / chart.neg。
+**字体三族与数值**：`base.css` 定义 `.t-serif / .t-sans / .t-mono`；数值统一类 `.num`（mono + `font-variant-numeric: tabular-nums` + 右对齐）。`shared/format.ts`：`fmtValue(v, {decimals, unit})`、`fmtDelta(v, {decimals, pct})`——先按显示位四舍五入再判零；空值 → `–`（U+2013）；差值正号；零中性（无号、无色、`-0` 归 0）；返回 `{text, tone: 'up'|'down'|'neutral'}`，组件按 `semantic` 选色（market → updown 令牌；analysis → chart.neg = 红、chart.pos = 青雀头黛亮化）。共享组件 `Num` 只输出语义类（`sem-market` / `sem-analysis` + `is-up` / `is-down` / `is-neutral`）；market 语义类的颜色规则只写在 `src/design/updown.css`（行情价格、关注列表、焦点带引入），analysis 语义类的颜色规则在共享样式中引 chart.pos / chart.neg。
 
-**涨跌色作用域**：`--fai-color-updown-*` 只许在 `src/modules/market-board/` 与焦点带 `src/workbench/FocusBand*` 中引用（后者仅用于契约声明为 market 语义的数字，见 §2.3；守卫 `updown-scope`，AC-001-5）；其他模块（含关注列表）的方向色一律走 analysis 语义。
+**涨跌色作用域**（spec R-001，Q-015 修订）：涨跌令牌（`--fai-color-updown-*` / `T.color.updown`）只在 `src/design/updown.css` 中引用；`updown.css` 只许被登记的行情语义位置引入——`src/modules/market-board/`、`src/modules/watchlist/`、`src/workbench/FocusBand*`（焦点带只用于契约声明为 market 语义的数字，见 §2.3）；守卫 `updown-scope`（AC-001-5）；其他位置的方向色一律走 analysis 语义。
 
 **暗色配色表（Q-003，2026-10-27 Walter 确认：A 等亮）**——方法：彩色在 OKLCH 空间保持色相、把明度抬到下限（序列 0.70、界面语义 0.64–0.70）、按需压或提色度；**有意退后的中性色反向处理**（白底上“浅 = 安静”，黑底上浅色反而最醒目，故改暗 / 降透明度，使其在黑底上同样退后）；D-011 已定的三个值直接采用。对比度按 WCAG 相对亮度、对图实际所在的卡面 `#1D1E20`（玻璃 .045 叠在 `#121315` 上）计。**阈值**：线条与色块（非文字图形，WCAG 1.4.11）≥ 3 : 1；会作文字用的颜色（涨、跌、链接、点睛红、琥珀）≥ 4.5 : 1；有意退后的中性色（其他、区间带）不设下限（白底版同样低于 3 : 1）。对照样张：`specs/frontend-workbench/assets/palette-dark-candidates.html`（白底原色 / 黑底候选并排，可切换单看；同一份数据画年份线、季节图常用形态、类目堆叠、正负柱、十大区）。
 
@@ -109,7 +110,7 @@
 
 序列七色两两最小 ΔE（OKLab×100）= 8.5（沙饧 / 缥碧），低于 FTEngine 亮色版的 21.5——暗底压缩了可用明度区间，v1 接受，chart-templates feature 画出真实季节图后再复核。
 
-**状态语义色**（badge / 状态点 / 灯）：ok = 吐绶蓝亮化、warn = 琥珀、bad = 点睛红、sample = 虚线边不着色、fresh = ok、stale = warn。**绿色全站只表示"跌"**（行情模块内），状态不用绿，避免与红涨绿跌互相串味。
+**状态语义色**（badge / 状态点 / 灯）：ok = 吐绶蓝亮化、warn = 琥珀、bad = 点睛红、sample = 虚线边不着色、fresh = ok、stale = warn。**绿色全站只表示"跌"**（行情语义内），状态不用绿，避免与红涨绿跌互相串味。
 
 ### 2.2 应用外壳与导航（R-002）
 
@@ -124,7 +125,7 @@
 
 - `WorkbenchPage.vue` = `FocusBand`（`.glass-focus`，sticky 顶部）+ `ModuleGrid`
 - `FocusBand.vue`：读 `dataClient.getDailyBrief()` → `DailyBrief | null`；结论 ≤ 3 条（serif 标题 + sans 正文首句）、数字卡 4–6 个（`Figure`，§2.7）；`≥ 1240` 一行六卡，否则一行四卡（breakpoint.focusWide）；整带可点 → `router.push('/daily/' + brief.date)`；`null` → 空态（原因文案来自契约 `reason`）
-- 数字卡取色：`figure.semantic === 'market'` → `.num.up/.down`（updown 令牌，焦点带属于行情语义片段，是 `market-board` 之外唯一允许引用 updown 令牌的位置——**登记为守卫 `updown-scope` 的第二个允许目录 `src/workbench/FocusBand*`**；spec R-001 的"只在行情模块"在此解释为：行情语义的数字，含焦点带内声明为 market 的数字）；`analysis` → chart.pos / chart.neg
+- 数字卡取色：`figure.semantic === 'market'` → market 语义类（引入 `src/design/updown.css`；焦点带是登记的行情语义位置之一，spec R-001 已按 Q-015 修订为"只用于行情语义的数字"）；`analysis` → chart.pos / chart.neg
 
 ### 2.4 模块系统（R-004）
 
@@ -133,7 +134,7 @@
 | id | 中文 | 英文副标 | 默认跨列 | 深度（Q-001 = B） | 形态 |
 |---|---|---|---|---|---|
 | market-board | 行情价格 | Market Board | 2 | 完整 mock | `BoardGrid`：列 = 合约，行 = 日期 + 统计行；格 `{value, state: ok/holiday/pending/missing}` → `休` / `待`（琥珀）/ `–`；涨跌字色 |
-| watchlist | 关注列表 | Watchlist | 1 | 完整 mock | `DataTable` + `Spark`（迷你折线，墨线 + 末点）；v1 mock 只含分析类序列，方向色走 analysis 语义（涨跌专色仍只在行情价格，R-004） |
+| watchlist | 关注列表 | Watchlist | 1 | 完整 mock | `DataTable` + `Spark`（迷你折线，墨线 + 末点）；内容 = 关注的合约价格（最新价 / 涨跌 / 涨跌幅），market 语义、红涨绿跌（Q-015） |
 | release-calendar | 数据发布日历 | Release Calendar | 1 | 完整 mock | 日程列表（日期 / 名称 / 来源 / 预计时间 / 新鲜度点） |
 | supply-demand | 库存/供需指标 | Supply & Demand | 1 | 壳 + 占位 | `ModuleSummary`（标题行 + 示例指标 3 条 + "内容随 domain feature 交付"） |
 | logistics-onwater | 物流在途 | Logistics | 1 | 壳 + 占位 | 同上 |
@@ -245,7 +246,7 @@ interface AgentClient {
 | tokens-sync | `generated`：重新生成 tokens.css / tokens.ts / echarts-theme.json 并逐字 diff；`media`：CSS `@media` 宽度阈值 ∈ 令牌断点（max-width 取断点 − 1） | AC-001-1 |
 | color-literals | `literals`：扫 `src/**/*.{vue,ts,css}` 的 `#hex`、`rgb(a)`、`hsl`、`oklch` 字面量，允许名单 = `tokens.json`、`generated/`；`retired`：退役色（五个 hex）不在 tokens.json、生成物与源码 | AC-001-2、AC-001-6 |
 | glass-tiers | `backdrop-filter` 只在 `glass.css` 且 ≤ 3 规则；类名只许三个 | AC-001-3 |
-| updown-scope | `--fai-color-updown-*` / `T.color.updown` 引用只在 `src/modules/market-board/`、`src/workbench/FocusBand*` | AC-001-5 |
+| updown-scope | `--fai-color-updown-*` / `T.color.updown` 只在 `src/design/updown.css` 中引用；`updown.css` 只被 `src/modules/market-board/`、`src/modules/watchlist/`、`src/workbench/FocusBand*` 引入 | AC-001-5 |
 | bare-1fr | `grid-template-columns` 含未包 `minmax()` 的 `1fr`（`.shell` 规则豁免并登记） | AC-004-6 |
 | network-scope | 网络 API 只在 `src/contracts/real/` | AC-007-1 |
 | contract-doc | zod → CONTRACT.md / schema.json 重生成 diff | AC-007-3 |
@@ -296,7 +297,7 @@ interface AgentClient {
 | AC-001-2 / AC-001-6 | 全部源码 | 守卫 color-literals（含阳性 / 阴性 fixtures、退役色清单） |
 | AC-001-3 | glass.css | 守卫 glass-tiers；人工验收 M-01（整页截图层次） |
 | AC-001-4 | base.css + format.ts | tests/unit/format.spec.ts（en dash / 正号 / 零中性 / -0）；tests/component/typography.spec.ts（KPI serif、正文 sans、数值 mono + tabular + 右对齐） |
-| AC-001-5 | market-board、FocusBand | 守卫 updown-scope；component 测试：analysis 语义数字不带 updown 类 |
+| AC-001-5 | `src/design/updown.css`（market-board / watchlist / FocusBand 引入） | 守卫 updown-scope；component 测试：market 语义数字带涨跌类、analysis 语义数字不带 |
 | AC-002-1 | LoadingScreen + appStore | e2e/shell.spec：加载骨架可见 → 工作台可见；期间截帧无空白（body 背景与骨架存在） |
 | AC-002-2 | nav.ts + router + PlaceholderPage | e2e/shell.spec：八项顺序、逐项点击地址与 `aria-current`、刷新保持、占位页文案含归属 feature |
 | AC-002-3 | getResearchList + Rail | e2e：`?scenario=normal` 研究列表 N 项 → 菜单 N 子项；fixture 增一项（测试内注入）→ N+1 |
@@ -308,7 +309,7 @@ interface AgentClient {
 | AC-004-1 / -2 | registry + layoutStore + ModuleLibrary | e2e/modules.spec：默认七个；移除 / 添加（末尾）/ 上移下移 → reload 保持 |
 | AC-004-3 | ModuleShell | e2e：遍历注册表，每个模块 DOM 符合 §2.4 契约（选择器逐项存在、data-state 合法） |
 | AC-004-4 | ModuleShell 三态 | component：`scenario=slow/empty/error` 下 loading / empty / error；错误态 `<code>` 文本含 moduleId + code；复制钮调用剪贴板（mock） |
-| AC-004-5 | market-board / watchlist / release-calendar | component：盘面三态格文本 `休 / 待 / –` 与类、涨跌字色（仅 market-board）；关注列表数值右对齐、千分位与 analysis 方向色；日程排序；人工验收 M-04 |
+| AC-004-5 | market-board / watchlist / release-calendar | component：盘面三态格文本 `休 / 待 / –` 与类、涨跌字色；关注列表数值右对齐、千分位与红涨绿跌字色；日程排序；人工验收 M-04 |
 | AC-004-6 | 全部 CSS | 守卫 bare-1fr |
 | AC-005-1 | AgentDock + AgentDrawer | e2e/agent.spec：每页输入栏可见；提交 → 抽屉展开 → 用户消息出现 |
 | AC-005-2 | CotTimeline + store | component：回放 success / failure 脚本 → 步骤数、展开详情、终态行 |

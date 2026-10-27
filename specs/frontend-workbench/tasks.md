@@ -2,7 +2,7 @@
 
 > Tasks 阶段产物：每个任务 0.5–2 小时可完成，按依赖顺序执行（Implement 阶段）。
 > **状态：草案（2026-10-27 起草）——Checklist 通过后生效。** 执行前置条件：`checklist.md` 全部勾选。
-> 依据：`spec.md`（Gate 1 冻结版）+ `plan.md`。完成标准引用 spec 的 AC 编号；一个 AC 由多个任务分担时，标注本任务负责的部分，AC 整体是否满足以 Converge 时相关任务全部完成为准。
+> 依据：`spec.md`（Gate 1 冻结版；含 Q-015 回流修订：关注列表放合约价格、红涨绿跌）+ `plan.md`。完成标准引用 spec 的 AC 编号；一个 AC 由多个任务分担时，标注本任务负责的部分，AC 整体是否满足以 Converge 时相关任务全部完成为准。
 
 ## 约定
 
@@ -95,7 +95,7 @@
 - **依赖**：T-02　**预计**：1.5 h
 - **完成标准**：
   1. `backdrop-filter` 只在 `src/design/glass.css` 且 ≤ 3 条规则，玻璃类名只许 `.glass-focus / .glass-module / .glass-drawer`（AC-001-3，静态部分）
-  2. 涨跌令牌（`--fai-color-updown-*` / `T.color.updown`）引用只在 `src/modules/market-board/` 与 `src/workbench/FocusBand*`（AC-001-5，静态部分）
+  2. 涨跌令牌（`--fai-color-updown-*` / `T.color.updown`）只在 `src/design/updown.css` 中引用，且 `updown.css` 只被 `src/modules/market-board/`、`src/modules/watchlist/`、`src/workbench/FocusBand*` 引入（AC-001-5，静态部分）
   3. `grid-template-columns` 不含未包 `minmax()` 的 `1fr`，`.shell` 规则豁免并在守卫内登记（AC-004-6）
   4. `fetch(` / `XMLHttpRequest` / `WebSocket` / `EventSource` 只在 `src/contracts/real/`（AC-007-1）
 - **验证命令**：
@@ -107,12 +107,12 @@
 ### T-08 基础样式与数值格式化
 
 - **上下文**：plan §2.1（三层玻璃、字体三族、`.num`、`format.ts`、`Num` 只输出语义类）。所有界面组件的样式与数字显示都经这里。
-- **修改范围**：`frontend/src/design/base.css`、`frontend/src/design/glass.css`、`frontend/src/shared/format.ts`、`frontend/src/shared/components/Num.vue`、`frontend/src/shared/components/Kpi.vue`、`frontend/src/shared/num.css`（analysis 语义类引 chart.pos / chart.neg）、`frontend/tests/unit/format.spec.ts`、`frontend/tests/component/typography.spec.ts`
+- **修改范围**：`frontend/src/design/base.css`、`frontend/src/design/glass.css`、`frontend/src/shared/format.ts`、`frontend/src/shared/components/Num.vue`、`frontend/src/shared/components/Kpi.vue`、`frontend/src/shared/num.css`（analysis 语义类引 chart.pos / chart.neg）、`frontend/src/design/updown.css`（market 语义类引涨跌令牌，唯一定义处）、`frontend/tests/unit/format.spec.ts`、`frontend/tests/component/typography.spec.ts`
 - **依赖**：T-05　**预计**：1.5 h
 - **完成标准**：
   1. `fmtValue` / `fmtDelta`：空值 en dash、差值正号、先按显示位取整再判零、零中性、无负零（AC-001-4，格式化部分）
   2. KPI / 标题 / 正文 / 数值元素的字族类正确，数值等宽数字且右对齐（AC-001-4，字族部分）
-  3. `Num` 按 semantic 输出语义类：analysis 的负值类映射到"红 = 负"令牌（chart.neg），market 只输出类、颜色规则不在共享层（AC-001-5，组件部分）
+  3. `Num` 按 semantic 输出语义类：analysis 的负值类映射到"红 = 负"令牌（chart.neg），market 语义类的颜色规则只在 `src/design/updown.css`（AC-001-5，组件部分）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-001-4 format"`
   2. `pnpm -C frontend test:unit -t "AC-001-4 typography"`
@@ -136,7 +136,7 @@
 - **修改范围**：`frontend/src/contracts/mock/fixtures/`（`daily-brief.json`、`market-board.json`、`watchlist.json`、`release-calendar.json`、`module-summaries.json`、`news.json`、`sources.json`、`research.json`）、`frontend/src/contracts/mock/index.ts`（MockDataClient：场景 normal / empty / error / slow，选择顺序 URL `?scenario=` > `VITE_MOCK_SCENARIO` > normal；读取 `window.__FAI_MOCK__` 覆盖）、`frontend/src/contracts/mock/agent/{success,failure,long}.ts` + MockAgentClient、`frontend/src/contracts/real/index.ts`（NotImplementedError 桩）、`frontend/src/contracts/index.ts`（按 `VITE_DATA_MODE` 选实现）、`frontend/tests/unit/mock.spec.ts`
 - **依赖**：T-09　**预计**：2 h
 - **完成标准**：
-  1. 全部 fixtures 通过 zod 校验，关注列表 fixture 只含分析类序列（AC-007-4，示例数据部分）
+  1. 全部 fixtures 通过 zod 校验；关注列表 fixture 为关注的合约价格，数字声明 market 语义（AC-007-4，示例数据部分）
   2. 四种场景可经配置切换，行为符合 plan §2.7（AC-007-2，单元部分）
   3. 三个回放脚本的每个事件通过 AgentEvent 校验，long 脚本 ≥ 20 步、跨 15 s（AC-005-6，脚本部分）
   4. real 实现只有桩，网络调用只出现在 `src/contracts/real/`（AC-007-1）
@@ -220,7 +220,7 @@
 
 ### T-17 今日焦点带
 
-- **上下文**：plan §2.3（结论 ≤ 3 条、数字卡、语义取色、空态、跳转）。焦点带是 market-board 之外唯一允许引用涨跌令牌的位置（经 `updown.css`）。
+- **上下文**：plan §2.3（结论 ≤ 3 条、数字卡、语义取色、空态、跳转）。焦点带是登记的行情语义位置之一（引入 `src/design/updown.css`，只用于声明为 market 语义的数字）。
 - **修改范围**：`frontend/src/workbench/FocusBand.vue`、`frontend/tests/component/focus-band.spec.ts`、`frontend/e2e/workbench.spec.ts`
 - **依赖**：T-16　**预计**：1.5 h
 - **完成标准**：
@@ -248,29 +248,31 @@
 
 ### T-19 行情价格模块（盘面网格）
 
-- **上下文**：plan §2.4（market-board：BoardGrid、三态格）、§2.1（`updown.css` 是 market 语义颜色规则的唯一定义处）。v1 唯一使用涨跌专色的模块。
-- **修改范围**：`frontend/src/modules/market-board/{MarketBoard.vue,updown.css}`、`frontend/src/shared/components/BoardGrid.vue`、`frontend/tests/component/market-board.spec.ts`
+- **上下文**：plan §2.4（market-board：BoardGrid、三态格）、§2.1（引入 `src/design/updown.css`）。v1 使用涨跌专色的两个模块之一（另一个是关注列表，Q-015）。
+- **修改范围**：`frontend/src/modules/market-board/MarketBoard.vue`、`frontend/src/shared/components/BoardGrid.vue`、`frontend/tests/component/market-board.spec.ts`
 - **依赖**：T-15　**预计**：1.5 h
 - **完成标准**：
   1. 盘面网格三态格分开显示：休市 `休`、待结算 `待`（琥珀）、缺数 `–`；数值等宽右对齐（AC-004-5，盘面部分）
-  2. 涨跌只涂字色，涨跌令牌只在本模块引用（AC-001-5，盘面部分）
+  2. 涨跌只涂字色，红涨绿跌经 `src/design/updown.css` 取色（AC-001-5，盘面部分）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-004-5 board"`
   2. `pnpm -C frontend test:unit -t "AC-001-5 board" && pnpm -C frontend guards updown-scope`
 
 ### T-20 关注列表、数据发布日历与四个占位模块
 
-- **上下文**：plan §2.4（watchlist：DataTable + Spark，v1 只含分析类序列；release-calendar；四个壳模块共用 ModuleSummary）。
+- **上下文**：plan §2.4（watchlist：DataTable + Spark，关注的合约价格、红涨绿跌，Q-015；release-calendar；四个壳模块共用 ModuleSummary）。
 - **修改范围**：`frontend/src/modules/watchlist/Watchlist.vue`、`frontend/src/shared/components/{DataTable.vue,Spark.vue}`、`frontend/src/modules/release-calendar/ReleaseCalendar.vue`、`frontend/src/modules/summary/ModuleSummary.vue`（supply-demand / logistics-onwater / positions / doc-catalog 共用）、`frontend/src/modules/registry.ts`（挂上真实正文）、`frontend/tests/component/modules.spec.ts`
 - **依赖**：T-15　**预计**：2 h
 - **完成标准**：
-  1. 关注列表：数值等宽右对齐、千分位，方向色走 analysis 语义（正 / 负令牌）；迷你折线墨线 + 末点（AC-004-5，数据表部分）
+  1. 关注列表：数值等宽右对齐、千分位，涨跌只涂字色；迷你折线墨线 + 末点（AC-004-5，数据表部分）
   2. 数据发布日历：按时间排序的日程列表，含来源与新鲜度点（AC-004-5，日程部分）
   3. 四个占位模块渲染模块壳 + 示例占位与"内容随 domain feature 交付"说明（AC-004-3，占位模块部分）
+  4. 关注列表的涨跌按红涨绿跌取色（引入 `src/design/updown.css`），引入位置在 updown-scope 登记范围内（AC-001-5，关注列表部分）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-004-5 watchlist"`
   2. `pnpm -C frontend test:unit -t "AC-004-5 calendar"`
   3. `pnpm -C frontend test:unit -t "AC-004-3 summary"`
+  4. `pnpm -C frontend test:unit -t "AC-001-5 watchlist" && pnpm -C frontend guards updown-scope`
 
 ### T-21 图表暗色主题与样例图
 
@@ -362,7 +364,7 @@
 | AC-001-2 | T-06 |
 | AC-001-3 | T-07（静态）、T-26（人工 M-01） |
 | AC-001-4 | T-08 |
-| AC-001-5 | T-07（静态）、T-08、T-19 |
+| AC-001-5 | T-07（静态）、T-08、T-19、T-20 |
 | AC-001-6 | T-06 |
 | AC-002-1 | T-13 |
 | AC-002-2 | T-12 |
