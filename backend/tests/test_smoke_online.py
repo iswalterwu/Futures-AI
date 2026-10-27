@@ -25,7 +25,6 @@ pytestmark = pytest.mark.skipif(
 
 SID = {
     "sc_close": derive_id({"asset": "sc", "geo": "cn", "measure": "close", "contract": ""}),
-    "fu_stock": derive_id({"asset": "fu", "geo": "cn", "measure": "stock", "contract": ""}),
     "sc_receipt": derive_id({"asset": "sc", "geo": "cn", "measure": "receipt", "contract": ""}),
     "diesel_stock": derive_id({"asset": "diesel", "geo": "na", "measure": "stock", "contract": ""}),
 }
@@ -60,16 +59,17 @@ class TestAkshareOnline:
         finally:
             svc.close()
 
-    def test_inventory_fetches(self, tmp_path):
+    def test_builtin_coverage_is_close_plus_receipt(self, tmp_path):
+        """v23（D-013）：内置只有五品种主力日线 + 交易所仓单，无第三方库存源。"""
         svc = Service(tmp_path).init()
         try:
-            res = svc.fetch(SID["fu_stock"], do_fetch=True)
-            rows = res["rows"]
-            assert rows, "库存日报未返回数据"
-            latest = max(r[0] for r in rows)
-            if (datetime.now() - latest).days > 30:  # 上游数据陈旧：不判失败，但要显式报告
-                print(f"\n[在线冒烟] 注意：东财库存日报最新数据为 {latest:%Y-%m-%d}（已陈旧，上游数据源停更）")
-            assert all(r[2] == "kton" for r in rows)
+            for asset in ("sc", "fu", "lu", "bu", "pg"):
+                for measure in ("close", "receipt"):
+                    sid = derive_id({"asset": asset, "geo": "cn", "measure": measure, "contract": ""})
+                    assert svc.cat.source_declares(sid, "akshare"), (asset, measure)
+                assert not svc.cat.source_declares(
+                    derive_id({"asset": asset, "geo": "cn", "measure": "stock", "contract": ""}), "akshare"
+                ), asset
         finally:
             svc.close()
 
@@ -88,17 +88,20 @@ class TestAkshareOnline:
 
 
 class TestEiaOnline:
-    def test_eia_requires_user_key(self, tmp_path):
-        """EIA 使用用户自带 key：未配置时显式 skip（凭据缺失属预期，不算失败）。"""
+    def test_eia_api_or_offline_fallback(self, tmp_path):
+        """D-014：有 key 走 API，无 key 自动回退免凭证官方下载；两条路径都必须真实可用。"""
         from data import creds
 
-        try:
-            creds.get(tmp_path / "creds", "eia_api_key")
-        except creds.CredsError:
-            pytest.skip("未配置 EIA API key（用户自带凭证，发布验证时按需注入）")
+        has_key = creds.exists(tmp_path / "creds", "eia_api_key")
         svc = Service(tmp_path).init()
         try:
             res = svc.fetch(SID["diesel_stock"], do_fetch=True, source="eia")
-            assert res["rows"], "EIA 未返回数据"
+            rows = res["rows"]
+            assert rows, "EIA 未返回数据"
+            path = svc.adapters["eia"].last_path
+            assert path == ("api" if has_key else "offline"), path
+            latest = max(r[0] for r in rows)
+            print(f"\n[在线冒烟] EIA 路径={path}，最新 {latest:%Y-%m-%d} = {rows[-1][1]} kb")
+            assert all(r[2] == "kb" for r in rows)
         finally:
             svc.close()

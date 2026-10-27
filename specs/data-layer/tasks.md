@@ -284,3 +284,15 @@
 | T-99 | 迁移受影响的 7 处测试到新注入点（默认窗口、滚动窗口、数量归一、日历末日、SDK 打印、真删除、上期所 HTTP 边界） | T-98 的连带修改 | 上述各 AC | `pytest tests/test_review_round13.py tests/test_review_round14.py tests/test_review_round15.py tests/test_review_round16.py -q` | ✅ |
 | T-100 | 记录 akshare 升级策略：1.20.1 已实测未修复上述两个上游问题 → 维持 1.18.63 受测；仅在日历到期或接口漂移导致回归失败时升级，升级后跑全量 + 在线冒烟 | 升级问题澄清 | 工作流 | 阅读 `constraints.txt` 注释与 review.md 风险 | ✅ |
 | T-101 | 登记东财库存日报上游停更风险（最新数据 2025-12-31，1.18.63/1.20.1 皆然）；适配器照常解析并在在线冒烟打印最新日期；替换数据源属新需求（需修订 spec） | 在线冒烟发现 | — | `FUTURESAI_ONLINE=1 pytest tests/test_smoke_online.py -k inventory -q -s` | ✅ |
+
+## 追加任务（v23 实施：D-013 库存收敛 + D-014 EIA 双路径）
+
+> Gate 1 批准（Walter 2026-10-27）。plan §2.1/§2.2/§6 已同步。关键项均做变异验证（5/5 检出）。
+
+| # | 任务（修改范围） | 关联决策 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-102 | 内置清单删 4 条 stock（FU/BU/LU/PG）；适配器移除 `_get_stock`、`_STOCK` 路由、库存默认窗口与单页截断检查（`manifest.yaml`、`akshare_adapter.py`） | D-013 | AC-007-1 | `pytest tests/test_review_round14.py -k builtin_coverage -q` + 在线冒烟 | ✅ |
+| T-103 | EIA 双路径：key 存在 → API；不存在 → 官方免凭证 `.xls`（`dnav/pet/hist_xls/<SERIES><freq>.xls`）；存在但读不出 → 报错不回退；`last_path` 记录实际路径（`eia_adapter.py`、`creds.exists`） | D-014 | AC-007-2 | `pytest tests/test_adapters_builtin.py -k "Eia" -q` | ✅ |
+| T-104 | 依赖声明 xlrd（解析 `.xls`）入 pyproject 与受测版本约束 | D-014 | 环境前提 | `python tools/release_check.py` | ✅ 11/11 |
+| T-105 | 测试迁移：删内置库存用例、覆盖对照改为「五品种 close+receipt 且无 stock」、数量型负向用例改仓单、倒置窗口用例改仓单；保留并强化「用户清单/local-file 可声明 stock」的机制覆盖 | D-013 | AC-007-1、AC-002-2 | `pytest tests/ -q` | ✅ 322 passed |
+| T-106 | 在线冒烟同步：删库存用例、改为内置覆盖断言；EIA 改为「API 或免凭证回退」双向断言（不再 skip） | D-013/D-014 | AC-007-1、AC-007-2 | `FUTURESAI_ONLINE=1 pytest tests/test_smoke_online.py -q -s` | ✅ 5 passed（EIA 走 offline，最新 2026-10-16 = 104286 kb） |

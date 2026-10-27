@@ -91,45 +91,24 @@ class TestCoverageSnapshot:
             svc.close()
 
     def test_window_snapshot_per_route(self, tmp_path, monkeypatch):
+        import shfe_html
+
         freeze_today(monkeypatch)
         monkeypatch.setattr(ak_mod, "_get_main", lambda symbol: main_df())
-        monkeypatch.setattr(
-            ak_mod, "_get_stock",
-            lambda asset: pd.DataFrame({"日期": ["2026-10-09"], "库存": [1000.0], "增减": [0]}),
-        )
+        shfe_html.patch(monkeypatch, 1000)
         svc = Service(tmp_path).init()
         try:
             last = lambda: svc.store.con.execute("SELECT max(ingest_run) FROM ingest_runs").fetchone()[0]  # noqa: E731
             svc.fetch(SC0, do_fetch=True)
             assert run_range(svc, last()) == (None, None)  # 价格型：源全量历史
-            svc.fetch(sid_of("fu", "stock"), do_fetch=True)
-            assert run_range(svc, last()) == (TODAY - timedelta(days=ak_mod.STOCK_DEFAULT_DAYS), TODAY)
-            svc.fetch(sid_of("fu", "stock"), "2026-10-01", "2026-10-20", do_fetch=True)
+            svc.fetch(sid_of("fu", "receipt"), do_fetch=True)
+            assert run_range(svc, last()) == (TODAY - timedelta(days=ak_mod.RECEIPT_DEFAULT_DAYS), TODAY)
+            svc.fetch(sid_of("fu", "receipt"), "2026-10-01", "2026-10-20", do_fetch=True)
             assert run_range(svc, last()) == (datetime(2026, 10, 1), datetime(2026, 10, 20))  # 显式窗口原样
             res = svc.fetch(SC0, do_fetch=False)  # 读回仍按调用方范围（None = 全部历史）
             assert res["meta"]["range"] == {"start": None, "end": None}
         finally:
             svc.close()
-
-    def test_truncated_stock_page_rejects_uncovered_start(self, tmp_path, monkeypatch):
-        days = pd.bdate_range(end="2026-10-23", periods=ak_mod.STOCK_PAGE_ROWS)  # 源单页：最近 500 个交易日
-        page = pd.DataFrame({"日期": days.date, "库存": [1000.0] * len(days), "增减": [0] * len(days)})
-        monkeypatch.setattr(ak_mod, "_get_stock", lambda asset: page)
-        freeze_today(monkeypatch)
-        svc = Service(tmp_path).init()
-        try:
-            fu = sid_of("fu", "stock")
-            with pytest.raises(FetchError) as ei:  # 请求起点早于源单页最早日期 → 不得虚报覆盖
-                svc.fetch(fu, "2020-01-01", "2026-10-23", do_fetch=True)
-            assert ei.value.code == "validation_error" and "超出源窗口" in ei.value.message
-            assert svc.store.con.execute(
-                "SELECT status FROM ingest_runs ORDER BY ingest_run DESC LIMIT 1"
-            ).fetchone()[0] == "failed"
-            res = svc.fetch(fu, do_fetch=True)  # 默认窗口（365 天）落在单页窗口内
-            assert res["meta"]["count"] > 0
-        finally:
-            svc.close()
-
 
 class TestQuantityUnits:
     """T-55 / R14-B-02：PG 仓单/库存（大商所按手计，20 吨/手）正确归一；未登记/量纲不匹配拒绝。"""
@@ -158,54 +137,26 @@ class TestQuantityUnits:
         finally:
             svc.close()
 
-    def test_builtin_pg_stock_through_real_sdk(self, tmp_path, monkeypatch):
-        import akshare.futures.futures_inventory_em as em
-
-        class Resp:
-            def __init__(self, payload):
-                self._payload = payload
-
-            def json(self):
-                return self._payload
-
-        def fake_get(url, params=None, **kw):
-            if params["reportName"] == "RPT_FUTU_POSITIONCODE":
-                return Resp({"result": {"data": [{"TRADE_MARKET_CODE": "x", "TRADE_CODE": "ZZ", "TRADE_TYPE": "其他"}]}})
-            assert 'SECURITY_CODE="PG"' in params["filter"]
-            return Resp({"result": {"data": [
-                {"SECURITY_CODE": "PG", "TRADE_DATE": "2026-10-20 00:00:00", "ON_WARRANT_NUM": 2000, "ADDCHANGE": 0},
-            ]}})
-
-        monkeypatch.setattr(em.requests, "get", fake_get)
-        freeze_today(monkeypatch)
-        svc = Service(tmp_path).init()
-        try:
-            res = svc.fetch(sid_of("pg", "stock"), do_fetch=True)
-            assert [(r[1], r[2]) for r in res["rows"]] == [(40.0, "kton")]  # 2000 手 × 20 吨 ÷ 1000
-        finally:
-            svc.close()
-
     def test_builtin_coverage_r007(self, tmp_path):
+        """v23（D-013）：内置五品种 = 主力日线 + 交易所仓单；不再内置第三方库存源。"""
         svc = Service(tmp_path).init()
         try:
             for v in ("sc", "fu", "lu", "bu", "pg"):
                 for m in ("close", "receipt"):
                     assert svc.cat.source_declares(sid_of(v, m), "akshare"), (v, m)
-            for v in ("fu", "lu", "bu", "pg"):  # SC 的交易所库存口径 = 仓单日报（plan §2.1）
-                assert svc.cat.source_declares(sid_of(v, "stock"), "akshare"), v
+                assert not svc.cat.source_declares(sid_of(v, "stock"), "akshare"), v
         finally:
             svc.close()
 
     @pytest.mark.parametrize(
         "asset,symbol,unit,needle",
-        [("sc", "SC_RECEIPT", "kton", "不匹配"), ("pg", "PG_STOCK", "kb", "不匹配"),
+        [("sc", "SC_RECEIPT", "kton", "不匹配"), ("pg", "PG_RECEIPT", "kb", "不匹配"),
          ("brent", "BRENT_RECEIPT", "kton", "未登记")],
     )
     def test_unsupported_quantity_rejected(self, tmp_path, monkeypatch, asset, symbol, unit, needle):
         called = []
         monkeypatch.setattr(ak_mod, "_get_receipt", lambda *a, **k: called.append(1))
-        monkeypatch.setattr(ak_mod, "_get_stock", lambda *a, **k: called.append(1))
-        measure = "stock" if symbol.endswith("_STOCK") else "receipt"
+        measure = "receipt"
         write_manifest(
             tmp_path, "user-q",
             manifest_yaml("user-q", [provide_yaml(asset, "cn", measure, "", symbol, unit, priority=1)], implementation="akshare"),

@@ -16,7 +16,7 @@ from data.service import Service
 from test_review_round12 import SC_RECEIPT, cli_run, freeze_today
 from test_review_round14 import receipt_df, sid_of
 
-PG_STOCK = sid_of("pg", "stock")
+PG_RECEIPT_SID = sid_of("pg", "receipt")
 PG_RECEIPT = sid_of("pg", "receipt")
 
 
@@ -33,10 +33,9 @@ def last_run(svc) -> tuple:
 class TestInvertedWindow:
     """T-60：补全后的有效窗口倒置 → validation_error，不建批次、不请求上游。"""
 
-    @pytest.mark.parametrize("sid,start", [(PG_STOCK, "2027-01-01"), (SC_RECEIPT, "2026-12-01")])
+    @pytest.mark.parametrize("sid,start", [(PG_RECEIPT_SID, "2027-01-01"), (SC_RECEIPT, "2026-12-01")])
     def test_future_start_without_end_rejected(self, tmp_path, monkeypatch, sid, start):
         called = []
-        monkeypatch.setattr(ak_mod, "_get_stock", lambda *a, **k: called.append(1))
         monkeypatch.setattr(ak_mod, "_get_receipt", lambda *a, **k: called.append(1))
         freeze_today(monkeypatch)  # 今天 = 2026-10-27 → 未给终点时终点 = 当日
         svc = Service(tmp_path).init()

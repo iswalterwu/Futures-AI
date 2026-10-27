@@ -21,6 +21,7 @@
   - Gate 2 选项 B（Walter 选择先收口 P3）：路由统一截止时间改为硬上限（连接/响应头/完整响应体，去掉 0.5s 下限）；外部进程无写锁占用观测库时只读命令约 2s 提前报占用；serve 关闭 uvicorn 访问日志（stdout 无运行期输出）；占用识别加入系统错误码 32/33 的本地化消息；补齐服务关闭后确定性 503、BEGIN 中断后独立连接可见性、真实 serve 启停叠加读者轮询、关闭后 MCP 四工具、网络阶段后遇屏障的 running 批次清理等持久回归（T-89~T-93）
   - 第二十轮（A/B 均通过，无 P1/P2；Checklist 15 项判定与第十九轮一致）：第十九轮 P3 中 4 项闭环，R19-B-01 部分闭环（响应体阶段已受约束，响应头/分块帧/Connection: close 仍以单次预算为界）；新发现 P3 见“已知非阻断问题”
 - 关键修复均做变异验证：注入旧行为后对应测试必失败（实施者记录：第十二~十九轮修复共 80 个变异全部被检出，含第十九轮 B 报告的逃逸变异“ServiceClosed→400”现已被确定性 503 测试检出；变异验证改为禁用字节码缓存运行，避免同长度变异遗留的陈旧 .pyc 影响后续运行；审核员各轮独立复核其中子集）
+- **v23（Gate 1 已批准 2026-10-27）：** D-013 内置库存收敛到交易所仓单口径（删 4 条 stock；`measure=stock` 保留给用户清单/local-file）＋ D-014 EIA 双路径（有 key 走 API、无 key 自动回退官方免凭证 `.xls`、凭证存在但读不出则报错不回退），`last_path` 记录实际路径供 settings 展示（T-102~T-106）
 - **Gate 2 后续修复（Walter 选项 B 之后）：** 第二十轮 P3 收口与发布管线测试（tasks.md T-94~T-101）
   - 只读路由加看门狗：到达统一截止时间即 shutdown 套接字，响应头 / 分块帧 / Connection: close 型正文同样受约束
   - 补齐四处持久断言（关闭检查在取锁之后及排队者语义、冷启动自动清理超时批次、截止处占用消息、serve 在 WARNING 级别下错误仍到 stderr）
@@ -68,9 +69,9 @@
 
 ## 验收证据
 
-- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **327 passed, 5 skipped**（0 warnings，2026-10-27；禁用字节码缓存、清空 __pycache__ 后运行；5 skip = 在线冒烟默认跳过）
+- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **322 passed, 5 skipped**（0 warnings，2026-10-27；禁用字节码缓存、清空 __pycache__ 后运行；5 skip = 在线冒烟默认跳过）
 - 发布检查：`python tools/release_check.py` → **11/11 项通过**（wheel 构建/包内三份清单/隔离安装/入口点/隔离导入 golden/首启不建库/写命令建库）
-- 在线冒烟：`FUTURESAI_ONLINE=1 pytest tests/test_smoke_online.py -q -s` → **4 passed, 1 skipped**（仓单 2026-10-27 = 3666 kb；库存最新 2025-12-31，上游停更；EIA 未配置 key）
+- 在线冒烟（v23 后）：`FUTURESAI_ONLINE=1 pytest tests/test_smoke_online.py -q -s` → **5 passed**（仓单 2026-10-27 = 3666 kb；**EIA 无 key 自动回退 offline，最新 2026-10-16 = 104286 kb**）
 - Converge 报告结论：tasks.md T-01~T-93 全部 ✅（含 T-66 Checklist 留痕），全部任务的验证命令逐条可执行并选中测试；36 条 AC 均有断言落点（plan §5）；Checklist 15 项双审共识通过
 - 独立评审记录：第十二轮 A 未通过（5 P2）→ 修复；第十三轮 A/B 均未通过（共 2 P2）→ 修复；第十四轮 A 通过、B 未通过（2 P2）→ 修复；第十五轮 A/B 均通过（无 P1/P2，P3 收口为 T-60~T-65）；第十六轮 A 通过、B 未通过（2 P2）→ 修复（T-67~T-73）；第十七轮 B 未通过（1 P2）→ 修复（T-74~T-80），A 超时未产出；第十八轮 A/B 均未通过（共 3 P2）→ 修复（T-81~T-88）；**第十九轮 A/B 均通过（无 P1/P2，共识通过）**——报告原文 review19-a.md / review19-b.md（会话临时目录）；Gate 2 选项 B 收口 P3 后，**第二十轮 A/B 均通过（无 P1/P2，共识通过；Checklist 判定与第十九轮一致）**——报告原文 review20-a.md / review20-b.md（会话临时目录）
 - Gate 2 确认记录：Walter 2026-10-27 确认选项 A——接受风险项（凭证显式传参保留，推荐不回显交互输入）与第二十轮已知非阻断问题作为后续任务；Handoff 方式 = 分支 feat/data-layer 推送 → PR → merge commit 合并到 main（保留逐轮提交作为证据链）

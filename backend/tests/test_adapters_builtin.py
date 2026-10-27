@@ -77,13 +77,52 @@ class TestEia:
         rows, _ = EiaAdapter(tmp_path / "creds").fetch(m.provides[0], None, None)
         assert len(rows) == 1 and rows[0][1] == pytest.approx(120.5)
 
-    def test_key_missing_fail_closed(self, tmp_path, monkeypatch):
-        called = []
-        monkeypatch.setattr(eia_mod, "_request", lambda *a, **k: called.append(1))
+    def test_key_present_uses_api(self, tmp_path, monkeypatch):
+        """D-014：配置了 key → 走官方 API（不触碰免凭证路径）。"""
+        creds.put(tmp_path / "creds", "eia_api_key", "k-" + "api-path-0001")
+        payload = {"response": {"data": [{"period": "2026-10-16", "value": "104286"}]}}
+        api_keys, offline_seen = [], []
+        monkeypatch.setattr(eia_mod, "_request", lambda sid, key, s, e: api_keys.append(key) or payload)
+        monkeypatch.setattr(eia_mod, "_dnav_xls", lambda *a, **k: offline_seen.append(1))
+        m = load(str(MANIFEST_DIR / "eia" / "manifest.yaml"))
+        adapter = EiaAdapter(tmp_path / "creds")
+        rows, _ = adapter.fetch(m.provides[0], None, None)
+        assert rows == [(datetime(2026, 10, 16), 104286.0)]
+        assert adapter.last_path == "api" and api_keys and not offline_seen
+
+    def test_no_key_falls_back_to_offline(self, tmp_path, monkeypatch):
+        """D-014：未配置 key → 回退免凭证路径（不发起 API 请求）。"""
+        import io
+
+        api_called, offline_seen = [], []
+
+        def fake_xls(series_id, freq):
+            offline_seen.append((series_id, freq))
+            buf = io.BytesIO()
+            pd.DataFrame([[datetime(2026, 10, 16), 104286.0]]).to_excel(
+                buf, sheet_name="Data 1", header=False, index=False
+            )
+            return buf.getvalue()
+
+        monkeypatch.setattr(eia_mod, "_request", lambda *a, **k: api_called.append(1))
+        monkeypatch.setattr(eia_mod, "_dnav_xls", fake_xls)
+        m = load(str(MANIFEST_DIR / "eia" / "manifest.yaml"))
+        adapter = EiaAdapter(tmp_path / "creds")
+        rows, raw = adapter.fetch(m.provides[0], None, None)
+        assert rows == [(datetime(2026, 10, 16), 104286.0)] and raw
+        assert adapter.last_path == "offline" and offline_seen and not api_called
+
+    def test_corrupt_key_errors_without_fallback(self, tmp_path, monkeypatch):
+        """凭证存在但读不出来 → 报错，不回退（D-014）。"""
+        cdir = tmp_path / "creds"
+        cdir.mkdir()
+        (cdir / "eia_api_key.bin").write_bytes(b"not-base64!!!")
+        offline_seen = []
+        monkeypatch.setattr(eia_mod, "_dnav_xls", lambda *a, **k: offline_seen.append(1))
         m = load(str(MANIFEST_DIR / "eia" / "manifest.yaml"))
         with pytest.raises(creds.CredsError):
-            EiaAdapter(tmp_path / "creds").fetch(m.provides[0], None, None)
-        assert not called  # 凭证失败 → 不发起网络请求
+            EiaAdapter(cdir).fetch(m.provides[0], None, None)
+        assert not offline_seen  # 凭证故障不静默降级
 
 
 class TestLocalFile:
