@@ -115,7 +115,7 @@ def list_with_status(root) -> list[dict]
 
 ## 4. 关键流程
 
-1. **首次启动**：`load(root)` 无文件 → 引导；`onboard --skip` 直接返回 0 并提示（AC-002-3）
+1. **首次启动**：以 `state.json.onboard.completed` 判定（不是"档案文件是否存在"）；未完成 → 引导（档案已有项作默认值预填）；`--skip` 置 completed+skipped 并返回 0；中断不置位，下次继续（AC-002-1/3/4）
 2. **开通 EIA**：`prepare`（档案缺项 → 先提示补档案，不出现空表单）→ 打印注册页 + 逐项指引 → 用户浏览器提交 → `getpass` 读 key → `verify_and_save`（真实 API）→ 成功写凭证 + `verified_at`
 3. **无 key 取数**：data-layer 自动回退 offline（D-014）；`source list` 显示 `path=offline` + "免凭证回退"
 4. **凭证故障**：凭证文件存在但解密失败 → `credential_state=unreadable`，状态错误、不回退（AC-004-2）

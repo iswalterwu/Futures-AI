@@ -15,7 +15,6 @@ from data.lock import release_lock
 
 from settings import _filelock
 from data.adapters.eia import eia_adapter
-from data.fetch.on_demand import FetchError
 
 from settings.profile import Profile, SECTORS, load as load_profile, missing_for_registration
 
@@ -170,7 +169,7 @@ def _probe(key: str) -> None:
             "https://api.eia.gov/v2/petroleum/stoc/wstk/data/", params=params, timeout=20
         )
     except requests.exceptions.RequestException:
-        raise _ProbeError(ERR_UNREACHABLE)
+        raise _ProbeError(ERR_UNREACHABLE) from None  # 切断异常链（requests 文本含 api_key）
     if resp.status_code in (401, 403):
         raise _ProbeError(ERR_INVALID_KEY)
     if resp.status_code == 429:
@@ -196,16 +195,6 @@ def verify_and_save(root: Path, key: str) -> Step:
         _probe(key)
     except _ProbeError as e:
         code = e.code
-    except FetchError as e:  # 兼容注入的 FetchError
-        code = {
-            "unauthorized": ERR_INVALID_KEY,
-            "rate_limited": ERR_RATE_LIMITED,
-            "adapter_error": ERR_UNREACHABLE,
-            "validation_error": ERR_BAD_RESPONSE,
-            "not_found": ERR_BAD_RESPONSE,
-        }.get(e.code, ERR_SERVER)
-    except Exception:
-        code = ERR_BAD_RESPONSE
     else:
         code = None
     if code is not None:

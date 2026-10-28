@@ -12,7 +12,6 @@ from pathlib import Path
 
 import pytest
 
-from data.fetch.on_demand import FetchError
 from settings import onboarding
 from settings.profile import Profile, save as save_profile
 
@@ -77,7 +76,7 @@ class TestNoPlaintextInMessages:
     def test_verify_error_has_no_key(self, tmp_path, monkeypatch):
         """AC-005-3：验证失败消息不含 key。"""
         def boom(key):
-            raise FetchError("unauthorized", "injected")
+            raise onboarding._ProbeError(onboarding.ERR_INVALID_KEY)
 
         monkeypatch.setattr(onboarding, "_probe", boom)
         secret = "k-" + "privacy-check-4321"

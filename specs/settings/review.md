@@ -66,7 +66,7 @@
 
 ## 验收证据
 
-- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **373 passed, 5 skipped**（0 warnings，2026-10-27；5 skip = 在线冒烟默认跳过）
-- settings 专项：`pytest tests/test_settings_*.py -q` → **74 passed**（profile 16 / onboarding 21 / sources 10 / cli 19 / privacy 8，含 AC-005 静态断言与官方选项比对）
+- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **374 passed, 5 skipped**（0 warnings，2026-10-27；5 skip = 在线冒烟默认跳过）
+- settings 专项：`pytest tests/test_settings_*.py -q` → **76 passed**（profile 16 / onboarding 22 / sources 10 / cli 19 / privacy 8，含 AC-005 静态断言与官方选项比对）
 - 发布检查：`python tools/release_check.py` → **13/13**（新增 settings 包入 wheel、`futureai-settings` 入口、隔离环境档案+状态冒烟）
-- 变异验证：`cd backend && python tools/mutations.py` → **8/8 检出**（脚本按新准则裁到 8 项关键守护）（settings 11 项：引导不校验、unreadable 当回退、写锁不路由、状态非原子、引导状态按内容、缺运行态、两处 HTTP 日志、getpass 降级继续、缺 Library、503 误分类；data-layer 5 项：无 key 不回退、凭证故障静默回退、内置回流 stock、无看门狗、BEGIN 移出保护）
+- 变异验证：`cd backend && python tools/mutations.py` → **8/8 检出**（settings：引导不校验落盘、unreadable 当回退、状态文件非原子写、getpass 降级继续；data-layer：无 key 不回退、凭证故障静默回退、内置清单回流 stock、BEGIN 移出保护——其中 9 项定义、8 项在库）

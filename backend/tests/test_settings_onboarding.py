@@ -4,20 +4,21 @@ from __future__ import annotations
 import pytest
 
 from data import creds
-from data.fetch.on_demand import FetchError
+from data.adapters.eia import eia_adapter
 from settings import onboarding
+from settings import onboarding as ob
 from settings.profile import Profile, save as save_profile
 
 FULL = Profile(first_name="Walter", last_name="Wu", email="walter@example.com", sector="research")
 
 
-def _inject(monkeypatch, *, ok=True, code="unauthorized"):
+def _inject(monkeypatch, *, ok=True, code=ob.ERR_INVALID_KEY):
     calls = []
 
     def probe(key):
         calls.append(key)
         if not ok:
-            raise FetchError(code, "injected failure")
+            raise ob._ProbeError(code)
 
     monkeypatch.setattr(onboarding, "_probe", probe)
     return calls
@@ -61,8 +62,8 @@ class TestVerifyAndSave:
 
     @pytest.mark.parametrize(
         "code,expected",
-        [("unauthorized", "invalid_key"), ("rate_limited", "rate_limited"),
-         ("adapter_error", "unreachable"), ("validation_error", "bad_response")],
+        [(ob.ERR_INVALID_KEY, "invalid_key"), (ob.ERR_RATE_LIMITED, "rate_limited"),
+         (ob.ERR_UNREACHABLE, "unreachable"), (ob.ERR_BAD_RESPONSE, "bad_response")],
     )
     def test_failures_do_not_save(self, tmp_path, monkeypatch, code, expected):
         """AC-003-2：四类失败均不保存，且给出可操作原因。"""
@@ -74,7 +75,7 @@ class TestVerifyAndSave:
 
     def test_error_message_has_no_key(self, tmp_path, monkeypatch):
         """AC-003-3：错误消息不含 key 明文。"""
-        _inject(monkeypatch, ok=False, code="unauthorized")
+        _inject(monkeypatch, ok=False, code=ob.ERR_INVALID_KEY)
         secret = "k-" + "leak-check-9876"
         step = onboarding.verify_and_save(tmp_path, secret)
         assert secret not in str(step.detail)
@@ -187,6 +188,9 @@ class TestProbeClassification:
             return Resp()
 
         monkeypatch.setattr(requests, "get", fake_get)
+        eia_adapter._FILTER_INSTALLED = False  # 清除进程级标志，避免依赖其它测试先跑
+        for name in ("urllib3", "urllib3.connectionpool", "requests"):
+            logging.getLogger(name).filters.clear()
         logger = logging.getLogger("urllib3.connectionpool")
         old_level = logger.level
         logger.setLevel(logging.DEBUG)
@@ -235,3 +239,16 @@ class TestCommitBoundary:
         t.join(5)
         assert ob.has_key(tmp_path) is False
         assert ob.read_state(tmp_path)["eia"]["verified_at"] is None
+
+
+class TestCredentialRefContract:
+    """N-07：向导用的凭证名必须与内置 eia 清单声明一致。"""
+
+    def test_matches_builtin_manifest(self):
+        from pathlib import Path as _P
+
+        from data.catalog.registry import BUILTIN_ADAPTERS_DIR
+        from data.manifest import load as load_manifest
+
+        m = load_manifest(str(BUILTIN_ADAPTERS_DIR / "eia" / "manifest.yaml"))
+        assert onboarding.CREDENTIAL_REF == m.credentials.credential_ref

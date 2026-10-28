@@ -1,9 +1,10 @@
 """数据源状态（spec R-004，plan §2.3）：与 data-layer 同口径的源状态 + 当前取数路径。
 
-路径推导只用凭证是否**存在**（不读内容，避免明文进内存）：
-- 声明了实现且需要凭证：凭证在 → api；不在 → offline（免凭证回退）
+路径推导按凭证状态：
+- 声明了实现且需要凭证：凭证可用 → api；未配置 → offline（免凭证回退）；存在但解不开 → blocked
 - 不需要凭证的内置实现（akshare / local-file）→ builtin
 - 未声明实现（仅声明源）→ declaration_only
+凭证状态判定只做一次解密校验（用于区分"未配置"与"存在但损坏"），不保留明文。
 """
 from __future__ import annotations
 
@@ -20,8 +21,8 @@ PATH_API = "api"
 PATH_OFFLINE = "offline"
 PATH_BUILTIN = "builtin"
 PATH_DECLARATION_ONLY = "declaration_only"
-PATH_BLOCKED = "blocked"
-READ_WAIT_S = 30.0  # 写进程启停过渡窗口内的等待上限（与 data-layer 一致）  # 凭证故障：不回退、不可用（区别于"未配置 → 免凭证回退"）
+PATH_BLOCKED = "blocked"  # 凭证故障：不回退、不可用（区别于"未配置 → 免凭证回退"）
+READ_WAIT_S = 30.0  # 写进程启停过渡窗口内的等待上限（与 data-layer 一致）
 
 
 def _manifests(root: Path) -> dict[str, dict]:

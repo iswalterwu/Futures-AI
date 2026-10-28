@@ -192,7 +192,7 @@ ingest_runs(ingest_run, adapter_id, series_id, range_start, range_end,
 - `latest_obs(series_id)` 与 `asof(series_id, t)` 共用同一择优函数；asof(t) = asof ≤ t 的行（AC-003-3）；可见时间比较按 naive UTC 纯算术进行（不经本机时区解释，夏令时不影响全序）
 - **asof = finished_at（批次成功提交时刻）**；fetched_at = 拉取时间；run 提交前数据不可见
 - 原子性：run 建在拉取前（running）；提交 = observations + run=succeeded 同一 DuckDB 事务；失败 = 独立事务标 failed（无部分数据行）；提交事务被任何异常中断（含 KeyboardInterrupt/SystemExit，含 BEGIN 刚生效时的中断：BEGIN 纳入回滚保护）→ 先回滚、再独立标 failed、最后原样传播中断（同一连接可继续使用，重开后仍为 failed）；崩溃遗留 running → 冷启动时超时（>60min）标 failed
-- **单写者**：service 打开 DuckDB 时持有数据目录写锁（plan §3.3 .lock）；CLI 写操作遇锁报错提示；CLI 只读命令（list/reconcile/provenance/diff/jobs list）在锁被占时经持锁进程提供的 localhost 只读通道路由查询（serve 与 CLI 写命令均提供，见 §2.2）；MCP 在 Backend 进程内，service 连接互斥串行化（Q-019/Q-029）；陈旧锁 = 持有者 PID 已不存在（进程存在但无权查询 → 视为存活）；DuckDB 文件被其他进程打开 → 报单写者占用错误（LockBusy），不抛裸 IO 异常
+- **单写者**：service 打开 DuckDB 时持有数据目录写锁（plan §3.3 .lock）；CLI 写操作遇锁报错提示；CLI 只读命令（list/reconcile/provenance/diff/jobs list）在锁被占时经 serve 的 localhost 只读通道路由查询；无 serve 时等待写命令结束（见 §2.2）；MCP 在 Backend 进程内，service 连接互斥串行化（Q-019/Q-029）；陈旧锁 = 持有者 PID 已不存在（进程存在但无权查询 → 视为存活）；DuckDB 文件被其他进程打开 → 报单写者占用错误（LockBusy），不抛裸 IO 异常
 
 ### 3.3 用户数据目录（权威布局，AC-009-3 指向本节；每安装一套，默认 `%LOCALAPPDATA%/FuturesAI/`）
 

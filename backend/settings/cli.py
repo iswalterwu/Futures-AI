@@ -22,7 +22,7 @@ from settings.profile import (
     update as update_profile,
 )
 
-DEFAULT_ROOT = Path.home() / "AppData" / "Local" / "FuturesAI"
+from data.cli import DEFAULT_ROOT  # 与数据层同一个数据目录
 
 
 def _json_out(obj) -> None:
@@ -42,7 +42,6 @@ def _cmd_profile(args) -> int:
         print("档案已清除" if removed else "档案不存在，无需清除")
         return 0
     # set：部分更新；缺项只提示，不拦截（spec Q-001）
-    profile = load_profile(Path(args.root))
     updates = {
         "first_name": args.first_name,
         "last_name": args.last_name,
@@ -115,7 +114,6 @@ def _cmd_onboard(args) -> int:
 def _read_key() -> str | None:
     """交互读取 key（不回显）。无法保证隐藏输入时返回 None（不读取、不验证、不保存）。"""
     import getpass
-    import sys
     import warnings
 
     if not (sys.stdin and sys.stdin.isatty()):

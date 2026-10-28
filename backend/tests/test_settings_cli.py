@@ -164,9 +164,7 @@ class TestSourceCli:
         save_profile(tmp_path, FULL)
 
         def boom(key):
-            from data.fetch.on_demand import FetchError
-
-            raise FetchError("unauthorized", "injected")
+            raise onboarding._ProbeError(onboarding.ERR_INVALID_KEY)
 
         monkeypatch.setattr(onboarding, "_probe", boom)
         monkeypatch.setattr(cli, "_read_key", lambda: "k-" + "bad-0001")
