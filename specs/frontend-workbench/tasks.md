@@ -314,7 +314,7 @@
 | R1-11 | 已接受为后续（用户 2026-10-28 确认），未修复、未改卡片分配 | 日报 / 焦点带后续 spec 明确按段分配，再按 Gate 1 变更规则实施 | AC-002-6、AC-003-5；单一语义排序与紧凑断点测试 |
 | R2-01 | 第二轮 P3；已接受为后续（用户 2026-10-28 确认），未修复 | 后续编辑性修订：限定头部“15 项 / 25.5 h”为原实施计数，或只保留末尾合计，避免与当前 17 项 / 28 h 混淆 | AC-009-1 的任务证据；核对 tasks 头尾计数 |
 | R2-02 | 第二轮 P3；已接受为后续（用户 2026-10-28 确认），未修复、未加强 | 后续 e2e 强度改进：精度回归注入六个数字，明确宽窗六卡 / 窄窗四卡，或收窄标题承诺；现有精度断言有效 | AC-003-1、AC-002-6；`pnpm -C frontend test:e2e -g "AC-003-1"` |
-| H-01 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置**。→ 2026-10-28 恢复：用户回复“继续”，协调会话按其“H-01 做最小样式修复”的建议执行；**已授权待修复**，见 T-18（未实施；不属 11 项 P3，修复的 Gate 2 未批准）。→ 2026-10-28 实施后：**T-18 已实施**（`771f2af`），红→绿两档回归与全量 559 + 68 / build 通过，Converge 已收敛（实现与自动化验证范围，converge §9）；修复前后图注特写见 `assets/h01-fix-20261028/`（M-08 整图未重采，`m08-chart-1440.png` 仍为修复前原件）；**待独立 A Review、本次修复 Gate 2 未批准、M-08 人工未勾** | 样例图图注“近 60 日收盘 · 样例”断成三行：图注内数字用了 `span.num`，被全局 `span.num { display: block }` 渲染为独立块；后续由 Implement 修正图注内联数字的样式，不改令牌与 spec | AC-001-4、AC-006-3、M-08；证据 `assets/handoff/m08-chart-1440.png`；修复后重采 M-08 截图 + `pnpm -C frontend test` |
+| H-01 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置**。→ 2026-10-28 恢复：用户回复“继续”，协调会话按其“H-01 做最小样式修复”的建议执行；**已授权待修复**，见 T-18（未实施；不属 11 项 P3，修复的 Gate 2 未批准）。→ 2026-10-28 实施后：**T-18 已实施**（`771f2af`），红→绿两档回归与全量 559 + 68 / build 通过，Converge 已收敛（实现与自动化验证范围，converge §9）；修复前后图注特写见 `assets/h01-fix-20261028/`（M-08 整图未重采，`m08-chart-1440.png` 仍为修复前原件）；**待独立 A Review、本次修复 Gate 2 未批准、M-08 人工未勾**。→ 2026-10-28 独立 A（claude-fable-5-1 via anthropic）对 `869cb71` 定向 Review **通过**（无 P1/P2；新增 P3-1 见下方 A-H01-P3-1），原件 [review-h01.md](review-h01.md)、review §12；**待 Walter Gate 2** | 样例图图注“近 60 日收盘 · 样例”断成三行：图注内数字用了 `span.num`，被全局 `span.num { display: block }` 渲染为独立块；后续由 Implement 修正图注内联数字的样式，不改令牌与 spec | AC-001-4、AC-006-3、M-08；证据 `assets/handoff/m08-chart-1440.png`；修复后重采 M-08 截图 + `pnpm -C frontend test` |
 | H-02 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置**。→ 2026-10-28 恢复：按同一建议“随 v2 导航统一处理”，**留待 v2、v1 未修复**；尚未写入 v2 规格，未转交、未完成，v2 仍需在其自身流程（Clarify / Gate 1）中承接 | 小于 980 的顶部横向导航中，专题研究子项纵向堆叠，导航区约 205 px；960 ~ 979×900 下模块区可视高度约 215 px，样例图不能一屏完整显示（可滚动、无重叠、无横向溢出）。与 UI_LAYOUT `#rail` 已采用的“塌成顶栏横向滚动”不一致；后续按该规定收紧窄窗导航（是否保留子项及其形态先请 Walter 裁定；v2 规格同样涉及导航，需协调） | AC-002-6、R-002、M-06；证据 `assets/handoff/m06-979.png`、`m06-960.png`；修复后补断点 e2e 对导航高度的断言并重采 M-06 |
 
 ## H-01 修复任务（2026-10-28 恢复，追加；不变更冻结 spec）
@@ -323,7 +323,7 @@
 
 - **上下文**：review.md §10、plan §7。用户回复“继续”，协调会话按其建议仅授权 H-01 最小样式修复。根因：`SampleChart.vue` 图注“近 <span class="num">60</span> 日收盘 · 样例”的数字命中全局 `span.num { display: block }`，标签被切成三行。只为既有 AC-001-4、AC-006-3 与 M-08 做实现样式纠偏；不改 spec / 令牌 / 契约 / 主题 / 全局数值样式 / 其他组件，不需要新 ADR 或 Gate 1。旧 e2e 只断言文字（文字本来正确），新回归必须测浏览器计算样式与 Range 几何。
 - **修改范围**：生产代码只改 `frontend/src/modules/market-board/SampleChart.vue`（`<style scoped>` 增 `figcaption .num { display: inline; }` 或等价的单条局部规则）；浏览器回归只改 `frontend/e2e/theme.spec.ts`；新建 `specs/frontend-workbench/assets/h01-fix-20261028/`（4 张 PNG + `README.md`）；`tasks.md` 只更新本任务的状态与实施证据。不改 `frontend/src/shared/`、`frontend/src/design/`、`frontend/contracts/`、spec / checklist / manual-acceptance、`assets/handoff/` 的 60 张旧图。
-- **依赖**：T-04（`num.css`）、T-12（`SampleChart.vue`、`e2e/theme.spec.ts`）　**预计**：1 h　**状态**：已实施、自动化通过（2026-10-28）；尚未 Converge / 独立 Review / 本次修复 Gate 2。→ Converge 已收敛（H-01 实现与自动化验证范围，converge §9；Converge = claude-opus-5-5 via anthropic）；尚未独立 Review / 本次修复 Gate 2。
+- **依赖**：T-04（`num.css`）、T-12（`SampleChart.vue`、`e2e/theme.spec.ts`）　**预计**：1 h　**状态**：已实施、自动化通过（2026-10-28）；尚未 Converge / 独立 Review / 本次修复 Gate 2。→ Converge 已收敛（H-01 实现与自动化验证范围，converge §9；Converge = claude-opus-5-5 via anthropic）；尚未独立 Review / 本次修复 Gate 2。→ 独立 A Review 通过（`869cb71`，[review-h01.md](review-h01.md)；P3-1 待 Walter 裁定）；本次修复 Gate 2 未批准。
 - **执行**：Implement 按 AGENTS §6（首选 `openai/gpt-6-astra`，回退 `deepseek/deepseek-flash`），在本分支 `fix/frontend-workbench-visual` 上做，基线 `43b6d79`；提交信息以 `T-18` 开头。
 - **完成标准**：
   1. 回归先红：只加 plan §7.3 的 e2e（`T.window.width` / `T.window.min_width` × `T.window.height` 两档，各一个测试，标题以 `AC-001-4 AC-006-3 H-01` 开头，先截图后断言），在基线 `SampleChart.vue` 上两档都在“图注文字与数字同一行”的 Range 几何断言失败；记录失败摘要，复制两张修复前截图（AC-001-4、AC-006-3）。
@@ -345,6 +345,12 @@
   - 截图：`assets/h01-fix-20261028/{before,after}-{1440,960}x900.png`，均为真实 Chrome 156.0.8078.49 / Playwright 1.64.1 的 mock normal **图注特写**；按本轮指示先滚动图注到可视区域，再截图（不截图被 H-02 裁切的整图）。这是 AI 执行采集，**本轮未做看图结论或人工验收**，协调会话后续原生视觉复核；元数据见同目录 README。
   - 边界核对：`frontend/` 相对基线只改上述两个文件；shared / design / contracts、冻结 spec / Checklist、manual-acceptance 与旧 60 张截图均零差异。H-02、11 项旧 P3 未修复，M-01 ~ M-08 未勾选。测试服务由 Playwright 自启停，4173 已释放，未启动独立服务或其他 agent。
 - **实施后流程（不属本任务）**：Converge 追加记录 → 独立 A Review（新会话、与实施不同模型）→ Walter Gate 2。M-08 人工勾选仍由 Walter 复核。
+
+### 本次 H-01 Review 新增后续候选（2026-10-28；不属原 11 项已接受 P3，不是已批准的实施任务，不计工时）
+
+| 发现 | 当前处理 | 内容 / 建议 | 验收引用 |
+|---|---|---|---|
+| A-H01-P3-1（原件编号 P3-1） | **未补采，待 Walter 决定修 / 接受为后续** | `assets/handoff/m08-chart-1440.png` 仍为修复前原件，1440 不受 H-02 影响；建议 Walter 复核 M-08 前补采修复后 1440×900 整图到新目录（不覆盖旧图），或在 Gate 2 材料中明确当前看图路径为 `assets/h01-fix-20261028/after-1440x900.png` / `after-960x900.png`（图注特写）。来源：[review-h01.md §3](review-h01.md) | AC-009-2、M-08 |
 
 ## AC 覆盖
 

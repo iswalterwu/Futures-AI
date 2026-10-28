@@ -58,3 +58,8 @@ H-02 未修复、留待 v2；11 项旧 P3 未扩改。该修复尚未 Converge�
 - 溯源核对：`before-1440x900.png`（sha256 `125977fa…`）与 `before-960x900.png`（`c4c722da…`）与本机红跑产物 `h01-red-results/**/sample-chart-*.png` 逐字节相同；PNG 尺寸 before 764×51 / 882×50、after 764×19 / 882×18（元素截图尺寸）。Playwright 1.64.1 由 `frontend/package.json` 与已安装包版本核实，Chrome 156.0.8078.49 由测试日志核实。
 - 原生视觉读 4 张图：修复前两档均为三行——“近” / 右推的 “60” / “日收盘 · 样例”，单位“元/桶”在首行右端；修复后两档均为单行“近 60 日收盘 · 样例”，单位“元/桶”同行在右、不重叠。
 - 限定：图注特写只证明图注一行；不证明整张样例图在 960 下一屏完整（H-02 留待 v2、未修复）。截图口径校准见 [plan §7.6](../../plan.md)；收敛记录见 [converge §9](../../converge.md)。
+
+## 独立 Review 追记（2026-10-28；以上为实施 / 收敛时点原文，不改写）
+
+- 独立 A（claude-fable-5-1 via anthropic）Review **通过**；A 本会话绿跑产出的截图与本目录 `after-*` 逐字节相同，`before-*` 与归档红跑产物逐字节相同；A 原生视觉看图结论与上文一致（AI 观察，非 Walter 人工验收）。原件见 [review-h01.md](../../review-h01.md)。
+- A 的 P3-1：本目录只有图注特写，`assets/handoff/m08-chart-1440.png` 仍为修复前整图；是否补采修复后 1440 整图待 Walter 决定（tasks A-H01-P3-1）。本次修复 Gate 2 未批准。

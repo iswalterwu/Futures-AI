@@ -1,6 +1,8 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **最新指针（2026-10-28，H-01 修复）**：T-18 已实施（`771f2af`），Converge 判定 H-01 修复的实现与自动化验证范围已收敛（§11、[converge.md §9](converge.md)）；**待独立 A Review，本次修复 Gate 2 未批准**；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。以下原有状态行均为当时时点记录，不改写。
+> **当前状态（2026-10-28，H-01 修复 Review）**：独立审核员 A（claude-fable-5-1 via anthropic）对固定目标 `869cb71` 定向 Review **判定通过**（无 P1 / P2，1 项 P3-1 待 Walter 处置），原件见 [review-h01.md](review-h01.md)、记录见 §12；**本次修复 Gate 2 未批准，待 Walter 明确批准**；P3-1 未补采、未被接受为后续；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。未进入 Handoff。
+
+> **（Converge 时点指针）**：T-18 已实施（`771f2af`），Converge 判定 H-01 修复的实现与自动化验证范围已收敛（§11、[converge.md §9](converge.md)）；**待独立 A Review，本次修复 Gate 2 未批准**；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。以下原有状态行均为当时时点记录，不改写。
 
 > **当前状态（2026-10-28，Handoff）**：独立 A 第二轮定向复核 **通过，无新增 P1/P2**，R1-01 / R1-09 已闭环（§7）。**Gate 2 已批准**：Walter 2026-10-28 回复“确认”，接受 11 项 P3（R1-02/03/04/05/06/07/08/10/11 + R2-01/02）为后续任务——接受 ≠ 已修复（§8）。Handoff 记录、实测证据、截图索引与合并说明见 §9：合并主线后 559 + 66 全绿、构建通过；M-01 ~ M-08 已由 AI 实际执行并附 60 张截图（不是 Walter 人工验收，人工勾选待复核）；Handoff 新发现 H-01 / H-02 已登记、未经 Walter 处置。
 > §0 ~ §6 为第一轮历史原件、§7 为第二轮原件，均保留原文，其中“Gate 2 未批准 / 未 Handoff”是当时的时点记录。
@@ -401,3 +403,47 @@ D-015 的其余同步（ADR 标题、活文档引用、`design/` 7 个文件）�
 4. **H-02**：留待 v2、未修复，未写入 v2 规格、未转交；960 下整图一屏完整性未验证。
 5. **11 项已接受 P3**：未修复、未扩改。
 6. 日志产生于提交前工作树（行号与提交逐一一致、之后未改 `frontend/`）；未 push / PR / merge。
+
+## 12. H-01 修复（T-18）独立 Review 记录（2026-10-28，追加）
+
+> §0 ~ §11 为历史原件，不改写（§11 中“A 未开始”为 Converge 时点记录）。**本节由集成人落盘，不是 A 的结论本身**；A 原件逐字归档于 [review-h01.md](review-h01.md)（与临时报告 `review-h01-result.md` sha256 `5368e34c…` 一致），结论以原件为准。
+> **集成人**：claude-opus-5-5 via anthropic（规划 / 文档类；非审核员 A）。bridge 本窗口额度耗尽，不重复试。
+
+### 12.1 固定目标与审核员
+
+- **固定目标**：`869cb71dce6d6553727fe30e4380e640cf25621b`（分支 `fix/frontend-workbench-visual`）；基线 `43b6d79681a49562f41751368b2ae00c24062f56`；审查 diff `43b6d79..869cb71`（13 文件 +426 / −7，`frontend/` 仅 2 文件）。代码等价于 `771f2af`（`frontend/` 树 `03fda1de…` 相同）。§11.3 写的输入 `43b6d79..771f2af` 为时点描述，A 实际按 `869cb71` 全量审阅（原件 §2.4 已说明不构成问题）。
+- **审核员**：A = **claude-fable-5-1 via anthropic**；独立新会话，与 Implement（openai/gpt-6-astra）不同模型。通道：bridge 本窗口共享 account 额度实测耗尽（seven_day / monthly spend limit），按 AGENTS §6 规则 5 不重复试；Fable 官方通道最小真实探活 READY。审核会话 exit 0，审前审后工作树干净、HEAD 不变，未改 tracked 文件。
+
+### 12.2 结论
+
+**通过**（P1 = 0，P2 = 0，P3 = 1）。A 原件写“P3-1 可接受为后续”是审核员建议；**是否接受为后续或要求补采，待 Walter 裁定**，集成人不代为接受。
+
+- **P3-1**：`assets/handoff/m08-chart-1440.png` 仍为修复前原件，1440 不受 H-02 影响，本可补采修复后整图；建议 Walter 复核 M-08 前补采到新目录（不覆盖旧图），或在 Gate 2 材料中明确看图路径为 `assets/h01-fix-20261028/after-1440x900.png` / `after-960x900.png`（图注特写）。关联 AC-009-2 / M-08。登记为 tasks 中 **A-H01-P3-1**，状态“未补采，待 Walter 决定修 / 接受为后续”。
+- 观察（非发现）：`theme.spec.ts:74` 的 `console.log` 可改为 annotations，纯偏好。
+
+### 12.3 A 亲跑 vs 查阅日志
+
+| 类别 | 内容 | 结果 |
+|---|---|---|
+| A 亲跑（`869cb71`） | `pnpm -C frontend test:e2e -g "H-01"` | **2 passed / exit 0** |
+| A 亲跑 | `test:e2e -g "AC-006-3\|AC-006-4\|AC-001-4\|AC-002-6"` | **22 passed / exit 0** |
+| A 亲跑 | `check --only generated` | **exit 0**（156 令牌 / 5 生成物；契约 12 方法 10 事件） |
+| A 亲跑 | `git diff --check 43b6d79..869cb71`、冻结件 `--exit-code` | exit 0 |
+| A 亲核 | 截图 sha256：after 与 A 绿跑产物逐字节相同；before 与归档红跑产物逐字节相同；原生视觉看 4 张图 | 一致（AI 观察，非人工验收） |
+| 查阅非亲跑 | Implement 红跑 2 failed / exit 1 → 绿 2 passed；相关 6 passed；全量 `pnpm -C frontend test` **559 + 68 passed / exit 0**；`build` exit 0；diff-check exit 0 | A 未亲跑全量与 build、未复现红跑（需改 tracked 文件），以日志 + 逐字节相同的 before 图 + error-context 互证 |
+
+A 亲跑日志在本机临时目录 `reviewer-{h01-e2e,h01-related-e2e,check-generated}.{log,exit}`，不入库。集成人核对：三项 exit 均为 0，日志尾部计数与原件一致。
+
+### 12.4 集成时边界核对
+
+- `git diff --quiet 869cb71..HEAD -- frontend design specs/frontend-workbench/spec.md specs/frontend-workbench/checklist.md` → exit 0（Review 后实现未变）。
+- Checklist 70 / 0；manual-acceptance 0 checked / 8 unchecked；`assets/handoff/` 未动。
+- 本阶段未新跑测试，未改生产 / 测试 / 令牌 / 契约 / 冻结 spec。
+
+### 12.5 待办与 Gate
+
+1. **本次 H-01 修复 Gate 2：未批准**——需 Walter 在本 Review 之后明确批准（并处置 P3-1）；用户先前“继续”只授权修复，不是对 Review 的提前批准。
+2. **A-H01-P3-1**：未补采，待 Walter 决定。
+3. **M-01 ~ M-08**：仍待 Walter 人工复核（8 项未勾）。
+4. **H-02**：留待 v2、未修复；11 项旧 P3 未扩改。
+5. 未进入 Handoff；未 push / PR / merge。

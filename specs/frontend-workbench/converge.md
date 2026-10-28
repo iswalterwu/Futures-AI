@@ -165,3 +165,9 @@ A 亲跑 generated 对拍（exit 0）、103 项定向单元 / 组件（exit 0）
 此结论**不表示**：独立 A Review 已通过（未开始）、本次修复 Gate 2 已批准（未批）、M-01 ~ M-08 人工验收通过（8 项仍未勾，含 M-08）、整图在 960 下完整显示（H-02 留待 v2、未修复、未写入 v2 规格）。11 项已接受 P3 未修复、未扩改。
 
 下一步：独立 A（claude-fable-5-1，先 bridge 后 anthropic，新会话、与实施模型不同）定向 Review `43b6d79..771f2af` 的 frontend diff 与本轮文档；之后 Walter Gate 2；再按流程 PR / merge。本会话未 push / PR / merge，未启动其他 agent。
+
+### 9.5 独立 Review 结果（集成人追加，2026-10-28）
+
+> §9.1 ~ §9.4 为 Converge 时点记录，不改写。
+
+独立 A（claude-fable-5-1 via anthropic，新会话）对固定目标 `869cb71` 定向 Review **通过**：无 P1 / P2，1 项 P3-1（1440 M-08 整图仍为修复前原件，建议补采或在 Gate 2 材料指明图注特写路径），待 Walter 裁定。A 亲跑 H-01 2 passed、相关 22 E2E passed、generated exit 0；全量 559 + 68 与 build 为查阅 Implement 日志。原件 [review-h01.md](review-h01.md)，记录 [review.md §12](review.md)。**本次修复 Gate 2 未批准，待 Walter。**
