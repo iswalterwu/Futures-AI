@@ -6,6 +6,7 @@ import type { ContractError, ErrorResponse, MarketBoard, ModuleDef } from '../..
 import '../../design/updown.css'
 import BoardGrid from '../../shared/components/BoardGrid.vue'
 import ModuleShell from '../ModuleShell.vue'
+import SampleChart from './SampleChart.vue'
 
 const props = defineProps<{ module: ModuleDef; client?: DataClient }>()
 const board = ref<MarketBoard>()
@@ -37,6 +38,11 @@ async function load() {
     empty-message="暂无行情盘面数据。"
     @retry="load"
   >
+    <SampleChart
+      v-if="board"
+      :chart-id="module.id"
+      :series="board.series"
+    />
     <BoardGrid
       v-if="board"
       :board="board"
