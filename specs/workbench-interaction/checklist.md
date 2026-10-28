@@ -4,11 +4,589 @@
 > 通过只代表需求 / 设计质量达标，不代表实施完成。实施者不勾选本文件。
 >
 > **审核员**：A = claude-fable-5-1 **via anthropic**（`--model anthropic/claude-fable-5-1`），独立新会话，与实施模型隔离。
-> **切换原因**：2026-10-28 接手时 `claude-bridge` 实测返回 `quota exceeded / rate limit (seven_day) / monthly spend limit`，按 AGENTS.md §2 第 5 步改走同一模型的 Anthropic API 通道；只换接入路径，审核员身份不变。
-> **单审**（AGENTS.md §2 第 5 步）：本文件结论即审核结论。
+> **R6 通道（2026-10-28）**：A = claude-fable-5-1 via anthropic。继承本限额窗口 R3 / R4 / R5 的可用通道证据（`claude-bridge` 对 fable 已为 quota / rate / spend_limit 类失败，exit 1；`anthropic/claude-fable-5-1` 成功），按 AGENTS.md §6 规则 5 **本轮未重探 bridge、未换模型、未改任何 provider / 路由 / 配置**。Tasks r5 / Analyze R5 作者为 claude-opus-5-5 via anthropic（独立会话、不同模型），与 A 隔离。只因正常审核结果修正文档，不换模型找通过。
+> **R5 通道（2026-10-28）**：A = claude-fable-5-1 via anthropic。继承本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败：quota / rate / spend_limit 类，exit 1；`anthropic/claude-fable-5-1` 成功，exit 0；R4 亦经 anthropic 实际完成），按 AGENTS.md §6 规则 5 **本轮未重探 bridge、未换模型、未改任何 provider / 路由 / 配置**。Tasks / Analyze 作者为 claude-opus-5-5 via anthropic（独立会话、不同模型），与 A 隔离。
+> **R4 通道（2026-10-28）**：A = claude-fable-5-1 via anthropic。继承本限额窗口 R3 调度会话的探活证据——`claude-bridge/claude-fable-5-1` 已失败（quota / rate / spend_limit 类，exit 1）、`anthropic/claude-fable-5-1` 成功（exit 0）；按 AGENTS.md §6 规则 5 不在同一限额窗口重试已耗尽通道，**本轮未再发起 claude-bridge 探活**，直接走 anthropic；只换通道不换模型，未改任何 provider / 路由 / 配置。Plan 补正者为 claude-opus-5-5 via anthropic（独立会话、不同模型），与 A 隔离。
+> **切换原因**（R3，2026-10-28）：调度会话按 AGENTS.md §6 规则 2/5 做本轮最小真实探活——`claude-bridge/claude-fable-5-1` 失败（quota / rate / spend_limit 类，exit 1），`anthropic/claude-fable-5-1` 成功（exit 0）；按 §6 只换同一模型的接入通道，不换模型、不在本限额窗口内重试 bridge；审核员身份不变。（R2 时的切换原因同类，当时依据为 AGENTS.md §2 第 5 步旧文，现并入 §6。）
+> **单审**（AGENTS.md §2 第 5 步、§6）：本文件结论即审核结论。
 >
-> **文件结构**：§R2 为**当前有效结论与勾选**；§R1 为首轮原始记录（历史快照，内容原样保留，其复选框改以 ☐ / ☑ 文字呈现，**不参与** Implement 前置判定）。
-> 阶段不适用项（Tasks / Analyze / 代码级 / Handoff 截图）统一放在 §R2「阶段说明」，以文字说明而非复选框，避免未来项造成流程死锁；Tasks 产出后由 A 另开会话复核并补勾。
+> **文件结构**：§R6 为**当前有效结论与勾选**（唯一参与 Implement 前置判定的复选框）；§R5、§R4、§R3、§R2、§R1 为历史快照（内容原样保留，其复选框均已改为 ☐ / ☑ 文字，**不参与**当前判定；R3 的 3 项 ☐ 表示 R3 当时未闭环的 B-09 / B-10，R4 已关闭；R5 的 1 项 ☐（P-1）表示 R5 当时未闭环的 B-11，R6 已关闭——以 §R6 为准）。
+> 阶段不适用项（Tasks / Analyze / 代码级 / Handoff 截图）统一放在当前轮「阶段说明」，以文字说明而非复选框，避免未来项造成流程死锁；Tasks 产出后由 A 另开会话复核并补勾。
+
+---
+
+# R6（2026-10-28，第六轮：B-11 修正定向复核 + 未回退核对）
+
+## 基线与范围
+
+- 工作目录 `D:/2030/Futures-AI-interaction`，分支 `spec/workbench-interaction`，HEAD **`8bd1b31`**（与 R3～R5 相同；本轮**无新提交**）。启动时 `git status --porcelain`：` M specs/README.md`、` M specs/workbench-interaction/checklist.md`、` M specs/workbench-interaction/plan.md`、`?? specs/workbench-interaction/analyze.md`、`?? specs/workbench-interaction/tasks.md`——五个文件仍为未提交 / 未跟踪状态，本审核员原样保留、未暂存、未提交；审查前后 `git status` 一致。
+- 冻结输入（审查前、写入前两次核对一致）raw SHA256：spec `ed0f6c6c…942d9`（v1.1，46 AC，R3 起未变）；plan `2623f32b…09fc5`（r5：R4 版 `981ecc25…81d21` + S-20 两处）；tasks.md（r5）`2d1f5508…77f39`（**全文 1108 行分四段读完**）；analyze.md `79471e67…86476`（221 行读完）；原 checklist（含 R5）`a6cf37f0…09380`；`specs/README.md` `18f95dba…b0385`（只读）。全部与调度给出的 hash 一致，未移动。
+- 重读：AGENTS.md（§2 / §5 / §6）、`docs/plan.md` 全文、spec.md 全文、plan.md 全文、checklist.md §R5 全文（B-11 / O-4 / S-19～S-24 / P-1 / 最小关闭要求；R1～R4 按需）、`templates/tasks.md`、tasks.md 全文、analyze.md 全文、`docs/interaction.md` §3.3–§3.5 / §3.7、`docs/designUI.md` §3（顶栏全局“投放”入口归壳层，:73）。不以作者摘要或 hash 代替阅读。
+- **plan 真实 diff（`git diff HEAD -- plan.md`，只读）**：14 个 hunk、+15/−13。其中 12 个 hunk 落在 R4 已核实的 B-09 / B-10 位置（:6–7 页首两行、:83、:86、:89、:166、:178、:198、:202、:207、:238、:259、:266），内容与 R4 逐项引用的文字一致；**新增的 2 个 hunk 仅为 :18（§1 唯一修改者清单）与 :286（§6 回滚块）**，各加入一处“frontend-workbench 既有 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受契约 2.0.0 影响的硬编码断言（仅 T-A09，保留 v1 语义 / 恢复 v1 原断言）”——即 S-20 原文范围，未触及方法表、矩阵、场景表、迁移表、§4.5～§4.7、§3 持久化、§1.1、§7、§8。R4 版 plan 未曾提交，无法按字节重放其 diff，本轮以 R4 记录的 hunk 位置与引用文字做内容比对。
+- **前端基线只读核对**（`D:/2030/Futures-AI-frontend`，核对时 HEAD **`8920b06`**，分支 `feat/frontend-workbench`；自 R5 的 `b991059` 又前移 2 个提交：`beb5b75` 记录 Walter 2026-10-28 Gate 2 确认、`8920b06` “Merge origin/main into feat/frontend-workbench（Handoff 合并主线）”）：`git merge-base --is-ancestor HEAD main` / `origin/main` → **均不是** `main`（`85c6cbb`）/ `origin/main`（`3bf6476`）的祖先；review.md 页首现写“Gate 2 已批准 … 进入 Handoff”，但 §8 原文授权“PR 并 merge 到 main”尚未体现为 main 上的提交。→ **frontend-workbench v1 Handoff 合入 main 的 commit 仍不存在**，plan §1.1“实现起点 = 经 Review / Gate 2 / Handoff 合入后的 commit”未满足，`implementation_base_sha = PENDING` 如实。另在 `8920b06` 抽查 tasks §0 事实：`package.json` 脚本 `contract` / `check` / `typecheck` / `lint` / `test:unit` / `test:e2e` / `test` ✓；`CONTRACT_VERSION` 仍 `'1.0.0'` ✓；`mock.spec.ts:15`（`fixtures/*.json` glob 不递归）/ `:100`（`contractVersion: '1.0…'`）、`contracts.spec.ts:248`（`dataMethods` 键列表）、`contract-doc.spec.ts:64`（`x-methods` 长度 12）✓；`fixtures/*.json` 恰 9 个 ✓；`nav.ts` 无 `jobs` ✓。以上均为**核对时刻事实**，不是实施基线；Implement 开工时仍须按 tasks §7 在 `implementation_base_sha` 重核。本轮未 fetch、未改该仓库任何引用。
+- **审核员与通道**：A = claude-fable-5-1 via anthropic（见页首 R6 通道）。派工脱敏记录：角色 A / 任务 Checklist R6（B-11 定向 + 未回退）/ 基线 `8bd1b31` + 上述六个输入 hash / provider `anthropic` / 继承失败类别 `claude-bridge` quota·rate·spend_limit（exit 1，R3 窗口；本轮未重试）。
+- **未执行**：未安装依赖、未运行任何产品测试或应用、未启动其他 agent、未读凭证或全局配置、未改 provider / 路由、未修改 spec / plan / tasks / analyze / docs / README / 代码 / 前端分支、**未在仓库内外创建、修改或删除任何临时文件**（结构复算只用 `python - <<'PY'` 标准输入一次性脚本，不落盘）、未 commit / push / merge / 切分支。唯一写入文件为本文件（新增 §R6、页首两处说明、把 §R5 的 25 个 `[x]` 与 1 个 `[ ]` 改为 ☑ / ☐ 文字；R5 其余内容未动）。
+
+## 结论（R6）：**通过**（定向；B-11 关闭，P-1 补勾；Tasks r5 + Analyze R5 文档质量通过；**Implement 仍 BLOCKED（外部基线）**）
+
+- **B-11 关闭（按 R5 最小关闭要求 (a)）**：作者**删除**了登记机制而非规避 AGENTS §5.1，tasks 页首明写“未请求、也未声称 Walter 批准任何机制”，§3 / T-C01 / T-H01 逐项与 (a) 一致（见下表）；运行时复杂度净减少，无新增机制；不改 plan / spec。→ **P-1 ☑**。
+- **S-19～S-24 处置**：S-19 / S-22 / S-23 / S-24 在 tasks 以一句口径或测试写法落实、S-20 在 plan §1 / §6 各一行、S-21 在 analyze 以“历史注 + 现编号状态表”落实；均**未引入新机制**（见下表）。
+- **未回退**：V-02 结构项独立复算与 R5 相同（62 任务 / 96.5 h / 46=46 AC / 无环 / 1:1 / 全部引用 AC / 62×v1 闸门、H 4×v2 闸门）；I-01b 独立复核 spec ↔ plan ↔ tasks 仍无冲突；B-09 / B-10、S-11～S-18、D-018 scope、壳方文件零修改均未回退。
+- **外部闸门**：`implementation_base_sha = PENDING` 为真实外部阻塞（见“基线与范围”）；本审核员**不能代 Walter 批准任何 Gate**，Gate 2 已批准是 frontend-workbench 的事实、不是本 feature 的 Handoff commit。**Implement 不得开工**，直到合入 main 的 Handoff commit 登记为 `implementation_base_sha` 并按 tasks §7 重核 §0 事实。AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项仍为外部阻塞，Converge 必报“未收敛（外部阻塞）”。
+
+## B-11 逐项核对（R5 最小关闭要求 (a) → r5 落点）
+
+| 要求 | r5 落点（tasks 行号） | 核实 | 判定 |
+|---|---|---|---|
+| §3 该条改为“v2 之前由两页挂载（互斥路由视图）；v2 AppShell 挂载后由 T-H01 移除页面级挂载” | :67 原文：v2 之前 `JobListPage` / `JobDetailPage` 各自挂载同一 IntakeDrawer（互斥路由视图，同一时刻仅一个），v2 AppShell 落地后由 T-H01 从本 feature 自有的这两个页面文件移除（不改 `app/**`）；并明写“不设任何首个挂载者登记 / 单实例登记 / 卸载释放运行时机制，`intakeStore` 不含实例登记” | plan §2.1 两条路由记录（`jobs` / `job-detail`）为同一 `<RouterView>` 下的并列顶层记录、非嵌套 → 互斥成立；与 plan §1.1 接线顺序、§4.2“页面入口或 v2 顶栏打开同一 IntakeDrawer”、designUI §3 顶栏入口归壳层一致 | ✓ |
+| T-C01 删“单实例登记”；`stores/intake.ts` 不含实例登记；标准 3 改为 metadata only；命令 3 标题同步 | :595 标题“页面级抽屉挂载”；:601 修改范围 `stores/intake.ts`“**不含实例登记**”、两页各自挂载；:606 标准 3 “不调用任何文件正文读取 API（File 只取 name / size / type / lastModified）（spec §4 … 随 AC-009-1）”；:611 命令 3 `-t "WI metadata only"`；标准↔命令 4:4 | 全文残留扫描：“单实例 / 首个挂载 / 卸载释放”仅出现于 :7（修订记录的删除说明）与 :67（否定句）；“实例登记”仅 :7 / :67 / :601（均为否定或删除说明）；“single drawer”0 处 | ✓ |
+| T-H01 修改范围加“移除两页的 IntakeDrawer 挂载（不改 `app/**`）”；标准 1 保留“同一页面只渲染一个抽屉”作集成断言 | :1035–:1046：修改范围“移除 `frontend/src/jobs/pages/{JobListPage,JobDetailPage}.vue` 中的页面级 IntakeDrawer 挂载（本 feature 自有文件）… 不改 `app/**` 和 `workbench/**`”；标准 1 三处入口同一流程 + “同一页面只渲染一个抽屉”（AC-003-1 最终）；新增标准 2 / 命令 2 工程门（`typecheck && lint`，AC-009-1 部分前置）——因 T-H01 现改 Vue 文件，按 tasks §1-4 自身规则必须补工程门；2:2；依赖 T-C04 / T-G09、预估 1 h、`blocked_by: v2` 不变；上下文写明页面内投放按钮保留、经 `intakeStore` 开同一抽屉，T-C04 本地 e2e 由 T-H04 全量复跑回归 | H 组标题 / §6 DAG 说明同步为“只清理本 feature 页面级抽屉挂载 + 集成验证，不改壳方”；仍在 `jobs/**` 内，不触碰壳方文件 | ✓ |
+| 不走 (b)：无 Walter 批准、不保留待批登记机制 | 页首 r5 说明“不请求、也不声称 Walter 批准任何机制”；`specs/README.md` 本 feature 行亦写“删除 IntakeDrawer 首个挂载者登记”、“B-11 尚未经 A 复核关闭” | 删除即不再触发 §5.1“先报 Walter”的前提；A 未代批任何机制 | ✓ |
+| 不改 plan / spec | spec hash 未变；plan 仅 S-20 两处（见“基线与范围”） | — | ✓ |
+
+附带观察（接受，不加防线）：Analyze R5 §1 指出“v2 壳方挂载合入集成分支 → T-H01 完成”之间存在短暂双挂载窗口。这是集成顺序问题，由 plan §1.1 接线顺序与 AGENTS §6 规则 7（集成人串行合并）收口，T-H01 标准 1 断言最终状态；**不为此窗口增加任何运行时逻辑**，与 §5.1 一致。
+
+## S-19～S-24 处置核对
+
+| # | 落点 | 核实 | 判定 |
+|---|---|---|---|
+| S-19 | T-A09 修改范围 `contractSemantics.jobScenarios` 明写声明句“CONTRACT.md §4 所列为 v1 五场景与 fixture 键；job-* 场景及 `window.__FAI_MOCK__.jobFixtures` 以本条为准”（:210）；T-A09 标准 2 / 命令 2 `WI change note`；T-G06 `contract-doc.spec` 断言该句（:933）；§0 生成器条目指向 S-19 | 静态 v1 文案口径声明 + 文档断言；**不改生成器** | 已落实 |
+| S-20 | plan :18 所有权清单、:286 回滚块各一处（见 plan diff 核对） | 只补 T-A09 的三份既有契约测试硬编码断言范围；无其他 plan 改动；I-04“所有权 = 回滚块”在该文件集上成立 | 已落实 |
+| S-21 | analyze.md 页首改指向“Analyze R5”；R3「1. 冲突 / 差距 / 歧义（最终状态）」与「最终结论（R4）」下各插一行【r5 注】标历史；新增 Analyze R5 §3 当前状态表用现编号（O-3 / O-6 → T-A09、O-5 → T-A11、O-7 / O-9 → T-A18）；R1～R4 原文保留 | 历史未删、现状可读 | 已落实 |
+| S-22 | tasks §7（:1107）：实施期顶格 2 h 任务若超时按 AGENTS §2 第 9 步追加拆分任务并记录，不改 AC / 范围；r5 不预先重拆 | 只是提醒，不是新机制；62 任务不变 | 已落实 |
+| S-23 | §2 S-15（:56）与 T-A18 修改范围（:371）/ 标准 3（:375）：activeRunId 终态后置 null；仍在运行的第二个带上下文 run **不接任**、其终态不合并 overlay；一句写入 `SendMessageSchema.jobContext` describe；命令 3 `WI no context` 承担正反例 | 与 plan §4.7“仅匹配 pendingRunId 的终态才合并”、interaction §3.3 R2 旁路一致；无调度 / 接任逻辑 | 已落实 |
+| S-24 | T-A17 标准 2（:357）：原子性测试走 T-A10 的**真实 `commit(mutator)`**——测试 mutator 先改 working copy 再抛错，或写入不合 schema 的值触发真实边界校验失败；随后经真实读 API（`getJob` / `getStageWorkspace` / `listInterventions`）断言原状态不变；不复制 commit 算法、**不加生产故障开关或注入框架** | 符合 AGENTS §5.6（测真实实现、在系统边界注入） | 已落实 |
+
+## 未回退核对
+
+| 对象 | 核对方式 | 结果 |
+|---|---|---|
+| V-02 结构项 | 独立脚本复算（stdin，不落盘）：62 任务 / 编号唯一 / 96.5 h（A 24·38.5 h，B 7·10.5，C 4·6.5，D 3·5，E 3·5.5，F 7·12，G 10·14.5，H 4·4）/ 每项 1～2 h / 依赖全部指向更早编号 / 62×“未开始”/ 62×`blocked_by: frontend-workbench-v1-handoff` / H 4×`frontend-workbench-v2`（非 H 0）/ 完成标准↔验证命令逐任务 1:1（0 例外；T-C01 4:4、T-H01 2:2）/ 每条标准含 AC 引用（0 例外）/ 矩阵 46 行 = spec 46 AC / “部分前置”均为最终任务祖先（0 例外）/ T-G06 与 T-G09 以全部 A～F 任务为祖先 / spec 标“端到端”的 17 条 AC 最终命令均为 `test:e2e e2e/jobs/…` / `-t`·`-g` 标题 184 条中 182 条以 `WI` 开头、另 2 条为 §1 命令形态的 `<标题>` 占位符（R5 记“184 条全部 WI”系未扣占位符，不影响结论）/ 修改范围中无壳方文件（`src/app/**`、`WorkbenchPage`、agent store / UI、`contract-build.mjs`、`check.mjs`）| 未回退 |
+| I-01b | tasks r5 未改 spec 行为 / AC；未改 plan 30 方法 + `send(jobContext)`、19 行矩阵、九场景、十样例、rerun 迁移表、§4.5～§4.7、§3 持久化；tasks §3“plan §2.1 / §4.2 没写明 v2 之前由谁挂载”属实（plan 只写“由 shell 的投放按钮打开 / 页面入口或 v2 顶栏打开同一 IntakeDrawer”），r5 填补方式与 plan §1.1 接线顺序一致，不构成冲突；Analyze R5 结论“无内部冲突、新发现无”经独立复核成立 | 未回退 |
+| B-09 / B-10 | plan :86 / :198 / :238 / :266（publishedAt）、:83 / :89 / :166 / :178 / :202 / :207 / :259 / :266（Deliverable 判别 + 三锚 + `DeliverableStatusLabel` + 原子定稿 + “已定稿 vN · 时间”）与 R4 引用一致；tasks T-A03 / T-C04 / T-G06、T-A04 / T-A08 / T-A17 / T-F01 / T-F07 / T-G06 落点未动 | 未回退 |
+| S-11～S-18 | tasks §2 八行与落点任务未动（S-15 仅增 S-23 一句） | 未回退 |
+| D-018 scope | tasks §3：不自动定稿、无反向方法、v1 只做①+派生标记、不做验证队列 / 格物致知 / 蒸馏 / D-019 角色成本 | 一致 |
+| spec v1.1 / checklist（R5） | hash 与调度给出一致，未变 | 未变 |
+
+## 新观察（R6；不阻断、不计入判定）
+
+| # | 位置 | 说明 |
+|---|---|---|
+| S-25 | tasks §0 外部依赖证据表 | 前端分支已前移到 `8920b06`（Gate 2 已批准、Handoff 进行中、**未合入 main**）。§0 表仍记 `b991059` 时点事实并已声明“仅核对时事实”，不算 Tasks 缺陷；登记 `implementation_base_sha` 时按 tasks §7 刷新 §0（含 `8920b06` 合入主线后 AGENTS §6 / D-015 等变动对 §0 事实的影响）。本轮抽查的 §0 前端事实在 `8920b06` 仍成立。 |
+| S-26 | checklist §R5 “合计” | R5 原文“25 项中 24 ☑、1 ☐”为算术笔误：R5 实际复选框 26 项（N 4、I 5、V 3、P 6、C 8），25 ☑ / 1 ☐（P-1）。R5 结论不变、原文不改；本轮按真实复选框重算。 |
+
+## 当前有效检查项（R6 勾选；唯一参与 Implement 前置判定）
+
+### 需求完整性
+
+- [x] **N-01 每条编号需求至少有一条可验证的验收规则。** spec v1.1 未变（SHA256 与 R3～R5 一致），46 条 AC；tasks r5 矩阵 46 / 46（独立复算）。
+- [x] **N-02 无未澄清歧义。** Q-001～Q-013 全部裁定；r5 修订（B-11 删除、S-19～S-24）均为任务 / 口径层，未引入新需求问题，无需回流 Clarify。
+- [x] **N-03 目标与非目标边界清晰。** spec §2 未变；tasks §3 范围边界未扩（B-11 条改为纯接线安排）。
+- [x] **N-04 spec 每条 what 与 AC 在 plan 均有可实现的设计落点。** 沿用 R4；plan 仅 S-20 两处文字，落点未动。
+
+### 一致性
+
+- [x] **I-01a spec ↔ plan 无冲突。** spec 未变；plan 变更仅 S-20 所有权 / 回滚文字，不涉行为。
+- [x] **I-01b spec / plan / tasks 之间无冲突（Analyze）。** 独立复核（见“未回退核对”）：Analyze R5 “无内部冲突、新发现无”成立；B-11 已从 §5.1 范围问题转为无机制的接线安排，不再挂 P-1。
+- [x] **I-02 与 docs/ 决策与 ADR 无冲突。** 沿用 R5 映射（D-018 §1 / §2 / §5、interaction §3.3–§3.4 / §3.7、designUI §2.4 / §3.4 / §3.9 / §5.2）；S-23 口径与 interaction §3.3 R2 旁路一致；designUI §3 顶栏“投放”入口归壳层与 tasks §3 / T-H01 一致。
+- [x] **I-03 前端基线事实核对。** R5 在 `b991059` 全量核对属实；本轮在 `8920b06` 抽查 tasks §0 关键事实（脚本名、`CONTRACT_VERSION` 1.0.0、三处硬编码行、fixture 9 个、glob 不递归、`nav.ts` 无 jobs）仍成立；均为核对时刻事实，Implement 开工时按 tasks §7 重核。
+- [x] **I-04 文件边界与回滚一致。** plan :18 所有权与 :286 回滚块已含 T-A09 三份既有契约测试（S-20 闭环）；tasks §1-5 与之一致；T-H01 只改 `jobs/pages/**`，H 组零壳方文件；在 spec §4“只改 frontend/”之内。
+
+### 可测试性
+
+- [x] **V-01 每条验收规则可映射到自动测试或人工验收步骤，且被映射的设计存在。** 沿用 R4 / R5；矩阵 46 条映射未改（43 ✓ + 3 ◐ 外部阻塞）。
+- [x] **V-02 任务粒度与验证命令满足 tasks.md 模板要求。** 独立复算与 R5 一致（62 / 96.5 h / 无环 / 1:1 / 引用 AC / e2e 层级 / `WI` + jobs 路径隔离 / 真实脚本名 / 闸门齐全 / `implementation_base_sha: PENDING` 如实）；r5 改动后 T-C01 4:4、T-H01 2:2；H 组表述更新为“只清理本 feature 页面级挂载 + 集成验证，不改壳方”（R5 原话“只写集成测试”对应 r4 文本，本轮按 r5 口径确认）。
+- [x] **V-03 静态守卫声称与真实脚本一致。** `check --only {glass,network,generated,colors,updown,grid}` 六项与 `check.mjs` 一致（R5 核；`8920b06` 脚本名未变）；徽标守卫由组件测试承担。
+
+### 工程准则（AGENTS §5）
+
+- [x] **P-1 不为猜测场景加复杂度（§5.1）。** **B-11 关闭**：`intakeStore` 实例登记 / 卸载释放机制已整体删除，替代为零运行时逻辑的接线安排（两页互斥挂载 → T-H01 移除），未请求、未声称 Walter 批准，无待批机制残留；r5 其余改动（S-23 守卫口径、S-24 测试写法、S-19 / S-20 文字）均不新增运行时机制；Analyze 提到的双挂载过渡窗口由集成顺序收口、不加防线。其余 R5 已核项（commit 原子替换、持久化状态订阅、S-15 守卫、rerun 内存排队）来源不变。
+- [x] **P-2 外部数据只在入口层校验（§5.2）。** tasks §1-7 未变；S-18 refine 在契约边界。
+- [x] **P-3 不提前抽只用一次的抽象（§5.3）。** 沿用 R5；r5 未新增抽象（删除了一个只为未来场景服务的 store 机制）。
+- [x] **P-5 自动生成文件不手改（§5.5）。** tasks §1-4 未变；S-19 经 `contractSemantics` 进文档、不改生成器。
+- [x] **P-6 测试测真实实现、少用 mock（§5.6）。** S-24 以真实 `commit` + 测试 mutator / 真实校验失败 + 真实读 API 取证，不造生产故障开关；其余沿用 R5（normal 场景持久记录取证、aborted 系统边界注入、`page.clock` 推进真实定时器、diff 期望手写）。
+- [x] **P-7 按仓库现有流程（§5.7）。** 命令全部沿用 frontend 既有脚本；T-H01 新增工程门亦为既有 `typecheck` / `lint`；不新增工具 / 依赖。
+
+### 其他自定义项
+
+- [x] **C-01 前置依赖与职责边界清楚。** tasks 头部与 §0 如实（PENDING、点时事实声明）；本轮第四次核对外部闸门：Gate 2 已批准但未合入 main，闸门未解除；`specs/README.md` 本 feature 行“待 A R6 定向复核 / B-11 尚未经 A 复核关闭 / Implement 外部基线 blocked”与 R6 前事实一致（只读核对；R6 结论由实施侧更新该行）。
+- [x] **C-02 契约闭环。** 30 方法在 T-A10～T-A21 各有实现任务与单测；T-A06 23 个 action 判别联合；r5 未改。
+- [x] **C-03 事件与状态闭环。** T-A14 / T-A18 / T-A19 / T-A20 / T-A21 覆盖未变；S-23 使 `job-state-agent.spec` 反例口径唯一。
+- [x] **C-04 场景定义足以稳定验证。** T-A07 / T-A08 十样例、T-A09 九场景（含 S-19 声明句）、T-G05 遍历、非 normal 不触碰两个 key 的 Storage spy 断言未变。
+- [x] **C-05 版本与定稿闭环。** T-A16 不可变历史、T-A19 accept / revert / resolve_conflict、T-A17 原子定稿（S-24 真实 commit 取证）+ 未决项拒绝 + final / cancelled 只读门、T-F07 正负向 e2e、无反向方法。
+- [x] **C-06 隐私与本地持久化自洽。** T-A11 白名单 / 512 KiB / 损坏保留原 key；T-C01 标准 3 File 只取元数据（`WI metadata only`）；T-G04 e2e；fixture 合成样例。
+- [x] **C-07 视觉与工程纪律。** T-A23 / T-D03 不新增色值与玻璃类；差异行 / 徽标文字 + 图标；r5 未改。
+- [x] **C-08 D-015 / D-013 未混淆；D-017 仅边界引用。** tasks / analyze 未引用 D-015；D-017 仅在 S-17 作边界引用。
+
+**合计**：26 项中 26 ☑、0 ☐。
+
+### 阶段说明（不设复选框）
+
+- **P-4**：代码级，Review 阶段核。
+- **AC-009-1 命令输出 / AC-009-2 截图**：Implement / Handoff 证据，当前无；本轮未运行任何产品测试，代码未实施，不声称任何 AC 已通过、不假绿。
+- **Implement 前置**（累计）：(1) R4 ✓；(2) Tasks 复核：V-02 ✓、**P-1 ✓（R6）**；(3) `implementation_base_sha` = **PENDING**——frontend-workbench v1 Handoff **合入 main 的 commit** 出现后登记（`8920b06` 是 Gate 2 已批准、Handoff 进行中的分支提交，**不是** main 上的合入提交，不得用其或任何中间提交替代）；(4) Analyze 复核 I-01b ✓。**Implement 不得开工**（唯一剩余阻塞为 (3)，属外部，A 不能代批）。
+- **Converge 口径**：AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项在 v2 Gate 1 + 壳方交付 + T-H01～T-H03 前**必须报“未收敛（外部阻塞）”**；D-019 / 剪藏预览 / 复核结果 / 验证队列不计入本 feature。
+
+## 下一步
+
+1. 实施侧更新 `specs/README.md` 本 feature 行（R6 通过：B-11 关闭、checklist 26/26；Implement 等待 v1 Handoff 合入 main 的 commit）；plan / README / tasks / analyze 的工作区改动与本文件一并由实施侧提交（本审核员未 commit）。
+2. v1 Handoff commit 合入 main 后：在 tasks 头部登记 `implementation_base_sha`，按 tasks §7 重核 §0 前端事实（S-25）；如有出入先修 tasks 并重跑 Analyze，再由 A 定向复核；无出入则按 checklist 前置条件（本 §R6 全部 ☑）进入 Implement。
+3. S-22 拆分提醒、S-25 刷新属 Implement / Converge 期事项，不是现在的阻断。
+
+## 结构核验证据（R6，只读）
+
+```text
+HEAD      8bd1b31（spec/workbench-interaction；无新提交）；git status: M README / M checklist / M plan / ?? analyze.md / ?? tasks.md（审查前后一致）
+INPUTS    spec ed0f6c6c…942d9 | plan 2623f32b…09fc5 | checklist(含R5) a6cf37f0…09380 | tasks 2d1f5508…77f39 | analyze 79471e67…86476 | README 18f95dba…b0385（写入前复核一致）
+PLAN DIFF 14 hunks / +15 −13：12 个在 R4 核实的 B-09 / B-10 位置（:6–7, :83, :86, :89, :166, :178, :198, :202, :207, :238, :259, :266）+ 2 个新 hunk :18 / :286 = S-20
+TASKS     62 任务 / 62 唯一 / 96.5 h / 每项 1–2 h / 依赖全部指向更早编号 / 62×未开始 / 62×blocked_by v1 / H 4×blocked_by v2
+          标准↔命令 1:1（0 例外；C01 4:4、H01 2:2）；每条标准含 AC（0 例外）；46/46 AC = spec；部分前置均为最终任务祖先（0 例外）；G06 / G09 祖先覆盖全部 A–F
+          17 条 e2e AC 最终命令均 test:e2e e2e/jobs/…；-t/-g 184 条 = 182 WI + 2 个 §1 <标题> 占位符；修改范围无壳方文件
+          B-11 残留：“单实例 / 首个挂载 / 卸载释放”仅 :7（删除说明）/ :67（否定句）；“实例登记”仅 :7 / :67 / :601（否定）；“single drawer”0
+          S-19 句 :210 / :933；S-23“不接任” :56 / :371 / :375；S-24 真实 commit(mutator) :357；S-22 :1107；T-H01 “不改 app/**” :1041
+FRONTEND  D:/2030/Futures-AI-frontend @ 8920b06（feat/frontend-workbench；beb5b75 = Gate 2 确认，8920b06 = merge origin/main 入分支）；非 main(85c6cbb)/origin/main(3bf6476) 祖先 → 未合入 main
+          §0 抽查仍成立：scripts ✓ / CONTRACT_VERSION 1.0.0 / mock.spec:15,100 / contracts.spec:248 / contract-doc.spec:64 / fixtures 9 / nav 无 jobs
+DOCS      D-018 §1/§2/§5；interaction §3.3–§3.5/§3.7；designUI §3（:73 顶栏投放归壳层）
+AGENTS    §5.1（B-11 关闭依据：机制已删除，无待批项）、§5.6（S-24）、§6（A = claude-fable-5-1 via anthropic，继承探活，未重探 bridge）
+WRITE     唯一改动文件 specs/workbench-interaction/checklist.md；仓库内外未创建 / 修改 / 删除任何其他文件；git diff --check 见回复
+```
+
+---
+
+# R5（2026-10-28，第五轮：Tasks（V-02）/ Analyze（I-01b）质量复核；历史快照，复选框已改为文字符号，不参与当前判定）
+
+## 基线与范围
+
+- 工作目录 `D:/2030/Futures-AI-interaction`，分支 `spec/workbench-interaction`，HEAD **`8bd1b31`**（与 R3 / R4 相同；本轮**无新提交**）。启动时 `git status --porcelain`：` M specs/README.md`、` M specs/workbench-interaction/checklist.md`、` M specs/workbench-interaction/plan.md`、`?? specs/workbench-interaction/analyze.md`、`?? specs/workbench-interaction/tasks.md`——**工作区不干净**，五个文件均为未提交 / 未跟踪状态，本审核员原样保留、未暂存、未提交；不伪称任何提交已完成。
+- 冻结输入（审查前、写入前两次核对一致）raw SHA256：spec `ed0f6c6c…942d9`（v1.1，46 AC，与 R3 / R4 相同）；plan `981ecc25…81d21`（与 R4 相同，**本轮无改动**）；原 checklist（含 R4）`56181b02…b5075`；tasks.md（r4，未跟踪新文件，**全文 1103 行分三段读完**）`98d080d3…740fc`；analyze.md（未跟踪新文件，138 行读完）`c97f6cad…2259b`；`specs/README.md` `66376f8e…dc55e`（只读）。`git diff HEAD --stat` 仅 plan / checklist / README 三处既有改动，与 R4 记录一致；tasks / analyze 为新文件，按 hash 核对后整篇审读（未漏审）。
+- 重读：AGENTS.md（§2 / §5 / §6）、`docs/plan.md`、spec.md、plan.md、checklist.md §R4（R1～R3 按需）、`templates/tasks.md`、tasks.md 全文、analyze.md 全文、`docs/interaction.md` §3.3–§3.5 / §3.7 / §7、`docs/designUI.md` §2.4 / §3.4 / §3.5 / §3.9 / §5.1 / §5.2、D-018 全文、`specs/README.md`（只读）。
+- **前端基线只读核对**（`D:/2030/Futures-AI-frontend`，审查时 HEAD **`b991059`**，分支 `feat/frontend-workbench`；该分支会继续移动，本轮只记录核对时刻）：`git merge-base --is-ancestor HEAD main` → **不是** `main`（`85c6cbb`）/ `origin/main`（`3bf6476`）的祖先；`git branch -a --contains HEAD` 仅本地 `feat/frontend-workbench`；`specs/frontend-workbench/review.md` 页首明写“**不是 Handoff；Gate 2 尚未批准**，未进入 PR / merge”。→ **frontend-workbench v1 Handoff SHA 仍不存在**，Implement 外部闸门未解除；该 review.md 只是外部状态证据，不是 Handoff。另核对 tasks §0 所引事实：`package.json` 脚本 `contract` / `check` / `typecheck` / `lint` / `test:unit`（vitest run）/ `test:e2e`（playwright test）/ `test`（= check && typecheck && lint && test:unit && test:e2e）✓；`vitest.config.ts` include `tests/**/*.spec.ts`、happy-dom、`tests/setup.ts` ✓；`playwright.config.ts` testDir `./e2e`、Chrome 通道、`127.0.0.1:4173` ✓；`@playwright/test` 1.64.1（`page.clock` 可用）✓；`contract-build.mjs` 由 `contractSchemas` + `methodSemantics` / `contractSemantics`（字符串项进 §1）驱动、字段清单渲染 `const` / `enum`、§4 / §5 为静态文案（仅 v1 五场景、九个 fixture 键）✓；`contract --check` / `check --only {generated,colors,glass,updown,grid,network}` 存在 ✓；既有硬编码：`tests/unit/contracts.spec.ts:248–253`（十个 dataMethods 键、`methodSemantics` 长度 12）、`contract-doc.spec.ts:64`（`x-methods` 长度 12）、`mock.spec.ts:100`（`contractVersion: '1.0.0'`）、`mock.spec.ts:15/34`（`import.meta.glob('…/fixtures/*.json')` **不递归**、恰好 9 个）✓；`schema.json` 中 `AgentEvent`（discriminatedUnion）生成为 `oneOf`、`AgentRun`（superRefine）正常入 `$defs` → S-11 / S-12 / S-18 的 literal-object / 判别联合 / refine 与现生成器相容 ✓；`src/shared/components/{Badge,Loading,EmptyState,ErrorState}.vue`、`src/agent/{store,AgentDrawer,…}`、`mock/agent/{success,failure,retry,long}.ts`（long 含 done=true 的 `step.text`、12000ms `run.completed`；failure 1200ms `run.failed`）、mock `send` 以 `setTimeout` 相对 `Date.now()` 回放（假时钟可控）、`main.ts` 为装配点且 `app/router.ts` 由 `navItems` 生成（无 `jobs` 项）、`real/index.ts` 为逐方法 NotImplementedError 桩 ✓。`spec/frontend-workbench-v2` 未过 Gate 1，未作为依赖读取。
+- **审核员与通道**：A = claude-fable-5-1 via anthropic（见页首 R5 通道）。派工脱敏记录：角色 A / 任务 Checklist R5（V-02 + I-01b）/ 基线 `8bd1b31` + 上述六个输入 hash / provider `anthropic` / 继承失败类别 `claude-bridge` quota·rate·spend_limit（exit 1，R3 窗口；本轮未重试）。
+- **未执行**：未安装依赖、未运行任何产品测试或应用、未启动其他 agent、未读凭证或全局配置、未改 provider / 路由、未修改 spec / plan / tasks / analyze / docs / README / 代码 / 前端分支、未创建任何新文件、未 commit / push / merge / 切分支。结构核验（任务数 / 依赖方向 / 祖先关系 / 标准↔命令计数 / AC 集合 / `-t`·`-g` 标题前缀）由本审核员用一次性 Python 只读脚本**独立复算**，不采信 Analyze 的脚本结论；这是文档结构检查，不是产品测试。唯一写入文件为本文件（新增 §R5、页首两处说明、把 §R4 的 24 个 `[x]` 改为 ☑ 文字；R4 内容未动）。
+
+## 结论（R5）：**未通过**（定向；阻断 1 项 **B-11**，为 Tasks 层最小修正或 Walter 批准二选一；不回流 Plan / Clarify、不动冻结 spec、不改 docs）
+
+- **V-02（Tasks 质量）**：62 个任务、编号唯一、依赖全部指向更早编号（无环）；每项 1～2 h（合计 96.5 h）；每项含上下文 / 修改范围 / 完成标准 / 验证命令；**每条完成标准均引用 AC**（spec §4 持久化约束无独立 AC 者以“随 AC-009-1 全量回归”引用，可接受）；完成标准与验证命令**逐任务条数 1:1**（独立复算 0 例外）；46 / 46 AC 在矩阵中、与 spec 集合完全相同；矩阵“部分前置”均为最终任务的祖先，T-G06 / T-G09 以全部 A～F 任务为祖先；62 / 62 `blocked_by: frontend-workbench-v1-handoff`，H 组 4 / 4 另 `blocked_by: frontend-workbench-v2` 且只写集成测试、不改壳方文件；spec 标“端到端”的 17 条 AC 最终命令均为 `test:e2e e2e/jobs/…`，schema / 状态层单测只作“部分前置”，**没有用 schema 代替 e2e**；184 条 `-t` / `-g` 标题全部以 `WI` 开头且路径限定 `tests/{unit,component}/jobs/**`、`e2e/jobs/**`（仅 T-A09 命令 3 有意整文件跑三份既有契约测试，用于证明 v2 不破坏 v1），不会误匹配 frontend-workbench 同编号 AC；命令使用真实脚本名、真实 flag（已对照前端基线）。各任务按增量可落地（A 契约 → mock 状态层 → 路由 / 徽标 / diff → B～F 界面 → G 收口 → H 集成）。**V-02 勾选**。
+- **I-01b（Analyze 结论）**：独立对 spec → plan → tasks 做一致性复核：tasks 未改 spec 行为 / AC、未改 plan 方法集（30 个 DataClient 方法 + `send(jobContext)`）、19 行动作矩阵、九场景 × 读 / 写 / 快照行为、十个作业样例、rerun 迁移表、§4.5 版本 / 冲突语义、§4.6 定稿原子提交与 final 后只读门、§4.7 旁路 / 检查点、§3 持久化白名单与 512 KiB / 损坏规则、§1.1 基线与 blocked_by；R4 关闭的 **B-09（`SourceNote.publishedAt` 为 TradingDate，T-A03 / T-C04 / T-G06）与 B-10（`Deliverable` 判别联合 + 三锚 + `DeliverableStatusLabel` + 原子 `finalizeDeliverable` + 头部“已定稿 vN · 时间”，T-A04 / T-A08 / T-A17 / T-F01 / T-F07 / T-G06）均未回退**；D-018 scope 守住（tasks §3：不自动定稿、无撤销 / 反向方法、v1 只做①+派生标记、不做验证队列 / 格物致知 / 蒸馏 / D-019 角色成本）。Analyze 自查四轮（TF-1～TF-9 修正留痕）结构可信，但本轮**不按其“无内部冲突”自动通过**：其留给 A 的 O-3 / O-4 经独立裁定——O-3 **接受**（见下），O-4 **不接受**（→ B-11）。spec ↔ plan ↔ tasks 之间**无内部冲突**，**I-01b 勾选**；O-4 属 AGENTS §5.1 未经批准的范围扩大，记在 **P-1**（未勾）。
+- **S-11～S-18**：在 Tasks 层**全部已确定且可验证**（逐项见下），本轮判为“Tasks 层关闭”；这只是设计 / 任务落实，不是实现完成。
+- **Implement 前置**：(1) R4 ✓；(2) Tasks 复核 → 本轮 V-02 ✓ 但 **P-1 ☐（B-11）**，需 B-11 关闭后 R6 定向补勾；(3) Tasks 头部 `implementation_base_sha` = **PENDING**（外部闸门未解除，本轮核实）；(4) Analyze 复核 → I-01b ✓。**Implement 仍 BLOCKED**（外部基线 + B-11）。AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项仍为外部阻塞，Converge 必报“未收敛（外部阻塞）”。
+
+## 阻断项（R5）
+
+| # | 严重度 | 位置 | 问题 | 受影响 AC | 最小关闭要求 | 分类 |
+|---|---|---|---|---|---|---|
+| **B-11** | 中（AGENTS §5.1 程序性违规 + 永久死代码：v2 之后 AppShell 先于路由视图挂载，“首个挂载者渲染”规则会让页面级挂载永远不渲染，登记逻辑随之成为常驻无用分支） | tasks.md §3 末条“IntakeDrawer 的挂载”；T-C01 修改范围（“单实例登记”）、完成标准 3（“同时挂载两个 IntakeDrawer 只渲染一个”）、验证命令 3（`WI single drawer and metadata only`）；T-H01 完成标准 1（“同一页面只渲染一个抽屉”）；analyze.md O-4 | 为“v2 的 AppShell 也挂载 IntakeDrawer 后会出现两个抽屉”在 `intakeStore` 加**首个挂载实例登记 / 卸载释放**（约 10 行运行时逻辑）。AGENTS §5.1：即使能说清怎么出错、概率与代码量，也“**必须先报给 Walter 并得到同意**”；Analyze 明写“§5.1 是否需要报 Walter，交 A 判断”——**A 不是 Walter，不能代批**。且存在零运行时逻辑的既定接线安排：v2 之前 `JobListPage` / `JobDetailPage` 各自挂载（二者是互斥的路由视图，同一时刻只有一个存在，不会双渲染）；v2 的 AppShell 挂载落地时，由本 feature 在 T-H01（本就 `blocked_by: v2`，且只改本 feature 自有文件 `jobs/pages/**`，不碰壳方代码）移除页面级挂载——这正是 plan §1.1 “v2 壳方接投放 → 本 feature 集成验证”的接线顺序，无需任何登记机制 | AC-003-1（本地子项与 v2 子项）、AC-007-3（抽屉非模态）间接 | **二选一**：(a) **Tasks 最小修正**（推荐）：tasks §3 该条改为“v2 之前由 `JobListPage` / `JobDetailPage` 挂载（互斥路由视图，同一时刻仅一个实例）；v2 AppShell 挂载后由 T-H01 移除页面级挂载（本 feature 自有文件）”；T-C01 修改范围删“单实例登记”、`stores/intake.ts` 不含实例登记，完成标准 3 改为“不调用任何文件正文读取 API（File 只取 name / size / type / lastModified）”并同步命令 3 标题（如 `WI metadata only`）；T-H01 修改范围加“移除 `jobs/pages/{JobListPage,JobDetailPage}.vue` 的 IntakeDrawer 挂载（不改 `app/**`）”，完成标准 1 保留“同一页面只渲染一个抽屉”作为集成断言。或 (b) 保留登记机制，但须 **Walter 书面同意**并在 tasks §3 与 `specs/README.md` 本 feature 行记录批准（A 不代批）。两者均不改 plan / spec。修正后由 A 新开会话做 **R6 定向复核**（只核 B-11 与未回退） | Tasks 可修正（或 Walter 批准） |
+
+## O-1～O-10 独立裁定（不按“作者说在 plan 意图内”接受）
+
+| # | 裁定 | 依据 |
+|---|---|---|
+| O-1 补 `UploadStatusLabel` / `OriginLabel` / `JobTypeLabel` | 接受 | AC-003-6 / AC-001-1 / S-17 要求的文案必须有来源，plan §2.4 口径“徽标只消费契约文案、不另建映射”决定了只能补在契约；同一机制、零行为 |
+| O-2 补 `Conclusion` / `EvidenceAnchor` / `DerivedValue` / `StageWorkspace` / `WriteReceipt` 最小形态 | 接受 | spec R-004 / R-005 what 与 plan “写回执包含…” 已给语义；Tasks 只定字段，不加行为 |
+| **O-3** T-A09 修改 frontend-workbench 既有三份契约测试的硬编码断言 | **接受（附 S-20）** | 本审核员核实硬编码真实存在（`contracts.spec.ts:248–253`、`contract-doc.spec.ts:64`、`mock.spec.ts:100`）；`CONTRACT_VERSION` 升 2.0.0 与方法数增加后这些断言**必然失败**，plan §6 又要求“合并前跑其 `pnpm test`”——不改则 plan §6 不可满足，删用例更差，故“只改受 v2 影响的硬编码、保留 v1 语义”是唯一且最小的解；v2 已被 plan §1 排除在契约 / schema 修改之外，不存在并发写者冲突；`mock.spec.ts:34` 的 9 文件断言因 glob 不递归**不受** `fixtures/jobs/` 影响（tasks §0 判断正确）。plan §1 / §6 未列这三份文件 → 记 S-20 要求补一行所有权与回滚说明（非阻断） |
+| **O-4** IntakeDrawer 首个挂载实例登记 | **不接受 → B-11** | 见阻断表 |
+| O-5 `persistence.ts` 提供只读状态订阅供横幅 | 接受 | plan §3 明确要求横幅显示降级 / 不可读，横幅必须有状态来源；订阅是最小机制且不经业务契约 |
+| O-6 v1 十个方法在 job-* 场景按 normal 行为 | 接受 | 现 mock 代码路径本就如此；只在 describe 登记，不加分支 |
+| O-7 已有 activeRunId 时第二个带上下文的 send 不替换、其终态不合并 overlay | 接受（附 S-23） | 是 A 在 R2 S-15 主动要求“一句话定清”的事项；与 plan “仅匹配 pendingRunId 的终态才合并”“j-merge 期间不切换 runId”一致，是一个守卫条件而非新机制；替换 activeRunId 的替代方案会使 overlay 失去归属，更差。边界“首个 run 终态后第二个仍在跑的 run 是否接任 activeRunId”未写 → S-23 在 describe 写明“不接任”，不加逻辑 |
+| O-8 `manual-acceptance.md` 放 `specs/workbench-interaction/` | 接受 | R2 I-04 已接受 |
+| O-9 aborted 用合成合法事件序列从系统边界注入 | 接受 | plan §4.7 要求 aborted 行为；不新增脚本；AGENTS §5.6 在系统边界注入 |
+| O-10 schema 写在 `types.ts`，不建 `job-types.ts` | 接受 | plan §2.4 允许二选一；生成器只读 `types.ts` 的 `contractSchemas`，核实属实 |
+
+## S-11～S-18 复核（Tasks 层关闭；非实现完成）
+
+| # | Tasks 落点 | 可验证 | 判定 |
+|---|---|---|---|
+| S-11 展示映射入 CONTRACT.md | §2：九张 literal-object schema 与 `as const` 常量同源，注册 `contractSchemas`，不改生成器；T-A01 / T-A23 / T-G06 | 生成器 `fieldRows` 渲染 `const`（`contract-build.mjs:148`）已核；`contract-labels.spec` / `contract-doc.spec` 正反例 | 关闭 |
+| S-12 revision 载荷按 kind 可辨识 | §2：`z.discriminatedUnion('artifactKind', …)` 四分支，deliverable 保留 `blocks`；T-A05 / T-A14～T-A16 | discriminatedUnion → `oneOf` 已核；`contract-entities.spec` 分支不匹配被拒；不可变性单测 | 关闭 |
+| S-13 `getJob` → `Job \| null` | §2：null 只在 empty 场景预置 id；未知 id 一律 not_found；T-A02 / T-A10 / T-B04 | `job-state-read.spec` 两分支；AC-001-4 空态用预置 id | 关闭 |
+| S-14 失败以 conflict + reason 呈现 | §2：schema refine + describe + j-failed 样例；T-A01 / A02 / A07 / A20 / B05 / G06 | `contract-labels.spec`、`job-state-rerun.spec`、`job-detail.spec`、`contract-doc.spec` | 关闭 |
+| S-15 普通追问与 activeRunId | §2：带上下文的 send 在无 activeRunId 时登记并设为 active；不带上下文不改作业；上下文取发送时值；事件只投递一次；T-A18 / T-E03 / T-G01 | `job-state-agent.spec` 正反例 | 关闭（附 S-23） |
+| S-16 kind v1 子集注记 | §2：13 种，不含 `source_pref` / `value_fix`，describe 注记定稿用独立 finalize；T-A01 / T-G06 | `contract-labels.spec`、`contract-doc.spec` | 关闭 |
+| S-17 派生来源徽“内部生成” | §2：`OriginLabel.derived.text='内部生成'` + source 次文案，不新增色值；T-A01 / A23 / E01 / F01 | `badges.spec`、`analyze.spec`、`deliver-blocks.spec` | 关闭 |
+| S-18 Deliverable 不变量在契约入口一次 parse | §2：判别联合（draft 三锚 null / final 三锚非空）+ `DeliverWorkspace` 一次 superRefine 对齐快照；T-A04 / A08 / A17 / G06 | superRefine 与生成器相容已核（`AgentRun` 先例）；`contract-deliverable.spec` 四反例、`fixtures.spec` j-deliver / j-delivered | 关闭 |
+
+## 新建议（R5；不阻断、不计入判定）
+
+| # | 位置 | 建议 |
+|---|---|---|
+| S-19 | tasks §0 / T-A09；`contract-build.mjs:117–139` | 生成器 §4 “Mock 与实现选择”/ §5 是静态文案（只列 v1 五场景、九个 fixture 键、`window.__FAI_MOCK__.fixtures`），2.0.0 文档中将与 §1 的 `jobScenarios` 并存且不提 `jobFixtures`。不改生成器可接受，但 T-A09 的 `contractSemantics.jobScenarios` 应明写“§4 所列为 v1 五场景与 fixture 键；job-* 场景与 `__FAI_MOCK__.jobFixtures` 以本条为准”，T-G06 `contract-doc.spec` 断言该句存在，避免 Review 时被当作文档自相矛盾。 |
+| S-20 | plan §1 所有权清单（:16）、§6 回滚块 | 补一行：“frontend-workbench 既有 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受契约 2.0.0 影响的硬编码断言（仅 T-A09，保留 v1 语义）”进所有权与回滚范围，使 I-04 的“所有权 = 回滚块”在 Tasks 新增的这一文件集上继续成立。一行 plan 微调，可与 B-11 修正同批提交，不需 Plan 轮次。 |
+| S-21 | analyze.md “最终状态” §1 与 R1-3 O-3 / O-5 / O-7 / O-9 | 任务编号为 r2 顺延前的旧号（T-A08 → 现 T-A09；T-A10 → T-A11；T-A17 → T-A18）。R1 表作为历史可保留，但“最终状态”段落应用现编号；Converge 时顺手改。 |
+| S-22 | T-A18 / T-A19 / T-A20（各 2 h，均在上限且内容密集） | Implement 时若单项超 2 h，按 AGENTS §2 第 9 步在 tasks.md 追加拆分任务（如 A18 拆“上下文登记 + 事件投递”与“overlay / 终态合并”），不要硬塞。 |
+| S-23 | tasks §2 S-15；T-A18 | 写明“activeRunId 在其终态后置 null，不由仍在运行的第二个带上下文 run 接任”（describe 一句，不加逻辑），使 `job-state-agent.spec` 的反例口径唯一。 |
+| S-24 | T-A17 完成标准 2 “向 commit 注入失败” | 写明注入方式（如 mutator 在部分修改后抛错 / 边界校验失败）以保证测试测的是真实 `commit` 的回滚路径，而非测试自造的状态。 |
+
+## 当前有效检查项（R5 勾选；唯一参与 Implement 前置判定）
+
+### 需求完整性
+
+- ☑ **N-01 每条编号需求至少有一条可验证的验收规则。** spec v1.1 未变（SHA256 与 R4 一致），46 条 AC；tasks 矩阵 46 / 46。
+- ☑ **N-02 无未澄清歧义。** Q-001～Q-013 全部裁定；Tasks / Analyze 未引入新需求问题；O-1～O-10 均为 plan 留白的落实而非需求变更，无需回流 Clarify。
+- ☑ **N-03 目标与非目标边界清晰。** spec §2 未变；tasks §3 范围边界与之一致，未把 D-018 效果 ②～⑥ / 撤销 / 自动定稿 / 验证队列 / 格物致知 / D-019 带入。
+- ☑ **N-04 spec 每条 what 与 AC 在 plan 均有可实现的设计落点。** 沿用 R4；tasks 未改 plan 落点。
+
+### 一致性
+
+- ☑ **I-01a spec ↔ plan 无冲突。** 两者 SHA256 与 R4 一致，未变。
+- ☑ **I-01b spec / plan / tasks 之间无冲突（Analyze）。** 独立复核：tasks 未改 spec 行为 / AC、未改 plan 方法集 / 矩阵 / 场景 / 迁移表 / 版本与定稿语义 / 持久化规则 / 所有权；B-09 / B-10 未回退；Analyze R1～R4 结论“无内部冲突”经复核成立。O-4 不是 spec / plan / tasks 间冲突，是 §5.1 范围问题，记于 P-1。
+- ☑ **I-02 与 docs/ 决策与 ADR 无冲突。** D-018 §1（显式 / 二次确认 / 不自动 / 不可撤销 / v1 只做①）→ tasks §3 + T-A17 / T-F07；D-018 §2 / designUI §2.4 “内部生成” → S-17；D-018 §5 `/learning` 不改（tasks 不涉及）；interaction §3.3 R1–R6 → T-A16 / T-A18 / T-A19 / T-G01 / T-G03；§3.4 kind v1 子集 → S-16 注记；§3.7 / designUI §5.2 `draft / final` → S-18；designUI §3.4 “已定稿 vN · 时间” → T-F01；§3.9 完成态不常驻角标 → T-A21。
+- ☑ **I-03 前端基线事实核对。** 本轮重读 `D:/2030/Futures-AI-frontend` @ `b991059`：tasks §0 所列脚本名、配置、生成器结构、既有硬编码、fixture glob 不递归、`page.clock` 可用、mock 回放用 `setTimeout`、组件 / 脚本存在性**全部属实**（明细见“基线与范围”）。
+- ☑ **I-04 文件边界与回滚一致。** tasks §1-5 所有权与 plan §1 一致，且 H 组不改壳方文件；新增的三份既有契约测试（O-3）在 spec §4 “只改 frontend/” 之内，plan §1 / §6 需补一行（S-20，非阻断）。
+
+### 可测试性
+
+- ☑ **V-01 每条验收规则可映射到自动测试或人工验收步骤，且被映射的设计存在。** 沿用 R4；tasks 矩阵把 46 条映射到具体文件与标题（43 ✓ + 3 ◐ 外部阻塞）。
+- ☑ **V-02 任务粒度与验证命令满足 tasks.md 模板要求。** 62 任务 / 1～2 h / 无环 / 上下文·范围·标准·命令齐全 / 标准引用 AC / 标准↔命令 1:1 / 端到端 AC 用 e2e / `WI` 前缀 + jobs 路径隔离 / 真实脚本名 / H 组 `blocked_by: v2` / 头部 `implementation_base_sha: PENDING` 如实登记（独立复算与基线对照见结论）。
+- ☑ **V-03 静态守卫声称与真实脚本一致。** `check --only {glass,network,generated,colors,updown,grid}` 六项与 `check.mjs:8–14` 一致；T-G06 / T-A23 引用正确；徽标守卫由组件测试承担（未假称脚本具备）。
+
+### 工程准则（AGENTS §5）
+
+- ☐ **P-1 不为猜测场景加复杂度（§5.1）。** **未满足：B-11**——`intakeStore` 首个挂载实例登记是为 v2 之后的双挂载预先加的运行时逻辑，未经 Walter 同意，且有零逻辑的接线安排可替代。其余：commit 原子替换（plan §4.6 / §2.4 error 不产生部分修改要求）、持久化状态订阅（plan §3 横幅要求）、S-15 守卫、rerun 内存排队（plan 既定）均有 spec / plan 来源，不算猜测。
+- ☑ **P-2 外部数据只在入口层校验（§5.2）。** tasks §1-7：契约输入 / 返回值 / 本地快照各 parse 一次；S-18 refine 在契约边界；表单复用契约 schema 提示，组件不重复校验。
+- ☑ **P-3 不提前抽只用一次的抽象（§5.3）。** `UploadStatus` 复用 `ArtifactStatusBadge` 渲染不新建组件；头部定稿状态不新增组件；`PersistenceBanner` 三处复用；`diff.ts` / `persistence.ts` 多消费者。
+- ☑ **P-5 自动生成文件不手改（§5.5）。** tasks §1-4：生成物只靠 `contract` 生成、`contract --check` 对拍；不改生成器。
+- ☑ **P-6 测试测真实实现、少用 mock（§5.6）。** e2e 取证走 normal 场景持久记录 + 介入历史界面，不加窗口钩子；aborted 从系统边界注入合法事件；diff 期望手写；`page.clock` 推进真实 mock 定时器。
+- ☑ **P-7 按仓库现有流程（§5.7）。** 命令全部沿用 frontend-workbench 脚本；不新增工具 / 依赖；`pnpm test` 不改。
+
+### 其他自定义项
+
+- ☑ **C-01 前置依赖与职责边界清楚。** tasks 头部外部闸门如实；§0 两次核对 + 本轮第三次核对均为“v1 未 Handoff”；`specs/README.md` 本 feature 行“待 A 复核 / Implement 外部基线 blocked”与事实一致（只读核对；R5 结论由实施侧更新该行）。
+- ☑ **C-02 契约闭环。** 30 个方法在 T-A10～T-A21 各有实现任务与单测；矩阵 23 个 action 在 T-A06 以判别联合建模并约束 kind。
+- ☑ **C-03 事件与状态闭环。** T-A14 / T-A18 / T-A19 / T-A20 / T-A21 覆盖 pendingMerge 两条清除路径、同 run 匹配、failed / aborted 保留、排队与 pendingRunId 转交、inbox 生成 / 已读 / resolved；T-G01 e2e 正负向。
+- ☑ **C-04 场景定义足以稳定验证。** T-A07 / T-A08 十个样例逐行对照 plan 表；T-A09 九场景；T-A10 / T-A11 / T-A12 场景读写行为；T-G05 遍历九场景 e2e；非 normal 不触碰两个 key 有 Storage spy 断言。
+- ☑ **C-05 版本与定稿闭环。** T-A16 不可变历史；T-A19 accept / revert / resolve_conflict；T-A17 原子定稿 + 未决项拒绝 + final / cancelled 只读门（含删除来源与带封存作业 jobId 的 submitIntake）；T-F07 正负向 e2e；无反向方法。
+- ☑ **C-06 隐私与本地持久化自洽。** T-A11 白名单（不含粘贴正文 / File）、512 KiB / 配额降级保留最后快照、损坏保留原 key；T-C01 File 只取元数据；T-G04 e2e；fixture 合成样例。
+- ☑ **C-07 视觉与工程纪律。** T-A23 / T-D03 不新增色值与玻璃类，`check --only colors/glass` 纳入；差异行 / 徽标用文字 + 图标。
+- ☑ **C-08 D-015 / D-013 未混淆；D-017 仅边界引用。** tasks / analyze 未引用 D-015；D-017 仅在 S-17 作边界引用。
+
+**合计**：25 项中 24 ☑、1 ☐（P-1，因 B-11）。（R6 注：R5 实际复选框为 26 项、25 ☑ / 1 ☐，原文算术笔误，结论不变；见 R6 S-26。）
+
+### 阶段说明（不设复选框）
+
+- **P-4**：代码级，Review 阶段核。
+- **AC-009-1 命令输出 / AC-009-2 截图**：Implement / Handoff 证据，当前无；本轮未运行任何产品测试，不声称任何 AC 已通过。
+- **Implement 前置**（累计）：(1) R4 ✓；(2) Tasks 复核：V-02 ✓、**P-1 ☐（B-11）→ 需 R6 定向补勾**；(3) `implementation_base_sha` = PENDING（frontend-workbench v1 Gate 2 + Handoff 合入 main 后登记，不得用 `b991059` 等中间提交替代）；(4) Analyze 复核 I-01b ✓。**Implement 不得开工**。
+- **Converge 口径**：AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项在 v2 Gate 1 + 壳方交付 + T-H01～T-H03 前**必须报“未收敛（外部阻塞）”**；D-019 / 剪藏预览 / 复核结果 / 验证队列不计入本 feature。
+
+## 最小关闭要求与下一步
+
+1. 实施侧（Tasks 角色）按 B-11 (a) 修正 tasks.md §3 / T-C01 / T-H01（或走 (b) 取得 Walter 书面同意并登记）；建议同批处理 S-20（plan §1 / §6 各一行）、S-23 / S-24（tasks 一句话）、S-21（analyze 最终状态编号）；S-19 / S-22 可留到 Implement。修正后 A **新开会话** R6 定向复核：只核 B-11 关闭与 V-02 / I-01b 未回退，补勾 P-1。
+2. R6 通过后 Implement 仍须等 frontend-workbench v1 Handoff 合入 main 的 commit 登记为 `implementation_base_sha`；届时按 tasks §0 / §7 重新核对前端事实，如有出入先修 tasks 并重跑 Analyze。
+3. 实施侧更新 `specs/README.md` 本 feature 行（R5 未通过 → 待 B-11 修正与 R6）；本审核员不改该文件。plan / README / tasks / analyze 的工作区改动与本文件一并由实施侧提交（本审核员未 commit）。
+
+## 结构核验证据（R5，只读）
+
+```text
+HEAD      8bd1b31（spec/workbench-interaction；无新提交）；git status: M README / M checklist / M plan / ?? analyze.md / ?? tasks.md（审查前后一致）
+INPUTS    spec ed0f6c6c…942d9 | plan 981ecc25…81d21 | checklist(含R4) 56181b02…b5075 | tasks 98d080d3…740fc | analyze c97f6cad…2259b | README 66376f8e…dc55e（写入前复核一致）
+TASKS     62 任务 / 62 唯一 / 96.5 h / 每项 0.5–2 h / 依赖全部指向更早编号 / 状态均“未开始” / 62×blocked_by v1 / H 4×blocked_by v2
+          完成标准↔验证命令条数 1:1（0 例外）；每条标准含 AC 引用（0 例外）；46/46 AC = spec 集合；矩阵 46 行
+          “部分前置”均为最终任务祖先（0 例外）；T-G06 / T-G09 的祖先覆盖全部 A–F 任务；184 条 -t/-g 标题均以 WI 开头
+FRONTEND  D:/2030/Futures-AI-frontend @ b991059（feat/frontend-workbench）；非 main(85c6cbb)/origin/main(3bf6476) 祖先；review.md“不是 Handoff；Gate 2 尚未批准”
+          scripts contract/check/typecheck/lint/test:unit/test:e2e/test ✓；vitest include tests/**/*.spec.ts ✓；playwright testDir ./e2e ✓；@playwright/test 1.64.1 ✓
+          硬编码 contracts.spec:248–253 / contract-doc.spec:64 / mock.spec:100；mock.spec:15 glob fixtures/*.json 不递归（9 个）✓
+          contract-build: contractSemantics 字符串→§1；fieldRows const/enum；§4/§5 静态五场景；AgentEvent→oneOf；AgentRun(superRefine)∈$defs ✓
+          shared/components/{Badge,Loading,EmptyState,ErrorState}.vue ✓；agent/{store,AgentDrawer}.vue ✓；nav.ts 无 jobs 项；real/index.ts 逐方法桩 ✓
+DOCS      D-018 §1/§2/§5；interaction §3.3–§3.5/§3.7/§7；designUI §2.4/§3.4/§3.5/§3.9/§5.1/§5.2
+AGENTS    §5.1（B-11 依据）、§5.2/§5.5/§5.6、§6（A = claude-fable-5-1 via anthropic，继承 R3 探活，未重探 bridge）
+WRITE     唯一改动文件 specs/workbench-interaction/checklist.md；其余五个 dirty 文件原样保留；git diff --check 见回复
+```
+
+---
+
+# R4（2026-10-28，第四轮：B-09 / B-10 plan 补正定向复核；历史快照，复选框已改为文字符号，不参与当前判定）
+
+## 基线与范围
+
+- 工作目录 `D:/2030/Futures-AI-interaction`，分支 `spec/workbench-interaction`，HEAD **`8bd1b31`**（与 R3 相同；本轮**无新提交**）。审核对象不是提交，而是固定基线 + 真实工作区 diff：启动时 `git status --porcelain` 为 ` M specs/README.md`、` M specs/workbench-interaction/checklist.md`、` M specs/workbench-interaction/plan.md`（三个未提交改动，**工作区不干净**，本轮如实记录；plan / README 的改动由本审核员原样保留、未触碰）。
+- 冻结输入（审查前、写入前两次核对一致）：spec raw SHA256 `ed0f6c6c…942d9`（v1.1，未变）；plan raw SHA256 `981ecc25…81d21`（306 行 = 304 + 头部 2 行）；原 checklist（含 R3）raw SHA256 `0999eb21…ef35e`；`specs/README.md` raw SHA256 `8a1b5f0e…ca0b6`（只读）；`git diff --no-ext-diff --no-color HEAD -- specs/workbench-interaction/plan.md` 输出 SHA256 `24940ae4…8df68`。本审核员亲自读取该 diff 全文（12 个 hunk，+14/−12），未按调度摘要直接勾选。
+- **行号口径**：plan 本轮仅在页首新增 2 行（:6 补正说明、:7 派工记录），其余均为行内替换、无增删行；因此 R3 / R2 引用的 plan 行号自第 5 行之后**一律 +2**（如 R3 的 plan:84 → 现 :86、:87 → :89、:81 → :83、:176 → :178、:196 → :198、:205 → :207）。下文行号均为当前 plan（306 行）行号。
+- 重读：AGENTS.md、`docs/plan.md`、spec.md、plan.md（分段读完）、checklist.md（R3/R2/R1 分段读完）、`templates/checklist.md`、D-018（`docs/decisions/20261028-interaction-supplement.md`）、`docs/interaction.md` §3.4 / §3.5 / §3.7、`docs/designUI.md` §2.4 / §3.4 / §3.5 / §5.2、`specs/README.md`（只读）。
+- **审核员与通道**：A = claude-fable-5-1 via anthropic（继承 R3 探活证据，见页首；本轮未重探 bridge）。派工脱敏记录：角色 A / 任务 Checklist R4 / 基线 `8bd1b31` + 上述 diff 哈希 / provider `anthropic` / 继承失败类别 `claude-bridge` quota·rate·spend_limit（exit 1，R3 窗口）。Plan 补正者 claude-opus-5-5 via anthropic，独立会话。
+- **未执行**：未安装依赖、未运行测试或应用、未启动其他 agent、未读凭证或全局配置、未改 provider / 路由、未修改 spec / plan / docs / 状态表 / 其他 feature、未创建 tasks / review 或任何新文件、未 commit / push / merge / 切分支。唯一写入文件为本文件（新增 §R4、页首说明、把 §R3 的 24 个 `[x]` / `[ ]` 改为 ☑ / ☐ 文字；R3 内容未动）。
+
+## 结论（R4）：**通过**（定向）
+
+- **B-09 闭环、B-10 闭环**（逐项见下）；R2 的 B-01～B-08、D-018 的显式 / 二次确认 / 不自动定稿 / 不可撤销 / v1 只做①+派生标记、spec §2 非目标 scope **均未回退**（diff 12 个 hunk 全部落在 R3 列出的 B-09 / B-10 位置，未触及方法表、19 行矩阵、九场景行为表、rerun 迁移表、§4.5 / §4.7、§1.1 所有权、§3 持久化规则、§6～§8）。
+- 本轮核的是**文档设计闭环**；未实现不计为 defect；未新增产品需求；未引入猜测性竞态复杂度（§4.6 的“同一次 mock 状态提交”只是把 R3 要求的“原子地”落到 R2 已定的“mock 层唯一可变状态”上，不加锁、不加状态机）。
+- **允许进入 Tasks**。Implement 前置不变：(1) Tasks 头部登记 frontend-workbench v1 Handoff SHA；(2) Tasks 经 A 新会话复核（V-02）补勾；(3) Analyze 报告结论经 A 复核（I-01b）。AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项仍为外部阻塞，Converge 必报“未收敛（外部阻塞）”。S-11～S-17 仍**未关闭**（归 Tasks，非到期阻断）。
+
+## 逐 B 复核（B-09 / B-10）
+
+| # | R3 最小关闭要求 | 补正落点（当前 plan 行号；diff 核实） | 核实 | 判定 |
+|---|---|---|---|---|
+| **B-09** `SourceNote` 发布日期字段 | :84 改回 `publishedAt`（或明确表示来源发布日期的名字）；在日期类型说明处注明与定稿 `finalizedAt` 无关 | :86 `SourceNote` = `{purpose(非空), reliability(high/medium/low/unknown), publishedAt:null或日期（材料发布日期，不是定稿时间）, validUntil:null或日期, scopeNote:null或文本}`；:198 日期类型：`publishedAt` / `validUntil` 与作业日期用 `TradingDate`（`YYYY-MM-DD`），定稿时间 `finalizedAt`（`FinalSnapshot` 与 `Deliverable` 定稿元数据）为 ISO 8601 带偏移时间戳，并明写“`publishedAt` 指被投放材料自身的发布日期，与交付物定稿时间 `finalizedAt` 是不同概念，不互换、不同名”；:238 AC-003-3 payload 断言列出 `sourceNote.purpose/reliability/publishedAt/validUntil/scopeNote`；:266 AC-008-1 对拍含 `SourceNote.publishedAt` | 与 spec:74 “时效（发布日期 / 有效期）”语义一致；与 D-018 §3 剪藏 frontmatter `published_at` 同义；全文 grep `finalizedAt` 仅出现在 :89 / :92 / :178 / :198 / :207（均为交付物 / 快照语境），`SourceNote` 语境已无 `finalizedAt`；类型分离（日期 vs 时间戳）使两者在契约层不可混用；:194 持久化白名单仍含 `sourceNote`，:124 ingest payload 仍含 `sourceNote`，AC-003-3 的断言落点可用；无需改 spec | **闭环** |
+| **B-10** 交付物 `draft / final` 独立字段 | `Deliverable` 增含 `final` 字面量的状态 + 快照 / 时间 / 版本锚；`DeliverableStatusLabel`（草稿 / 已定稿）；§4.6 `finalizeDeliverable` 成功时原子 `draft→final` + `job.delivered`；j-delivered 初始 `final`、其余 `draft`；定稿信息“已定稿 vN · 时间” | (a) :89 `Deliverable` 交付物级定稿元数据 `{deliverableStatus:'draft'或'final', finalSnapshotId:null或id, finalRevisionNumber:null或正整数, finalizedAt:null或时间戳}`，draft 时三锚均 null，final 时均非空且与对应 `FinalSnapshot` 一致；明写独立于 `JobStatus` 与 `Artifact` / `Block` 的 `status`，只由 `finalizeDeliverable` 改变，UI 与 mock 都不从 job.status 或快照存在推导。(b) :83 展示映射新增 `DeliverableStatusLabel`（draft=草稿 / final=已定稿），走同一“契约导出、徽标只消费”口径。(c) :166 样例规则：仅 j-delivered 初始 `final`，其余样例与 `createJob` 新建交付物初始 `draft`、锚为 null；:178 j-delivered 行写明三锚与该 snapshot 一致；:202 §4.1 createJob 初始交付物 `deliverableStatus=draft`、锚 null。(d) :207 §4.6：未决项 → `validation_error`，不生成快照、不改作业状态、**交付物保持 draft**（不局部修改）；成功时在同一次 mock 状态提交内原子完成：深拷贝 `FinalSnapshot` → `deliverableStatus draft→final` + 写入 `finalSnapshotId` / `finalRevisionNumber`（该 revision 的 number）/ `finalizedAt`（=快照 finalizedAt）→ `job.status→delivered` → 唯一一条 `finalize` 事件；“不存在只完成其中一部分的中间状态”。(e) :207 头部显示按 `DeliverableStatusLabel`：final 为“已定稿 vN · 时间”（N=finalRevisionNumber，时间=finalizedAt），draft 为“草稿”；只读交付物元数据、不从 job.status 推导、不新增组件。(f) :259 AC-006-7 落点改为“同一次提交内快照 + `deliverableStatus=final`（定稿锚与快照一致）+ delivered，头部‘已定稿 vN · 时间’+ 只读；未决项被拒时快照 / 交付物 draft / 作业状态均不变”；:266 AC-008-1 对拍含 `Deliverable` 定稿元数据与 `DeliverableStatusLabel` | 对照 spec:126（`draft → final`、置 delivered、显示定稿信息、只读、不自动定稿）、Q-013（契约标识符 `final`）、interaction §3.5 / §3.7（交付物另有 `draft / final`；不可撤销；v1 只做①）、designUI §5.2（元数据含定稿状态）/ §3.4（“已定稿 vN · 时间”）逐项有落点。`deliverableStatus` 命名避开 Block / Artifact 共同字段 `status`（draft/provisional/confirmed/conflict），AC-006-8 块级徽与交付物级头部不混淆。不可撤销：无任何反向方法，final 后含“重复定稿”在内的一切领域写方法在契约入口拒绝（:207 原文保留）；不自动：唯一入口 `finalizeDeliverable` 经 `FinalizeDialog` 二次确认，:216 rerun 成功终态仍“不自动 delivered”，cancelled 作业交付物不被置 final。null / non-null 不变量在 draft / final 两态都写死，e2e 可直接断言。`fai.jobs.v1`（:69）已含“交付物/定稿快照”，元数据随之持久化。无需改 spec、不动 docs | **闭环** |
+
+## 未回退核对（B-01～B-08 与 D-018 scope）
+
+| 对象 | 核对方式 | 结果 |
+|---|---|---|
+| B-01 方法集与动作矩阵 | diff 未触及 :98–:114 方法表、:122–:144 矩阵；`finalizeDeliverable` 仍为 kind `finalize` 的唯一方法，仍“一次确认只产生一条定稿事件”，§4.6 新文与 :142 矩阵行一致 | 未回退 |
+| B-02 九场景行为表与样例 | diff 只改 :166 附加一句样例规则与 :178 j-delivered 说明列；九场景 × 读/写/快照表、其余八个样例行原样 | 未回退 |
+| B-03 rerun 迁移表 | :211–:220 未在 diff 中 | 未回退 |
+| B-04 类型表 | 仅 :83 / :86 / :89 三行按 B-09 / B-10 扩展，其余类型未动；camelCase 规则 :96 未动 | 未回退 |
+| B-05 版本 / 定稿闭环 | :206 §4.5 accept / revert / resolve_conflict 未在 diff；:207 §4.6 的未决项拒绝 → validation_error、final 后领域写方法拒绝清单、cancelled 只读、快照与历史不可变等原文保留，仅插入原子提交与头部显示句 | 未回退 |
+| B-06 所有权 / 基线 / blocked_by | §1.1、:16–:18、§6 回滚、§7、§8 未在 diff | 未回退 |
+| B-07 持久化 / 隐私 | :194–:197 未在 diff（:198 仅日期类型说明） | 未回退 |
+| B-08 角标 / 收件箱 | :68–:70、:93 未在 diff | 未回退 |
+| D-018 §1 scope | 新文未加撤销 / 自动定稿 / 归档“未审阅”/ 效果②～⑥；v1 仍只做冻结 + 派生标记（spec §2 非目标未变） | 一致 |
+| spec v1.1 | SHA256 与 R3 基线一致，46 AC 未变 | 未变 |
+
+## S-11～S-17 状态（不阻断、不计入判定）
+
+| # | 状态 |
+|---|---|
+| S-11 展示映射入 CONTRACT.md 的机制 | **未关闭**——`tasks.md` 不存在；B-10 的 `DeliverableStatusLabel` 走同一机制，Tasks A 组一并落实 |
+| S-12 revision 载荷按 artifact kind 可辨识 | **未关闭**——Tasks 定义 |
+| S-13 `getJob` 结果 `Job \| null` | **未关闭**——Tasks 定义 |
+| S-14 run failed 以 `conflict` 呈现 + `job.reason` 说明 | **未关闭**——Tasks 定义 |
+| S-15 抽屉普通追问是否设置 `activeRunId` | **未关闭**——Tasks 定义 + mock 状态机单测 |
+| S-16 kind 为 v1 子集的 CONTRACT.md 注记 | **未关闭**——Tasks A 组 |
+| S-17 `origin=derived` 来源徽文案“内部生成” | **未关闭**——Tasks 定义 |
+
+七项均属 Tasks 落实事项，当前阶段未到期，不是阻断；不得以“计划将在 Tasks 落实”视为已完成。
+
+## 新建议（R4；不阻断、不计入判定）
+
+| # | 位置 | 建议 |
+|---|---|---|
+| S-18 | plan:89 / :96 | `Deliverable` 定稿元数据的 draft→三锚 null、final→三锚非空不变量，建议在契约入口的一次 parse（:96 口径）用 zod refine 表达，而不是在组件内再检查；AC-008-1 的 schema 单测用 j-delivered 与 j-deliver 两个 fixture 各过一次 parse 即可覆盖。Tasks A 组写明即可。 |
+
+## 当前有效检查项（R4 勾选；唯一参与 Implement 前置判定）
+
+### 需求完整性
+
+- ☑ **N-01 每条编号需求至少有一条可验证的验收规则。** spec v1.1 未变（SHA256 一致），46 条 AC 编号集合未变。
+- ☑ **N-02 无未澄清歧义。** Q-001～Q-013 全部裁定；本轮补正未引入新需求问题，无需回流 Clarify。
+- ☑ **N-03 目标与非目标边界清晰。** spec §2 未变；补正未把 D-018 效果 ②～⑥ 或撤销 / 归档带入 v1。
+- ☑ **N-04 spec 每条 what 与 AC 在 plan 均有可实现的设计落点。** spec:126 “交付物状态 `draft → final`”现有 :83 / :89 / :166 / :178 / :202 / :207 / :259 落点（B-10 闭环）；其余 what 的落点沿用 R2（B-01～B-08 未回退）。
+
+### 一致性
+
+- ☑ **I-01a spec ↔ plan 无冲突。** spec:74 ↔ plan:86 / :198（B-09 闭环）；R2 消除的三处冲突与 R3 发现的两处均未复发；全文无残留同名异义。
+- ☑ **I-02 与 docs/ 决策与 ADR 无冲突。** interaction §3.7 / designUI §5.2 的交付物 `draft / final` 已建模；D-018 §1 显式 / 二次确认 / 不自动 / 不可撤销 / v1 只做① 与 §4.6 一致；designUI §3.4 “已定稿 vN · 时间”落在 :207；D-018 §3 `published_at` 与 `SourceNote.publishedAt` 同义；D-018 §5 `/learning` 不改（:292）；S-16 / S-17 仍为非冲突备注。
+- ☑ **I-03 前端基线事实核对。** 沿用 R2（本轮变更不涉及前端代码事实；未重读前端分支）。
+- ☑ **I-04 文件边界与回滚一致。** 新增字段 / Label 均在 `contracts/**` 本 feature 所有权内；:16–:18 / :286 / spec §4 未变。
+
+### 可测试性
+
+- ☑ **V-01 每条验收规则可映射到自动测试或人工验收步骤，且被映射的设计存在。** 46 条映射沿用 R2（43 ✓ + 3 ◐ 外部阻塞）；R3 标 ✓* 的 AC-003-3 / AC-006-7 / AC-008-1 / AC-008-4 的断言字段名与状态字面量现已确定（:238 / :259 / :266），升为 ✓。
+- ☑ **V-03 静态守卫声称与真实脚本一致。** plan:184 未变。
+
+### 工程准则（AGENTS §5）
+
+- ☑ **P-1 不为猜测场景加复杂度（§5.1）。** 补正只加 spec / docs 已要求的状态字段、Label 与原子提交说明；不加撤销、自动定稿、归档、锁或新状态机；S-18 为单点 refine 建议。
+- ☑ **P-2 外部数据只在入口层校验（§5.2）。** :96 未变；:207 “只读交付物元数据，不从 job.status 推导”与之一致。
+- ☑ **P-3 不提前抽只用一次的抽象（§5.3）。** :207 明写“不新增组件”，头部显示复用交付台现有头部。
+- ☑ **P-5 自动生成文件不手改（§5.5）。** 未变；新 Label / 字段经 `contractSchemas` + 生成器进 CONTRACT.md（机制细节仍为 S-11）。
+- ☑ **P-6 测试测真实实现、少用 mock（§5.6）。** 未变。
+- ☑ **P-7 按仓库现有流程（§5.7）。** 未变。
+
+### 其他自定义项
+
+- ☑ **C-01 前置依赖与职责边界清楚。**（B-06）未变；`specs/README.md` 本 feature 行已登记“R3 未通过 → plan 补正 → 待 R4”（只读核对，与本轮事实一致；R4 结论由实施侧更新该行）。
+- ☑ **C-02 契约闭环。**（B-01）方法集与 19 行矩阵未变。
+- ☑ **C-03 事件与状态闭环。**（B-02c / B-03 / B-05）未变。
+- ☑ **C-04 场景定义足以稳定验证。**（B-02）九场景 × 九样例未变；新增的交付物初始状态规则覆盖全部样例与 createJob。
+- ☑ **C-05 版本与定稿闭环。**（B-05 + B-10）accept / revert / resolve_conflict / 定稿检查点 / final 后只读未变；交付物级状态与三锚、原子提交、头部显示现已闭环。
+- ☑ **C-06 隐私与本地持久化自洽。**（B-07）未变；`sourceNote.publishedAt` 为日期字符串，持久化子集不变。
+- ☑ **C-07 视觉与工程纪律。** 未变；`DeliverableStatusLabel` 只提供文案，不新增色值；S-17 文案不新增色值。
+- ☑ **C-08 D-015 / D-013 未混淆；D-017 仅边界引用。** 未变。
+
+**合计**：24 项中 24 ☑、0 ☐。
+
+### 阶段说明（不设复选框；与 R3 相同，本轮无新产物）
+
+- **I-01b（Analyze）/ V-02（Tasks）**：`tasks.md` 仍不存在，阶段未到，不倒置流程；R4 通过后 Tasks 产出，再由 A 新会话复核补勾。
+- **P-4**：代码级，Review 阶段核。
+- **AC-009-1 命令输出 / AC-009-2 截图**：Implement / Handoff 证据，当前无。
+- **Implement 前置**（累计，当前仅 (1) 满足）：(1) B-09 / B-10 修正后 R4 通过 ✓；(2) Tasks 经 A 复核补勾；(3) Tasks 头部登记 frontend-workbench v1 Handoff SHA；(4) Analyze 报告结论经 A 复核。
+
+### 逐 AC 映射（R4 增量；未列出的 41 条沿用 R2 判定，plan 行号按本轮口径 +2）
+
+| AC | R3 | R4 | 说明 |
+|---|---|---|---|
+| AC-003-3 | ✓* | ✓ | :86 / :124 / :194 / :238：`sourceNote` 五字段名确定，payload 断言可写 |
+| AC-006-7 | ✓* | ✓ | :89 / :142 / :207 / :259：`deliverableStatus=final` + 三锚 + delivered + 头部文案 + 只读；未决项拒绝时三者均不变 |
+| AC-006-8 | ✓ | ✓ | 块级徽不变；交付物级状态由头部按 `DeliverableStatusLabel` 显示，不与块徽混淆 |
+| AC-008-1 / AC-008-4 | ✓* | ✓ | :266 对拍含新字段与 Label；CONTRACT.md 2.0.0 变更说明随之 |
+| AC-003-1 / AC-005-5 / AC-007-4 | ◐ | ◐ | 外部阻塞（v2）不变；Converge 必报“未收敛（外部阻塞）” |
+
+## 最小关闭要求与下一步
+
+1. **R4 通过**；B-09 / B-10 关闭，无需再做 Plan 补正轮次。
+2. 进入 **Tasks**：按 plan §8 A～H 分组；A 组一并落实 S-11～S-18；H 组显式 `blocked_by: frontend-workbench-v2`；头部登记 frontend-workbench v1 Handoff SHA（未登记则 Implement 不得开工）。
+3. Tasks 产出后由 A（新开独立会话）复核 V-02 / I-01b 并在本文件补勾；Analyze 报告结论由 A 复核；均不得由本轮任何勾选代替。
+4. Converge 口径不变：AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项为外部阻塞；D-019 / 剪藏预览 / 复核结果不计入本 feature。
+5. 实施侧更新 `specs/README.md` 本 feature 行（R4 通过 → 可进入 Tasks）；本审核员不改该文件。plan.md / specs/README.md 的工作区改动与本文件一并由实施侧提交（本审核员未 commit）。
+
+## 结构核验证据（R4，只读）
+
+```text
+HEAD      8bd1b31（spec/workbench-interaction；无新提交）；启动时 git status: M plan.md / M checklist.md / M specs/README.md
+SPEC      SHA256 ed0f6c6c…942d9（审查前后一致；v1.1，46 AC）
+PLAN      SHA256 981ecc25…81d21（审查前后一致）；306 行 = 304 + 页首 2 行；R3/R2 行号自 :5 后 +2
+DIFF      git diff HEAD -- plan.md 输出 SHA256 24940ae4…8df68；12 hunk，+14/−12：:6–7 头部、:83 Label、:86 SourceNote、
+          :89 Deliverable、:166 样例规则、:178 j-delivered、:198 日期类型、:202 §4.1、:207 §4.6、:238 / :259 / :266 §5
+TERMS     plan grep finalizedAt → :89 :92 :178 :198 :207（全部交付物/快照语境）；publishedAt → :6 :86 :198 :238 :266；
+          残留“发布”仅 :86 / :198（材料发布日期，正确）；deliverableStatus/DeliverableStatusLabel → :6 :83 :89 :178 :202 :207 :259 :266
+DOCS      D-018 §1 显式/二次确认/不自动/不可撤销/v1 只做①；§3 published_at；interaction §3.5/§3.7 draft/final；
+          designUI §5.2 元数据含定稿状态、§3.4 “已定稿 vN · 时间”、§2.4 “内部生成”
+AGENTS    §6：A 首选 claude-fable-5-1；R4 走 anthropic（继承 R3 探活，未重探 bridge）
+PROBE     继承 R3：claude-bridge/claude-fable-5-1 exit 1（quota/rate/spend_limit 类）；anthropic/claude-fable-5-1 exit 0；本轮未新探
+WRITE     唯一改动文件 specs/workbench-interaction/checklist.md；plan.md / specs/README.md 工作区改动原样保留；git diff --check 见回复
+```
+
+---
+
+# R3（2026-10-28，第三轮：spec v1.1 术语同步定向复核；历史快照，复选框已改为文字符号，不参与当前判定）
+
+## 基线与范围
+
+- 工作目录 `D:/2030/Futures-AI-interaction`，分支 `spec/workbench-interaction`，审查提交 **`8bd1b31`**（HEAD；启动前 `git status --short` 为空，工作区干净）。本 worktree 由本会话串行独占 checklist 写权限；调度会话只读。
+- 基线变化：`f944149`（R2 通过时提交）→ `c238bd8`（spec v1.1 术语同步 + plan 同步，Q-013）→ `8bd1b31`（Walter 批准，Gate 1 重新通过，v1.1 冻结）。比较 `git diff f944149 8bd1b31 -- specs/workbench-interaction/{spec,plan}.md`：spec +11/−9（205 行）、plan +26/−26（304 行，**仅行内替换、无增删行，R2 的 plan 行号全部仍有效**）。
+- 同批次变更的只读参考：`AGENTS.md`（§6 模型路由）、`docs/plan.md`、`docs/interaction.md`、`docs/designUI.md`、`docs/decisions/20261028-interaction-supplement.md`（D-018）、`specs/README.md`；均已完整读取。`checklist-review-request.md` 为 R2 历史输入，不覆盖本轮指令。
+- **审核员与通道**：A = claude-fable-5-1 via anthropic（探活与切换原因见页首）。独立新会话，与实施隔离；本轮无实施会话并行写入本 worktree。派工脱敏记录：角色 A / 任务 Checklist R3 / 基线 `8bd1b31` / provider `anthropic` / 失败类别 `claude-bridge` quota·rate·spend_limit（exit 1）。
+- **未执行**：未安装依赖、未运行测试或应用、未启动其他 agent、未读凭证或全局配置、未改 provider / 路由、未修改 spec / plan / docs / 状态表 / 其他 feature、未 commit / push / merge / 切分支。唯一写入文件为本文件（含把 §R2 的 24 个 `[x]` 改为 ☑ 文字，内容未动）。
+
+## 结论（R3）：**未通过**（定向；阻断 2 项，均为 plan 内一至三行的设计补全，不需回流 Clarify、不动 v1.1 spec）
+
+- spec v1.1 的术语同步**本身合格**：46 条 AC 编号集合与 `f944149` 一致（46/46），仅 AC-006-7、AC-007-3 文字"发布→定稿"，语义不变；R-006 what 增加 D-018 §1 的定稿定义（`draft → final`、不自动定稿）；非目标"学习区→格物致知"；Q-001 / Q-008 措辞；新增 Q-013 并已裁定。spec 未误改其他领域：R-003:74 来源说明"时效（发布日期 / 有效期）"**正确保留**（此"发布"指来源文档的发布日期，与 D-018 定稿无关）。
+- plan 的同步**有一处误改、一处遗漏**：
+  - **B-09** plan:84 把来源说明 `SourceNote.publishedAt` 改成了 `finalizedAt`——这是来源文档的发布日期（spec:74；plan:196 仍写"发布日期/有效期"），不是定稿时间；属关键词替换误伤其他领域语义，并与 plan:90 `FinalSnapshot.finalizedAt` 同名异义。
+  - **B-10** spec:126 / Q-013 新增的"交付物状态 `draft → final`"（契约标识符 `final`）在 plan 中没有任何落点：`Deliverable`（plan:87）无定稿状态字段，展示映射（plan:81）无对应 Label，`FinalSnapshot`（plan:90）只是快照对象；只读与"定稿信息"目前完全由 `job.status=delivered` + 快照存在推导。
+- 其余 24 处 plan 改动（组件名 `FinalizeDialog`、`finalizeDeliverable`、kind `finalize`、`FinalSnapshot`/`finalizedAt`（快照）、场景与样例文案、人工验收 M-08、§7 导航"格物致知"（`/learning` 不改）、§8 F 组）均为同义替换，逐处核对与 spec v1.1 / D-018 §1·§5 / interaction §3.5·§3.7 / designUI §3.4·§5.2 一致，**未改变 R2 已闭环的方法 / 场景 / 状态迁移 / 版本语义**（B-01～B-08 不回退）。
+- S-11～S-15 **未关闭**（见下节）；新建议 S-16、S-17 不阻断。
+- **不允许进入 Tasks**，直到 B-09 / B-10 在 plan 内修正并由 A（新开会话）做 R4 定向复核。Implement 仍另需 v1 Handoff SHA 与 Tasks 复核（见阶段说明）。本轮不因"用户说已完成"放行任何未到期阶段。
+
+## 术语变更逐处核对（`git diff f944149 8bd1b31`）
+
+| 位置 | 变更 | 核对依据 | 判定 |
+|---|---|---|---|
+| spec:6–7 页首 | 新增 v1.1 记录与 D-018 来源 | AGENTS §2 第 8 步（回流 Clarify → 重过 Gate 1）；`8bd1b31` 提交信息 | ✓ |
+| spec:24 / :31 | 目标"定稿快照"；非目标"格物致知" | D-018 §1 / §5；Q-013 | ✓（非目标仍排除学习循环产品区） |
+| spec:126（R-006 what） | "定稿（D-018 §1）：…交付物状态 `draft → final`…v1 不自动定稿" | interaction §3.5 / §3.7；designUI §5.2 | ✓ 需求面；**plan 无落点 → B-10** |
+| spec:135 AC-006-7、:143、:149 AC-007-3 | 发布→定稿 | 语义不变 | ✓ |
+| spec:194 Q-001、:200 Q-008、:205 Q-013 | 措辞与新裁定 | Walter 2026-10-28 | ✓ |
+| spec:74 R-003 | **未改**"时效（发布日期 / 有效期）" | 来源文档发布日期 ≠ 定稿；D-018 §3 剪藏 frontmatter 亦用 `published_at` | ✓ 正确保留 |
+| plan:50 `FinalizeDialog`、:55 二次确认清单、:67 定稿快照、:111 `finalizeDeliverable`、:118 定稿未决项、:141–142 矩阵（kind `finalize`，附 D-018 §1）、:159–160 / :170 / :175–176 场景样例、:185–186 e2e 与 M-08、:204–206 §4.5–4.7、:214 / :216 迁移表、:257 / :261 §5、:302 §8 | publish→finalize / 发布→定稿 | 同义替换；B-01/B-02/B-03/B-05 的闭环内容逐字对照未变 | ✓ |
+| plan:83 kind 列表 `publish`→`finalize` | 13 种数量不变 | interaction §3.4 示意表把"定稿"归 `approve`，本 feature 自 R1 起即以独立 kind 承载（R1 已接受"schema 以 feature spec 为准"） | ✓（S-16 备注） |
+| plan:90 `PublishSnapshot{publishedAt}`→`FinalSnapshot{finalizedAt}` | 快照对象 | 定稿时间，语义正确 | ✓ |
+| **plan:84 `SourceNote.publishedAt`→`finalizedAt`** | 来源说明时效字段 | spec:74、plan:196 均为"发布日期"；与 :90 同名异义 | **✗ B-09** |
+| plan:290 §7 导航"学习"→"格物致知"（路由 `/learning`） | v2 前置变更描述 | D-018 §5；designUI §3.1 / §3.10；`specs/README.md` 跨 feature 待同步行 | ✓ |
+
+## 阻断项（R3；均为设计补全，plan 内修正，不动 spec）
+
+| # | 严重度 | 位置 | 问题 | 受影响 AC | 最小关闭要求 | 分类 |
+|---|---|---|---|---|---|---|
+| **B-09** | 中（会进入契约类型、`CONTRACT.md`、AC-003-3 的 payload 断言与持久化子集，命名与 `FinalSnapshot.finalizedAt` 冲突） | plan:84 | `SourceNote` 的时效字段被术语替换误改为 `finalizedAt`；spec:74 该字段语义为来源文档**发布日期**，plan:196 日期类型说明仍称"发布日期/有效期" | AC-003-3（payload 字段名）、AC-008-1 / AC-008-4（字段清单与文档） | plan:84 改回 `publishedAt`（或其他明确表示"来源发布日期"的名字，如 `sourcePublishedAt`），并在 :196 或 :94 命名对照处注明"来源说明的 publishedAt 为材料发布日期，与定稿 `finalizedAt` 无关" | 设计补全 |
+| **B-10** | 中（需求 what 与 Q-013 承诺的契约标识符无实现落点；Tasks 无法确定是否建字段、e2e 无法断言"交付物状态 final"） | plan:81 / :87 / :90 / :176 / :205 | spec:126 要求"交付物状态 `draft → final`"、Q-013 要求契约标识符含 `final`、interaction §3.7 "交付物另有定稿状态 `draft / final`"、designUI §5.2 交付物元数据含定稿状态、§3.4 定稿后徽章"已定稿 vN · 时间"；plan 的 `Deliverable` 没有该状态字段，展示映射无 Label，只读/定稿信息由 `job.status` 与快照存在间接推导 | AC-006-7（定稿信息 / 只读的断言依据）、AC-006-8（交付台块级徽之外的交付物级状态显示）、AC-008-1 / AC-008-4 | plan:87 `Deliverable` 增加元数据 `{status:'draft'\|'final', finalSnapshotId:null\|id, finalizedAt:null\|ts, finalRevisionNumber?}`（命名由实施者定，但须含 `final` 字面量）；plan:81 增 `DeliverableStatusLabel`（草稿 / 已定稿）；§4.6 写明 `finalizeDeliverable` 成功时原子地 `draft→final` 与 `job.delivered`，j-delivered 样例为 `final`，其他样例为 `draft`；定稿信息显示"已定稿 vN · 时间"（designUI §3.4）。无需改 spec | 设计补全 |
+
+## 新建议（R3；不阻断、不计入判定）
+
+| # | 位置 | 建议 |
+|---|---|---|
+| S-16 | plan:83；interaction §3.4 | interaction §3.4 经 D-018 §4 新增 `source_pref` / `value_fix`（处理台换源 / 手工修正值），且示意表把"定稿"归入 `approve`；本 feature 冻结 spec 的 R-004 不含换源 / 修正值（Q-013 不加 AC），plan 的 13 种 kind（含独立 `finalize`）是 v1 子集。建议 CONTRACT.md 的 kind 说明注明"v1 子集；`source_pref` / `value_fix` 归后续处理台 / data-layer 映射 feature"，避免 Review 时被当作 I-02 冲突。 |
+| S-17 | plan:13 / :81 `SourceLabel`；designUI §2.4（v1.1） | designUI §2.4 现规定引用派生内容时来源徽文案为"**内部生成**"（根来源索引归 D-017 / 知识库 feature，非本 feature）。Tasks 中把 `origin=derived` 的来源徽文字定为"内部生成"（spec §4：界面细则以 designUI 为准），AC-005-1 / AC-006-8 的徽标断言据此写；不新增色值。 |
+
+**知悉（非缺陷）**：同批 docs 还新增了 D-019 角色芯片 / 成本显示（designUI §3.6）、交付台"复核结果"（§3.4）、采集台"剪藏预览"（§3.4）。这些不在 v1.1 冻结 spec 内（Q-013 明确不加 AC），归后续 feature；本轮不计入本 feature 缺口，Converge 亦不应以此报未收敛。
+
+## S-11～S-15 状态（R2 遗留；按实际产物判断）
+
+| # | 依据行（本轮核对未变） | 状态 |
+|---|---|---|
+| S-11 展示映射入 CONTRACT.md 的机制 | plan:16 / :81 / :95 未变 | **未关闭**——`tasks.md` 不存在，无 A 组任务可核；维持"Tasks A 组写明机制"，由 A 在 Tasks 复核时验证。B-10 新增的 `DeliverableStatusLabel` 走同一机制 |
+| S-12 revision 载荷按 artifact kind 可辨识 | plan:80 / :89 未变 | **未关闭**——同上，Tasks 中定义 |
+| S-13 `getJob` 结果 `Job \| null`（empty 场景） | plan:115 / :153 未变 | **未关闭**——同上 |
+| S-14 run failed 以 `conflict` 呈现 + `job.reason` 的文档说明 | plan:169 / :215 未变 | **未关闭**——同上；CONTRACT.md `StageStateLabel` 说明在 Tasks 落实 |
+| S-15 抽屉普通追问 `send({jobContext})` 是否设置 `activeRunId` | plan:116 / :174 / :203 未变 | **未关闭**——同上；mock 状态机单测覆盖在 Tasks 落实 |
+
+五项均不阻断、不改变本轮判定；不得以"计划将在 Tasks 落实"视为已完成，Tasks 产出后由 A 逐项核。
+
+## 当前有效检查项（R3 勾选；唯一参与 Implement 前置判定）
+
+### 需求完整性
+
+- ☑ **N-01 每条编号需求至少有一条可验证的验收规则。** v1.1 46 条 AC（5/5/6/5/6/8/5/4/2）编号集合与 v1.0 一致，验证形态未变。
+- ☑ **N-02 无未澄清歧义。** Q-001～Q-013 全部裁定；Q-013 融入位置（页首、§2、R-006、AC-006-7、R-007、AC-007-3、Q-001、Q-008）逐处核实存在。
+- ☑ **N-03 目标与非目标边界清晰。** 非目标"格物致知"仍排除学习循环产品区；D-018 §1 效果 ②～⑥ 不在本 feature（spec:126 只要求快照 + delivered + 只读，与 interaction §3.5 "v1 只做 ①" 一致）。
+- ☐ **N-04 spec 每条 what 与 AC 在 plan 均有可实现的设计落点。** 未满足：spec:126 "交付物状态 `draft → final`"无落点（**B-10**）。其余 what 的落点沿用 R2（B-01～B-08 内容未回退）。
+
+### 一致性
+
+- ☐ **I-01a spec ↔ plan 无冲突。** 未满足：plan:84 `SourceNote.finalizedAt` 与 spec:74 "时效（发布日期）"语义冲突（**B-09**）。R2 消除的三处冲突未复发。
+- ☐ **I-02 与 docs/ 决策与 ADR 无冲突。** 未满足：interaction §3.7 / designUI §5.2 明确"交付物另有定稿状态 `draft / final`"，plan 未建模（**B-10**，与 N-04 同因）。其余：D-018 §1（显式定稿、二次确认、不自动定稿、v1 只做冻结）与 plan §4.6 一致；D-018 §5（路由 `/learning` 不改）与 plan:290 一致；S-16 / S-17 为非冲突备注。
+- ☑ **I-03 前端基线事实核对。** 沿用 R2（本轮变更不涉及前端代码事实；未重读前端分支）。
+- ☑ **I-04 文件边界与回滚一致。** 重命名均在 `frontend/src/jobs/**` 与 `contracts/**` 本 feature 所有权内；:16–18 / :289 / spec §4 未变。
+
+### 可测试性
+
+- ☑ **V-01 每条验收规则可映射到自动测试或人工验收步骤，且被映射的设计存在。** 46 条映射沿用 R2（43 ✓ + 3 ◐ 外部阻塞）；B-09 / B-10 影响的是断言所用字段名与状态字面量，不使 AC 失去测试落点，修正后 §5 行无需改动。
+- ☑ **V-03 静态守卫声称与真实脚本一致。** plan:182 未变。
+
+### 工程准则（AGENTS §5）
+
+- ☑ **P-1 不为猜测场景加复杂度（§5.1）。** 未变；B-10 的最小修正只加 spec 已要求的状态字段，不加撤销 / 自动定稿（D-018 不可撤销、不自动）。
+- ☑ **P-2 外部数据只在入口层校验（§5.2）。** plan:95 未变。
+- ☑ **P-3 不提前抽只用一次的抽象（§5.3）。** `FinalizeDialog` 为 `PublishDialog` 改名，职责未变。
+- ☑ **P-5 自动生成文件不手改（§5.5）。** 未变。
+- ☑ **P-6 测试测真实实现、少用 mock（§5.6）。** 未变。
+- ☑ **P-7 按仓库现有流程（§5.7）。** 未变。
+
+### 其他自定义项
+
+- ☑ **C-01 前置依赖与职责边界清楚。**（B-06）未变；`specs/README.md` 本 feature 行已更新为 v1.1 状态（只读核对）。
+- ☑ **C-02 契约闭环。**（B-01）方法集与 19 行矩阵仅改名。
+- ☑ **C-03 事件与状态闭环。**（B-02c / B-03 / B-05）未变。
+- ☑ **C-04 场景定义足以稳定验证。**（B-02）九场景 × 九样例仅文案改名。
+- ☑ **C-05 版本与定稿闭环。**（B-05）accept / revert / resolve_conflict / 定稿检查点 / delivered 只读未变；交付物级状态字段缺口记在 B-10（N-04 / I-02），不重复计。
+- ☑ **C-06 隐私与本地持久化自洽。**（B-07）未变；B-09 只涉命名。
+- ☑ **C-07 视觉与工程纪律。** 未变；S-17 文案不新增色值。
+- ☑ **C-08 D-015 / D-013 未混淆；D-017 仅边界引用。** 未变；新增 D-018 / D-019 引用仅术语与知悉级。
+
+**合计**：24 项中 21 ☑、3 ☐（N-04、I-01a、I-02，同因 B-09 / B-10）。
+
+### 阶段说明（不设复选框；与 R2 相同，本轮无新产物）
+
+- **I-01b（Analyze）/ V-02（Tasks）**：`tasks.md` 仍不存在，阶段未到，不倒置流程；R4 通过后 Tasks 产出，再由 A 复核补勾。
+- **P-4**：代码级，Review 阶段核。
+- **AC-009-1 命令输出 / AC-009-2 截图**：Implement / Handoff 证据，当前无。
+- **Implement 前置**（累计，未满足）：(1) B-09 / B-10 修正后 R4 通过；(2) Tasks 经 A 复核补勾；(3) Tasks 头部登记 frontend-workbench v1 Handoff SHA。
+
+### 逐 AC 映射（R3 增量；未列出的 41 条沿用 R2 判定与 plan 行号）
+
+| AC | R2 | R3 | 说明 |
+|---|---|---|---|
+| AC-003-3 | ✓ | ✓* | 设计落点存在；payload 字段名受 B-09（`SourceNote` 时效字段）影响，修正后无需改 §5 |
+| AC-006-7 | ✓ | ✓* | 定稿二次确认 → 快照 + delivered + 只读 的落点未变；"交付物状态 final" 的断言依据缺失（B-10） |
+| AC-007-3 | ✓ | ✓ | 文字改名；五个破坏性动作清单不变（:55 / :261） |
+| AC-008-1 / AC-008-4 | ✓ | ✓* | 字段清单与 CONTRACT.md 会随 B-09 / B-10 修正自动更新 |
+| AC-003-1 / AC-005-5 / AC-007-4 | ◐ | ◐ | 外部阻塞（v2）不变；Converge 必报"未收敛（外部阻塞）" |
+
+✓* = 设计可测，但依赖 B-09 / B-10 修正后的契约命名 / 状态字面量。
+
+## 最小关闭要求与下一步
+
+1. 实施侧（Plan 阶段模型）修正 plan:84（B-09）与 plan:81 / :87 / :205 / :176（B-10）；不改 spec、不改 docs；提交后 A **新开会话**做 R4 定向复核（只核两处与未回退）。
+2. R4 通过前**不得进入 Tasks**；Tasks 的 A 组须一并落实 S-11～S-17；H 组 `blocked_by: frontend-workbench-v2`；头部登记 v1 Handoff SHA。
+3. Converge 口径不变：AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项为外部阻塞；D-019 / 剪藏预览 / 复核结果不计入本 feature。
+4. 实施侧更新 `specs/README.md` 本 feature 行（R3 未通过 → 待 plan 修正与 R4）；本审核员不改该文件。
+
+## 结构核验证据（R3，只读）
+
+```text
+HEAD      8bd1b31（spec/workbench-interaction；启动时 git status --short 为空）
+SPEC      f944149→8bd1b31：+11/−9，205 行；"[ ] AC-" 计数 46 = f944149 的 46；R-001～R-009 编号连续
+PLAN      f944149→8bd1b31：+26/−26，304 行；无增删行 → R2 引用的 plan 行号全部有效；§5 AC 行 46
+TERMS     spec 余留"发布"仅 :74（来源发布日期，正确）；plan 余留"发布"仅 :196（日期类型说明，正确）→ 与 :84 finalizedAt 自相矛盾
+          plan "学习/learn" 仅 :290 路由 /learning（正确）；spec 仅 :6 / :31（正确）
+KINDS     plan:83 13 种（publish→finalize）；interaction §3.4 现 12 种示意（+source_pref/value_fix，定稿归 approve）→ S-16
+DOCS      D-018 §1 定稿效果 v1 只做①；§5 /learning 不改；interaction §3.7 交付物 draft/final；designUI §5.2 元数据含定稿状态、§3.4 "已定稿 vN · 时间"、§2.4 "内部生成"
+AGENTS    §6 新增模型路由；A 候选 claude-fable-5-1 → claude-opus-5-5 → gpt-6.1-sol；本轮用首选经 anthropic 通道
+PROBE     claude-bridge/claude-fable-5-1 exit 1（quota/rate/spend_limit 类）；anthropic/claude-fable-5-1 exit 0（由调度会话执行，脱敏转记）
+WRITE     唯一改动文件 specs/workbench-interaction/checklist.md（git diff --name-only）；git diff --check 无空白问题
+```
 
 ---
 
@@ -71,42 +649,42 @@
 
 ### 需求完整性
 
-- [x] **N-01 每条编号需求至少有一条可验证的验收规则。** spec 未变（R1 已核）。
-- [x] **N-02 无未澄清歧义。** spec §5 Q-001～Q-012 全部裁定；本轮无新需求问题，无需回流 Clarify。
-- [x] **N-03 目标与非目标边界清晰。** spec §2 未变。
-- [x] **N-04 spec 每条 what 与 AC 在 plan 均有可实现的设计落点。** B-01 / B-03 / B-04 / B-08 关闭后，46 条 AC 全部有契约方法 / 场景 / 状态迁移 / 类型落点（逐 AC 表见下）。
+- ☑ **N-01 每条编号需求至少有一条可验证的验收规则。** spec 未变（R1 已核）。
+- ☑ **N-02 无未澄清歧义。** spec §5 Q-001～Q-012 全部裁定；本轮无新需求问题，无需回流 Clarify。
+- ☑ **N-03 目标与非目标边界清晰。** spec §2 未变。
+- ☑ **N-04 spec 每条 what 与 AC 在 plan 均有可实现的设计落点。** B-01 / B-03 / B-04 / B-08 关闭后，46 条 AC 全部有契约方法 / 场景 / 状态迁移 / 类型落点（逐 AC 表见下）。
 
 ### 一致性
 
-- [x] **I-01a spec ↔ plan 无冲突。** R1 三处冲突已消除：介入方法空指（:120 → :96–144）、非 normal 快照语义（:65 / :162 / :196 一致）、版本字面量（:12）。
-- [x] **I-02 与 docs/ 决策与 ADR 无冲突。** R1 已核项未回退；R1 未闭环的 interaction §3.3 R1/R3 与 designUI §3.5-3 现由 :204–:206 落实。D-016 结论 2/3/5/9 ✓；D-017 仅边界 ✓；D-015 未引用 ✓。
-- [x] **I-03 前端基线事实核对。** R1 结论维持；本轮补核：`router.ts` 具名路由由 `navItems` 生成、`main.ts` 为装配点（`addRoute` 方案可行）；mock `send` 分配 uuid runId；`?agentScript=` 读取点存在；`fai-dark` 为 frontend-workbench plan §2.6 / T-12 登记的主题名。T-12/T-13 已在 `fd2d755` 合入，但本 feature 仍以 Handoff SHA 为起点（Plan §1.1）。
-- [x] **I-04 文件边界与回滚一致。** :16–18 所有权 = :289 回滚块 = spec §4 "只改 frontend/"；新增 `main.ts` 路由注册在两处同时登记。
+- ☑ **I-01a spec ↔ plan 无冲突。** R1 三处冲突已消除：介入方法空指（:120 → :96–144）、非 normal 快照语义（:65 / :162 / :196 一致）、版本字面量（:12）。
+- ☑ **I-02 与 docs/ 决策与 ADR 无冲突。** R1 已核项未回退；R1 未闭环的 interaction §3.3 R1/R3 与 designUI §3.5-3 现由 :204–:206 落实。D-016 结论 2/3/5/9 ✓；D-017 仅边界 ✓；D-015 未引用 ✓。
+- ☑ **I-03 前端基线事实核对。** R1 结论维持；本轮补核：`router.ts` 具名路由由 `navItems` 生成、`main.ts` 为装配点（`addRoute` 方案可行）；mock `send` 分配 uuid runId；`?agentScript=` 读取点存在；`fai-dark` 为 frontend-workbench plan §2.6 / T-12 登记的主题名。T-12/T-13 已在 `fd2d755` 合入，但本 feature 仍以 Handoff SHA 为起点（Plan §1.1）。
+- ☑ **I-04 文件边界与回滚一致。** :16–18 所有权 = :289 回滚块 = spec §4 "只改 frontend/"；新增 `main.ts` 路由注册在两处同时登记。
 
 ### 可测试性
 
-- [x] **V-01 每条验收规则可映射到自动测试或人工验收步骤，且被映射的设计存在。** 46 条中 43 条设计闭环可测；AC-003-1 / AC-005-5 / AC-007-4 各含一个 **外部阻塞子项**（v2），其余子项可测——这三条在 Converge 必须报外部阻塞，不计为本轮缺口（见逐 AC 表）。
-- [x] **V-03 静态守卫声称与真实脚本一致。** R1 已核，未回退；:182 不再声称脚本具备徽标扫描。
+- ☑ **V-01 每条验收规则可映射到自动测试或人工验收步骤，且被映射的设计存在。** 46 条中 43 条设计闭环可测；AC-003-1 / AC-005-5 / AC-007-4 各含一个 **外部阻塞子项**（v2），其余子项可测——这三条在 Converge 必须报外部阻塞，不计为本轮缺口（见逐 AC 表）。
+- ☑ **V-03 静态守卫声称与真实脚本一致。** R1 已核，未回退；:182 不再声称脚本具备徽标扫描。
 
 ### 工程准则（AGENTS §5）
 
-- [x] **P-1 不为猜测场景加复杂度（§5.1）。** 轮询已删（S-02）；新增方法均有 spec 行为来源；rerun 排队只用内存记录"不引调度器"（:218）；不引第三方 diff 库。
-- [x] **P-2 外部数据只在入口层校验（§5.2）。** :95 "只在契约输入、返回值和本地快照入口 parse 一次，内部组件不重复校验"。
-- [x] **P-3 不提前抽只用一次的抽象（§5.3）。** 新增组件（`PendingMergeChip` / `InboxDrawer` / `RuleCandidatePanel` / `RevisionRequestPanel`）均对应 designUI §6 / §3.5 具名概念；不复制第二套对话组件。
-- [x] **P-5 自动生成文件不手改（§5.5）。** :95 / :182 / :195。
-- [x] **P-6 测试测真实实现、少用 mock（§5.6）。** :178 "用既有脚本和时钟推进真实 mock 定时器，不凭 UI 手工造终态"；:183 手写期望。
-- [x] **P-7 按仓库现有流程（§5.7）。** 栈与命令未变。
+- ☑ **P-1 不为猜测场景加复杂度（§5.1）。** 轮询已删（S-02）；新增方法均有 spec 行为来源；rerun 排队只用内存记录"不引调度器"（:218）；不引第三方 diff 库。
+- ☑ **P-2 外部数据只在入口层校验（§5.2）。** :95 "只在契约输入、返回值和本地快照入口 parse 一次，内部组件不重复校验"。
+- ☑ **P-3 不提前抽只用一次的抽象（§5.3）。** 新增组件（`PendingMergeChip` / `InboxDrawer` / `RuleCandidatePanel` / `RevisionRequestPanel`）均对应 designUI §6 / §3.5 具名概念；不复制第二套对话组件。
+- ☑ **P-5 自动生成文件不手改（§5.5）。** :95 / :182 / :195。
+- ☑ **P-6 测试测真实实现、少用 mock（§5.6）。** :178 "用既有脚本和时钟推进真实 mock 定时器，不凭 UI 手工造终态"；:183 手写期望。
+- ☑ **P-7 按仓库现有流程（§5.7）。** 栈与命令未变。
 
 ### 其他自定义项
 
-- [x] **C-01 前置依赖与职责边界清楚。**（B-06）
-- [x] **C-02 契约闭环。**（B-01）
-- [x] **C-03 事件与状态闭环（R1–R6 旁路语义）。**（B-02c / B-03 / B-05）agent 始终用 `latestMergedRev`，不读 overlay（:206）；未用"等人确认才继续"替代旁路。
-- [x] **C-04 场景定义足以稳定验证。**（B-02）
-- [x] **C-05 版本与发布闭环。**（B-05）
-- [x] **C-06 隐私与本地持久化自洽。**（B-07）
-- [x] **C-07 视觉与工程纪律。** R1 已核，未回退。
-- [x] **C-08 D-015 / D-013 未混淆；D-017 仅边界引用。** 未回退。
+- ☑ **C-01 前置依赖与职责边界清楚。**（B-06）
+- ☑ **C-02 契约闭环。**（B-01）
+- ☑ **C-03 事件与状态闭环（R1–R6 旁路语义）。**（B-02c / B-03 / B-05）agent 始终用 `latestMergedRev`，不读 overlay（:206）；未用"等人确认才继续"替代旁路。
+- ☑ **C-04 场景定义足以稳定验证。**（B-02）
+- ☑ **C-05 版本与发布闭环。**（B-05）
+- ☑ **C-06 隐私与本地持久化自洽。**（B-07）
+- ☑ **C-07 视觉与工程纪律。** R1 已核，未回退。
+- ☑ **C-08 D-015 / D-013 未混淆；D-017 仅边界引用。** 未回退。
 
 ### 阶段说明（不设复选框；后续由 A 独立复核）
 

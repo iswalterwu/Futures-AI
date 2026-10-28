@@ -3,6 +3,8 @@
 > Plan 阶段产物。需求在 `spec.md`（2026-10-28 Gate 1 批准冻结，9 条需求 / 46 条 AC），本文只写实现机制与验收落点，不复制需求。
 > 依据：`docs/interaction.md` §3/§7、`docs/designUI.md` §2.4/§3/§5.2/§7、`specs/frontend-workbench/plan.md`（地基与约定）、D-016。
 > **2026-10-28 Checklist R1 修订**：针对 A 的 B-01～B-08 / S-01～S-10 补设计；冻结 spec 不变。以下是待 A 复核的修正，不是审核通过，不授权 Tasks / Implement。
+> **2026-10-28 Checklist R3 补正（待 A R4 复核）**：只针对 R3 阻断项做设计补全——B-09（§2.4 `SourceNote.publishedAt`、§3 日期命名）与 B-10（§2.4 `Deliverable` 定稿元数据与 `DeliverableStatusLabel`、§2.4 场景样例、§4.1 / §4.6、§5 AC-003-3 / AC-006-7 / AC-008-1 断言落点）。冻结 spec v1.1、AC 数量与需求、docs 权威均不变；B-01～B-08 已闭环的方法、场景、状态迁移、版本 / 旁路语义，六类块、产物状态与外部依赖闸门不变；S-11～S-17 仍归 Tasks。本补正待 A 新开会话做 R4 复核，**不表示 B-09 / B-10 已审核关闭**，不授权 Tasks / Implement。
+> **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
 
@@ -13,7 +15,7 @@
 - **复用**：design tokens / 三层玻璃 / `Num` / `Kpi` / 三态 / 对话抽屉 / CoT 时间线 / ECharts 暗色主题 / `check.mjs` / 契约生成器。**不新增颜色字面量与玻璃层级**
 - **状态徽与来源徽**：只用既有令牌（文字主/次、琥珀；点睛红只作图标/边，不作文字），以文案 + 图标为主，不新增色值（designUI §2.4「派生标记」用来源徽+文字）
 - **文件边界**：
-  - 本 feature 唯一修改者：`frontend/src/jobs/**`、相应 jobs 测试、`frontend/src/contracts/**` 的作业类型/方法/mock/可选 `SendMessage.jobContext`、`frontend/src/agent/events.ts` 的可选上下文、`frontend/src/main.ts` 的作业路由注册、`specs/workbench-interaction/**`、`specs/README.md` 本 feature 行。新增 schema 并入 `contractSchemas`，方法进 `methodSemantics`；表驱动生成器无需修改
+  - 本 feature 唯一修改者：`frontend/src/jobs/**`、相应 jobs 测试、`frontend/src/contracts/**` 的作业类型/方法/mock/可选 `SendMessage.jobContext`、`frontend/src/agent/events.ts` 的可选上下文、`frontend/src/main.ts` 的作业路由注册、frontend-workbench 既有 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受契约 2.0.0 影响的硬编码断言（仅 T-A09，保留 v1 语义）、`specs/workbench-interaction/**`、`specs/README.md` 本 feature 行。新增 schema 并入 `contractSchemas`，方法进 `methodSemantics`；表驱动生成器无需修改
   - `frontend-workbench` v2 唯一修改者（本 feature 不改）：`frontend/src/app/{nav.ts,router.ts,Rail.vue,TopBar.vue,AppShell.vue}`、`frontend/src/workbench/WorkbenchPage.vue` 与首页作业轨道、`frontend/src/agent/{store.ts,AgentDock.vue,AgentDrawer.vue,CotTimeline.vue}` 的上下文消费/展示；本 feature 提供组件、契约和集成测试输入。v2 的契约字段需求交由本 feature 统一写入，不重复改 schema
   - 不修改：`backend/`、`docs/` 权威内容（`interaction.md` / `architecture.md` / `designUI.md`）、冻结的 `specs/frontend-workbench/spec.md`
 
@@ -78,13 +80,13 @@
 | `StageState` | `not_started / running / needs_human / done / conflict` |
 | `JobType` / `JobStatus` | `daily / research / adhoc`；9 状态与 `spec.md` R-001 一致 |
 | `Job` / `JobListItem` | `id/title/type/subject/goal/createdBy(human或schedule)/status/currentStage/updatedAt/parentJobId(null可用)`；`reason:string|null`（failed/cancelled 必填原因）；`stages` 四阶段状态与计数、`pendingCount`；列表项为其摘要 |
-| 契约展示映射 | 导出 `JobStatusLabel`（九状态）、`StageLabel`（四阶段）、`StageStateLabel`（五状态）、`ArtifactStatusLabel` 与 `SourceLabel`；CONTRACT.md 登记同表，徽标只消费契约文案/图标，不另建状态映射 |
+| 契约展示映射 | 导出 `JobStatusLabel`（九状态）、`StageLabel`（四阶段）、`StageStateLabel`（五状态）、`ArtifactStatusLabel`、`DeliverableStatusLabel`（draft=草稿 / final=已定稿）与 `SourceLabel`；CONTRACT.md 登记同表，徽标只消费契约文案/图标，不另建状态映射 |
 | `Artifact` | `id/kind(dataset或recipe或analysis或deliverable)/status(draft或provisional或confirmed或conflict)/source(external或human或agent或mixed)/origin(source或derived)`；`revisions/latestMergedRev/overlayRev/pendingMerge/pendingRunId`，无 overlay/run 时为 null；人/agent 的分析产物带 derived 标记 |
 | `Intervention` | 十个必有字段：`id/jobId/stage/artifactId/baseRev/kind/payload/reason/outcome/createdAt`；作业级事件 artifactId/baseRev 可 null，reason 可 null；outcome=`recorded/pending/merged/rejected`，原动作不可改，检查点只更新 outcome。kind 13 种仍为 ingest/map_fix/recipe/framework/question/delete/rewrite/veto/approve/ask_why/pin_rule/rerun/finalize |
-| `Upload` / `SourceNote` | `id/jobId(null可用)/inputKind(file或url或text)/fileMeta?/url?/sourceNote/status/mapping/createdAt/removed`；来源说明 `{purpose(非空),reliability(high/medium/low/unknown),finalizedAt:null或日期,validUntil:null或日期,scopeNote:null或文本}`；status=`pending_validation/ingested/quarantined`，对应待验证/已入库/隔离 |
+| `Upload` / `SourceNote` | `id/jobId(null可用)/inputKind(file或url或text)/fileMeta?/url?/sourceNote/status/mapping/createdAt/removed`；来源说明 `{purpose(非空),reliability(high/medium/low/unknown),publishedAt:null或日期（材料发布日期，不是定稿时间）,validUntil:null或日期,scopeNote:null或文本}`；status=`pending_validation/ingested/quarantined`，对应待验证/已入库/隔离 |
 | `ExtractionPreview` / `FieldMapping` | `detectedType/fields/unit/timeRange`；mapping 的每项 `{sourceField,targetField,unit}`，单位修正一同提交。submit 后 pending_validation；confirm 默认 ingested，隔离样例由 fixture 的模拟判定给出并说明原因，不做真实闸门 |
 | `RecipeStep` / `ParamChange` / `ReconciliationDiff` | 配方步骤与输入/输出锚；参数 `{unit,timezone,calendar,resample,aggregation}`；对账行含两个来源、原值/差值（复用 Figure 元数据：unit/freq/semantic/asOf/seriesId）、是否不同（由契约提供），空差异由空行集表达 |
-| `Deliverable` / `Block` | 有序块；共同字段 id/status/source/origin/anchors/comments；按 type 区分 conclusion/text、note/text、quote/text与source锚、table/columns与rows与tableId、verification/question与结论块锚、chart/chartSpec与seriesData；v1 verification 只读文本，不建验证队列 |
+| `Deliverable` / `Block` | 有序块；共同字段 id/status/source/origin/anchors/comments；按 type 区分 conclusion/text、note/text、quote/text与source锚、table/columns与rows与tableId、verification/question与结论块锚、chart/chartSpec与seriesData；v1 verification 只读文本，不建验证队列。`Deliverable` 另带交付物级定稿元数据 `{deliverableStatus:'draft'或'final', finalSnapshotId:null或id, finalRevisionNumber:null或正整数, finalizedAt:null或时间戳}`：draft 时三个定稿锚均为 null，final 时均非空且与对应 `FinalSnapshot` 一致。该元数据独立于 `JobStatus` 与 `Artifact` / `Block` 的 `status`（draft/provisional/confirmed/conflict），只由 `finalizeDeliverable` 改变；UI 与 mock 都不从 job.status 或快照是否存在推导交付物状态 |
 | `ChartSpec`（仅样例） | `{templateId:'line-sample',seriesBindings:{main:seriesId},overrides:{title?}}`，对应 designUI §5.1 的 template_id/series_bindings/overrides；绑定数据 `seriesData` 复用带单位/频率/semantic/asOf 的 `SparkSeries`。`BlockChart` 仅编译此固定样例为 ECharts option，使用地基 `fai-dark`，不接受任意 option 或实现模板库 |
 | `Revision` / `BlockComment` | revision `{id,artifactId,number,baseRev,author(human或agent),createdAt,summary,blocks,changeSummary}`，保存完整只读快照；comment `{id,threadId,parentId(null或根评论id),author,text,createdAt}`，线程根含 status=`open/resolved`；回复引用 threadId，解决操作改线程状态且产生新 revision，旧快照不变；批注不改块正文来源 |
 | `FinalSnapshot` | `{id,jobId,revisionId,finalizedAt,blocks}`，取已合并 revision 的深拷贝；读 API 返回副本，不暴露内存中可变引用 |
@@ -161,7 +163,7 @@ resetMockData()
 
 `resetMockData` 仅为显式“重置样例数据”确认动作：normal 删除两个 key 并重建 fixture；其他场景只重建内存 fixture，不触碰两个 key。error 场景允许此恢复动作（但仍保持 error 业务行为），不绕过业务报错。
 
-阶段列缩写 N=not_started、R=running、H=needs_human、D=done、C=conflict；顺序永远 collect/process/analyze/deliver。各 job-* 场景替换作业 fixture，不把互斥状态塞进同一个作业。静态 R 代表已在进行的样例状态；可回放的 activeRunId 只在显式 send 后存在，两者不混淆。
+阶段列缩写 N=not_started、R=running、H=needs_human、D=done、C=conflict；顺序永远 collect/process/analyze/deliver。各 job-* 场景替换作业 fixture，不把互斥状态塞进同一个作业。静态 R 代表已在进行的样例状态；可回放的 activeRunId 只在显式 send 后存在，两者不混淆。交付物定稿元数据：仅 j-delivered 初始为 `final`；其余样例与 `createJob` 新建的交付物初始为 `draft`，定稿锚为 null。
 
 | fixture / 场景 | job.status / currentStage | 四阶段状态 | 关键产物 / 说明 |
 |---|---|---|---|
@@ -173,7 +175,7 @@ resetMockData()
 | job-running: j-human | needs_human / process | D,H,R,N | recipe=provisional，下游分析仍运行；横幅定位 process |
 | job-pending-merge: j-merge | delivering / deliver | D,D,D,R | 初始无 overlay；e2e 用 ?agentScript=long，在作业改稿面板 requestRevision（选结论块）→send(jobContext)，等 run.started 后编辑另一备注块，再推进脚本时钟到 run.completed；期间不切换 runId |
 | job-conflict: j-conflict | needs_human / analyze | D,D,C,R | 分析结论/对应交付块=conflict，另有可用 provisional 快照；下游可查看/编辑；定稿列出未决项 |
-| job-delivered: j-delivered | delivered / deliver | D,D,D,D | confirmed 块、snapshot、定稿信息、只读 |
+| job-delivered: j-delivered | delivered / deliver | D,D,D,D | confirmed 块、snapshot；交付物 deliverableStatus=final（finalSnapshotId / finalRevisionNumber / finalizedAt 与该 snapshot 一致）、定稿信息、只读 |
 
 `job-pending-merge` 的终态由同一次 send 的 runId 驱动，failed/aborted 不合并、不清 overlay。单测/端到端用既有脚本和时钟推进真实 mock 定时器，不凭 UI 手工造终态。`requestRevision` / 实际执行的 `rerunStage` 也统一调用 mock AgentClient.send：前者记录 runId 与请求后在该 run 的权威 step.text 中准备候选版本、成功终态才生成 agent revision；后者依 §4 状态表处理。两者不增加事件种类；普通全局 send 无 jobContext 不改作业。
 
@@ -193,16 +195,16 @@ resetMockData()
 - normal 快照封装 `{version:1,data}`；`JSON.stringify` 的 UTF-8 字节数超过 512 KiB 或 setItem 抛配额异常时转内存并在作业列表/详情、投放抽屉顶部显示共享**非模态横幅**“本次修改未持久化，刷新会丢失”，保留最后成功快照、不主动删除。损坏/版本不支持时本次用 fixture，显示“原快照无法读取，可重置样例”；保留原 key、该会话不自动覆写，只有显式重置才删除
 - `fai.inbox.v1` 只存已读 id。正常场景仅显式 `resetMockData` 二次确认后删除两个 key 并重建（连同新样例的已读状态）；场景切换不清空。非 normal 场景全程内存，既不恢复也不修改两个 key。沿用既有 `fai.rail` / `fai.drawer` / `fai.layout`，重置作业样例不动这些键
 - 生成物照旧入库：`contracts/{CONTRACT.md,schema.json}`，只改源后生成
-- 时间与日期：asOf/ts/createdAt/updatedAt 为 ISO 8601 带偏移；发布日期/有效期与作业日期用 `TradingDate`（`YYYY-MM-DD`）；命名映射见 §2.4
+- 时间与日期：asOf/ts/createdAt/updatedAt 为 ISO 8601 带偏移；来源说明的 `publishedAt`（材料发布日期）/ `validUntil`（有效期）与作业日期用 `TradingDate`（`YYYY-MM-DD`）；定稿时间 `finalizedAt`（`FinalSnapshot` 与 `Deliverable` 定稿元数据）为 ISO 8601 带偏移时间戳。`publishedAt` 指被投放材料自身的发布日期，与交付物定稿时间 `finalizedAt` 是不同概念，不互换、不同名；命名映射见 §2.4
 
 ## 4. 关键流程
 
-1. **创建作业**：列表 → `JobCreatePanel`（校验）→ createJob → 写作业（collecting/collect；R,N,N,N）与初始空产物 → 跳 `/jobs/:id/collect`。所有写方法保留旧 revision，UI 不覆盖业务对象
+1. **创建作业**：列表 → `JobCreatePanel`（校验）→ createJob → 写作业（collecting/collect；R,N,N,N）与初始空产物（交付物 deliverableStatus=draft、定稿锚为 null）→ 跳 `/jobs/:id/collect`。所有写方法保留旧 revision，UI 不覆盖业务对象
 2. **投放**：页面入口或 v2 顶栏打开同一 IntakeDrawer → 提交一种输入+来源说明 → pending_validation 预览 → 修正 mapping（含单位）→ confirmIntake → ingested/样例 quarantined；jobId 在 submit 时确定，无作业则待归属；assign 后出现在采集列表并补作业内 ingest 事件。removeUpload 二次确认，只移除当前关联且保留历史
 3. **阶段/重跑**：轨道直接读 stages。needs_human 横幅目标取按固定顺序第一个 H（冲突样例取第一个 C），可随时查看其他阶段；不在 UI 推导状态。rerunStage 二次确认后生成一条 kind=rerun 事件，按下表执行；failed/cancelled 的“作业级重试”仍只是注明归属的占位，不新增重试实现
 4. **介入**：由 §2.4 动作矩阵走唯一方法 → 新事件/版本与 inbox 回执 → 刷新介入历史、角标；普通批注/追问/改稿无模态。问答同时走既有 send 时，只由 submitIntervention 记录结构化动作，mock send 不重复追加同一动作
 5. **交付版本**：saveBlockText 立即生成作者=human 的新 revision，改变块来源=human；批注写入亦生成新 revision，但正文来源不变。requestRevision 记录 baseRev/blockIds 与指令，再 send(jobContext)；成功检查点先处理人的 overlay，再以最新已合并快照为底仅应用指定 blockIds 的 agent 改动，产作者=agent 的候选 revision、显示 diff，只有涉及的块来源=agent。若同一块在 baseRev 后被人改过，则保留人版/agent 版并标 conflict，不覆盖人版；不相交块的修改可合并。resolveRevision(action='accept') 将候选涉及的块确认成新 revision；action='revert' 仅把请求涉及的块恢复至该请求 baseRev 内容，其他块的后续人工改动保留，agent 候选/原版本都不删。冲突候选不能直接 accept；在 diff 旁走 submitIntervention(action=resolve_conflict) 明确选人版/agent 版，产新 confirmed revision，正文来源沿用选中版；此收口只在定稿时要求，不阻塞其他阶段
-6. **定稿**：二次确认面板先列出当前 conflict / pendingMerge / 未接受的 agent 候选。finalizeDeliverable 遇未决项返回 validation_error（说明目标块），不生成快照、不改作业状态；人处理或回退后再定稿。成功时从 latestMergedRev 深拷贝 FinalSnapshot，作业 delivered。随后针对该作业的一切领域写方法（含投放归属、编辑、批注、介入、参数、暂定、合并、重跑、改稿、接受回退、取消、重复定稿）均在契约入口拒绝 validation_error；读取/历史/diff/markInboxRead 仍可用，快照和历史不可变。cancelled 同样领域只读，取消后的晚到 run 事件只进时间线、不改已封存作业
+6. **定稿**：二次确认面板先列出当前 conflict / pendingMerge / 未接受的 agent 候选。finalizeDeliverable 遇未决项返回 validation_error（说明目标块），不生成快照、不改作业状态、交付物保持 draft；人处理或回退后再定稿。成功时在**同一次 mock 状态提交**内原子地完成：从 latestMergedRev 深拷贝保存 FinalSnapshot；交付物 deliverableStatus draft→final，写入 finalSnapshotId、finalRevisionNumber（该 revision 的 number）与 finalizedAt（=快照 finalizedAt）；job.status→delivered；连同矩阵中唯一一条 finalize 事件。不存在只完成其中一部分的中间状态。交付台现有头部按 `DeliverableStatusLabel` 显示：final 为“已定稿 vN · 时间”（N=finalRevisionNumber，时间=finalizedAt），draft 为“草稿”；只读交付物元数据，不从 job.status 推导，不新增组件。随后针对该作业的一切领域写方法（含投放归属、编辑、批注、介入、参数、暂定、合并、重跑、改稿、接受回退、取消、重复定稿）均在契约入口拒绝 validation_error；读取/历史/diff/markInboxRead 仍可用，快照和历史不可变。cancelled 同样领域只读，取消后的晚到 run 事件只进时间线、不改已封存作业
 7. **旁路/检查点**：有 activeRunId 时，人编辑立即产 overlay revision 与 pending 事件，agent 始终使用 latestMergedRev，不读 overlay。仅匹配 pendingRunId 的 run.completed 才将 overlay 合并成新 revision、清 pendingMerge、原介入 outcome=merged；不同作业/run 的终态不能代合并。failed/aborted 保留 overlay/pending 并提示；冲突保留两版与 provisional 已合并快照供下游，定稿门处理。无 activeRunId 的参数修正仍先返回 pendingMerge=true（满足 AC-004-2），处理台显示非模态“应用到检查点”；mergePending 在无运行时产生合并 revision、原事件 outcome=merged，运行中该按钮不执行（等待本 run 检查点）。普通非运行文本编辑则直接合并成新 revision
 8. **场景切换**：按配置重建当前会话 fixture，非 normal 不触碰正常快照；唯一清空操作为 resetMockData（§3）。读取页面不启动 agent；job-pending-merge 的演示按 §2.4 显式 send(long) 驱动
 
@@ -233,7 +235,7 @@ resetMockData()
 | AC-002-5 | failed/cancelled fixtures 组件测试（原因 + 占位动作说明） |
 | AC-003-1 | `IntakeDrawer` 三处入口 e2e（工作台入口依赖 v2，标记 blocked_by） |
 | AC-003-2 | 三种投放 + 白名单组件测试 |
-| AC-003-3 | 用途必填 + payload 断言 e2e |
+| AC-003-3 | 用途必填 + payload 断言 e2e（`sourceNote.purpose/reliability/publishedAt/validUntil/scopeNote`） |
 | AC-003-4 | `ExtractionPreview` / `MappingEditor` 组件测试；确认后才入库 |
 | AC-003-5 | `UnassignedPool` + `assignUpload` e2e |
 | AC-003-6 | 抽取状态徽组件测试（文案+图标） |
@@ -254,14 +256,14 @@ resetMockData()
 | AC-006-4 | `RevisionHistory` 列表 + 历史只读 e2e |
 | AC-006-5 | `DiffView` 组件测试（块级差异与摘要） |
 | AC-006-6 | `requestRevision` + mock 回放 e2e；新 revision 来源=agent，接受/回退 |
-| AC-006-7 | 定稿二次确认 → 快照 + delivered + 只读 e2e |
+| AC-006-7 | 定稿二次确认 → 同一次提交内快照 + 交付物 deliverableStatus=final（定稿锚与快照一致）+ delivered，头部“已定稿 vN · 时间”+ 只读 e2e；未决项被拒时快照 / 交付物 draft / 作业状态均不变 |
 | AC-006-8 | 块来源/状态徽组件测试 |
 | AC-007-1 | `InterventionHistory` 渲染 + 阶段/类型筛选组件测试 |
 | AC-007-2 | job-pending-merge：作业内改稿指令经 requestRevision→send(long/jobContext) → 编辑另一备注块 → 同 run completed 才合并；失败/他 run 不误清。可不依赖全局输入栏自动绑定上下文 |
 | AC-007-3 | e2e：编辑/批注/投放/教规则/改稿无模态；removeUpload/delete_conclusion/finalize/cancel/rerun 二次确认后才调用契约 |
 | AC-007-4 | listInbox / markInboxRead + 列表卡/详情阶段轨道角标 e2e；首页作业轨道部分 blocked_by v2 |
 | AC-007-5 | `check --only glass`（继承；本 feature 不新增玻璃类） |
-| AC-008-1 | `contract-build` 生成比对 + 文档字段对拍单测 |
+| AC-008-1 | `contract-build` 生成比对 + 文档字段对拍单测（含 `Deliverable` 定稿元数据、`DeliverableStatusLabel`、`SourceNote.publishedAt`） |
 | AC-008-2 | 场景清单单测 + e2e 遍历正常/空/错误/延迟/运行中/冲突/已交付 |
 | AC-008-3 | `check --only network`（新代码纳入 allowlist 规则） |
 | AC-008-4 | CONTRACT.md 版本 2.0.0 与变更说明；生成物入库 |
@@ -281,7 +283,7 @@ resetMockData()
 | 阶段状态在 UI 推导造成误判 | 阶段状态只读契约 `StageState`，不在前端推导 |
 | 依赖 v2 / api 延迟 | 本 feature 页面与路由可独立验收；v2 集成任务显式 `blocked_by`；api 不阻塞 mock 验收 |
 
-**回滚**：仅回退本 feature 的 jobs/测试、contracts 新增部分、agent/events 可选字段、main.ts 路由注册以及本 feature 规格/状态行；不回退壳方的 nav/router/TopBar/AppShell/WorkbenchPage/agent store 补丁，壳集成由 v2 自行撤销并恢复其占位接口。不得按整文件覆盖其他 feature 的变更；`docs/` 不动。
+**回滚**：仅回退本 feature 的 jobs/测试、contracts 新增部分、agent/events 可选字段、main.ts 路由注册、T-A09 对既有 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受契约 2.0.0 影响的硬编码断言的修改（恢复 v1 原断言）以及本 feature 规格/状态行；不回退壳方的 nav/router/TopBar/AppShell/WorkbenchPage/agent store 补丁，壳集成由 v2 自行撤销并恢复其占位接口。不得按整文件覆盖其他 feature 的变更；`docs/` 不动。
 
 ## 7. 前置变更清单（frontend-workbench v2，需其 Clarify + Gate 1）
 
