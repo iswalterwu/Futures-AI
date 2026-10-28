@@ -160,7 +160,94 @@ export const SendReceiptSchema = z.object({
   runId: z.string().min(1).describe('本次运行 ID，与后续事件一致。'),
 }).describe('消息受理回执；不表示运行完成，终态由事件流提供。')
 
+// 作业契约 v2：先交付 schema；版本与方法接线由 T-A09 及后续任务完成。
+export const StageSchema = z.enum(['collect', 'process', 'analyze', 'deliver']).describe('固定阶段顺序：提取 → 处理 → 分析 → 交付。')
+export const StageStateSchema = z.enum(['not_started', 'running', 'needs_human', 'done', 'conflict']).describe('阶段状态；不另设 failed，运行失败以 conflict 呈现，原因见 Job.reason。')
+export const JobTypeSchema = z.enum(['daily', 'research', 'adhoc']).describe('作业类型：日报、专题、临时。')
+export const JobStatusSchema = z.enum(['draft', 'collecting', 'processing', 'analyzing', 'delivering', 'delivered', 'needs_human', 'failed', 'cancelled']).describe('九种作业状态；运行失败以 conflict 呈现，原因见 Job.reason。delivered / cancelled 作业领域只读。')
+export const ActiveJobStatusSchema = JobStatusSchema.exclude(['delivered', 'cancelled']).describe('进行中 = 非终结；终结 = 领域只读门封存的 delivered / cancelled；failed 可经 rerunStage 继续、以 conflict 阶段呈现，计入进行中；draft 计入。')
+export const ACTIVE_JOB_STATUSES = ActiveJobStatusSchema.options
+export const ArtifactKindSchema = z.enum(['dataset', 'recipe', 'analysis', 'deliverable']).describe('阶段产物类型：数据集、配方、分析稿、交付物。')
+export const ArtifactStatusSchema = z.enum(['draft', 'provisional', 'confirmed', 'conflict']).describe('产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。')
+export const SourceSchema = z.enum(['external', 'human', 'agent', 'mixed']).describe('内容来源；派生内容保留人 / agent / 混合来源与作者信息。')
+export const OriginSchema = z.enum(['source', 'derived']).describe('source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。')
+export const InterventionKindSchema = z.enum(['ingest', 'map_fix', 'recipe', 'framework', 'question', 'delete', 'rewrite', 'veto', 'approve', 'ask_why', 'pin_rule', 'rerun', 'finalize']).describe('v1 子集；interaction §3.4 的 source_pref / value_fix 归后续处理台 / data-layer 映射 feature；定稿在 interaction 示意表中归 approve，本契约用独立的 finalize 承载。')
+export const InterventionOutcomeSchema = z.enum(['recorded', 'pending', 'merged', 'rejected']).describe('介入处理结果；检查点只更新 outcome，不改原动作。')
+export const UploadStatusSchema = z.enum(['pending_validation', 'ingested', 'quarantined']).describe('抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。')
+export const DeliverableStatusSchema = z.enum(['draft', 'final']).describe('交付物定稿状态，只由显式定稿动作从 draft 变为 final，不自动定稿、不可撤销。')
+
+export const JobStatusLabel = {
+  draft: { text: '草稿', icon: '◇' }, collecting: { text: '提取中', icon: '↓' },
+  processing: { text: '处理中', icon: '⚙' }, analyzing: { text: '分析中', icon: '⌕' },
+  delivering: { text: '交付中', icon: '▤' }, delivered: { text: '已交付', icon: '✓' },
+  needs_human: { text: '待人工确认', icon: '!' }, failed: { text: '失败', icon: '×' }, cancelled: { text: '已取消', icon: '⊘' },
+} as const
+export const StageLabel = {
+  collect: { text: '提取', icon: '↓' }, process: { text: '处理', icon: '⚙' },
+  analyze: { text: '分析', icon: '⌕' }, deliver: { text: '交付', icon: '▤' },
+} as const
+export const StageStateLabel = {
+  not_started: { text: '未开始', icon: '○' }, running: { text: '运行中', icon: '↻' },
+  needs_human: { text: '待人工确认', icon: '!' }, done: { text: '已完成', icon: '✓' }, conflict: { text: '冲突', icon: '⚠' },
+} as const
+export const ArtifactStatusLabel = {
+  draft: { text: '草稿', icon: '◇' }, provisional: { text: '暂定', icon: '◐' },
+  confirmed: { text: '已确认', icon: '✓' }, conflict: { text: '冲突', icon: '⚠' },
+} as const
+export const UploadStatusLabel = {
+  pending_validation: { text: '待验证', icon: '?' }, ingested: { text: '已入库', icon: '✓' }, quarantined: { text: '隔离', icon: '⊘' },
+} as const
+export const DeliverableStatusLabel = { draft: { text: '草稿', icon: '◇' }, final: { text: '已定稿', icon: '✓' } } as const
+export const SourceLabel = {
+  external: { text: '外部源', icon: '↗' }, human: { text: '人', icon: '♙' },
+  agent: { text: 'agent', icon: '✦' }, mixed: { text: '混合', icon: '⋈' },
+} as const
+export const OriginLabel = { source: { text: '源材料', icon: '↗' }, derived: { text: '内部生成', icon: '⋈' } } as const
+export const JobTypeLabel = {
+  daily: { text: '日报', icon: '▤' }, research: { text: '专题', icon: '⌕' }, adhoc: { text: '临时', icon: '◇' },
+} as const
+
+export const JobStatusLabelSchema = labelSchema(JobStatusLabel).describe('作业状态展示映射：文案与图标同源。')
+export const StageLabelSchema = labelSchema(StageLabel).describe('阶段展示映射，顺序同 Stage。')
+export const StageStateLabelSchema = labelSchema(StageStateLabel).describe('阶段态展示映射；conflict 也用于运行失败，原因见 Job.reason。')
+export const ArtifactStatusLabelSchema = labelSchema(ArtifactStatusLabel).describe('产物与块状态展示映射。')
+export const UploadStatusLabelSchema = labelSchema(UploadStatusLabel).describe('抽取结果展示映射。')
+export const DeliverableStatusLabelSchema = labelSchema(DeliverableStatusLabel).describe('交付物定稿状态展示映射：草稿 / 已定稿。')
+export const SourceLabelSchema = labelSchema(SourceLabel).describe('来源展示映射；derived 时保留为次文案。')
+export const OriginLabelSchema = labelSchema(OriginLabel).describe('派生来源展示映射：内部生成；根来源索引与推断标记归后续知识库 feature。')
+export const JobTypeLabelSchema = labelSchema(JobTypeLabel).describe('作业类型展示映射。')
+
+// 九张展示映射共用同一转换，literal 值直接来自运行时常量，供文档生成器展开。
+function labelSchema<const T extends Record<string, { readonly text: string; readonly icon: string }>>(labels: T) {
+  const shape = Object.fromEntries(Object.entries(labels).map(([key, value]) => [key,
+    z.object({ text: z.literal(value.text), icon: z.literal(value.icon) }),
+  ])) as { [K in keyof T]: z.ZodObject<{ text: z.ZodLiteral<T[K]['text']>; icon: z.ZodLiteral<T[K]['icon']> }> }
+  return z.object(shape)
+}
+
 export const contractSchemas = {
+  Stage: StageSchema,
+  StageState: StageStateSchema,
+  JobType: JobTypeSchema,
+  JobStatus: JobStatusSchema,
+  ActiveJobStatus: ActiveJobStatusSchema,
+  ArtifactKind: ArtifactKindSchema,
+  ArtifactStatus: ArtifactStatusSchema,
+  Source: SourceSchema,
+  Origin: OriginSchema,
+  InterventionKind: InterventionKindSchema,
+  InterventionOutcome: InterventionOutcomeSchema,
+  UploadStatus: UploadStatusSchema,
+  DeliverableStatus: DeliverableStatusSchema,
+  JobStatusLabel: JobStatusLabelSchema,
+  StageLabel: StageLabelSchema,
+  StageStateLabel: StageStateLabelSchema,
+  ArtifactStatusLabel: ArtifactStatusLabelSchema,
+  UploadStatusLabel: UploadStatusLabelSchema,
+  DeliverableStatusLabel: DeliverableStatusLabelSchema,
+  SourceLabel: SourceLabelSchema,
+  OriginLabel: OriginLabelSchema,
+  JobTypeLabel: JobTypeLabelSchema,
   TradingDate: TradingDateSchema,
   Timestamp: TimestampSchema,
   Semantic: SemanticSchema,
@@ -207,3 +294,17 @@ export type SourceStatus = z.infer<typeof SourceStatusSchema>
 export type ResearchItem = z.infer<typeof ResearchItemSchema>
 export type SendMessage = z.infer<typeof SendMessageSchema>
 export type SendReceipt = z.infer<typeof SendReceiptSchema>
+
+export type Stage = z.infer<typeof StageSchema>
+export type StageState = z.infer<typeof StageStateSchema>
+export type JobType = z.infer<typeof JobTypeSchema>
+export type JobStatus = z.infer<typeof JobStatusSchema>
+export type ActiveJobStatus = z.infer<typeof ActiveJobStatusSchema>
+export type ArtifactKind = z.infer<typeof ArtifactKindSchema>
+export type ArtifactStatus = z.infer<typeof ArtifactStatusSchema>
+export type Source = z.infer<typeof SourceSchema>
+export type Origin = z.infer<typeof OriginSchema>
+export type InterventionKind = z.infer<typeof InterventionKindSchema>
+export type InterventionOutcome = z.infer<typeof InterventionOutcomeSchema>
+export type UploadStatus = z.infer<typeof UploadStatusSchema>
+export type DeliverableStatus = z.infer<typeof DeliverableStatusSchema>

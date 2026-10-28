@@ -128,6 +128,246 @@
 类型中的枚举与常量直接来自 schema；必填不等于非空，null、空列表与零的语义见字段说明。
 完整格式、范围与长度约束见 `schema.json`；AgentRun 的唯一终态、同次运行与 stepId 单调约束还须遵守通用约定，不能只依赖 JSON Schema。
 
+### `Stage`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"collect" &#124; "process" &#124; "analyze" &#124; "deliver"` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
+
+### `StageState`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"not_started" &#124; "running" &#124; "needs_human" &#124; "done" &#124; "conflict"` | 阶段状态；不另设 failed，运行失败以 conflict 呈现，原因见 Job.reason。 |
+
+### `JobType`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"daily" &#124; "research" &#124; "adhoc"` | 作业类型：日报、专题、临时。 |
+
+### `JobStatus`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"draft" &#124; "collecting" &#124; "processing" &#124; "analyzing" &#124; "delivering" &#124; "delivered" &#124; "needs_human" &#124; "failed" &#124; "cancelled"` | 九种作业状态；运行失败以 conflict 呈现，原因见 Job.reason。delivered / cancelled 作业领域只读。 |
+
+### `ActiveJobStatus`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"draft" &#124; "collecting" &#124; "processing" &#124; "analyzing" &#124; "delivering" &#124; "needs_human" &#124; "failed"` | 进行中 = 非终结；终结 = 领域只读门封存的 delivered / cancelled；failed 可经 rerunStage 继续、以 conflict 阶段呈现，计入进行中；draft 计入。 |
+
+### `ArtifactKind`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"dataset" &#124; "recipe" &#124; "analysis" &#124; "deliverable"` | 阶段产物类型：数据集、配方、分析稿、交付物。 |
+
+### `ArtifactStatus`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"draft" &#124; "provisional" &#124; "confirmed" &#124; "conflict"` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+
+### `Source`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"external" &#124; "human" &#124; "agent" &#124; "mixed"` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+
+### `Origin`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"source" &#124; "derived"` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+
+### `InterventionKind`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"ingest" &#124; "map_fix" &#124; "recipe" &#124; "framework" &#124; "question" &#124; "delete" &#124; "rewrite" &#124; "veto" &#124; "approve" &#124; "ask_why" &#124; "pin_rule" &#124; "rerun" &#124; "finalize"` | v1 子集；interaction §3.4 的 source_pref / value_fix 归后续处理台 / data-layer 映射 feature；定稿在 interaction 示意表中归 approve，本契约用独立的 finalize 承载。 |
+
+### `InterventionOutcome`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"recorded" &#124; "pending" &#124; "merged" &#124; "rejected"` | 介入处理结果；检查点只更新 outcome，不改原动作。 |
+
+### `UploadStatus`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"pending_validation" &#124; "ingested" &#124; "quarantined"` | 抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。 |
+
+### `DeliverableStatus`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `"draft" &#124; "final"` | 交付物定稿状态，只由显式定稿动作从 draft 变为 final，不自动定稿、不可撤销。 |
+
+### `JobStatusLabel`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 作业状态展示映射：文案与图标同源。 |
+| `$.draft` | 是 | `object` |  |
+| `$.draft.text` | 是 | `"草稿"` |  |
+| `$.draft.icon` | 是 | `"◇"` |  |
+| `$.collecting` | 是 | `object` |  |
+| `$.collecting.text` | 是 | `"提取中"` |  |
+| `$.collecting.icon` | 是 | `"↓"` |  |
+| `$.processing` | 是 | `object` |  |
+| `$.processing.text` | 是 | `"处理中"` |  |
+| `$.processing.icon` | 是 | `"⚙"` |  |
+| `$.analyzing` | 是 | `object` |  |
+| `$.analyzing.text` | 是 | `"分析中"` |  |
+| `$.analyzing.icon` | 是 | `"⌕"` |  |
+| `$.delivering` | 是 | `object` |  |
+| `$.delivering.text` | 是 | `"交付中"` |  |
+| `$.delivering.icon` | 是 | `"▤"` |  |
+| `$.delivered` | 是 | `object` |  |
+| `$.delivered.text` | 是 | `"已交付"` |  |
+| `$.delivered.icon` | 是 | `"✓"` |  |
+| `$.needs_human` | 是 | `object` |  |
+| `$.needs_human.text` | 是 | `"待人工确认"` |  |
+| `$.needs_human.icon` | 是 | `"!"` |  |
+| `$.failed` | 是 | `object` |  |
+| `$.failed.text` | 是 | `"失败"` |  |
+| `$.failed.icon` | 是 | `"×"` |  |
+| `$.cancelled` | 是 | `object` |  |
+| `$.cancelled.text` | 是 | `"已取消"` |  |
+| `$.cancelled.icon` | 是 | `"⊘"` |  |
+
+### `StageLabel`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 阶段展示映射，顺序同 Stage。 |
+| `$.collect` | 是 | `object` |  |
+| `$.collect.text` | 是 | `"提取"` |  |
+| `$.collect.icon` | 是 | `"↓"` |  |
+| `$.process` | 是 | `object` |  |
+| `$.process.text` | 是 | `"处理"` |  |
+| `$.process.icon` | 是 | `"⚙"` |  |
+| `$.analyze` | 是 | `object` |  |
+| `$.analyze.text` | 是 | `"分析"` |  |
+| `$.analyze.icon` | 是 | `"⌕"` |  |
+| `$.deliver` | 是 | `object` |  |
+| `$.deliver.text` | 是 | `"交付"` |  |
+| `$.deliver.icon` | 是 | `"▤"` |  |
+
+### `StageStateLabel`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 阶段态展示映射；conflict 也用于运行失败，原因见 Job.reason。 |
+| `$.not_started` | 是 | `object` |  |
+| `$.not_started.text` | 是 | `"未开始"` |  |
+| `$.not_started.icon` | 是 | `"○"` |  |
+| `$.running` | 是 | `object` |  |
+| `$.running.text` | 是 | `"运行中"` |  |
+| `$.running.icon` | 是 | `"↻"` |  |
+| `$.needs_human` | 是 | `object` |  |
+| `$.needs_human.text` | 是 | `"待人工确认"` |  |
+| `$.needs_human.icon` | 是 | `"!"` |  |
+| `$.done` | 是 | `object` |  |
+| `$.done.text` | 是 | `"已完成"` |  |
+| `$.done.icon` | 是 | `"✓"` |  |
+| `$.conflict` | 是 | `object` |  |
+| `$.conflict.text` | 是 | `"冲突"` |  |
+| `$.conflict.icon` | 是 | `"⚠"` |  |
+
+### `ArtifactStatusLabel`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 产物与块状态展示映射。 |
+| `$.draft` | 是 | `object` |  |
+| `$.draft.text` | 是 | `"草稿"` |  |
+| `$.draft.icon` | 是 | `"◇"` |  |
+| `$.provisional` | 是 | `object` |  |
+| `$.provisional.text` | 是 | `"暂定"` |  |
+| `$.provisional.icon` | 是 | `"◐"` |  |
+| `$.confirmed` | 是 | `object` |  |
+| `$.confirmed.text` | 是 | `"已确认"` |  |
+| `$.confirmed.icon` | 是 | `"✓"` |  |
+| `$.conflict` | 是 | `object` |  |
+| `$.conflict.text` | 是 | `"冲突"` |  |
+| `$.conflict.icon` | 是 | `"⚠"` |  |
+
+### `UploadStatusLabel`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 抽取结果展示映射。 |
+| `$.pending_validation` | 是 | `object` |  |
+| `$.pending_validation.text` | 是 | `"待验证"` |  |
+| `$.pending_validation.icon` | 是 | `"?"` |  |
+| `$.ingested` | 是 | `object` |  |
+| `$.ingested.text` | 是 | `"已入库"` |  |
+| `$.ingested.icon` | 是 | `"✓"` |  |
+| `$.quarantined` | 是 | `object` |  |
+| `$.quarantined.text` | 是 | `"隔离"` |  |
+| `$.quarantined.icon` | 是 | `"⊘"` |  |
+
+### `DeliverableStatusLabel`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 交付物定稿状态展示映射：草稿 / 已定稿。 |
+| `$.draft` | 是 | `object` |  |
+| `$.draft.text` | 是 | `"草稿"` |  |
+| `$.draft.icon` | 是 | `"◇"` |  |
+| `$.final` | 是 | `object` |  |
+| `$.final.text` | 是 | `"已定稿"` |  |
+| `$.final.icon` | 是 | `"✓"` |  |
+
+### `SourceLabel`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 来源展示映射；derived 时保留为次文案。 |
+| `$.external` | 是 | `object` |  |
+| `$.external.text` | 是 | `"外部源"` |  |
+| `$.external.icon` | 是 | `"↗"` |  |
+| `$.human` | 是 | `object` |  |
+| `$.human.text` | 是 | `"人"` |  |
+| `$.human.icon` | 是 | `"♙"` |  |
+| `$.agent` | 是 | `object` |  |
+| `$.agent.text` | 是 | `"agent"` |  |
+| `$.agent.icon` | 是 | `"✦"` |  |
+| `$.mixed` | 是 | `object` |  |
+| `$.mixed.text` | 是 | `"混合"` |  |
+| `$.mixed.icon` | 是 | `"⋈"` |  |
+
+### `OriginLabel`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 派生来源展示映射：内部生成；根来源索引与推断标记归后续知识库 feature。 |
+| `$.source` | 是 | `object` |  |
+| `$.source.text` | 是 | `"源材料"` |  |
+| `$.source.icon` | 是 | `"↗"` |  |
+| `$.derived` | 是 | `object` |  |
+| `$.derived.text` | 是 | `"内部生成"` |  |
+| `$.derived.icon` | 是 | `"⋈"` |  |
+
+### `JobTypeLabel`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 作业类型展示映射。 |
+| `$.daily` | 是 | `object` |  |
+| `$.daily.text` | 是 | `"日报"` |  |
+| `$.daily.icon` | 是 | `"▤"` |  |
+| `$.research` | 是 | `object` |  |
+| `$.research.text` | 是 | `"专题"` |  |
+| `$.research.icon` | 是 | `"⌕"` |  |
+| `$.adhoc` | 是 | `object` |  |
+| `$.adhoc.text` | 是 | `"临时"` |  |
+| `$.adhoc.icon` | 是 | `"◇"` |  |
+
 ### `TradingDate`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |

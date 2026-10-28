@@ -166,6 +166,913 @@
     }
   },
   "$defs": {
+    "Stage": {
+      "type": "string",
+      "enum": [
+        "collect",
+        "process",
+        "analyze",
+        "deliver"
+      ],
+      "description": "固定阶段顺序：提取 → 处理 → 分析 → 交付。"
+    },
+    "StageState": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "running",
+        "needs_human",
+        "done",
+        "conflict"
+      ],
+      "description": "阶段状态；不另设 failed，运行失败以 conflict 呈现，原因见 Job.reason。"
+    },
+    "JobType": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "research",
+        "adhoc"
+      ],
+      "description": "作业类型：日报、专题、临时。"
+    },
+    "JobStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "collecting",
+        "processing",
+        "analyzing",
+        "delivering",
+        "delivered",
+        "needs_human",
+        "failed",
+        "cancelled"
+      ],
+      "description": "九种作业状态；运行失败以 conflict 呈现，原因见 Job.reason。delivered / cancelled 作业领域只读。"
+    },
+    "ActiveJobStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "collecting",
+        "processing",
+        "analyzing",
+        "delivering",
+        "needs_human",
+        "failed"
+      ],
+      "description": "进行中 = 非终结；终结 = 领域只读门封存的 delivered / cancelled；failed 可经 rerunStage 继续、以 conflict 阶段呈现，计入进行中；draft 计入。"
+    },
+    "ArtifactKind": {
+      "type": "string",
+      "enum": [
+        "dataset",
+        "recipe",
+        "analysis",
+        "deliverable"
+      ],
+      "description": "阶段产物类型：数据集、配方、分析稿、交付物。"
+    },
+    "ArtifactStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "provisional",
+        "confirmed",
+        "conflict"
+      ],
+      "description": "产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。"
+    },
+    "Source": {
+      "type": "string",
+      "enum": [
+        "external",
+        "human",
+        "agent",
+        "mixed"
+      ],
+      "description": "内容来源；派生内容保留人 / agent / 混合来源与作者信息。"
+    },
+    "Origin": {
+      "type": "string",
+      "enum": [
+        "source",
+        "derived"
+      ],
+      "description": "source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。"
+    },
+    "InterventionKind": {
+      "type": "string",
+      "enum": [
+        "ingest",
+        "map_fix",
+        "recipe",
+        "framework",
+        "question",
+        "delete",
+        "rewrite",
+        "veto",
+        "approve",
+        "ask_why",
+        "pin_rule",
+        "rerun",
+        "finalize"
+      ],
+      "description": "v1 子集；interaction §3.4 的 source_pref / value_fix 归后续处理台 / data-layer 映射 feature；定稿在 interaction 示意表中归 approve，本契约用独立的 finalize 承载。"
+    },
+    "InterventionOutcome": {
+      "type": "string",
+      "enum": [
+        "recorded",
+        "pending",
+        "merged",
+        "rejected"
+      ],
+      "description": "介入处理结果；检查点只更新 outcome，不改原动作。"
+    },
+    "UploadStatus": {
+      "type": "string",
+      "enum": [
+        "pending_validation",
+        "ingested",
+        "quarantined"
+      ],
+      "description": "抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。"
+    },
+    "DeliverableStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "final"
+      ],
+      "description": "交付物定稿状态，只由显式定稿动作从 draft 变为 final，不自动定稿、不可撤销。"
+    },
+    "JobStatusLabel": {
+      "type": "object",
+      "properties": {
+        "draft": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "草稿"
+            },
+            "icon": {
+              "type": "string",
+              "const": "◇"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "collecting": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "提取中"
+            },
+            "icon": {
+              "type": "string",
+              "const": "↓"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "processing": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "处理中"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⚙"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "analyzing": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "分析中"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⌕"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "delivering": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "交付中"
+            },
+            "icon": {
+              "type": "string",
+              "const": "▤"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "delivered": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "已交付"
+            },
+            "icon": {
+              "type": "string",
+              "const": "✓"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "needs_human": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "待人工确认"
+            },
+            "icon": {
+              "type": "string",
+              "const": "!"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "失败"
+            },
+            "icon": {
+              "type": "string",
+              "const": "×"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "cancelled": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "已取消"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⊘"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "draft",
+        "collecting",
+        "processing",
+        "analyzing",
+        "delivering",
+        "delivered",
+        "needs_human",
+        "failed",
+        "cancelled"
+      ],
+      "additionalProperties": false,
+      "description": "作业状态展示映射：文案与图标同源。"
+    },
+    "StageLabel": {
+      "type": "object",
+      "properties": {
+        "collect": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "提取"
+            },
+            "icon": {
+              "type": "string",
+              "const": "↓"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "process": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "处理"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⚙"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "analyze": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "分析"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⌕"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "deliver": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "交付"
+            },
+            "icon": {
+              "type": "string",
+              "const": "▤"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "collect",
+        "process",
+        "analyze",
+        "deliver"
+      ],
+      "additionalProperties": false,
+      "description": "阶段展示映射，顺序同 Stage。"
+    },
+    "StageStateLabel": {
+      "type": "object",
+      "properties": {
+        "not_started": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "未开始"
+            },
+            "icon": {
+              "type": "string",
+              "const": "○"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "running": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "运行中"
+            },
+            "icon": {
+              "type": "string",
+              "const": "↻"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "needs_human": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "待人工确认"
+            },
+            "icon": {
+              "type": "string",
+              "const": "!"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "done": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "已完成"
+            },
+            "icon": {
+              "type": "string",
+              "const": "✓"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "conflict": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "冲突"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⚠"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "not_started",
+        "running",
+        "needs_human",
+        "done",
+        "conflict"
+      ],
+      "additionalProperties": false,
+      "description": "阶段态展示映射；conflict 也用于运行失败，原因见 Job.reason。"
+    },
+    "ArtifactStatusLabel": {
+      "type": "object",
+      "properties": {
+        "draft": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "草稿"
+            },
+            "icon": {
+              "type": "string",
+              "const": "◇"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "provisional": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "暂定"
+            },
+            "icon": {
+              "type": "string",
+              "const": "◐"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "confirmed": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "已确认"
+            },
+            "icon": {
+              "type": "string",
+              "const": "✓"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "conflict": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "冲突"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⚠"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "draft",
+        "provisional",
+        "confirmed",
+        "conflict"
+      ],
+      "additionalProperties": false,
+      "description": "产物与块状态展示映射。"
+    },
+    "UploadStatusLabel": {
+      "type": "object",
+      "properties": {
+        "pending_validation": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "待验证"
+            },
+            "icon": {
+              "type": "string",
+              "const": "?"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "ingested": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "已入库"
+            },
+            "icon": {
+              "type": "string",
+              "const": "✓"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "quarantined": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "隔离"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⊘"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "pending_validation",
+        "ingested",
+        "quarantined"
+      ],
+      "additionalProperties": false,
+      "description": "抽取结果展示映射。"
+    },
+    "DeliverableStatusLabel": {
+      "type": "object",
+      "properties": {
+        "draft": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "草稿"
+            },
+            "icon": {
+              "type": "string",
+              "const": "◇"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "final": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "已定稿"
+            },
+            "icon": {
+              "type": "string",
+              "const": "✓"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "draft",
+        "final"
+      ],
+      "additionalProperties": false,
+      "description": "交付物定稿状态展示映射：草稿 / 已定稿。"
+    },
+    "SourceLabel": {
+      "type": "object",
+      "properties": {
+        "external": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "外部源"
+            },
+            "icon": {
+              "type": "string",
+              "const": "↗"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "human": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "人"
+            },
+            "icon": {
+              "type": "string",
+              "const": "♙"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "agent": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "agent"
+            },
+            "icon": {
+              "type": "string",
+              "const": "✦"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "mixed": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "混合"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⋈"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "external",
+        "human",
+        "agent",
+        "mixed"
+      ],
+      "additionalProperties": false,
+      "description": "来源展示映射；derived 时保留为次文案。"
+    },
+    "OriginLabel": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "源材料"
+            },
+            "icon": {
+              "type": "string",
+              "const": "↗"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "derived": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "内部生成"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⋈"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "source",
+        "derived"
+      ],
+      "additionalProperties": false,
+      "description": "派生来源展示映射：内部生成；根来源索引与推断标记归后续知识库 feature。"
+    },
+    "JobTypeLabel": {
+      "type": "object",
+      "properties": {
+        "daily": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "日报"
+            },
+            "icon": {
+              "type": "string",
+              "const": "▤"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "research": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "专题"
+            },
+            "icon": {
+              "type": "string",
+              "const": "⌕"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        },
+        "adhoc": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "临时"
+            },
+            "icon": {
+              "type": "string",
+              "const": "◇"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "daily",
+        "research",
+        "adhoc"
+      ],
+      "additionalProperties": false,
+      "description": "作业类型展示映射。"
+    },
     "TradingDate": {
       "type": "string",
       "format": "date",
