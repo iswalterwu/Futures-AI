@@ -1,0 +1,25 @@
+/* One forbidden color per line, including shorthands and mixed case. */
+.hex-short { color: #abc; }
+.hex-short-alpha { color: #abcd; }
+.hex-long { color: #E8E6E0; }
+.hex-long-alpha { color: #e8e6e080; }
+.rgb-legacy { color: rgb(232, 230, 224); }
+.rgba-legacy { color: rgba(232, 230, 224, .5); }
+.rgb-modern { color: RGB(232 230 224 / 50%); }
+.hsl { color: hsl(45 15% 89%); }
+.hsla { color: hsla(45, 15%, 89%, .5); }
+.hwb { color: hwb(45 80% 10%); }
+.lab { color: lab(90% 0 4); }
+.lch { color: lch(90% 4 45); }
+.oklab { color: oklab(90% 0 4); }
+.oklch { color: oklch(90% .04 45); }
+.color-space { color: color(display-p3 .9 .9 .85); }
+.color-mix { color: color-mix(in srgb, var(--fai-text-primary), var(--fai-text-muted)); }
+.light-dark { color: light-dark(var(--fai-text-primary), var(--fai-text-muted)); }
+.cmyk { color: device-cmyk(0 0 0 .1); }
+.named { color: ReD; }
+.named-long { background-color: rebeccapurple; }
+.border { border: var(--fai-radius-base) solid aliceblue; }
+.shadow { box-shadow: 0 0 var(--fai-space-grid-gap) gray; }
+.gradient { background: linear-gradient(white, var(--fai-bg-bottom)); }
+.custom-property { --local-color: navy; }
