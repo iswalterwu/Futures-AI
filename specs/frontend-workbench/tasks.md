@@ -2,7 +2,7 @@
 
 > Tasks 阶段产物；每项 0.5–2 小时。**状态：草案（2026-10-28 精简版）—— Checklist 通过后生效。**
 > 依据：`spec.md`（Gate 1 批准冻结，45 条 AC）+ `plan.md`（精简版）。
-> 按 AGENTS.md §5 去掉了守卫样例自检、逐锚盘点、跨字段校验与单次使用的抽象层；15 个任务，约 25.5 小时。
+> 按 AGENTS.md §5 去掉了守卫样例自检（AC-001-2 明文要求的 `colors` 最小样例除外）、逐锚盘点、跨字段校验与单次使用的抽象层；15 个任务，约 25.5 小时。
 
 ## 约定
 
@@ -42,7 +42,7 @@
 
 ### T-03 仓库检查脚本
 
-- **上下文**：plan §2.8（六项检查合成一个 `scripts/check.mjs`，直接扫真实仓库，不写样例自检）。
+- **上下文**：plan §2.8（六项检查合成一个 `scripts/check.mjs`，直接扫真实仓库；仅 `colors` 按 AC-001-2 先跑最小样例）。
 - **修改范围**：`scripts/check.mjs`、`scripts/check-samples/colors/{positive,negative}.css`、`package.json` 的 `check` 脚本
 - **依赖**：T-02　**预计**：1.5 h
 - **完成标准**：
@@ -50,7 +50,7 @@
   2. `colors` 先核 `check-samples/colors/{positive,negative}.css`（阳性全部命中、阴性不中），再扫真实仓库（AC-001-2 的样例要求）
 - **验证命令**：
   1. `pnpm -C frontend check`
-  2. `pnpm -C frontend test:unit -t "AC-001-2 samples"`
+  2. `pnpm -C frontend check --only colors`（该检查内部先核样例、再扫仓库）
 
 ### T-04 基础样式与数值
 
@@ -202,7 +202,7 @@
 - **完成标准**：
   1. 八路由输入栏可见、提交后抽屉展开显示用户消息（AC-005-1）
   2. 抽屉三态切换 + reload 保持；运行中指示出现、终态消失（AC-005-7）
-  3. 回放 success / failure / retry / abort：步骤可展开、`step.error` 呈现、唯一终态行（AC-005-2）
+  3. 回放 success / failure / retry：步骤可展开、`step.error` 呈现、唯一终态行（AC-005-2）
   4. `long` 脚本下切页与收抽屉都不中断，同一 run、无重复步骤（AC-005-3）
   5. 角标 running → done → 点击后清除（AC-005-4）；跳转三种情形按 plan 走（AC-005-5）
 - **验证命令**：

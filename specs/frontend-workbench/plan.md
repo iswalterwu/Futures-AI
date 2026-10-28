@@ -207,11 +207,11 @@ send({sessionId?, message}) / subscribe(cb)
 | AC-004-5 | 组件：盘面三态格、关注列表数值与红涨绿跌、日程升序；M-04 |
 | AC-004-6 | `check:grid` |
 | AC-005-1 | e2e：八路由输入栏可见、提交 → 抽屉展开显示用户消息 |
-| AC-005-2 | 组件：success / failure / retry / abort 回放，step.error 呈现、唯一终态行 |
+| AC-005-2 | 组件：success / failure / retry 回放，step.error 呈现、唯一终态行 |
 | AC-005-3 | e2e：`long` 脚本切页与收抽屉两种，同一 run、步骤增加、无重复 |
 | AC-005-4 | e2e：running → done → 点击 → none |
 | AC-005-5 | e2e：布局内 → 高亮；已移除（从 `/prices` 发起）→ 提示 + 加回后完成四步；不存在 → 提示且不跳 |
-| AC-005-6 | unit：五份脚本与事件契约校验、恰好一个终态；CONTRACT.md 含十种事件 |
+| AC-005-6 | unit：四份脚本与事件契约校验、恰好一个终态；CONTRACT.md 含十种事件 |
 | AC-005-7 | e2e：三态切换 + reload 保持；运行中指示出现 / 终态消失 |
 | AC-006-1 / -2 | unit：主题不含退役色；序列 / 类目色对卡面 ≥ 3、文字用色 ≥ 4.5（中性退后色豁免登记） |
 | AC-006-3 / -4 | e2e：`getOption().color` 与令牌一致、`backgroundColor` 透明；M-08 |
