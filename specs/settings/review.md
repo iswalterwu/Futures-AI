@@ -45,6 +45,15 @@
 - 第三轮 A（单审）指出 F3-01/F3-02（变异脚本假阳性、重复类遮蔽脱敏测试）与 13 项 P3，已修：测试去重、变异脚本区分 BROKEN、`declaration_only` 走真实路径、`creds.remove()`、锁超时消息、settings 与 data CLI 的等待一致、死代码清理、data-layer plan 与文档同步
 - **F-10（GUI 类 AC 延后）仍未裁决**，待 Gate 2 由 Walter 决定交付顺序
 
+### 第四轮（A 单审，2026-10-28，通过；无 P1/P2）
+
+- 修：F3-01（变异脚本把"没跑到测试"当检出）、F3-02（重复类遮蔽脱敏测试）、13 项 P3 中的 10 项
+- **延后（P3，未修，已知）**：
+  - N-04 坏件源在 settings 里显示为 `declaration_only`（data-layer 的真实原因仍在 `reason`，提示仅在 `reason_hint`）
+  - N-08 `state.json` 损坏时按空处理（仅影响 verified_at/引导标记，重跑即恢复；`_write_json_atomic` 的 docstring 已同步）
+  - N-09 `sources` 直接查 data-layer 的 `ingest_runs` 表（应改为 data-layer 提供运行态 API；有真实路径测试兜底）
+- **待 Walter 在 Gate 2 裁决**：F-10（GUI 类 AC 延后至 desktop-shell）、锁复杂度去留（profile/state/提交边界锁约 55 行生产 + 100 行测试）、spec Q-008（引导按完成标记判定）
+
 ## 未完成项
 
 - **GUI**：档案表单、五步向导、状态卡片等视图层归 desktop-shell（T-08），本轮只交付可测试核心 + CLI，流程不重复实现
@@ -66,7 +75,7 @@
 
 ## 验收证据
 
-- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **374 passed, 5 skipped**（0 warnings，2026-10-27；5 skip = 在线冒烟默认跳过）
-- settings 专项：`pytest tests/test_settings_*.py -q` → **76 passed**（profile 16 / onboarding 22 / sources 10 / cli 19 / privacy 8，含 AC-005 静态断言与官方选项比对）
+- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **375 passed, 5 skipped**（0 warnings，2026-10-27；5 skip = 在线冒烟默认跳过）
+- settings 专项：`pytest tests/test_settings_*.py -q` → **76 passed**（profile 16 / onboarding 22 / sources 10 / cli 19 / privacy 9，含 AC-005 静态断言与官方选项比对）
 - 发布检查：`python tools/release_check.py` → **13/13**（新增 settings 包入 wheel、`futureai-settings` 入口、隔离环境档案+状态冒烟）
-- 变异验证：`cd backend && python tools/mutations.py` → **8/8 检出**（settings：引导不校验落盘、unreadable 当回退、状态文件非原子写、getpass 降级继续；data-layer：无 key 不回退、凭证故障静默回退、内置清单回流 stock、BEGIN 移出保护——其中 9 项定义、8 项在库）
+- 变异验证：`cd backend && python tools/mutations.py` → **8/8 检出**（settings：引导不校验落盘、unreadable 当回退、状态文件非原子写、getpass 降级继续；data-layer：无 key 不回退、凭证故障静默回退、内置清单回流 stock、BEGIN 移出保护）

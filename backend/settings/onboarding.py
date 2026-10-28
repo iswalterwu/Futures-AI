@@ -181,8 +181,9 @@ def _probe(key: str) -> None:
     try:
         payload = resp.json()
     except ValueError:
-        raise _ProbeError(ERR_BAD_RESPONSE)
-    if not isinstance(payload, dict) or not payload.get("response", {}).get("data"):
+        raise _ProbeError(ERR_BAD_RESPONSE) from None
+    response = payload.get("response") if isinstance(payload, dict) else None
+    if not isinstance(response, dict) or not response.get("data"):
         raise _ProbeError(ERR_BAD_RESPONSE)
 
 

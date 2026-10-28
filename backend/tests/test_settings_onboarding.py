@@ -6,19 +6,18 @@ import pytest
 from data import creds
 from data.adapters.eia import eia_adapter
 from settings import onboarding
-from settings import onboarding as ob
 from settings.profile import Profile, save as save_profile
 
 FULL = Profile(first_name="Walter", last_name="Wu", email="walter@example.com", sector="research")
 
 
-def _inject(monkeypatch, *, ok=True, code=ob.ERR_INVALID_KEY):
+def _inject(monkeypatch, *, ok=True, code=onboarding.ERR_INVALID_KEY):
     calls = []
 
     def probe(key):
         calls.append(key)
         if not ok:
-            raise ob._ProbeError(code)
+            raise onboarding._ProbeError(code)
 
     monkeypatch.setattr(onboarding, "_probe", probe)
     return calls
@@ -62,8 +61,8 @@ class TestVerifyAndSave:
 
     @pytest.mark.parametrize(
         "code,expected",
-        [(ob.ERR_INVALID_KEY, "invalid_key"), (ob.ERR_RATE_LIMITED, "rate_limited"),
-         (ob.ERR_UNREACHABLE, "unreachable"), (ob.ERR_BAD_RESPONSE, "bad_response")],
+        [(onboarding.ERR_INVALID_KEY, "invalid_key"), (onboarding.ERR_RATE_LIMITED, "rate_limited"),
+         (onboarding.ERR_UNREACHABLE, "unreachable"), (onboarding.ERR_BAD_RESPONSE, "bad_response")],
     )
     def test_failures_do_not_save(self, tmp_path, monkeypatch, code, expected):
         """AC-003-2：四类失败均不保存，且给出可操作原因。"""
@@ -75,7 +74,7 @@ class TestVerifyAndSave:
 
     def test_error_message_has_no_key(self, tmp_path, monkeypatch):
         """AC-003-3：错误消息不含 key 明文。"""
-        _inject(monkeypatch, ok=False, code=ob.ERR_INVALID_KEY)
+        _inject(monkeypatch, ok=False, code=onboarding.ERR_INVALID_KEY)
         secret = "k-" + "leak-check-9876"
         step = onboarding.verify_and_save(tmp_path, secret)
         assert secret not in str(step.detail)
@@ -108,22 +107,22 @@ class TestStateFile:
         from settings import onboarding as ob
 
         def write(i):
-            ob.write_state(tmp_path, f"src{i}", verified_at=f"t{i}")
+            onboarding.write_state(tmp_path, f"src{i}", verified_at=f"t{i}")
 
         threads = [threading.Thread(target=write, args=(i,)) for i in range(4)]
         for t in threads:
             t.start()
         for t in threads:
             t.join(30)
-        data = json.loads(ob.state_path(tmp_path).read_text(encoding="utf-8"))
+        data = json.loads(onboarding.state_path(tmp_path).read_text(encoding="utf-8"))
         assert len([k for k in data if k.startswith("src")]) == 4  # 串行化：全部写入且文件可解析
 
     def test_onboard_state_roundtrip(self, tmp_path):
         from settings import onboarding as ob
 
-        assert ob.onboard_state(tmp_path) == {"completed": False, "skipped": False}
-        ob.set_onboard_state(tmp_path, completed=True, skipped=True)
-        assert ob.onboard_state(tmp_path) == {"completed": True, "skipped": True}
+        assert onboarding.onboard_state(tmp_path) == {"completed": False, "skipped": False}
+        onboarding.set_onboard_state(tmp_path, completed=True, skipped=True)
+        assert onboarding.onboard_state(tmp_path) == {"completed": True, "skipped": True}
 
 
 class TestProbeClassification:
@@ -188,7 +187,7 @@ class TestProbeClassification:
             return Resp()
 
         monkeypatch.setattr(requests, "get", fake_get)
-        eia_adapter._FILTER_INSTALLED = False  # 清除进程级标志，避免依赖其它测试先跑
+        monkeypatch.setattr(eia_adapter, "_FILTER_INSTALLED", False)  # 避免依赖其它测试先跑
         for name in ("urllib3", "urllib3.connectionpool", "requests"):
             logging.getLogger(name).filters.clear()
         logger = logging.getLogger("urllib3.connectionpool")
@@ -223,12 +222,12 @@ class TestCommitBoundary:
         from settings import onboarding as ob
 
         _inject(monkeypatch, ok=True)
-        ob.verify_and_save(tmp_path, "k-" + "commit-0001")
-        lock = _filelock.acquire(tmp_path / ob.STATE_DIR)
+        onboarding.verify_and_save(tmp_path, "k-" + "commit-0001")
+        lock = _filelock.acquire(tmp_path / onboarding.STATE_DIR)
         done = threading.Event()
 
         def clear_it():
-            ob.clear_key(tmp_path)
+            onboarding.clear_key(tmp_path)
             done.set()
 
         t = threading.Thread(target=clear_it, daemon=True)
@@ -237,8 +236,8 @@ class TestCommitBoundary:
         release_lock(lock)
         assert done.wait(10)
         t.join(5)
-        assert ob.has_key(tmp_path) is False
-        assert ob.read_state(tmp_path)["eia"]["verified_at"] is None
+        assert onboarding.has_key(tmp_path) is False
+        assert onboarding.read_state(tmp_path)["eia"]["verified_at"] is None
 
 
 class TestCredentialRefContract:
@@ -252,3 +251,21 @@ class TestCredentialRefContract:
 
         m = load_manifest(str(BUILTIN_ADAPTERS_DIR / "eia" / "manifest.yaml"))
         assert onboarding.CREDENTIAL_REF == m.credentials.credential_ref
+
+
+class TestUnreachable:
+    """NEW-6：真实 requests 异常 → unreachable，且异常链不含 key。"""
+
+    def test_real_connection_error_maps_to_unreachable(self, tmp_path, monkeypatch):
+        import requests
+
+        secret = "k-" + "unreach-0001"
+
+        def boom(url, params=None, timeout=None):
+            raise requests.exceptions.ConnectionError(f"refused: {url}?api_key={secret}")
+
+        monkeypatch.setattr(requests, "get", boom)
+        step = onboarding.verify_and_save(tmp_path, secret)
+        assert step.detail["error"] == onboarding.ERR_UNREACHABLE
+        assert secret not in repr(step.detail)
+        assert not onboarding.has_key(tmp_path)

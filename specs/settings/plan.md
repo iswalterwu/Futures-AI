@@ -11,7 +11,7 @@
   - 档案：`<用户数据目录>/profile/profile.bin`——**DPAPI 加密的 JSON**（复用 `data.creds` 的加解密，与凭证同等保护、同等 fail closed）
   - 数据源开通状态：`<用户数据目录>/profile/state.json`——**不含任何凭证**，仅 `{source_id: {verified_at, guide_error}}`
 - **凭证**：沿用 data-layer 的 `<用户数据目录>/creds/<credential_ref>.bin`（DPAPI）
-- **依赖**：`pydantic`（档案模型）、`data`（Service / creds / FetchError）；EIA 验证复用 data-layer 的 API 请求点
+- **依赖**：`pydantic`（档案模型）、`data`（Service / creds / lock）；EIA 验证由 `settings.onboarding._probe` 自建请求（便于按向导错误码精细分类，不复用 data-layer 的 `_request`）
 
 ## 2. 模块设计
 
