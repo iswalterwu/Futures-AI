@@ -18,7 +18,8 @@ async function expectUniqueSteps(page: Page, runId: string, count: number) {
   expect(new Set(ids).size).toBe(count)
 }
 
-test('AC-005-1 dock remains visible at the viewport bottom on all eight routes; submit opens the drawer', async ({ page }) => {
+test('AC-005-1 v2-nav dock remains visible at the viewport bottom on all nine routes; submit opens the drawer', async ({ page }) => {
+  expect(navItems).toHaveLength(9)
   await page.goto('/workbench')
   for (const item of navItems) {
     await page.getByRole('link', { name: item.title, exact: true }).click()

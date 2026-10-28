@@ -505,7 +505,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 
 #### T-V2-01 九项导航、路由与侧栏（S0）
 
-- [ ] **状态**：ready（未开始；实施树同步本登记后执行）。已满足前置：G-02 人工裁定、v1 Handoff `43b6d79` 在 main、G-03 合并 / 独立工作树登记、R9 审 `ee3e348` 内部无未解决项、A R4 审 `34ee795` 通过且原样产物 `e596244` 已登记。S0 不消费 H-x；不得以此放行 S1/S2
+- [x] **状态**：completed（S0 实施与本任务六条验证完成；不是 v2 全量验收）。Implement = `openai/gpt-6-astra via openai`，开工基线 `6a1fda4`；四闸门已独立核对，S0 不消费 H-x。真实 red/green：新窄窗 2 failed（旧 wrap）→ 2 passed（nowrap）；六条命令依次 10 / 1 / 2 / 18 个 e2e 通过、typecheck + lint 通过、12 个 registry 测试通过且资产 grep / UI_LAYOUT diff 符合预期。详见 `implementation-v2-s0.md`（含完整命令、exit、范围与限制）。不得以此放行 S1/S2
 - **上下文**：
   - 依据：plan §7.4、§7.1；spec R-002、Q-023、Q-027。
   - 作业详情路由只由 H-3 提供，壳只生成名为 `jobs` 的占位路由。

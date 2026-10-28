@@ -13,7 +13,7 @@ declare module 'vue-router' {
 }
 
 const routes: RouteRecordRaw[] = navItems.map(item => ({
-  path: item.id === 'daily' ? '/daily/:date?' : item.id === 'research' ? '/research/:id?' : item.path,
+  path: item.id === 'daily' ? '/daily/:date?' : item.path,
   name: item.id,
   component: item.id === 'workbench' ? WorkbenchPage : PlaceholderPage,
   meta: { title: item.title, en: item.en, navId: item.id, placeholderOwner: item.placeholderOwner },
