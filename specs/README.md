@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| frontend-workbench | in-progress（v1 实施中；v2.1 Gate 1 已通过（2026-10-28，含 D-018 术语同步 Q-031）→ 可进入 v2 Plan） | 无后端依赖；v2 集成 AC 依赖 workbench-interaction 前端 | 2026-10-28 | v1：45 AC，A Checklist 通过；前端基线 fdaa7d8，T-09 等在独立 worktree 实施。v2：隔离分支 spec/frontend-workbench-v2，九项导航/固定作业轨道/全局投放/对话上下文，52 AC、Q-023～Q-030 待批准；plan/tasks/checklist 仍为 v1，不授权 v2 实施。见 specs/frontend-workbench/v2-gate1-request.md |
+| frontend-workbench | in-progress（v1 尚未完成 Review / Gate 2 / Handoff；v2.1 Gate 1 已通过 → v2 Plan §7 已产出，待 A 独立 v2 Checklist） | 无后端依赖；实施硬前置为 v1 Handoff 合入 main 的准确 SHA。v2 S1/S2 按 plan §7.3 分批接收 workbench-interaction 的固定提交与定向测试摘要，不要求其先全量 Handoff；2026-10-28 只读核对其 R3（8bd1b31）未通过，B-09/B-10 待复核，外部交接未就绪 | 2026-10-28 | v1：45 AC，历史 A Checklist 只授权 v1。v2：spec/frontend-workbench-v2，52 AC、Q-023～Q-031 已冻结；plan.md 页首与 §7 为 v2 设计（Plan = claude-opus-5-5 via anthropic；基线 fec3556）。tasks.md / checklist.md 仍为 v1，不授权 v2 实施；新增令牌、组件与测试仅为计划，未改代码 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
