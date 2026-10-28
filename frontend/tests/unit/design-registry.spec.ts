@@ -211,3 +211,27 @@ describe('AC-008-3 palette', () => {
     }
   })
 })
+
+describe('AC-008-1 docs', () => {
+  const uiFiles = [...uiEntries.map(({ file }) => `design/ui/${file}.md`), 'design/ui/UI_DARK_ADDITIONS.md']
+  const chartFiles = ['design/charts/PALETTE_CORE.md', 'design/charts/PALETTE_DARK.md']
+
+  test.each([
+    { section: '2.3', files: chartFiles },
+    { section: '6', files: uiFiles },
+    { section: '8', files: [...uiFiles, ...chartFiles] },
+  ])('designUI §$section links to concrete migrated entries and existing anchors', ({ section, files }) => {
+    const markdown = readDocument('docs/designUI.md')
+    const heading = new RegExp(`^#{2,3} ${section.replaceAll('.', '\\.')}\\.? `, 'm')
+    const content = markdown.split(heading)[1]?.split(/^## /m)[0]
+    expect(content, `designUI §${section}`).toBeDefined()
+
+    const links = [...content!.matchAll(/\]\(\.\.\/(design\/(?:ui|charts)\/[^)#]+\.md)(?:#([^)]*))?\)/g)]
+    expect(links.map(link => link[1])).toEqual(expect.arrayContaining(files))
+    for (const [, path, anchor] of links) {
+      const target = readDocument(path)
+      expect(target, path).toMatch(/^# .+$/m)
+      if (anchor) expect(target, `${path}#${anchor}`).toContain(`<a id="${anchor}"></a>`)
+    }
+  })
+})

@@ -32,7 +32,9 @@
 - 分析图表（供需/平衡表等）保持 FTEngine 语义：**红 = 负/减**；两套语义以模块 / 区块为界，互不渗透
 - 作用域（D-015）：涨跌专色只用于登记的行情语义位置——行情价格模块、关注列表、今日焦点带"行情"段；焦点带分"行情 | 指标"两段，指标段沿用分析语义；状态色不用绿色；新增位置先新增一份后继 ADR（取代 D-015 的位置清单）并同步本节
 
-### 2.3 图表色（暗色适配，随 design/charts 移植定稿）
+### 2.3 图表色（暗色适配）
+
+原色身份与退役清单见 [PALETTE_CORE](../design/charts/PALETTE_CORE.md)；暗色亮化值见 [PALETTE_DARK](../design/charts/PALETTE_DARK.md)，其中 [序列色序](../design/charts/PALETTE_DARK.md#series)、[区间带 / 均值 / 模型线](../design/charts/PALETTE_DARK.md#reference) 与 [对比度方法](../design/charts/PALETTE_DARK.md#contrast) 已登记。
 
 - 主序列线：墨 → 亮化 `#E8E6E0`；多序列排位沿用黛驼体系亮化版
 - 区间带（霜地）/ 均值（绍衣）/ 模型线（齐紫）：暗色亮化对应
@@ -78,11 +80,13 @@ season-daily（日/周度年份叠线）· season-monthly（月度年份叠线�
 
 ## 6. UI 组件与布局（移植自 FTEngine design/UI，暗色适配）
 
-- 卡片家族与图卡契约、卡高档位
-- 表格四式：通用表、盘面网格、卡内小表、大平衡表/季度表
-- 组件：胶囊、徽章、灯、芯片、页签、脚注、浮层、空态
-- 界面色令牌（CSS 变量）、字体栈（三族分工）、字号阶梯、间距圆角
-- 桌面适配：暗色玻璃外壳、侧栏导航、窗口/托盘、设置页、日报页
+基础原则见 [UI_FOUNDATIONS](../design/ui/UI_FOUNDATIONS.md)，移植来源与采用范围见 [UI 索引](../design/ui/README.md)；本 feature 的采用边界以各条目文末「暗色适配」为准。
+
+- 卡片家族与图卡契约、卡高档位：见 [UI_CARDS](../design/ui/UI_CARDS.md)
+- 表格四式：通用表、盘面网格、卡内小表、大平衡表/季度表，见 [UI_TABLES](../design/ui/UI_TABLES.md)
+- 组件：胶囊、徽章、灯、芯片、页签、脚注、浮层、空态，见 [UI_COMPONENTS](../design/ui/UI_COMPONENTS.md)
+- 界面色令牌（CSS 变量）、字体栈（三族分工）、字号阶梯、间距圆角：分别见 [UI_COLORS](../design/ui/UI_COLORS.md)、[UI_FONTS](../design/ui/UI_FONTS.md)、[UI_LAYOUT](../design/ui/UI_LAYOUT.md)
+- 桌面适配：暗色玻璃外壳、侧栏导航、窗口/托盘、设置页、日报页；已移植的导航与工作台补充登记见 [UI_NAV](../design/ui/UI_NAV.md)、[UI_DARK_ADDITIONS](../design/ui/UI_DARK_ADDITIONS.md)
 
 ## 7. 日报设计理念
 
@@ -92,7 +96,7 @@ season-daily（日/周度年份叠线）· season-monthly（月度年份叠线�
 
 ## 8. 规范资产移植计划
 
-- `design/charts/`：FTEngine design/Graphs 各条目文件（Base/Kinds/Palette/Seasonal/Tooltip/Formats/Copy/Lint_Rules）
-- `design/ui/`：FTEngine design/UI 各条目文件（Layout/Cards/Tables/Colors/Fonts/Components/Foundations）
+- `design/charts/`：已移植配色原件 [PALETTE_CORE](../design/charts/PALETTE_CORE.md) 与暗色适配 [PALETTE_DARK](../design/charts/PALETTE_DARK.md)，来源与采用边界见 [图表索引](../design/charts/README.md)；FTEngine design/Graphs 的 Base/Kinds/Seasonal/Tooltip/Formats/Copy/Lint_Rules 仍随对应 feature 按需移植
+- `design/ui/`：已移植 FTEngine design/UI 的 [Layout](../design/ui/UI_LAYOUT.md)、[Cards](../design/ui/UI_CARDS.md)、[Tables](../design/ui/UI_TABLES.md)、[Colors](../design/ui/UI_COLORS.md)、[Fonts](../design/ui/UI_FONTS.md)、[Components](../design/ui/UI_COMPONENTS.md)、[Foundations](../design/ui/UI_FOUNDATIONS.md)、[Navigation](../design/ui/UI_NAV.md)，并登记 [工作台暗色补充](../design/ui/UI_DARK_ADDITIONS.md)；来源与采用边界见 [UI 索引](../design/ui/README.md)
 - 原则：实现对应模块时按需逐份搬运并登记，不一次性搬空；每份保留原条目 id 与"为什么"
 - 注：`specs/` 目录留给功能规格（spec-driven 工作流，见 AGENTS.md §2），规范资产统一放 `design/`
