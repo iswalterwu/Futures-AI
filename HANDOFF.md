@@ -1,4 +1,9 @@
-# 暂停交接 — desktop-shell（WIP）
+# desktop-shell 恢复入口（保留暂停 WIP 交接）
+
+> **最新状态（2026-10-28 17:48 UTC）：T-04b blocked，触发冻结方案的打包黑名单停止规则。** Walter 17:25 UTC 已明确恢复；暂停禁令仅作历史记录。原 Astra 会话完成复验并正常结束：全量 **451 passed / 5 online skips**，真实构建成功，打包冒烟 **11/12**；唯一失败为 `_internal/pyarrow/tests`。没有放宽黑名单、手改产物或启动 T-05。
+> 实施 = `openai/gpt-6-astra` via openai，会话 `01a18285-2349-7290-b570-c8f9b2e18658`；协调 = `openai/gpt-6.1-sol`。**先读下方 §10 的恢复后检查点**及 `specs/desktop-shell/implementation-evidence.md`，不要按历史暂停快照重复开工。Gate 2 未批准，仍不 push / PR / merge。
+
+## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
 > 2026-10-28，Walter 指令：**收到后不要开新任务；保存、提交 WIP、停止后台，不 push**。
 > 本文件由当前协调会话 `openai/gpt-6.1-sol` 整理；源码实施会话实际为 `openai/gpt-6-astra`。
@@ -167,3 +172,26 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 ## 9. 下次恢复后给 Walter 的第一句话（照此发送）
 
 我会先用 openai/gpt-6-astra 复跑暂停前的后端测试，从 T-04b 的打包冒烟继续，暂不跳到 T-07。
+
+## 10. 2026-10-28 恢复后检查点（当前权威状态）
+
+### 实际完成与阻塞
+
+- 原 Astra 会话在原实施树恢复，独立确认 Checklist **41/41**，没有改 frozen spec / Plan / Tasks / Checklist；会话已结束，进程退出码 **0** 表示调用正常结束，**不表示产品冒烟成功**。
+- 六个后端文件首次复跑 **80 passed**；全量发现测试固定哨兵触发凭证字面量扫描。Astra 在 `backend/tests/test_app_settings_api.py` 将哨兵改成运行时 UUID 生成，未改扫描器或隐私断言；修复后六文件 + 扫描 **85 passed**，最终全量 **451 passed / 5 skipped（207.40s）**。失败历史完整保留在实施证据中。
+- 真实 `python tools/build_backend.py` **退出 0（192.53s）**，有兼容性警告，不能称零警告。真实 `python tools/shell_check.py` **退出 1，11/12 通过**：健康就绪、仅 127.0.0.1 监听、三源、鉴权、优雅退出、锁/只读端点/端口及临时目录清理通过；**包内 `_internal/pyarrow/tests` 命中 AC-001-4 冻结黑名单**，含 `.pyx` 与 feather/orc/parquet 测试资产，不是空目录。
+- T-01b/c/d、T-02b/c、T-03b/c 的本批后端范围复验通过；**T-04b 未完成，T-05 起未开始**。未作 Converge、独立代码 Review 或 Gate 2 结论。
+- 协调者只读核对安装环境中的 `hook-pyarrow.py`：其 hiddenimports 排除了 tests，但 `datas = collect_data_files('pyarrow')` 未排除测试数据；这解释了现有 `--exclude-module tests` 仍收进数据文件。未改 site-packages、构建脚本或黑名单。
+
+### 保存位置与工作树
+
+- 主工作树本次 WIP 检查点 = 本文件所在 `HEAD`（用 `git log -1 --oneline` 查询），起始提交 `007a4c0`；已原样收回 Astra 的测试修复与 `specs/desktop-shell/implementation-evidence.md`，两个文件与实施树逐字节一致。
+- 实施树仍为 `D:/2030/Futures-AI-desktop-implement` / `feat/desktop-shell-astra`，HEAD **`782aa20`**；仅上述测试文件修改与新增证据尚未提交。Astra 因 blocked 未做“首批完成”提交，**不要丢弃这两个 WIP 文件**；主检查点也有备份。
+- 可移交请求、最终报告和 agent 进程退出码保存在 `specs/desktop-shell/handoff-artifacts/20261028-resume/`。仓库外原始日志在 `C:/Users/iswal/AppData/Local/Temp/desktop-shell-continue-Hldtv1BJ/`，完整构建输出在 `%TEMP%/fai-resume-build-bon07pti/build.txt`；不将完整会话或测试数据库入库。
+- `backend/build/` 与 `backend/dist/` 是本轮真实生成、被忽略的产物，保留在实施树作阻塞复核，不手改或提交。本任务恢复 agent PID 5364/30952 与打包后端 PID 47224 已不存在，无需保留端口或重启服务。
+
+### 下一步（不能跳过阻塞）
+
+1. 按冻结停止规则向 Walter 报告本次真实黑名单冲突。建议保持黑名单不变，在构建收集源头排除第三方测试资产；**这尚未实施或批准为新的任务范围**。不要只手动删除 dist 中的目录，不改全局 PyInstaller hook，不误以为模块排除必然排除数据文件。
+2. 明确构建修补的文件所有权后，走 Plan/Tasks 修补与 Analyze、A 独立复查相应质量项，再由 Astra 生成新产物、复跑测试和完整冒烟。若要改变需求本身则必须重新 Clarify / Gate 1；不能把黑名单放宽当作普通修复。
+3. T-04b 真实通过、写入 checkpoint 后，从 **T-05b** 按原顺序推进。未取得的前端/真实作业/干净机/15s/通知观感/真实 key 等边界不变；不 push / PR / merge，Gate 2 仍待用户批准。

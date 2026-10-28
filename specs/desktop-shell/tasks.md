@@ -5,7 +5,7 @@
 > - **作者 / 通道**：Tasks = `anthropic/claude-opus-5-5`（`claude-bridge` seven_day 额度在当前窗口已确认耗尽，不重试；官方通道最小真实调用成功）。协调 = `openai/gpt-6.1-sol`（不是作者）。
 > - **输入**：冻结 `spec.md` v1（Gate 1 2026-10-28）+ `plan.md` 修订 3 + A 的初轮 `checklist.md`（只读）。固定源码基线 `8ba1b6a304f916e3d57ebdd6b89790b75a15f14c`，规划文件为未提交工作副本。
 > - **执行前置条件（硬）**：Implement 开始前重新读取 `checklist.md` 全文，**全部复选框均已由 A 勾选**才可开始。本文件生成时 A 初轮为 30/41、Tasks/Analyze 对齐项待 A 复查；**当前审批状态以 `checklist.md` / `review.md` 为准**，未全部勾选前 Implement 不得开始。
-> - **执行者**：全部实施任务（含纠偏任务）由 `openai/gpt-6-astra` 执行；仅在调用失败（额度/鉴权/持续错误）时按 AGENTS §6 回退 `deepseek/deepseek-flash`，测试变红不是回退理由。**2026-10-28 按 Walter 指令暂停：首批后端代码已有 WIP，实际进度见本文件末尾、`review.md` 与根目录 `HANDOFF.md`；不能将阶段用例通过等同于最终 AC 验收。**
+> - **执行者**：全部实施任务（含纠偏任务）由 `openai/gpt-6-astra` 执行；仅在调用失败（额度/鉴权/持续错误）时按 AGENTS §6 回退 `deepseek/deepseek-flash`，测试变红不是回退理由。**2026-10-28 17:25 UTC 用户明确恢复；原 Astra 会话从 `782aa20` 完成后端复验（最终 451 passed / 5 online skips），真实构建成功，但 T-04b 冒烟因 `_internal/pyarrow/tests` 黑名单命中而 blocked（11/12）。按冻结规则停止，未启动 T-05；实际进度见本文件末尾、`review.md` 与根目录 `HANDOFF.md`，不能将后端子句通过等同于最终 AC 验收。**
 > - **工作树**：一个 Astra 实施工作树 / 分支串行完成全部任务；`shell/main.js`、`preload.js`、`renderer/onboarding.*`、`package.json`/`package-lock.json`、`backend/app/*` 是共享文件，不安排并行写入者。
 > - **登记约定**：各任务修改范围中的"`shell/check.js`（登记）"均指在登记表 `shell/test/e2e/index.js` 中加入场景名（plan §8.3），不改运行器逻辑。
 - **命令状态**：下列所有"待新增"的测试文件、测试名、e2e 场景、npm 脚本在 Implement 前**都不存在、都未运行**；本文件不表示任何验证已通过。测试名为约定名，实施时须按此命名，以便验证输出能逐条对上。
@@ -629,7 +629,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 | 范围 | 状态 |
 |---|---|
 | T-01～T-06 | 历史阶段代码（见上表），未在本轮复验 |
-| T-01b/c/d、T-02b/c、T-03b/c（7 项） | WIP：源码已写、对应阶段局部测试曾通过；最后代码未全量回归，非最终 AC 验收，详见 `HANDOFF.md` |
-| T-04b | WIP 暂停：`shell_check.py` 与回环测试已保存，最后编辑后未验证；未构建或跑打包冒烟 |
-| T-05 起其余 33 项（含 T-07～T-10） | ⬜ 未开始；用户要求暂停，恢复前不得自动启动 |
+| T-01b/c/d、T-02b/c、T-03b/c（7 项） | 本批后端范围复验通过：六文件 + 凭证扫描 85 passed，最终全量 451 passed / 5 online skips；不代表相同 AC 的 GUI/外部子句完成，详见 `implementation-evidence.md` |
+| T-04b | **blocked / 未完成**：真实构建退出 0；真实冒烟 11/12，唯一失败为 `_internal/pyarrow/tests` 命中冻结包黑名单；健康/回环/鉴权/退出清理通过。不豁免或手改产物；先处理构建收集源头与授权范围 |
+| T-05 起其余 33 项（含 T-07～T-10） | ⬜ 未开始；先解除 T-04b 打包扫描阻塞并取得真实通过 checkpoint，再从 T-05b 串行推进，不跳到 T-07 |
 | T-M1、T-M2a～c | ⬜ 未执行 |

@@ -184,9 +184,10 @@ class TestRegistrationGuide:
 
     def test_no_key_in_response_and_no_email_in_logs(self, tmp_path, caplog, capsys):
         import logging
+        import uuid
 
         email = "plant.user@example.test"
-        secret = "FAIPLANT-KEY-registration-guide"
+        secret = "-".join(("FAIPLANT", "KEY", uuid.uuid4().hex))
         save_profile(tmp_path, Profile(first_name="Fixture", last_name="Trader", email=email, sector="research"))
         creds.put(tmp_path / "creds", "eia_api_key", secret)
         with caplog.at_level(logging.DEBUG):

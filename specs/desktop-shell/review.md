@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前阶段：**按 Walter 指令暂停交接，停在 Implement 第一批的 T-04b WIP**（实施模型 `openai/gpt-6-astra`）。首批 7 项源码已写且对应局部测试曾通过，T-04b 最后编辑未验证，最终全量回归/构建未跑；后台已停，恢复前读根 `HANDOFF.md`。Plan / Analyze 与独立 Checklist **41/41 通过**不等同于代码验收；T-07～T-10 未开始。
+> 当前阶段：**恢复后的 Implement 第一批在 T-04b blocked**（2026-10-28 17:48 UTC；原实施会话 `openai/gpt-6-astra` 已正常结束）。最终后端全量 **451 passed / 5 online skips**，真实构建成功；真实打包冒烟 **11/12**，唯一失败为 `_internal/pyarrow/tests` 黑名单命中。按冻结停止规则未放宽扫描、未启动 T-05。恢复入口与精确证据见根 `HANDOFF.md` §10 / `implementation-evidence.md`。Plan / Analyze 与独立 Checklist **41/41 通过**不等同于代码验收；T-07～T-10 未开始。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -76,6 +76,32 @@ A 在新会话中独立复核固定源码与真实规划差异，结论：**Chec
 - 已停止本任务 Node PID 28644 及子 PID 42096，启动包装 PID 63020 也已退出；CIM 复核未发现本任务 agent / 后端服务。worker 的 exit=1 是手动中断，不是模型失效，不据此回退模型。
 - 原始临时会话不入库；必要请求、路由成功输出、批准输入指纹、A 最终报告与测试摘要已拷入 `specs/desktop-shell/handoff-artifacts/20261028/`。详情、后续命令、工作树与本地 WIP 提交见根 `HANDOFF.md`。
 - 交接是用户要求的暂停 WIP 保存，**不是** AGENTS §2 的功能 Handoff，不替代 Converge / Review / Gate 2；不 push、不 PR、不 merge。没有新增需求待拍板，只等待用户明确恢复。
+
+## 2026-10-28 17:25 UTC 恢复 Implement（本轮已结束，T-04b blocked）
+
+Walter 明确指示“按照 HANDOFF.md 继续”，本次不把暂停时的 exit=1 当模型失效。协调会话实际 `openai/gpt-6.1-sol`（PI 环境确认），只派工、记录、集成，不代写源码或运行产品测试。
+
+| 角色 / 范围 | 固定输入 | 实际模型 / 通道 | 状态 |
+|---|---|---|---|
+| Implement：第一批 T-01b～T-04b 的最终验证 | 实施树 `782aa20`，主快照 `007a4c0`；原始源码基线仍为 `8ba1b6a`；冻结 spec / Plan 修订 3 / Analyze 迭代 6 / A Checklist 41/41 | 原 `openai/gpt-6-astra` via openai，会话 `01a18285-2349-7290-b570-c8f9b2e18658`，PI 环境实核，未回退 | 17:47 UTC 正常结束（agent exit 0，不代表产品通过）；前七项本批后端范围复验通过；T-04b 真实包扫描 blocked，未新增完成提交；未开始 shell。证据已收回主树，详见下表 |
+
+主/实施工作树恢复前均干净，9 个实施文件与暂停快照一致；协调者和 Astra 分别计数 Checklist **41 已勾选、0 未勾选**。冻结需求、Plan/Analyze/Checklist 未改；协调者只更新实际进度元数据，并在实施停止后原样收回测试修复和证据，逐字节核对一致。
+
+| 本轮实际验证 | 结果 |
+|---|---|
+| 暂停代码六文件首次复跑 | 80 passed / 54.45s |
+| 首次全量 | 1 failed / 450 passed / 5 skipped：测试固定 key 哨兵触发凭证字面量扫描 |
+| 首次哨兵修复后的联合检查 | 1 failed / 84 passed：前置字符串仍触发扫描；未隐藏失败 |
+| 最终随机哨兵修复后六文件 + 扫描 | 85 passed / 65.89s，扫描器与隐私断言未放宽 |
+| 最终全量（构建前） | **451 passed / 5 skipped / 207.40s**；5 项为未启用的在线冒烟，不是上游验证 |
+| 真实 PyInstaller 构建 | **退出码 0 / 192.53s**，有兼容性警告，不称零警告 |
+| 真实 `shell_check.py` | **退出码 1 / 11/12**，唯一失败为 `_internal/pyarrow/tests`；健康就绪、回环监听、三源、鉴权、退出、锁/端点/端口清理均通过 |
+
+**阻塞与停止规则**：真实产物中的 `pyarrow/tests` 含 `.pyx` 和 feather/orc/parquet 测试资产，命中 Plan §7.4 的 `tests/` 黑名单。Astra 没有豁免第三方条目、手改生成物或越权修改只读的 `build_backend.py`。协调者只读核对安装环境 hook：hiddenimports 已过滤 tests，但 `collect_data_files('pyarrow')` 未排除测试数据；模块排除并不能证明数据文件不会被收集。该静态核对不是新的 Plan / 实施修补。
+
+**交接**：`implementation-evidence.md` 含命令、全部失败历史、AC 后端子句与剩余边界；可移交请求/最终报告/agent exit 码在 `handoff-artifacts/20261028-resume/`，完整会话/测试数据库/构建日志仍留仓库外。恢复 agent PID 5364/30952 与打包后端 PID 47224 已不存在；没有需保留的服务或端口。实施树 HEAD 仍 `782aa20`，测试修复和新增证据为 WIP；主树已备份。不把 agent exit 0 写成冒烟成功，也不把 blocked 当作模型失效。
+
+**下一步**：先明确构建收集源头修补的文件所有权，保持黑名单不变；按 Plan/Tasks 修补、Analyze、A 复查后由 Astra 重新生成并验证产物。T-04b 真正通过后才从 T-05b 串行推进；当前无首批全部完成、Converge、代码 Review 或 Gate 2 结论。本次仍不 push / PR / merge。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 
