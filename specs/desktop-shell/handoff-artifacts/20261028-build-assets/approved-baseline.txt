@@ -1,0 +1,22 @@
+desktop-shell T-04b revision4 — APPROVED IMPLEMENTATION INPUT
+
+User approval: Walter said 是的 to source-level build collection repair, third-party test data excluded, frozen blacklist unchanged, Plan/Tasks/Analyze/A recheck before Astra.
+Fixed implementation worktree: D:/2030/Futures-AI-desktop-implement
+Branch: feat/desktop-shell-astra
+IMPLEMENTATION INPUT HEAD (use for tasks T04b step7): 3a9ec35512ad593cc931f98dc5c3a347342f4e45
+Prior saved backend WIP/evidence: 9ae2ad9
+Coordinator main approved checkpoint: ccbc2916f296ed6ebf557b96f5c3219c9124c9f6
+Original implementation source base: 8ba1b6a304f916e3d57ebdd6b89790b75a15f14c
+Plan correction commit: 981d4301f069f71dd120a1a86124dbe03aa54e0c
+A's fixed diff: 1275ae2191881d830a4f8e09c52dbe4cb12a2e78..981d4301f069f71dd120a1a86124dbe03aa54e0c (FOUR planning files only)
+Plan author/model/session: anthropic/claude-opus-5-5; 01a183a9-aa0d-71f9-b5a9-add01c9d3107
+A reviewer/model/session: anthropic/claude-fable-5-1; 01a183ba-241b-76cf-8588-b472ac61c90c
+A revision4 conclusion: PASS, 41 CHECKED / 0 UNCHECKED, no P1/P2, 3 P3 (R4-01/02/03), Checklist third recheck on 2026-10-28.
+A input SHA-256 verification: all11 protected input files unchanged before/after review. A only modified checklist.md.
+Coordinator synced8 approved/current docs (HANDOFF, specs README, plan/tasks/analyze/checklist/review/build-assets-review-request) to implementation tree serially while no writer; committed as fixed HEAD above. All8 docs byte-matched main; all9 prior implementation source/test files + build_backend/spec/implementation-evidence also byte-matched main. Implementation tree clean at launch.
+
+Scope: ONLY build_backend.py minimal hook-dir wiring, NEW tools/pyinstaller_hooks/hook-pyarrow.py, NEW tests/test_app_packaging.py, APPEND implementation-evidence.md. Everything else including spec, scanner/blacklist, health tests, installed packages/versions, runtime code, global config, shell and packaging is READ ONLY. No T05, no commits by implementer, no push/PR/merge/reset/Gate2.
+
+R4-01 explicit boundary: old PYZ contains pyarrow.conftest, pyarrow.tests, pyarrow.tests.util; reviewer accepted as P3 and OUTSIDE this narrow filesystem-test-data correction. Do not remove them or alter hiddenimports parity scope; do not claim package is free of every test code module. R4-02 logging repr doubles Windows backslashes; preserve actual hook log line. R4-03 full credential scan reads existing build/dist text; if unexpected hit, STOP rather than weaken scan/manual-edit artifact.
+
+Preserved old blocked artifact was confirmed present before dispatch: backend/dist/futuresai-backend/_internal/pyarrow/tests. You must still record its BEFORE manifest per actual tasks step3 before --clean. No current service/port must be retained. Original Astra session is stopped; this new focused Astra session is the sole writer in SAME private tree.

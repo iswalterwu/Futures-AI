@@ -5,6 +5,7 @@
 
 要点：
 - 显式带上三份内置 manifest（package-data 不会自动进 PyInstaller 产物）
+- 使用仓库 hook 在收集源头排除 pyarrow/tests 数据（plan §7.5）
 - 不带入测试、构建目录与用户数据（AC-001-4）
 """
 from __future__ import annotations
@@ -17,6 +18,7 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parent.parent
 DIST = BACKEND / "dist"
 WORK = BACKEND / "build" / "pyinstaller"
+HOOKS = BACKEND / "tools" / "pyinstaller_hooks"
 APP_NAME = "futuresai-backend"
 
 
@@ -41,6 +43,7 @@ def main(argv: list[str]) -> int:
         "--distpath", str(DIST),
         "--workpath", str(WORK),
         "--specpath", str(WORK),
+        "--additional-hooks-dir", str(HOOKS),
         "--add-data", data_arg(),
         "--collect-submodules", "data",
         "--collect-submodules", "settings",

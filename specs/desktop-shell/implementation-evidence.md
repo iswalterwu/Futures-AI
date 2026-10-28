@@ -109,3 +109,124 @@ PASS  临时目录已删除
 - 无新 commit；HEAD 仍为输入 WIP。未 push、PR、merge、reset；未更新协调者拥有的 tasks/review/README 状态。
 - **下一检查点**：协调者先处置 T-04b 的 pyarrow 测试资源收集阻塞并复验；后续 shell 的首任务仍是 **T-05b**，本轮未启动，不能跳 T-07。
 - 未取得：真实前端与 preload 接口集成、作业引擎/drain、agent、真实 EIA 注册/key、发布通道、干净 Windows 安装卸载、基准机 15 秒、系统通知/托盘观感、真实满盘及 507 GUI 渲染。没有这些验收、整体 Converge、独立代码 Review 或 Gate 2 通过声明。
+
+## 6. 2026-10-28 修订 4 构建收集源头修正（T-04b）
+
+### 6.1 固定输入、批准与所有权
+
+- Implement = `openai/gpt-6-astra` via `openai`；新聚焦 session **`01a183c8-f4a5-778d-acfc-d458ead81908`**，PI 环境实核。不是模型回退；没有新 agent 或其他 writer。
+- 工作树 / 分支：`D:/2030/Futures-AI-desktop-implement` / `feat/desktop-shell-astra`。固定输入与结束 HEAD 均为 **`3a9ec35512ad593cc931f98dc5c3a347342f4e45`**，开始时工作树干净。
+- 第一读为仓库外 `C:/Users/iswal/AppData/Local/Temp/desktop-shell-buildfix-s9IO23nK/approved-baseline.txt`；HEAD 与该文件一致。已完整读取请求规定的 AGENTS、HANDOFF（最新 §11）、docs/plan、architecture、D-007 和八份 feature 文件。
+- A 的新修订 4 复查：`anthropic/claude-fable-5-1`，session `01a183ba-241b-76cf-8588-b472ac61c90c`；固定审查 `1275ae2..981d4301f069f71dd120a1a86124dbe03aa54e0c`，明确 PASS、无 P1/P2、3 项 P3。实施者重读全文并用 `rg -c '^- \[x\]'` / `rg -c '^- \[ \]'` 核对 **41 checked / 0 unchecked**（后者无匹配，退出 1）；不是沿用修订 3 的批准。批准文件所列协调检查点为 `ccbc2916f296ed6ebf557b96f5c3219c9124c9f6`。
+- 只写四个授权路径：
+  1. `backend/tools/build_backend.py`：仅新增 `HOOKS` 目录常量、`--additional-hooks-dir` 参数与一行 docstring；其他参数和 `--clean` 行为不变。
+  2. 新 `backend/tools/pyinstaller_hooks/hook-pyarrow.py`：三条真实公开 API 赋值；仅 datas 使用 `excludes=['tests']`，hiddenimports/binaries 与 contrib 等价；无 `__init__.py`，未复制许可证或整份上游 hook。
+  3. 新 `backend/tests/test_app_packaging.py`：恰三个约定名测试；只有接线测试注入 `subprocess.run`；模块级 fixture 各真实执行仓库 / contrib hook 一次，不 mock `collect_*`；正锚点为 `pyarrow.lib/compute/parquet`、`arrow.dll/parquet.dll`、`pyarrow/include/arrow/api.h`。
+  4. 本文件只追加本节，§1～§5 的七项后端证据、失败与警告保留原文。
+- 编辑前用 read 核对实际构建/冒烟/health 测试源码及已安装 contrib hook、PyInstaller `collect_submodules` / `collect_data_files` / `collect_dynamic_libs`、hook 选择与优先级实现。环境版本为 Python 3.14.2、pytest 9.0.3、PyInstaller 6.22.3、hooks-contrib 2026.9、pyarrow 22.0.0；没有安装或改动依赖。
+
+### 6.2 七步验证的真实结果（严格按顺序）
+
+以下为本 session 新结果，不复用此前 451 passed / 5 skips 与 11/12：
+
+| 步骤 | 实际结果 |
+|---|---|
+| 1 聚焦测试 | **3 passed / 0 skipped，1.79s，退出 0**；三个约定名均 PASSED；真实 upstream parity、非空测试资产差集、模块/DLL/header 正锚点通过 |
+| 2 全量后端（保留旧 build/dist 时运行） | **454 passed / 5 skipped，181.46s，退出 0**；包括真实 hook 与凭证扫描；无新增 skip |
+| 2 补跑只读 health 文件 | **34 passed，9.77s，退出 0**；`-q -v` 只展示文件级点阵，故又以 `-vv` 跑约定 netstat + readiness 名称：**6 passed，7.07s，退出 0**；这是增加逐名输出，不是失败重试 |
+| 3 重建前 manifest | 确认旧 `dist/futuresai-backend` 及 `_internal/pyarrow/tests` 均存在后生成；**3411 个文件路径**，保存在 Git 外 |
+| 4 真实 `build_backend.py --clean` | **退出 0，95.78s**；只由现有构建脚本清理/再生成，未手删或修改产物；日志证明仓库 hook 生效 |
+| 5 未修改的真实 `shell_check.py` | **12/12，退出 0，墙钟 6.221s**；无额外参数 |
+| 6 路径对比 | **REMOVED 17 / ADDED 0 / OTHER_REMOVED 0，退出 0**；重建后 3394 个文件路径，所有移除项均在 `_internal/pyarrow/tests/` 下 |
+| 7 静态与冻结核对 | `git diff --check` 通过；spec / scanner / health 及其他禁止路径相对固定输入零差异；新文件不被忽略；运行时代码无直接 pyarrow import；HEAD 未移动 |
+
+**失败 / 重跑历史**：本修订 4 没有产品测试失败、构建失败、冒烟失败或修复后重跑；源码一次写入后全部验证通过。接线单测的非零返回 7 是批准的边界注入，用于证明真实构建入口透传失败码，不是实际构建失败。旧 session 的全量与哨兵修复失败、11/12 阻塞仍保留于 §2 / §4。
+
+5 个 skip 仍恰为 `tests/test_smoke_online.py:39/50/62/76/91`，原因均为“在线冒烟：设置 FUTURESAI_ONLINE=1 才执行”。未设 live 标志、未读取真实 key、未访问真实 EIA / 上游；不把这些 skip 算作上游通过。全部 pytest 使用无 bytecode、UTF-8、无 cache、新建仓库外 basetemp。
+
+### 6.3 实际命令与外部产物
+
+步骤 1～6 的 cwd = `backend`。步骤 1、2（含逐名补跑）实际命令：
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python -c "import tempfile,subprocess,sys; sys.exit(subprocess.call([sys.executable,'-m','pytest','tests/test_app_packaging.py','-q','-vv','-rs','-p','no:cacheprovider','--basetemp='+tempfile.mkdtemp(prefix='fai-t04b-pack-')]))"
+PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python -c "import tempfile,subprocess,sys; sys.exit(subprocess.call([sys.executable,'-m','pytest','tests/','-q','-rs','-p','no:cacheprovider','--basetemp='+tempfile.mkdtemp(prefix='fai-t04b-full-')]))"
+PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python -c "import tempfile,subprocess,sys; sys.exit(subprocess.call([sys.executable,'-m','pytest','tests/test_app_health.py','-q','-v','-p','no:cacheprovider','--basetemp='+tempfile.mkdtemp(prefix='fai-t04b-health-')]))"
+PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python -c "import tempfile,subprocess,sys; sys.exit(subprocess.call([sys.executable,'-m','pytest','tests/test_app_health.py::TestLoopbackBind::test_listening_sockets_of_pid_are_loopback_only','tests/test_app_health.py::TestPackagedSmokeChecks::test_readiness_requires_actual_health_success','-q','-vv','-p','no:cacheprovider','--basetemp='+tempfile.mkdtemp(prefix='fai-t04b-health-named-')]))"
+```
+
+步骤 3、4、5：
+
+```bash
+test -d dist/futuresai-backend && test -d dist/futuresai-backend/_internal/pyarrow/tests && printf 'PRESERVED_BLOCKED_DIST_PRESENT\n' && python -c "import json,tempfile; from pathlib import Path; d=Path('dist/futuresai-backend'); out=Path(tempfile.mkdtemp(prefix='fai-t04b-before-'))/'files.json'; out.write_text(json.dumps(sorted(p.relative_to(d).as_posix() for p in d.rglob('*') if p.is_file())),encoding='utf-8'); print('BEFORE',out)"
+PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python -c "import tempfile,subprocess,sys,time; from pathlib import Path; log=Path(tempfile.mkdtemp(prefix='fai-t04b-build-'))/'build.txt'; print('BUILD_LOG',log,flush=True); start=time.monotonic(); out=log.open('w',encoding='utf-8'); result=subprocess.run([sys.executable,'tools/build_backend.py','--clean'],stdout=out,stderr=subprocess.STDOUT); out.close(); print('BUILD_EXIT',result.returncode,'SECONDS',round(time.monotonic()-start,2)); sys.exit(result.returncode)"
+rg -n "hook-pyarrow.py" C:/Users/iswal/AppData/Local/Temp/fai-t04b-build-i_2sbw7u/build.txt
+time PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python tools/shell_check.py
+```
+
+外部完整构建日志：`C:/Users/iswal/AppData/Local/Temp/fai-t04b-build-i_2sbw7u/build.txt`，已用 read 完整读取。`rg` 只命中一行（105），没有来自 contrib 的 pyarrow hook 行；原始日志行（保留 repr 双反斜杠）：
+
+```text
+48119 INFO: Processing standard module hook 'hook-pyarrow.py' from 'D:\\2030\\Futures-AI-desktop-implement\\backend\\tools\\pyinstaller_hooks'
+```
+
+**构建警告如实保留**：两次 `UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.`（hooks/__init__.py:665 与 building/build_main.py:227）；另有 `77138 WARNING: Hidden import "scipy.special._cdflib" not found!`。构建还生成 `backend/build/pyinstaller/futuresai-backend/warn-futuresai-backend.txt`，未手改。不称零警告、不声称全部第三方能力兼容；未为消除警告改包版本或拓展修复范围。
+
+步骤 6（任务原命令，随后额外保存 AFTER 与 delta 作为外部验证产物）：
+
+```bash
+python -c "import json,sys; from pathlib import Path; b=set(json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))); d=Path('dist/futuresai-backend'); a={p.relative_to(d).as_posix() for p in d.rglob('*') if p.is_file()}; rm=sorted(b-a); add=sorted(a-b); bad=[p for p in rm if not p.startswith('_internal/pyarrow/tests/')]; print('REMOVED',len(rm),'ADDED',len(add),'OTHER_REMOVED',len(bad)); [print('ADD',p) for p in add]; [print('OTHER',p) for p in bad]; sys.exit(0 if rm and not add and not bad else 1)" C:/Users/iswal/AppData/Local/Temp/fai-t04b-before-q53j6r23/files.json
+python -c "import json,tempfile; from pathlib import Path; d=Path('dist/futuresai-backend'); out=Path(tempfile.mkdtemp(prefix='fai-t04b-after-')); a=sorted(p.relative_to(d).as_posix() for p in d.rglob('*') if p.is_file()); b=json.loads(Path('C:/Users/iswal/AppData/Local/Temp/fai-t04b-before-q53j6r23/files.json').read_text(encoding='utf-8')); (out/'files.json').write_text(json.dumps(a),encoding='utf-8'); (out/'delta.json').write_text(json.dumps({'before_count':len(b),'after_count':len(a),'removed':sorted(set(b)-set(a)),'added':sorted(set(a)-set(b))},indent=2),encoding='utf-8'); print('AFTER',out/'files.json'); print('DELTA',out/'delta.json')"
+```
+
+- BEFORE：`C:/Users/iswal/AppData/Local/Temp/fai-t04b-before-q53j6r23/files.json`（3411）。
+- AFTER：`C:/Users/iswal/AppData/Local/Temp/fai-t04b-after-c9n0y4hv/files.json`（3394）。
+- 差集：同目录 `delta.json`（已用 read 读取），17 个移除路径 = 3 `.pyx`、4 `.parquet`、4 `.orc`、4 `.gz`、1 `.md`、1 `.feather`。示例：`_internal/pyarrow/tests/bound_function_visit_strings.pyx`、`_internal/pyarrow/tests/data/orc/README.md`、`_internal/pyarrow/tests/data/parquet/v0.7.1.parquet`、`_internal/pyarrow/tests/data/feather/v0.17.0.version.2-compression.lz4.feather`。
+- 比较对象仅为文件路径；未以二进制 hash / 时间戳变化作为判断条件，未宣称重建二进制逐字节相等。
+
+步骤 7（cwd = 仓库根；预期无匹配命令的 exit 1 单独记录，不当失败）：
+
+```bash
+git diff --check
+git diff --exit-code 3a9ec35512ad593cc931f98dc5c3a347342f4e45 -- specs/desktop-shell/spec.md backend/tools/shell_check.py backend/tests/test_app_health.py
+git check-ignore -v --no-index backend/tools/pyinstaller_hooks/hook-pyarrow.py backend/tests/test_app_packaging.py
+git status --short --ignored -- backend/tools backend/tests specs/desktop-shell
+rg -n "import pyarrow|from pyarrow" backend/app backend/data backend/settings
+git diff --exit-code 3a9ec35512ad593cc931f98dc5c3a347342f4e45 -- . ':!backend/tools/build_backend.py' ':!specs/desktop-shell/implementation-evidence.md'
+git status --short --untracked-files=all
+git rev-parse HEAD
+```
+
+`check-ignore` 无输出 / exit 1，运行时 import 搜索无输出 / exit 1；其余检查通过。冻结 spec、Plan、Tasks、Checklist、Analyze、review、HANDOFF、README、scanner/黑名单、health 测试、运行时代码、shell/packaging、依赖配置均未改。最终工作树仅上述四个授权路径，未提交、push、PR、merge 或 reset。
+
+### 6.4 真实冒烟、清理与结论
+
+```text
+PASS  打包产物存在
+PASS  产物不含黑名单文件（AC-001-4）
+PASS  就绪：/health 200 且 data_ready（AC-002-2） — health=200/ok/true
+PASS  监听地址仅 127.0.0.1（AC-009-1） — pid=30988, LISTENING=['127.0.0.1']
+PASS  内置三源随包（AC-001-4） — ['akshare', 'eia', 'local-file']
+PASS  非 /health 端点需令牌（AC-009-1） — http 401
+PASS  优雅退出（AC-003-1） — rc=0
+PASS  退出后写锁释放（AC-003-1）
+PASS  退出后只读端点删除（AC-003-1）
+PASS  退出后端口释放（AC-003-1）
+PASS  本次后端进程已退出 — pid=30988
+PASS  临时目录已删除
+12/12 项通过
+```
+
+- 冒烟实证包含 graceful exit 0、锁/只读端点删除、端口重新绑定成功、owned PID 30988 退出和整个 smoke 临时目录删除。未保留服务或端口；未杀其他任务进程。
+- 随后额外只读 CIM 核查（输出 `OWNED_BACKEND_PROCESSES=0`、exit 0）：
+
+```bash
+powershell -NoProfile -Command '$owned = @(Get-CimInstance Win32_Process | Where-Object { $_.ProcessId -eq 30988 -or $_.ExecutablePath -eq "D:\2030\Futures-AI-desktop-implement\backend\dist\futuresai-backend\futuresai-backend.exe" -or ($_.Name -match "^python" -and $_.CommandLine -match "fai-t04b-" -and $_.CommandLine -match "-m app") }); $owned | Select-Object ProcessId,Name,ExecutablePath; Write-Output ("OWNED_BACKEND_PROCESSES=" + $owned.Count); if ($owned.Count -ne 0) { exit 1 }'
+rg -n "'pyarrow\.(conftest|tests|tests.util)'" backend/build/pyinstaller/futuresai-backend/PYZ-00.toc
+```
+
+- R4-01 残余如批准范围所述保留：新 PYZ TOC 仍在 7689 / 7752 / 7755 行含 `pyarrow.conftest`、`pyarrow.tests`、`pyarrow.tests.util`。本修正**不**剔除这些纯模块，不把文件系统黑名单通过写成“包内无任何测试代码”。hook parity 与路径对比只是本次收集变更的窄范围证据；pandas 会吞 pyarrow ImportError，故整体 smoke 不单独证明打包 pyarrow API 可用。
+- 外部 pytest basetemp、构建日志与 manifest 保留本地，未入库；不宣称全部 pytest 临时目录已删除。`backend/build` / `backend/dist` 为真实再生成的忽略产物，未手改。
+- **本次结论：T-04b 后端范围完成，原 pyarrow 测试数据黑名单阻塞解除。** 未做整体 Converge、独立代码 Review 或 Gate 2；未修改协调者的进度表。下一个任务仍是 **T-05b**，本 session 到此停止，留协调者集成/提交并决定后续批准批次。
+- 未取得的真实前端/作业引擎/drain/agent、真实 EIA 注册/key、发布通道、干净 Windows、基准机 15 秒、系统 toast/托盘、真实满盘/507 GUI、完整 AC 与 Gate 2 边界均不变；不以本次测试替代这些证据。
+- 证据追加后的静态复查曾报 `new blank line at EOF`（第 232 行）；已用 edit 仅移除新增末尾空行后复跑。Git 另提示本证据文件 LF 将在下次 Git 操作时转换为 CRLF；未修改 Git 配置。此为证据排版检查失败，不是产品测试失败，旧证据未删除（numstat 为仅新增）。

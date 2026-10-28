@@ -1,0 +1,36 @@
+**T-04b 修订 4 后端修复已完成，原打包黑名单阻塞解除。** 已停在本检查点，未启动 T-05b，未提交或推送。
+
+### 身份与固定输入
+- 模型/通道：`openai/gpt-6-astra via openai`
+- Session：`01a183c8-f4a5-778d-acfc-d458ead81908`
+- 输入及当前 HEAD：`3a9ec35512ad593cc931f98dc5c3a347342f4e45`
+- 已确认独立 A 的**新修订 4 批准**；实际 Checklist 为 **41 checked / 0 unchecked**。
+
+### 修改范围
+仅四个授权文件：
+- `backend/tools/build_backend.py`：新增 hook 目录接线与一行说明。
+- `backend/tools/pyinstaller_hooks/hook-pyarrow.py`：仅排除 `pyarrow/tests` 数据，保持其他收集与 contrib 等价。
+- `backend/tests/test_app_packaging.py`：三个约定测试，真实执行并比较上游 hook。
+- `specs/desktop-shell/implementation-evidence.md`：追加本轮证据，旧失败历史原文保留。
+
+### 本轮真实验证
+| 验证 | 结果 |
+|---|---|
+| 聚焦测试 | **3 passed，0 skipped，1.79s** |
+| 全量后端 | **454 passed，5 skipped，181.46s**；仅既有在线冒烟跳过 |
+| 未修改 health 测试 | **34 passed，9.77s** |
+| 逐名 netstat / readiness 复验 | **6 passed，7.07s** |
+| 真实 `build_backend.py --clean` | **退出 0，95.78s**；日志确认使用仓库 hook |
+| 未修改 `shell_check.py` | **12/12，退出 0，6.221s** |
+| 文件路径清单对比 | **3411 → 3394；移除 17，新增 0，其他移除 0** |
+
+17 个移除文件全部位于 `_internal/pyarrow/tests/`。没有手改生成物，没有更改黑名单、冻结规格或运行时代码。
+
+### 警告、失败与清理
+- 本轮产品测试、构建和冒烟均首次通过；历史 **11/12** 失败及此前测试失败仍保留。
+- 构建仍有 **Pydantic V1 / Python 3.14 兼容性警告**及 **`scipy.special._cdflib` hidden import 缺失警告**，未掩盖。
+- 证据追加后曾有 EOF 空行检查失败；已定点修正，最终 `git diff --check` 通过。Git 的 LF→CRLF 提示已记录。
+- 冒烟确认 PID **30988** 退出、锁/端点删除、端口释放及临时目录删除；额外 CIM 核查 owned 后端进程为 **0**。
+- 已知 PYZ 中的 `pyarrow.conftest`、`pyarrow.tests`、`pyarrow.tests.util` 按批准范围保留，**不宣称包内没有任何测试代码**。
+
+下一步由协调者集成/提交并决定 **T-05b** 批次。此次不构成整体 AC、Converge、独立代码 Review 或 Gate 2 通过。

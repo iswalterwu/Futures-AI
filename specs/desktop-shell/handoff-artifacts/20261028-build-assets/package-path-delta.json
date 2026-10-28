@@ -1,0 +1,24 @@
+{
+  "before_count": 3411,
+  "after_count": 3394,
+  "removed": [
+    "_internal/pyarrow/tests/bound_function_visit_strings.pyx",
+    "_internal/pyarrow/tests/data/feather/v0.17.0.version.2-compression.lz4.feather",
+    "_internal/pyarrow/tests/data/orc/README.md",
+    "_internal/pyarrow/tests/data/orc/TestOrcFile.emptyFile.jsn.gz",
+    "_internal/pyarrow/tests/data/orc/TestOrcFile.emptyFile.orc",
+    "_internal/pyarrow/tests/data/orc/TestOrcFile.test1.jsn.gz",
+    "_internal/pyarrow/tests/data/orc/TestOrcFile.test1.orc",
+    "_internal/pyarrow/tests/data/orc/TestOrcFile.testDate1900.jsn.gz",
+    "_internal/pyarrow/tests/data/orc/TestOrcFile.testDate1900.orc",
+    "_internal/pyarrow/tests/data/orc/decimal.jsn.gz",
+    "_internal/pyarrow/tests/data/orc/decimal.orc",
+    "_internal/pyarrow/tests/data/parquet/v0.7.1.all-named-index.parquet",
+    "_internal/pyarrow/tests/data/parquet/v0.7.1.column-metadata-handling.parquet",
+    "_internal/pyarrow/tests/data/parquet/v0.7.1.parquet",
+    "_internal/pyarrow/tests/data/parquet/v0.7.1.some-named-index.parquet",
+    "_internal/pyarrow/tests/extensions.pyx",
+    "_internal/pyarrow/tests/pyarrow_cython_example.pyx"
+  ],
+  "added": []
+}

@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前阶段：**Plan 修订 4 / Analyze 7 完成，独立 A 对修订 4 复查通过（41/41，无 P1/P2），准备交 Astra 窄范围实施 T-04b**（2026-10-28 18:28 UTC）。黑名单不变；最近产品实证仍为 **451 passed / 5 online skips、真实构建成功、冒烟 11/12**，新实现/测试/重建尚未执行，未开 T-05。A 新登记 3 项 P3，包含 PYZ 中已核实的测试辅助模块残余，非本轮剔除范围；不是 feature 完成或 Gate 2。入口见根 `HANDOFF.md` §11 / §10。
+> 当前阶段：**T-04b 后端范围已完成，原 pyarrow 测试数据黑名单阻塞解除，下一项 T-05b**。Plan 修订 4 / Analyze 7 / 独立 A 复查 41/41 后，由 Astra 从 `3a9ec35` 实施：聚焦 **3 passed**、全量 **454 passed / 5 online skips**、真实干净重建成功、未修改冒烟 **12/12**、文件清单仅移除目标测试资产 **17**（新增 0 / 其他移除 0）。源码修复本地实施提交 **c1e33e0**；黑名单未改，未开 T-05，已核实 PYZ 测试辅助模块 P3 仍保留。不是 feature 完成、代码 Review 或 Gate 2。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -119,6 +119,28 @@ A 新增 P3 跟踪：**R4-01** 确认旧 `PYZ-00.toc` 中已有 `pyarrow.conftes
 
 工具纪律偏差：本轮 Plan 与 A 的静态读取仍出现 `cat` / `sed` / `head` 等读取快捷方式，未发生 shell 源码写入；Plan 的临时占位文本误编辑已由作者用 edit 修复并验证无残留。协调者未将其当作推荐流程；为本次 Implement 增加进程级 read/edit 工具纪律提示（不改全局配置），继续禁止 shell/Python/PowerShell 文本拼改与手改生成物。不 push / PR / merge，Gate 2 未批准。
 
+## 2026-10-28 18:32～18:44 UTC T-04b 修订 4 Implement（本批已验证完成）
+
+- A 结论已在主树 `ccbc291` 保存。协调者在无 writer 的边界串行同步 8 份文档并逐字节核对源码，形成干净固定实施输入 **`3a9ec35512ad593cc931f98dc5c3a347342f4e45`**（前序 `9ae2ad9`），AN7-04 的同步与 `<输入基线>` 动作已完成。
+- 实际模型 **`openai/gpt-6-astra` via openai**，新聚焦 session **`01a183c8-f4a5-778d-acfc-d458ead81908`** 元数据确认；同一实施树/分支，无并行 writer，不是回退。实施者只写四个授权路径、未自行提交；结束后协调者本地保存为源码修复提交 **`c1e33e096621311ece7ec8f3d61ddadd4bffcb19`**，并逐字节集成回主树。
+- 真实源码差异：build_backend.py 仅加 hook 目录常量、参数和 docstring 共 3 行；新 hook 三条公开 API 赋值仅过滤 datas；新 pytest 文件 3 个用例；实施证据只追加，保留原失败历史。spec、scanner/黑名单、health 测试、运行时代码、包版本、全局配置、shell/packaging 均未改。
+
+| 新验证 | 真实结果 |
+|---|---|
+| 聚焦（真实仓库/contrib hook + 接线） | **3 passed / 0 skipped / 1.79s** |
+| 全量后端 | **454 passed / 5 skipped / 181.46s**，仅原 5 项在线冒烟未启用，不是上游通过 |
+| health 文件与逐名 netstat/readiness | **34 passed / 9.77s**；再逐名 **6 passed / 7.07s**，为补全逐名证据，不是失败重跑 |
+| 真实 `build_backend.py --clean` | **退出 0 / 95.78s**，构建日志确认使用仓库 hook |
+| 未修改真实 `shell_check.py` | **12/12 / 退出 0 / 6.221s**；就绪、回环、三源、鉴权、退出与锁/端点/端口/临时目录清理通过 |
+| 前后文件路径清单 | **3411 → 3394；REMOVED 17 / ADDED 0 / OTHER_REMOVED 0**；17 项全在 `_internal/pyarrow/tests/`，未宣称重建二进制逐字节相同 |
+| 冻结、所有权、清理 | 只改授权四路径，静态检查通过；backend PID 30988 已退出、owned 后端 0；本轮 Plan/A/Implement agent 均已结束，无服务/端口需保留 |
+
+本轮产品测试/构建/冒烟首次通过；原 11/12 与旧测试失败仍在 `implementation-evidence.md`，本轮证据末尾 EOF 空行检查的小失败与 edit 修正也有记录。仍有 Pydantic V1 / Python 3.14 兼容性及 `scipy.special._cdflib` hidden-import 警告，不称零警告，不改依赖或顺手扩范围。
+
+证据位置：`implementation-evidence.md` **§6**；三角色最终报告、批准输入、审阅指纹和真实路径差集在 `handoff-artifacts/20261028-build-assets/`。完整会话、构建日志和 manifests 留仓库外；未将用户数据/凭证/测试数据库/构建产物入库。
+
+**本批结论仅为 T-04b 后端范围完成、文件系统测试数据扫描阻塞解除**。R4-01 已知 PYZ `pyarrow.conftest` / `pyarrow.tests` / `pyarrow.tests.util` 仍保留，未来 Review/Gate 2 继续跟踪；不夸大成包内无任何测试代码。下一项 **T-05b**，其余 33 项 shell/后续任务及人工/外部验收未完成。未作整体 Converge、独立代码 Review 或 Gate 2，不 push / PR / merge。
+
 ## 已取得的基线证据（前轮，非本轮复验）
 
 - `cd backend && PYTHONDONTWRITEBYTECODE=1 python -m pytest tests/ -q -p no:cacheprovider --basetemp=<仓库外临时目录>`：**389 passed, 5 skipped，0 warnings**。
@@ -128,7 +150,7 @@ A 新增 P3 跟踪：**R4-01** 确认旧 `PYZ-00.toc` 中已有 `pyarrow.conftes
 ## 完成与未完成
 
 - 已有阶段性代码：后端宿主、健康/退出/设置端点、PyInstaller 构建、Electron 启动与引导界面（T-01～T-06）；任务表中的既有勾选不代表本轮已逐项复验。
-- 待补齐并实测：托盘/通知与关闭行为、故障/诊断/日志、版本/更新、安装包（T-07～T-10）。
+- 本批后端纠偏 T-01b/c/d、T-02b/c、T-03b/c、T-04b 已有自动化检查点；不代表对应 AC 的 GUI/外部子句全部完成。待补齐：从 T-05b 起的外壳纠偏、托盘/通知与关闭行为、故障/诊断/日志、版本/更新、安装包（T-07～T-10）。
 - 前端完整工作台、作业引擎、agent 实际执行等仍由各自 feature 承载；使用 spec §4 允许的 mock 接口时要明确标识，不将其描述成真实业务已完成。
 - 干净 Windows 无开发环境安装/卸载与真实系统通知观感须独立记录；受测机自动化检查只能作为 Q-009 允许的过渡证据。
 

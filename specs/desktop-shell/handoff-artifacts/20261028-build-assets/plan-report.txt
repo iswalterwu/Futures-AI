@@ -1,0 +1,75 @@
+Plan/Tasks 修订已完成，Analyze 迭代 7 结论为文档一致性通过（修订 4 范围）。A 对修订 4 的独立复查还没做，修订 3 时的 41/41 不能当作这次的批准。这次没写源码、没跑测试或构建、没提交。
+
+**路由**：`PI_PROVIDER=anthropic`、`PI_MODEL=claude-opus-5-5`、会话 `01a183a9-aa0d-71f9-b5a9-add01c9d3107`，HEAD `1275ae2`。走官方通道，claude-bridge 在当前限额窗口已耗尽，没有重试。
+
+**改动的四个文件（未提交）**
+- `specs/desktop-shell/plan.md`：修订 4，新增 §0「修订 4」和 §7.5，并更新 §8.2、§9 的 AC-001-4 行、§10 风险与回滚范围。
+- `specs/desktop-shell/tasks.md`：只改 T-04b，外加顺序表第 8 行和合计。
+- `specs/desktop-shell/analyze.md`：追加迭代 7，迭代 1～6 原样保留。
+- `specs/desktop-shell/build-assets-review-request.md`：新文件，交给 A 的局部复查请求。
+
+**范围判定**
+- 这次修正在冻结的 AC-001-4 之内：plan §7.4 本来就禁止 `tests/`，修正只是让构建产物满足已有规则。
+- 不改需求、AC、schema 和黑名单，所以不用重走 Gate 1，也不用新 ADR。
+- 修的是已经观测到的失败，改动约 10 行，在 Walter 的授权范围内。
+
+**根因（只读核对已安装源码）**
+- `pyarrow/tests` 目录只来自 contrib `hook-pyarrow.py` 里的 `datas = collect_data_files('pyarrow')`。
+- 现有的 `--exclude-module tests` 只排除模块，不影响数据文件。
+- `--additional-hooks-dir` 的 hook 优先级是 1000，contrib 是 −1000，每个模块只启用一个 hook。所以仓库 hook 会整个替换 contrib hook，必须自己保留等价的 `hiddenimports` 和 `binaries`。
+
+**设计**
+- 新增仓库 hook `backend/tools/pyinstaller_hooks/hook-pyarrow.py`，与 contrib 等价，只在 `datas` 上加 `excludes=['tests']`。
+- `build_backend.py` 增加 `--additional-hooks-dir`。
+- 已放弃的方案和理由：
+  - 排除 `pyarrow.tests` 模块：对数据文件无效。
+  - 整个去掉 pyarrow：改变运行时依赖，超出授权。
+  - 改用 spec 构建：改动面更大。
+  - 改 site-packages、改包版本、手工删产物或放宽黑名单：都被禁止。
+
+**Astra 的文件权限**
+- **可写**：`build_backend.py`、新 hook 文件、新测试 `backend/tests/test_app_packaging.py`、在 `implementation-evidence.md` 末尾追加新一节。
+- **只读**：spec、`shell_check.py`（含黑名单）、`test_app_health.py`、site-packages、constraints、运行时代码、生成目录。
+
+**测试设计**
+- 构建接线测试只替换 `subprocess.run`，调用真实的 `build_backend.main`。
+- 两个 hook 测试真实执行仓库 hook，并以已安装的 contrib hook 作参照：
+  - 反向：没有任何目标路径落在 `pyarrow/tests` 下。
+  - 正向：`hiddenimports` 和 `binaries` 与 contrib 完全相同，`datas` 只少测试资产，另有字面量锚点（`pyarrow.lib`、`arrow.dll`、`api.h`）。
+- 不允许 mock `collect_*`，最终证据中不允许出现 skip。
+
+**pyarrow 运行时可用性怎么保证**
+- 主要靠上面的等价测试：除测试资产外，产物中的 pyarrow 与修正前一致。
+- 干净重建后跑未修改的 `shell_check.py`，要求 12/12，证明应用整体可用。冒烟本身不能单独证明 pyarrow 可导入，因为 pandas 会吞掉 `ImportError`，plan 里已写明。
+- 重建前后对比产物文件清单，只允许少 `_internal/pyarrow/tests/**`。
+- `backend/app`、`backend/data`、`backend/settings` 里没有直接 import pyarrow。
+
+**最终验证与停止规则**
+- 顺序：聚焦测试 → 全量回归（只允许既有的 5 个在线 skip）→ 记录旧产物清单 → `build_backend.py --clean` → 构建日志确认 pyarrow hook 来自仓库目录 → 未修改的 `shell_check.py` 12/12 → 清单对比 → `git diff --check`、check-ignore 和冻结文件 diff。
+- 遇到以下情况即停并上报：出现其他第三方黑名单命中、旧产物不存在、出现 tests 以外的产物增删、日志显示 hook 仍来自 contrib、只能靠 mock 才能跑测试。
+
+**任务粒度**：不拆新任务，T-04b 估时 1.5h → 2h，合计 61h，任务数仍为 41，依赖不变。
+
+**Analyze 迭代 7**
+- 无 P1/P2。
+- 结构检查：41 个任务、61.0h，每条完成标准都有 AC，完成标准与验证 4/4 对应，无前向依赖，cwd 与 plan 一致。
+- P3：
+  - AN7-01：修补阶段自检发现旧产物对比依赖旧产物存在，已补成停止规则。
+  - AN7-02：PYZ 里可能经 `pyarrow.conftest` 带入测试纯模块，未核实；只登记，不做推测性加固。
+  - AN7-03：pyarrow 和 hooks-contrib 都没在 `constraints.txt` 锁版本。
+  - AN7-04：需要协调者动作，见下文。
+  - AN7-05：仓库 hook 优先于 contrib 这一点没有单元测试，由真实构建日志证明。
+
+**冻结确认**
+- `spec.md` 与 `1275ae2` 完全相同。
+- `shell_check.py` 两边 blob 都是 `2aa8824b…`，`backend/` 无任何改动。
+- checklist、review、README、HANDOFF、implementation-evidence 都未改。
+
+**执行过的命令（全部静态）**：`git status/diff/diff --check/hash-object/rev-parse/check-ignore`、`rg`、`find`、`grep`，以及一个只读的 tasks 结构计数脚本。
+
+**工具使用上的偏差**：中途对 `tasks.md` 有两次编辑写进了错误的占位文本，已立即用 edit 修复，扫描确认没有残留。另有几次 edit 没匹配上，没有改动文件。没有用 shell 拼接改文件。
+
+**需要你或协调者处理**
+- 把四个规划文件提交成固定提交，填进 review request 里的"集成提交"栏。
+- 把这四个文件同步到实施树，并给出 T-04b 第 7 步要用的 `<输入基线>`，因为实施树的基线是 `782aa20` 加 WIP，不是 `1275ae2`。
+- 之后由 A 新开独立会话复查，A 只能写 `checklist.md`。A 复查通过、复选框全部勾选前，Astra 不能开始。
