@@ -16,8 +16,10 @@ from data.adapters.local_file.local_file_adapter import (
     guess_mapping,
     parse_with_mapping,
 )
+from data.catalog.descriptor import derive_id
 from data.fetch.on_demand import FetchError
 from data.manifest import load
+from data.service import Service
 from pathlib import Path
 
 MANIFEST_DIR = Path(__file__).resolve().parent.parent / "data" / "adapters"
@@ -75,13 +77,77 @@ class TestEia:
         rows, _ = EiaAdapter(tmp_path / "creds").fetch(m.provides[0], None, None)
         assert len(rows) == 1 and rows[0][1] == pytest.approx(120.5)
 
-    def test_key_missing_fail_closed(self, tmp_path, monkeypatch):
-        called = []
-        monkeypatch.setattr(eia_mod, "_request", lambda *a, **k: called.append(1))
+    def test_api_request_redacts_key_in_logs(self, monkeypatch, caplog, tmp_path):
+        """EIA key 在查询参数里：DEBUG 日志中的 key 被脱敏（一次 Filter，不切级别）。"""
+        import logging
+
+        import requests
+
+        secret = "k-" + "api-redact-0001"
+
+        class Resp:
+            status_code = 200
+            text = "{}"
+
+            def json(self):
+                return {"response": {"data": []}}
+
+        def fake_get(url, params=None, timeout=None):
+            logging.getLogger("urllib3.connectionpool").debug("send: GET %s?api_key=%s", url, params["api_key"])
+            return Resp()
+
+        monkeypatch.setattr(requests, "get", fake_get)
+        with caplog.at_level(logging.DEBUG, logger="urllib3.connectionpool"):
+            eia_mod._request("WDISTUS1", secret, None, None)
+        joined = chr(10).join(r.getMessage() for r in caplog.records)
+        assert "api_key=***" in joined and secret not in joined
+
+    def test_key_present_uses_api(self, tmp_path, monkeypatch):
+        """D-014：配置了 key → 走官方 API（不触碰免凭证路径）。"""
+        creds.put(tmp_path / "creds", "eia_api_key", "k-" + "api-path-0001")
+        payload = {"response": {"data": [{"period": "2026-10-16", "value": "104286"}]}}
+        api_keys, offline_seen = [], []
+        monkeypatch.setattr(eia_mod, "_request", lambda sid, key, s, e: api_keys.append(key) or payload)
+        monkeypatch.setattr(eia_mod, "_dnav_xls", lambda *a, **k: offline_seen.append(1))
+        m = load(str(MANIFEST_DIR / "eia" / "manifest.yaml"))
+        adapter = EiaAdapter(tmp_path / "creds")
+        rows, _ = adapter.fetch(m.provides[0], None, None)
+        assert rows == [(datetime(2026, 10, 16), 104286.0)]
+        assert adapter.last_path == "api" and api_keys and not offline_seen
+
+    def test_no_key_falls_back_to_offline(self, tmp_path, monkeypatch):
+        """D-014：未配置 key → 回退免凭证路径（不发起 API 请求）。"""
+        import io
+
+        api_called, offline_seen = [], []
+
+        def fake_xls(series_id, freq):
+            offline_seen.append((series_id, freq))
+            buf = io.BytesIO()
+            pd.DataFrame([[datetime(2026, 10, 16), 104286.0]]).to_excel(
+                buf, sheet_name="Data 1", header=False, index=False
+            )
+            return buf.getvalue()
+
+        monkeypatch.setattr(eia_mod, "_request", lambda *a, **k: api_called.append(1))
+        monkeypatch.setattr(eia_mod, "_dnav_xls", fake_xls)
+        m = load(str(MANIFEST_DIR / "eia" / "manifest.yaml"))
+        adapter = EiaAdapter(tmp_path / "creds")
+        rows, raw = adapter.fetch(m.provides[0], None, None)
+        assert rows == [(datetime(2026, 10, 16), 104286.0)] and raw
+        assert adapter.last_path == "offline" and offline_seen and not api_called
+
+    def test_corrupt_key_errors_without_fallback(self, tmp_path, monkeypatch):
+        """凭证存在但读不出来 → 报错，不回退（D-014）。"""
+        cdir = tmp_path / "creds"
+        cdir.mkdir()
+        (cdir / "eia_api_key.bin").write_bytes(b"not-base64!!!")
+        offline_seen = []
+        monkeypatch.setattr(eia_mod, "_dnav_xls", lambda *a, **k: offline_seen.append(1))
         m = load(str(MANIFEST_DIR / "eia" / "manifest.yaml"))
         with pytest.raises(creds.CredsError):
-            EiaAdapter(tmp_path / "creds").fetch(m.provides[0], None, None)
-        assert not called  # 凭证失败 → 不发起网络请求
+            EiaAdapter(cdir).fetch(m.provides[0], None, None)
+        assert not offline_seen  # 凭证故障不静默降级
 
 
 class TestLocalFile:
@@ -126,6 +192,46 @@ class TestReceiptSdkShape:
         provide = next(p for p in m.provides if p.symbols[0] == "SC_RECEIPT")
         rows, _ = AkshareAdapter().fetch(provide, None, None)
         assert len(rows) == 1 and rows[0][1] == pytest.approx(32.0)  # 32000 桶 = 32 千桶
+
+
+class TestShfeReceiptSelfParse:
+    """AC-007-1：上期所/能源中心仓单自解析（上游品种名表缺项会让 akshare.get_receipt 整体崩溃）。
+
+    fixture = 2026-10-20 真实仓单页面中相关品种的表格（铜 / 燃料油 / 石油沥青仓库+厂库 / 中质含硫原油 / 低硫燃料油仓库+厂库）。
+    """
+
+    FIXTURE = Path(__file__).resolve().parent / "fixtures" / "shfe_receipt" / "20261020.html"
+    EXPECTED = {"中质含硫原油": 3666000.0, "燃料油": 40000.0, "石油沥青": 77500.0, "低硫燃料油": 11680.0}
+
+    def test_parse_each_variety(self):
+        html = self.FIXTURE.read_text(encoding="utf-8")
+        for name, expected in self.EXPECTED.items():
+            assert ak_mod._parse_shfe_receipt(html, name) == pytest.approx(expected), name
+        assert ak_mod._parse_shfe_receipt(html, "不存在的品种") is None
+
+    def test_end_to_end_normalized(self, tmp_path, monkeypatch):
+        html = self.FIXTURE.read_text(encoding="utf-8")
+        monkeypatch.setattr(ak_mod, "_shfe_page", lambda date_str: html)
+        sid = derive_id({"asset": "sc", "geo": "cn", "measure": "receipt", "contract": ""})
+        svc = Service(tmp_path).init()
+        try:
+            res = svc.fetch(sid, "2026-10-20", "2026-10-20", do_fetch=True)
+            assert [(r[0], r[1], r[2]) for r in res["rows"]] == [
+                (datetime(2026, 10, 20), pytest.approx(3666.0), "kb")
+            ]
+        finally:
+            svc.close()
+
+    def test_missing_variety_yields_empty(self, tmp_path, monkeypatch):
+        only_copper = self.FIXTURE.read_text(encoding="utf-8").split("<table")[1:3]
+        html = "<html><body>" + "".join("<table" + t for t in only_copper) + "</body></html>"
+        monkeypatch.setattr(ak_mod, "_shfe_page", lambda date_str: html)
+        sid = derive_id({"asset": "fu", "geo": "cn", "measure": "receipt", "contract": ""})
+        svc = Service(tmp_path).init()
+        try:
+            assert svc.fetch(sid, "2026-10-20", "2026-10-20", do_fetch=True)["rows"] == []
+        finally:
+            svc.close()
 
 
 class TestIsolation:

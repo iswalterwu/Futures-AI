@@ -11,6 +11,7 @@ dependencies = [
     "requests>=2.32",
     "akshare>=1.14",
     "openpyxl>=3.1",
+    "xlrd>=2.0",  # EIA 免凭证路径解析官方 .xls
     "pandas>=2.2",
     "mcp>=1.2,<2",  # FastMCP API（2.x 改名）；升级需迁移评审
     "anyio>=4.5",  # MCP 工具移入工作线程（to_thread）
@@ -20,13 +21,14 @@ dependencies = [
 
 [project.scripts]
 futureai-data = "data.cli:main"
+futureai-settings = "settings.cli:main"
 
 [build-system]
 requires = ["setuptools>=75"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["data*"]
+include = ["data*", "settings*"]
 
 [tool.setuptools.package-data]
 "data.adapters.akshare" = ["manifest.yaml"]

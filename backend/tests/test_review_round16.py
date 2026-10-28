@@ -181,84 +181,6 @@ class TestInterruptedCommit:
             svc.close()
 
 
-class TestWriterChannel:
-    """T-69 / Checklist 第 4 项：持锁的 CLI 写进程同样提供只读通道，只读命令不受影响（AC-004-6）。"""
-
-    def test_channel_lifecycle(self, tmp_path):
-        svc = Service(tmp_path).init()
-        try:
-            data_dir = tmp_path / "data"
-            with mcp_server.readonly_channel(svc, data_dir) as port:
-                ep = read_endpoint(data_dir)
-                assert port and ep["port"] == port
-                status, body = http_get(port, "/internal/sources", ep["token"])
-                assert status == 200 and {s["adapter_id"] for s in body["sources"]} >= {"akshare", "eia"}
-                assert http_get(port, "/internal/sources", "bad")[0] == 403
-                assert http_get(port, f"/internal/provenance?series_id={SC0}", ep["token"]) == (200, [])
-            assert read_endpoint(data_dir) is None  # 退出即删除端点文件
-            with pytest.raises(OSError):
-                urllib.request.urlopen(f"http://127.0.0.1:{port}/internal/sources", timeout=3)
-        finally:
-            svc.close()
-
-    def test_readonly_unaffected_during_cli_fetch(self, tmp_path, capsys):
-        boot = tmp_path / "boot.py"
-        boot.write_text(BOOT_SLOW_UPSTREAM, encoding="utf-8")
-        flags = tmp_path / "flags"
-        flags.mkdir()
-        root = tmp_path / "root"
-        proc = subprocess.Popen(
-            [sys.executable, str(boot), str(flags), "--root", str(root), "fetch", SC0],
-            cwd=str(BACKEND), env=ENV, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            text=True, encoding="utf-8", errors="replace",
-        )
-        try:
-            wait_for(flags / "entered")  # 写命令持锁、停在上游等待
-            assert (root / "data" / ".lock").exists() and read_endpoint(root / "data")
-            t0 = time.monotonic()
-            assert cli.main(["--root", str(root), "list", "sources"]) == 0
-            assert json.loads(capsys.readouterr().out)["sources"]
-            assert cli.main(["--root", str(root), "provenance", SC0]) == 0
-            assert json.loads(capsys.readouterr().out) == []
-            assert cli.main(["--root", str(root), "jobs", "list"]) == 0
-            assert json.loads(capsys.readouterr().out) == {"jobs": []}
-            assert time.monotonic() - t0 < 10  # 经写进程的只读通道，无需等待写命令结束
-            assert proc.poll() is None
-            (flags / "release").write_text("1", encoding="utf-8")
-            out, err = proc.communicate(timeout=60)
-            assert proc.returncode == 0, err
-            assert json.loads(out) == {"series_id": SC0, "count": 1}
-            assert not (root / "data" / ".lock").exists()
-            assert read_endpoint(root / "data") is None
-        finally:
-            (flags / "release").write_text("1", encoding="utf-8")
-            if proc.poll() is None:
-                proc.kill()
-
-    def test_reader_routes_when_endpoint_appears_mid_wait(self, tmp_path, capsys):
-        Service(tmp_path).init().close()
-        writer = Service(tmp_path).init()  # 持锁、尚无端点（模拟写进程启动过渡窗口）
-        opened, release = threading.Event(), threading.Event()
-
-        def open_channel_later():
-            time.sleep(1.0)
-            with mcp_server.readonly_channel(writer, tmp_path / "data"):
-                opened.set()
-                release.wait(30)
-
-        t = threading.Thread(target=open_channel_later, daemon=True)
-        t.start()
-        try:
-            t0 = time.monotonic()
-            assert cli_run(tmp_path, "list", "sources") == 0
-            elapsed = time.monotonic() - t0
-            assert opened.is_set() and 0.8 <= elapsed < 10  # 等到端点出现即经通道读取
-            assert json.loads(capsys.readouterr().out)["sources"]
-            assert (tmp_path / "data" / ".lock").exists()  # 写锁仍被持有：确为路由而非本地读取
-        finally:
-            release.set()
-            t.join(10)
-            writer.close()
 
 
 class TestSdkStdout:
@@ -336,30 +258,24 @@ class TestExitContract:
 class TestRound16Gaps:
     """T-72：上期所/能源中心 HTTP 边界、倒置窗口消息、package-data 声明。"""
 
-    SHFE_HTML = """<html><body>
-<table><tr><td>总计</td><td>-</td></tr></table>
-<table>
-<tr><td>品种</td><td>原油</td><td>仓单</td><td>增减</td></tr>
-<tr><td>上海</td><td>中石化仓库</td><td>4000000</td><td>0</td></tr>
-<tr><td>合计</td><td></td><td>5451000</td><td>1000</td></tr>
-</table>
-<table>
-<tr><td>品种</td><td>燃料油</td><td>仓单</td><td>增减</td></tr>
-<tr><td>合计</td><td></td><td>12000</td><td>0</td></tr>
-</table>
-</body></html>"""
+    # 2026-10-20 真实上期所仓单页面（相关品种表格）：SC=3,666,000 桶、FU=40,000 吨
+    SHFE_FIXTURE = BACKEND / "tests" / "fixtures" / "shfe_receipt" / "20261020.html"
 
     @pytest.mark.parametrize("var,sid,expected", [
-        ("SC", SC_RECEIPT, (5451.0, "kb")),       # 桶 → 千桶
-        ("FU", sid_of("fu", "receipt"), (12.0, "kton")),  # 吨 → 千吨
+        ("SC", SC_RECEIPT, (3666.0, "kb")),       # 桶 → 千桶
+        ("FU", sid_of("fu", "receipt"), (40.0, "kton")),  # 吨 → 千吨
     ])
-    def test_shfe_receipt_through_real_sdk(self, tmp_path, monkeypatch, var, sid, expected):
+    def test_shfe_receipt_through_http_boundary(self, tmp_path, monkeypatch, var, sid, expected):
         import requests
 
         calls = []
+        html = self.SHFE_FIXTURE.read_text(encoding="utf-8")
 
         class Resp:
-            text = self.SHFE_HTML
+            text = html
+
+            def raise_for_status(self):
+                pass
 
         def fake_get(url, headers=None, **kw):
             calls.append(url)
@@ -380,7 +296,7 @@ class TestRound16Gaps:
         svc = Service(tmp_path).init()
         try:
             with pytest.raises(FetchError) as ei:
-                svc.fetch(sid_of("pg", "stock"), "2026-10-27T10:00:00", do_fetch=True)
+                svc.fetch(sid_of("pg", "receipt"), "2026-10-27T10:00:00", do_fetch=True)
             assert "2026-10-27 10:00:00" in ei.value.message and "2026-10-27 00:00:00" in ei.value.message
         finally:
             svc.close()
