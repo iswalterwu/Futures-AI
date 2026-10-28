@@ -15,6 +15,8 @@ dependencies = [
     "pandas>=2.2",
     "mcp>=1.2,<2",  # FastMCP API（2.x 改名）；升级需迁移评审
     "anyio>=4.5",  # MCP 工具移入工作线程（to_thread）
+    "fastapi>=0.115",  # 后端宿主（desktop-shell）
+    "uvicorn>=0.30",  # 上述宿主的 ASGI server
     "pywin32>=308; sys_platform == 'win32'",
     "pytest>=8.3",
 ]
@@ -28,7 +30,7 @@ requires = ["setuptools>=75"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["data*", "settings*"]
+include = ["data*", "settings*", "app*"]
 
 [tool.setuptools.package-data]
 "data.adapters.akshare" = ["manifest.yaml"]

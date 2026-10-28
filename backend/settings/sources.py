@@ -86,26 +86,27 @@ def _sources_and_runtime(root: Path) -> tuple[list[dict], dict[str, dict], str |
 
     try:
         svc.init()
-        sources = svc.list_sources()["sources"]
-        runtime: dict[str, dict] = {}
-        with svc.access_lock:
-            for row in svc.store.con.execute(
-                "SELECT adapter_id, status, finished_at FROM ingest_runs "
-                "ORDER BY ingest_run DESC"
-            ).fetchall():
-                runtime.setdefault(
-                    row[0], {"last_fetch_at": str(row[2]) if row[2] else None, "last_fetch_status": row[1]}
-                )
-        return sources, runtime, None
+        return svc.list_sources()["sources"], _runtime_from_store(svc), None
     finally:
         svc.close()
 
-def list_with_status(root: Path) -> list[dict]:
-    """源列表 + 路径 + 验证时间 + 最近取数运行态 + 不可用原因（与 data-layer list_sources 同口径）。"""
+def _runtime_from_store(svc) -> dict[str, dict]:
+    """最近一次取数结果与时间（来自 data-layer 的 ingest_runs）。"""
+    runtime: dict[str, dict] = {}
+    with svc.access_lock:
+        for row in svc.store.con.execute(
+            "SELECT adapter_id, status, finished_at FROM ingest_runs ORDER BY ingest_run DESC"
+        ).fetchall():
+            runtime.setdefault(
+                row[0], {"last_fetch_at": str(row[2]) if row[2] else None, "last_fetch_status": row[1]}
+            )
+    return runtime
+
+
+def _compose(root: Path, sources: list[dict], runtime: dict[str, dict], runtime_note: str | None) -> list[dict]:
+    """把源状态、清单实现、凭证状态与运行态合成对外视图。"""
     manifests = _manifests(root)
     state = read_state(root)
-    sources, runtime, runtime_note = _sources_and_runtime(root)
-
     rows = []
     for src in sources:
         sid = src["adapter_id"]
@@ -157,3 +158,15 @@ def list_with_status(root: Path) -> list[dict]:
                 row["reason"] = "；".join(hints)
         rows.append(row)
     return rows
+
+
+def list_with_status(root: Path) -> list[dict]:
+    """独立进程用：自行开只读 Service 或经 serve 的内部通道取数据。"""
+    sources, runtime, runtime_note = _sources_and_runtime(root)
+    return _compose(root, sources, runtime, runtime_note)
+
+
+def list_with_service(svc, root: Path) -> list[dict]:
+    """宿主进程用：复用调用方已持有的 Service（不另开库、不抢写锁）。"""
+    sources = svc.list_sources()["sources"]
+    return _compose(root, sources, _runtime_from_store(svc), None)
