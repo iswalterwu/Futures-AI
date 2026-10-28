@@ -405,31 +405,36 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/Job"
-          }
+          },
+          "description": "正常作业集合，也是既有非 normal 场景的种子。"
         },
         "job-running": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/Job"
-          }
+          },
+          "description": "运行中与待人工确认样例集合。"
         },
         "job-pending-merge": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/Job"
-          }
+          },
+          "description": "显式运行后可演示旁路编辑的样例集合；初始无 overlay。"
         },
         "job-conflict": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/Job"
-          }
+          },
+          "description": "保留冲突两版与暂定快照的样例集合。"
         },
         "job-delivered": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/Job"
-          }
+          },
+          "description": "已定稿只读样例集合。"
         }
       },
       "required": [

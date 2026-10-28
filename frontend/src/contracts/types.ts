@@ -512,11 +512,11 @@ export const StageWorkspaceSchema = z.discriminatedUnion('stage', [
   }).describe('交付工作区：交付物、快照及产物修订；继承 S-18 三锚一致性校验。'),
 ]).describe('按 stage 判别的工作区结果；各阶段只携带对应类型的产物与修订，不混用内容。')
 export const JobCollectionsSchema = z.strictObject({
-  normal: z.array(JobSchema),
-  'job-running': z.array(JobSchema),
-  'job-pending-merge': z.array(JobSchema),
-  'job-conflict': z.array(JobSchema),
-  'job-delivered': z.array(JobSchema),
+  normal: z.array(JobSchema).describe('正常作业集合，也是既有非 normal 场景的种子。'),
+  'job-running': z.array(JobSchema).describe('运行中与待人工确认样例集合。'),
+  'job-pending-merge': z.array(JobSchema).describe('显式运行后可演示旁路编辑的样例集合；初始无 overlay。'),
+  'job-conflict': z.array(JobSchema).describe('保留冲突两版与暂定快照的样例集合。'),
+  'job-delivered': z.array(JobSchema).describe('已定稿只读样例集合。'),
 }).describe('作业样例按场景集合分键；empty / error / slow / boot-error 使用 normal 种子再应用场景规则。')
 export const JobDetailsSchema = z.record(z.string().min(1), z.strictObject({
   collect: StageWorkspaceSchema.options[0],

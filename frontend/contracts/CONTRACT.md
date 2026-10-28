@@ -148,15 +148,15 @@
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 作业样例按场景集合分键；empty / error / slow / boot-error 使用 normal 种子再应用场景规则。 |
-| `$.normal` | 是 | `Job[]` |  |
+| `$.normal` | 是 | `Job[]` | 正常作业集合，也是既有非 normal 场景的种子。 |
 | `$.normal[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
-| `$.job-running` | 是 | `Job[]` |  |
+| `$.job-running` | 是 | `Job[]` | 运行中与待人工确认样例集合。 |
 | `$.job-running[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
-| `$.job-pending-merge` | 是 | `Job[]` |  |
+| `$.job-pending-merge` | 是 | `Job[]` | 显式运行后可演示旁路编辑的样例集合；初始无 overlay。 |
 | `$.job-pending-merge[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
-| `$.job-conflict` | 是 | `Job[]` |  |
+| `$.job-conflict` | 是 | `Job[]` | 保留冲突两版与暂定快照的样例集合。 |
 | `$.job-conflict[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
-| `$.job-delivered` | 是 | `Job[]` |  |
+| `$.job-delivered` | 是 | `Job[]` | 已定稿只读样例集合。 |
 | `$.job-delivered[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
 
 ### `JobDetails`
