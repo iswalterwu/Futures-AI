@@ -1,6 +1,8 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **当前状态（2026-10-28，M-08 整图证据补采 in-progress）**：H-01 已经 PR #8 合并（§13 ~ §14，历史已批准）；本轮 T-19 只补采修复后 1440 整图（A-H01-P3-1），已规划、未采集（§15）；本轮 Gate 2 未发生。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
+> **当前状态（2026-10-28，M-08 整图证据补采）**：T-19 已补采修复后 1440 整图（`bf04f69`），Converge 判定 T-19 证据补采范围已收敛（§16、[converge.md §10](converge.md)）；**待独立 A Review，本轮 Gate 2 未发生**；A-H01-P3-1 未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
+
+> **（规划时点指针）当前状态（2026-10-28，M-08 整图证据补采 in-progress）**：H-01 已经 PR #8 合并（§13 ~ §14，历史已批准）；本轮 T-19 只补采修复后 1440 整图（A-H01-P3-1），已规划、未采集（§15）；本轮 Gate 2 未发生。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
 
 > **（H-01 Handoff 时点指针）当前状态（2026-10-28，H-01 修复 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“好的”——**本次 H-01 修复 Gate 2 已批准**，A-H01-P3-1（1440 整图补采）接受为后续、尚未补采（§13）；Handoff 记录见 §14，PR：[iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8)。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复；11 项旧 P3 未修复。
 
@@ -508,3 +510,18 @@ Handoff 核对：`frontend/` 树 `03fda1de…` 与 A 审查目标 `869cb71` 相�
 - **计划**：plan §8；任务 T-19（0.5 h，AC-009-2 / M-08）；Analyze 无冲突。
 - **派工**：Implement = 首选 openai/gpt-6-astra（回退 deepseek/deepseek-flash），未开始；其后 Converge、独立 A 定向 Review（claude-fable-5-1，先 bridge 后 anthropic）、Walter Gate 2。
 - **边界**：不改 `frontend/` / 冻结 spec / Checklist（70/70）/ `review-h01.md` / 旧 60 图 / 4 张图注特写；manual 勾选保持 0 / 8；H-02 与 v2（独立负责会话，当前 blocked）不接管、不变更；旧 11 项 P3 不扩改。
+
+## 16. T-19 实施与收敛简报（2026-10-28，追加）
+
+> §0 ~ §15 为历史，不改写。本节不是 Review 结论。
+
+| 角色 | 产物 | provider / model | 结果 |
+|---|---|---|---|
+| Plan / Tasks / Analyze | `3c9d714`（plan §8、T-19、analyze、§15） | anthropic / claude-opus-5-5 | 完成；bridge 额度耗尽 |
+| Implement | `bf04f69`（整图 PNG、生成 JSON、README / manual M-08 / tasks 记录） | openai / gpt-6-astra | 完成，无回退；采集首跑 exit 1（截图前断言写法，未出图）→ 修正后 exit 0；定向 e2e 6 passed、AC-009-2 单元 9 passed / 550 skipped |
+| Converge | converge §10、本节、tasks / 状态表、证据 README 追记 | anthropic / claude-opus-5-5 | **T-19 证据补采范围已收敛**；未跑测试 |
+| 审核员 A | 定向 Review `44845c8..` 本轮提交 | claude-fable-5-1（先 bridge 后 anthropic），回退按 §6 | **未开始**；须新会话、与实施模型不同 |
+
+- 证据：[after-1440x900-full.png](assets/h01-fix-20261028/after-1440x900-full.png)（sha256 `15c08282…a678`）、[capture-full-1440.json](assets/h01-fix-20261028/capture-full-1440.json)；来源 HEAD / 代码基线 `44845c8`，`frontend` 树 `03fda1de…`，与基线零差异。
+- AI 看图（Converge，不是人工验收）：整个 figure，图注单行、曲线与双轴完整、无裁切、无白底。
+- 待办：独立 A Review → Walter 本轮 Gate 2；Walter 人工复核 M-01 ~ M-08（含 M-08，8 项未勾）；H-02 留待 v2；旧 11 项 P3 未扩改。

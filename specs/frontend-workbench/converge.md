@@ -175,3 +175,32 @@ A 亲跑 generated 对拍（exit 0）、103 项定向单元 / 组件（exit 0）
 ### 9.6 Gate 2 与 Handoff 更新（2026-10-28，追加）
 
 Walter 2026-10-28 对本轮 Gate 2 回复“好的”：本次 H-01 修复与 A Review 结论获批，A-H01-P3-1（1440 整图补采）接受为后续、未补采。Handoff 未重跑测试（生产代码自 `869cb71` 未变），记录见 [review.md §13 ~ §14](review.md)。§9.4 的收敛限定不变：不代表 M-01 ~ M-08 人工验收通过，H-02 未修复。
+
+## 10. T-19 M-08 修复后 1440 整图证据补采的 Converge（2026-10-28，追加）
+
+> §1 ~ §9 为历史，不改写。**执行者**：Converge = claude-opus-5-5 via anthropic（bridge 本窗口 account 额度耗尽，不重试）；唯一写入者。**本阶段未跑测试 / 未采集**，以真实 git 元数据、生成物、Implement 日志与 exit 静态对拍。
+
+### 10.1 输入
+
+- 分支 `docs/frontend-workbench-m08-evidence`；代码基线 `44845c8922becfdb26bf4d0c5572f12a79ce748f`；HEAD `bf04f69`（`3c9d714` 规划 → `bf04f69` T-19 采集与记录），开始时工作区干净。
+- 重读：AGENTS.md、docs/plan.md、docs/designUI.md、冻结 spec、plan §8、tasks T-19 与台账、checklist、analyze 末节、review §15、manual M-08、证据 README 与 `capture-full-1440.json`、`git diff 44845c8..HEAD`。
+- Implement（openai/gpt-6-astra via openai，首选无回退）日志：本机 `%TEMP%/fw-m08-evidence.nY5thg/` 的 `capture-attempt-1`、`capture`、`e2e`、`unit`、`boundary` 各 `.log/.exit`，`implement-output.txt`（exit 0）。
+
+### 10.2 按 T-19 四条完成标准对拍
+
+| 标准 | 真实证据 | 判定 |
+|---|---|---|
+| 1 整图采集与元数据（AC-009-2、M-08） | `capture.exit` = 0，日志 “Capture successful”。脚本源码核对：截图在全部断言之后执行（就绪、`fullVisibility` 四项、图注 Range 一行、单位同行、无横滚、轴文字、`backgroundColor = transparent`、`darkMode`、序列 id / 60 点 / x 轴与 fixture 一致、色序与 `T.chart` 一致、存在真实序列 path、无 pageerror），对整个 `[data-chart-id="market-board"]` 调 `locator.screenshot()`，不改 DOM / CSS。JSON：sourceHead = 基线 `44845c8`，`frontend` 树 `03fda1de…` 与基线一致，`frontendDiffExit` 0，工作树状态原样记录（当时 5 份规划文档未提交）；Chrome 156.0.8078.49 / Playwright 1.64.1；`127.0.0.1:4191/workbench?scenario=normal`；1440×900、DSF 1；figure `(237, 498.75)–(1000.33, 708.25)` ⊂ `.modules-container` 可视矩形 `(224, 416.75)–(1414, 829.75)` ⊂ viewport；`aiCaptured: true`、`humanAccepted: false`、`visualReviewPerformed: false`。PNG 实测 sha256 `15c08282…a678` = JSON；`scriptSha256` `68de7f0f…` = 临时脚本当前 sha256（脚本采集后未改）。首次运行 `capture-attempt-1.exit` = 1，失败于截图前的 `isDisposed() === false` 断言（ECharts 实际返回 undefined），未出图；改为与既有 e2e 一致的“不为 true”，未放宽可见性判据 | 满足 |
+| 2 既有定向回归（AC-006-3、AC-006-4、AC-001-4、AC-009-2） | `e2e.exit` = 0：`-g "AC-006-3\|AC-006-4\|AC-001-4"` **6 passed**；`unit.exit` = 0：`-t "AC-009-2"` **9 passed / 550 skipped**（1 文件，14 文件中 13 skipped） | 满足 |
+| 3 边界 | 本会话实跑 `git diff --exit-code 44845c8 -- frontend design backend docs AGENTS.md spec.md checklist.md review-h01.md converge.md assets/handoff` 与 4 张图注特写 → exit 0；`specs/` 下无其他 feature 改动；Checklist 70 / 0；manual 0 checked / 8 unchecked；`boundary.exit` = 0 | 满足 |
+| 4 文档 | 证据 README 末尾追加 T-19 入口 / 命令 / 来源 / 版本 / 几何 / hash / 首次失败说明与“AI 采集非人工验收”；manual 仅 M-08 内新增两行（截图证据补充、采集补充记录），删除行 0，勾选框未动；A-H01-P3-1 记“已补采，待 Walter 人工复核 M-08”、未关闭 | 满足 |
+
+- **原生视觉（Converge 本会话 read，AI 观察，不是 Walter 人工验收）**：`after-1440x900-full.png`（764×211）是整个 figure，不是图注特写——顶部单行“近 60 日收盘 · 样例”、右上“元/桶”；下方完整亮色折线（约 480 → 513），y 轴 480 ~ 515、x 轴 08-06 ~ 10-23 刻度完整；四边未见裁切；背景为暗色连续底，无白块。
+- **时序（如实）**：e2e / unit / boundary 日志 22:22，`bf04f69` 提交 22:23:45，即在提交前工作树上运行；该提交只含文档与生成物，`frontend/` 与基线一致，manual 的两行在日志前已写入（boundary 日志已报 0 / 8）。本阶段未在提交后重跑。
+- **不是本轮证据**：H-01 的全量 559 + 68 与 build 是旧证据；本轮未跑全量 / build，无红跑（无生产改动）。
+
+### 10.3 结论
+
+**已收敛（T-19 证据补采范围）。** 四条完成标准均有真实证据，截图与元数据为程序生成、可复核，未发现需返工的实现或元数据缺口，不新增任务。
+
+不表示：独立 A Review 通过（未开始）、本轮 Gate 2 已批准（未发生）、M-08 或其他 M 项人工验收通过（8 项仍未勾）、A-H01-P3-1 已关闭。H-02 未修复（v2 另有负责会话）；旧 11 项 P3 未扩改；H-01 PR #8 与其 Gate 2 保持历史已交付。

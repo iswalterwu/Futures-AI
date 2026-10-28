@@ -80,3 +80,9 @@ H-02 未修复、留待 v2；11 项旧 P3 未扩改。该修复尚未 Converge�
 - PNG SHA256：`15c08282a5f7b65f6df162ab5818dbaf513f7bc891571e757d956beb3c79a678`（17,540 bytes），可用 `sha256sum specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900-full.png` 对拍 JSON。
 - 脚本首次运行在临时脚本的 `isDisposed() === false` 断言停止（ECharts 未销毁时实际返回 undefined），未出图，且己方进程已清理；改为与既有 e2e 一致的“不为 true”判据后采集成功（exit 0）。未改变任何产品行为或完整可见判据。首次日志 `capture-attempt-1.{log,exit}` 与成功日志 `capture.{log,exit}` 均保留在本轮临时证据目录，不入库。
 - 本轮定向验证见 T-19 实施记录；上方 **559 + 68 / build 是旧 H-01 证据**，本轮不重跑全量 / build、不做旧代码红跑。旧 60 张图与 4 张图注特写均保留；不采 960 整图、不改 H-02 / v2 / 旧 11 项 P3。
+
+## T-19 Converge 追记（2026-10-28；以上原文不改写）
+
+- Converge = claude-opus-5-5 via anthropic。PNG sha256 实测 = JSON；JSON `scriptSha256` = 临时脚本当前 hash；来源 HEAD / frontend 树与基线 `44845c8` 一致。
+- 原生视觉读 `after-1440x900-full.png`（**AI 观察，不是 Walter 人工验收**）：整个 figure，图注“近 60 日收盘 · 样例”单行、“元/桶”在右；折线、y 轴 480 ~ 515 与 x 轴 08-06 ~ 10-23 完整，无裁切、无白底。
+- 当前阶段：T-19 证据补采范围已收敛（[converge §10](../../converge.md)）；待独立 A Review 与本轮 Gate 2；M-08 人工复核待 Walter。
