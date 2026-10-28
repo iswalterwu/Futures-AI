@@ -36,7 +36,7 @@
 - **依赖**：T-01　**预计**：1.5 h
 - **完成标准**：
   1. 运行器：无参跑全部守卫、带名跑指定守卫或子检查；每个守卫先自检 fixtures（阳性须全部命中、阴性须全部不中），为全部守卫类 AC（AC-001-1/2/3/5/6、AC-004-6、AC-006-1/2、AC-007-1/3、AC-008-1/2/3）提供执行机制
-  2. design-registry 五个子检查按 plan §2.8 判定：正向 `adopted ∪ not_adopted = source_anchors`、反向从正文提取锚并与 `design/ui/source_anchors.json` 比对（同步漏锚、正文多出未分类锚均报错）、`new: true` 标记只许出现在 `adopted` 项、source 三种形式；fixtures 覆盖每个子检查的阳性与阴性，含"同步漏锚"与"正文漏分类"两个阳性样例（AC-008-1 / AC-008-2 / AC-008-3 的判定逻辑）
+  2. design-registry 五个子检查按 plan §2.8 判定：正向集合等**只取原锚**（未带 `new: true` 的项 = `source_anchors`，新锚不得写进 86 条原锚清单凑等式）、新锚另核 `new: true` 与正文对应、反向从正文提取锚并与 `design/ui/source_anchors.json` 比对（同步漏锚、正文多出未分类锚均报错）、`new: true` 标记只许出现在 `adopted` 项、source 三种形式；fixtures 覆盖每个子检查的阳性与阴性，含"同步漏锚"与"正文漏分类"两个阳性样例、以及"含合法新锚（new: true）的条目应通过"的阴性样例（AC-008-1 / AC-008-2 / AC-008-3 的判定逻辑）
 - **验证命令**：
   1. `pnpm -C frontend guards --self-test`
   2. `pnpm -C frontend guards design-registry --self-test`
@@ -325,7 +325,7 @@
 - **修改范围**：`frontend/src/modules/watchlist/Watchlist.vue`、`frontend/src/shared/components/{DataTable.vue,Spark.vue}`、`frontend/src/modules/release-calendar/ReleaseCalendar.vue`、`frontend/src/modules/summary/ModuleSummary.vue`、`frontend/src/modules/registry.ts`（挂上真实正文）、`frontend/tests/component/modules.spec.ts`
 - **依赖**：T-08、T-18　**预计**：2 h
 - **完成标准**：
-  1. 关注列表：数值等宽右对齐、千分位，涨跌只涂字色；迷你折线墨线 + 末点（AC-004-5，数据表部分）
+  1. 关注列表：数值等宽右对齐、千分位，涨跌只涂字色；迷你折线墨线 + 末点；Spark 输入为契约里的 `WatchlistTable.rows[].spark: SparkSeries`（plan §2.7），不另造裸数组入口（AC-004-5，数据表部分）
   2. 数据发布日历：按日期、时间升序的日程列表，含来源与新鲜度点（AC-004-5，日程部分）
   3. 四个占位模块渲染模块壳 + 示例占位与"内容随 domain feature 交付"说明（AC-004-3，占位模块部分）
   4. 关注列表的涨跌按红涨绿跌取色（引入 `updown.css`），引入位置在 updown-scope 登记范围内（AC-001-5，关注列表部分）
@@ -462,8 +462,8 @@
 | AC-007-2 | T-12（单元）、T-28（端到端） |
 | AC-007-3 | T-11、T-14 |
 | AC-007-4 | T-11、T-12 |
-| AC-008-1 | T-02、T-03、T-04、T-05、T-30（AC-008-1 / AC-008-2 双向核） |
-| AC-008-2 | T-02、T-06 |
+| AC-008-1 | T-02、T-03、T-04、T-05、T-30 |
+| AC-008-2 | T-02、T-03、T-06 |
 | AC-008-3 | T-02、T-04 |
 | AC-009-1 | T-01（打底）、T-29 |
 | AC-009-2 | T-29 |
