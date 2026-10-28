@@ -8,7 +8,8 @@
 > **模型记录**：Tasks = `claude-opus-5-5` via `anthropic`。`claude-bridge` 在本限额窗口已明确额度不可用，按 AGENTS §6 第 5 条不重复探活；只换了通道，没有换模型。协调 = `openai/gpt-6.1-sol`（只读，不是审核员 A，也不是实施者）；串行落盘 = 本 Tasks 会话（`claude-opus-5-5` via `anthropic`），按协调器限定的范围落盘，不是新设计。任务 = frontend-workbench v2 Tasks 起草。固定基线 = `a8ab444a28e8e6a9fd056401b55f63a1b25a2c4a`（工作树干净）。失败类别 = 通道额度；本记录已脱敏。
 > **审核依据**：当前有效的 v2 清单是 `specs/frontend-workbench/checklist-v2.md`。审核员 A = `claude-fable-5-1` via `anthropic`，独立会话，审查对象 `d2bf5a7`，结论为通过：0 阻断、9 条建议，允许进入 Tasks，不授权 Implement。这个通过**只覆盖 `d2bf5a7` 的 plan §7**；本次 Tasks 以及随附的 plan §7 小改**都未经审核**。旧 `checklist.md` 只证明 v1，不修改，也不授权 v2。
 > **状态**：v2 任务是草案。下一步先做 Analyze，再由 A 新开独立会话定向复核，并补勾 checklist-v2「阶段说明」里的 I-01b 和 V-02。**全部 v2 实施任务 blocked**，原因有两个：v1 完成 Review / Gate 2 / Handoff 并合入 main 的准确 SHA 未取得；H-1～H-6 没有任何已交付的实现 SHA。本清单不启动 Implement；在等外部前置的任务，不能视为已完成。
-> **Analyze R1 后修正（2026-10-28）**：修正 = `claude-opus-5-5` via `anthropic`（bridge 本窗口额度不可用，未重试、未换模型）；基线 `b364971a1a76fde96be6f924a7b7263ecb9cd447`，分支 `docs/frontend-workbench-v2-analyze-fixes`。按只读 Analyze R1（3 P2 / 4 P3，原文存同目录 `analyze-v2.md`）修 v2 段：F-01 `PlaceholderPage.vue` 入第 4 节与 T-V2-02（加 typecheck 标准）；F-02 T-V2-01 明确迁移 `shell.spec` 旧八项 / research 深链用例，并用 `AC-002-2` 全前缀验证；F-03 `shell.spec` 写入链改为 01→02→09，由 T-V2-09 把 `/jobs` 占位子断言迁移为集成态；F-04 H-2·列表随交接登记一个写 action，T-V2-05#2 只调用它；F-05 T-V2-03 条件依赖 H-3·路由切片；F-06 H-6 `jobFixtures` 可替换整个作业样例集合；F-07 闸门 2 改为 A 定向复核 SHA 与明确通过记录。仍为 12 个任务、22 h；v1 正文、spec 和两份 checklist 未改。**本修正未经 A 定向复核，也未重跑 Analyze。**
+> **当前阶段补记—Analyze R2（2026-10-28）**：只读复跑固定在 `6bda6c910343b887fad2ffede062fe241f034752`，结论为内部一致，F-01～F-07 全部关闭、无新增 F；报告索引 `analyze-v2.md`，作者原文 `analyze-v2-r2.md`。下方 R1 修正记录保留为历史。新增 Tasks / Plan 小改仍待 A 定向复核；A 审核证据、v1 Handoff 与对应 H-x 交接尚未登记，12 个实施任务仍全部 blocked。本补记只同步事实，不授权 Implement。
+> **Analyze R1 后修正（2026-10-28，历史记录）**：修正 = `claude-opus-5-5` via `anthropic`（bridge 本窗口额度不可用，未重试、未换模型）；基线 `b364971a1a76fde96be6f924a7b7263ecb9cd447`，分支 `docs/frontend-workbench-v2-analyze-fixes`。按只读 Analyze R1（3 P2 / 4 P3，原文存同目录 `analyze-v2.md`）修 v2 段：F-01 `PlaceholderPage.vue` 入第 4 节与 T-V2-02（加 typecheck 标准）；F-02 T-V2-01 明确迁移 `shell.spec` 旧八项 / research 深链用例，并用 `AC-002-2` 全前缀验证；F-03 `shell.spec` 写入链改为 01→02→09，由 T-V2-09 把 `/jobs` 占位子断言迁移为集成态；F-04 H-2·列表随交接登记一个写 action，T-V2-05#2 只调用它；F-05 T-V2-03 条件依赖 H-3·路由切片；F-06 H-6 `jobFixtures` 可替换整个作业样例集合；F-07 闸门 2 改为 A 定向复核 SHA 与明确通过记录。仍为 12 个任务、22 h；v1 正文、spec 和两份 checklist 未改。**本修正未经 A 定向复核，也未重跑 Analyze。**
 
 ## 约定
 
@@ -299,9 +300,9 @@
 | 壳 v2 实施 worktree / 分支 | 未取得（开工前登记） | 从 v1 Handoff SHA 建立；壳实施者是唯一写入者 |
 | 集成验证分支名 | 未取得（开工前由集成人登记） | 只有指定集成人能写；其他会话只读 |
 | 指定集成人 | 未取得（开工前登记） | 负责把生产方交接单元和壳提交串行集成进来 |
-| 最近一轮 Analyze | R1，固定 `b364971`，原文存 `analyze-v2.md`：3 P2 / 4 P3 | 本轮已按 F-01～F-07 修文档，但没有重跑；须由下一轮独立只读 Analyze 固定到修正后的提交确认 |
+| 最近一轮 Analyze | R2，固定 `6bda6c910343b887fad2ffede062fe241f034752`；索引 `analyze-v2.md`，作者原文 `analyze-v2-r2.md` | 内部一致：R1 的 F-01～F-07 全部关闭，无新增 F；外部前置仍 blocked，Tasks / Plan 小改还需 A 定向复核 |
 | A 对 Tasks（及 plan §7 小改）定向复核产物的已提交 SHA | **未取得** | 第 5 节闸门 2 的证据，须含 I-01b、V-02 的明确通过记录；实施者不改清单 |
-| 本 Tasks 落盘提交 SHA | 未登记 | 由集成人在后续 Analyze / Checklist 记录准确提交；落盘时不预填 |
+| 本 Tasks 落盘提交 SHA | `b364971`（初稿）；`6bda6c9`（按 F-01～F-07 修正） | Analyze R2 审查后者；后续纯状态补记不改变任务设计，A 复核仍须固定到届时的准确提交 |
 
 **工作树规则**：
 - 壳方和互动方各用独立的 worktree / 分支，只写自己拥有的文件（见第 4 节）。
@@ -400,7 +401,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 1. v1 Handoff SHA 已登记，并且在 main 上：`git merge-base --is-ancestor <v1HandoffSHA> main`（没填真实 SHA 之前，这条命令无法执行，即闸门未过）。
 2. checklist-v2 当前有效，且 A 已对新的 Plan / Tasks 完成定向复核。证据三项，均由人工核对并登记：(a) A 定向复核产物的**已提交 SHA**，其审查对象是含本轮修正的 Plan / Tasks / Analyze 基线，登记在第 1.1 节；(b) 该产物或 checklist-v2「阶段说明」中 I-01b 与 V-02 的**明确通过记录**（或 A 补设的正式复选框已由 A 勾选）；(c) checklist-v2 的当前有效状态（无阻断、未被后续轮次推翻）。不能用 `git grep "^- \[ \]"` 无输出代替：「阶段说明」不设复选框，审核没发生时同样无输出。A 补记前本闸门未过；实施者不改清单。
 3. 本任务用到的每个交接单元都已集成：`git merge-base --is-ancestor <H-x commit> <集成验证分支>`，并且第 1.2 节该行四项登记齐全。
-4. Analyze 报告已产出，且没有未解决项（人工核对报告结论）。最近一轮 R1（`analyze-v2.md`，固定 `b364971`）的 F-01～F-07 尚未经复跑确认关闭，须由下一轮独立只读 Analyze 固定到修正后的提交复跑。
+4. Analyze 报告已产出，且内部没有未解决项（人工核对报告结论）。最近一轮 R2 固定 `6bda6c910343b887fad2ffede062fe241f034752`，已确认 R1 的 F-01～F-07 全部关闭、无新增 F；索引 `analyze-v2.md`，作者原文 `analyze-v2-r2.md`。若后续实质修改 Plan / Tasks，重新 Analyze；本轮内部一致不代替闸门 1～3，也不代替 A 定向复核。
 
 ### 6. 任务
 

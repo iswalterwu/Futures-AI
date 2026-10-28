@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| frontend-workbench | in-progress（v2.1 Gate 1 已通过；v2 Plan §7 → A Checklist R1 通过；Tasks草案已产出；Analyze R1发现3P2/4P3，文档已修待重跑Analyze及A定向复核；实施 blocked：v1 Handoff SHA 及 H-1～H-6 交接均未取得） | 无后端依赖；实施硬前置为 v1 Handoff 合入 main 的准确 SHA（未取得）。v2 S1/S2 按 plan §7.3 分批接收互动方固定提交与定向测试摘要；其已提交基线 8bd1b31 的旧 R2 通过不覆盖新增 H-2/H-4/H-5/H-6，移动工作树的 R3/R4 不作为交接证据；外部交接未就绪 | 2026-10-28 | v2 52 AC 已冻结；checklist-v2.md 为当前有效清单，A = claude-fable-5-1 via anthropic，审 d2bf5a7：0 阻断 / 9 建议。v1 checklist.md / 历史任务不改、不授权 v2；Tasks 草案已产出（12 任务 / 22 h，随附 plan §7 未审小改）；Analyze R1（`analyze-v2.md`，固定 b364971）发现 3 P2 / 4 P3，plan/tasks 已按 F-01～F-07 修正但未经复跑与审核，待重跑只读 Analyze 及 A 定向复核，不进入 Implement；v1 尚未 Handoff |
+| frontend-workbench | in-progress（v2.1 Gate 1 → Plan → A Checklist R1 通过；Tasks 草案 12 项 / 22 h；Analyze R2 内部一致，待 A 定向复核；实施 blocked） | 无后端依赖；v1 Handoff 合入 main 的准确 SHA 和 H-1～H-6 / 页面切片的固定提交、有效已提交 Checklist SHA、测试摘要及集成 SHA 均未登记。分批交接见 plan §7.3 / tasks §1.2；不把互动方旧 R2 或移动工作树当新增要求的交付证据 | 2026-10-28 | 52 AC 已冻结并完整映射；checklist-v2.md 由 A = claude-fable-5-1 via anthropic 审 d2bf5a7：0 阻断 / 9 建议。新增 Tasks / Plan 小改尚未获 A 定向复核；Analyze R2 审 6bda6c9，R1 的 3 P2 / 4 P3 全部关闭、无新增 F，原文 analyze-v2-r2.md、索引 analyze-v2.md。旧 v1 Checklist / 任务正文不改，不进入 Implement |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
