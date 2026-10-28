@@ -1,35 +1,29 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { dataClient } from '../contracts/index.ts'
 import type { ContractError, DailyBrief, ErrorResponse } from '../contracts/types.ts'
-import { T } from '../design/generated/tokens.ts'
 import '../design/updown.css'
 import EmptyState from '../shared/components/EmptyState.vue'
 import ErrorState from '../shared/components/ErrorState.vue'
 import Kpi from '../shared/components/Kpi.vue'
 import Loading from '../shared/components/Loading.vue'
+import { useUiStore } from '../stores/ui.ts'
 
+const ui = useUiStore()
 const brief = ref<DailyBrief | null>(null)
 const reason = ref<string>()
 const error = ref<ContractError | null>(null)
 const status = ref<'loading' | 'ready' | 'empty' | 'error'>('loading')
-const expandedQuery = matchMedia(`(min-width: ${T.breakpoint.focus_expand}px)`)
-const expanded = ref(expandedQuery.matches)
-const cardLimit = computed(() => expanded.value ? T.layout.focus_expanded : T.layout.focus_compact)
 const segments = computed(() => {
-  const figures = brief.value?.figures.slice(0, cardLimit.value) ?? []
+  const figures = brief.value?.figures.slice(0, ui.viewport.focusCards) ?? []
   return [
     { semantic: 'market', zh: '行情', en: 'Market', figures: figures.filter(figure => figure.semantic === 'market') },
     { semantic: 'analysis', zh: '指标', en: 'Indicators', figures: figures.filter(figure => figure.semantic === 'analysis') },
   ]
 })
 
-onMounted(() => {
-  expandedQuery.addEventListener('change', updateExpanded)
-  void loadBrief()
-})
-onBeforeUnmount(() => expandedQuery.removeEventListener('change', updateExpanded))
+onMounted(loadBrief)
 
 async function loadBrief() {
   status.value = 'loading'
@@ -43,10 +37,6 @@ async function loadBrief() {
     error.value = (cause as ErrorResponse).error
     status.value = 'error'
   }
-}
-
-function updateExpanded() {
-  expanded.value = expandedQuery.matches
 }
 </script>
 

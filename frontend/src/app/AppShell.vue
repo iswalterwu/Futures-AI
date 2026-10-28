@@ -40,6 +40,7 @@ async function start() {
     v-else
     class="shell"
     :data-rail-collapsed="ui.railCollapsed"
+    :data-viewport-collapsed="ui.viewport.collapsed"
   >
     <Rail />
     <div class="content">
@@ -62,6 +63,7 @@ async function start() {
   display: grid;
   grid-template-columns: var(--fai-layout-rail-width) minmax(0, 1fr);
   height: var(--fai-layout-viewport-height);
+  min-width: calc(var(--fai-window-min-width) * 1px);
 }
 
 .shell[data-rail-collapsed='true'] {
@@ -88,11 +90,8 @@ async function start() {
   z-index: var(--fai-z-dock);
 }
 
-@media (max-width: 979px) {
-  .shell,
-  .shell[data-rail-collapsed='true'] {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-  }
+.shell[data-viewport-collapsed='true'] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
 }
 </style>
