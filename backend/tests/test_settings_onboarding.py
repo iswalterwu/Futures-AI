@@ -100,22 +100,6 @@ class TestClearKey:
 class TestStateFile:
     """F-04：状态文件原子写；并发写不产生无法解析的 JSON。"""
 
-    def test_concurrent_state_writes_stay_valid(self, tmp_path):
-        import json
-        import threading
-
-        from settings import onboarding as ob
-
-        def write(i):
-            onboarding.write_state(tmp_path, f"src{i}", verified_at=f"t{i}")
-
-        threads = [threading.Thread(target=write, args=(i,)) for i in range(4)]
-        for t in threads:
-            t.start()
-        for t in threads:
-            t.join(30)
-        data = json.loads(onboarding.state_path(tmp_path).read_text(encoding="utf-8"))
-        assert len([k for k in data if k.startswith("src")]) == 4  # 串行化：全部写入且文件可解析
 
     def test_onboard_state_roundtrip(self, tmp_path):
         from settings import onboarding as ob
@@ -210,34 +194,6 @@ class TestProbeClassification:
 
 
 
-class TestCommitBoundary:
-    """B2-05：凭证写入/删除与验证状态在同一提交边界。"""
-
-    def test_clear_key_waits_for_commit_lock(self, tmp_path, monkeypatch):
-        import threading
-
-        from data.lock import release_lock
-
-        from settings import _filelock
-        from settings import onboarding as ob
-
-        _inject(monkeypatch, ok=True)
-        onboarding.verify_and_save(tmp_path, "k-" + "commit-0001")
-        lock = _filelock.acquire(tmp_path / onboarding.STATE_DIR)
-        done = threading.Event()
-
-        def clear_it():
-            onboarding.clear_key(tmp_path)
-            done.set()
-
-        t = threading.Thread(target=clear_it, daemon=True)
-        t.start()
-        assert not done.wait(0.4)  # 提交边界互斥
-        release_lock(lock)
-        assert done.wait(10)
-        t.join(5)
-        assert onboarding.has_key(tmp_path) is False
-        assert onboarding.read_state(tmp_path)["eia"]["verified_at"] is None
 
 
 class TestCredentialRefContract:

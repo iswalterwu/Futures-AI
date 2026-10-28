@@ -11,9 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from data import creds
-from data.lock import release_lock
 
-from settings import _filelock
 from data.adapters.eia import eia_adapter
 
 from settings.profile import Profile, SECTORS, load as load_profile, missing_for_registration
@@ -69,20 +67,12 @@ def _write_json_atomic(path: Path, payload: dict) -> None:
         raise
 
 
-def write_state(root: Path, source_id: str, *, lock: bool = True, **fields) -> None:
-    """记录开通状态（不含任何凭证内容）；读—改—写串行、写入原子替换。
-
-    lock=False 用于调用方已持有该目录锁的提交边界（锁不可重入）。
-    """
-    held = _filelock.acquire(Path(root) / STATE_DIR) if lock else None
-    try:
-        data = read_state(root)
-        entry = data.setdefault(source_id, {})
-        entry.update(fields)
-        _write_json_atomic(state_path(root), data)
-    finally:
-        if held is not None:
-            release_lock(held)
+def write_state(root: Path, source_id: str, **fields) -> None:
+    """记录开通状态（不含任何凭证内容）；写入用临时文件 + 原子替换（崩溃安全）。"""
+    data = read_state(root)
+    entry = data.setdefault(source_id, {})
+    entry.update(fields)
+    _write_json_atomic(state_path(root), data)
 
 
 ONBOARD_KEY = "onboard"
@@ -208,14 +198,9 @@ def verify_and_save(root: Path, key: str) -> Step:
         }[code]
         write_state(root, SOURCE_ID, last_error=code)
         return Step("verify", "校验 key", {"ok": False, "error": code, "message": message})
-    # 提交边界：写凭证 + 记验证时间在同一把锁内（清除也取同一把锁，不会交错出"已验证但无凭证"）
-    lock = _filelock.acquire(Path(root) / STATE_DIR)
-    try:
-        creds.put(Path(root) / "creds", CREDENTIAL_REF, key)  # 只有验证通过才落盘
-        verified_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-        write_state(root, SOURCE_ID, lock=False, verified_at=verified_at, last_error=None)
-    finally:
-        release_lock(lock)
+    creds.put(Path(root) / "creds", CREDENTIAL_REF, key)  # 只有验证通过才落盘
+    verified_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    write_state(root, SOURCE_ID, verified_at=verified_at, last_error=None)
     return Step(
         "done",
         "开通完成",
@@ -223,14 +208,10 @@ def verify_and_save(root: Path, key: str) -> Step:
     )
 
 def clear_key(root: Path) -> bool:
-    """清除凭证 → 回到免凭证路径（spec AC-003-5）。与验证提交同一把锁。"""
-    lock = _filelock.acquire(Path(root) / STATE_DIR)
-    try:
-        existed = creds.remove(Path(root) / "creds", CREDENTIAL_REF)
-        write_state(root, SOURCE_ID, lock=False, verified_at=None, last_error=None)
-        return existed
-    finally:
-        release_lock(lock)
+    """清除凭证 → 回到免凭证路径（spec AC-003-5）。返回是否确实删除。"""
+    existed = creds.remove(Path(root) / "creds", CREDENTIAL_REF)
+    write_state(root, SOURCE_ID, verified_at=None, last_error=None)
+    return existed
 
 
 def has_key(root: Path) -> bool:

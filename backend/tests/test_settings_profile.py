@@ -109,29 +109,6 @@ class TestUpdate:
         save(tmp_path, Profile())  # 全空也算建立
         assert profile_path(tmp_path).is_file() is True
 
-    def test_two_processes_keep_both_fields(self, tmp_path):
-        """并发 set 不同字段：排队执行，两者都保留。"""
-        import os
-        import subprocess
-        import sys
-
-        backend = str(Path(__file__).resolve().parent.parent)
-        env = dict(os.environ, PYTHONPATH=backend, PYTHONIOENCODING="utf-8")
-        code = chr(10).join([
-            "import sys",
-            "from pathlib import Path",
-            "from settings.profile import update",
-            "update(Path(sys.argv[1]), **{sys.argv[2]: sys.argv[3]})",
-        ])
-        procs = [
-            subprocess.Popen([sys.executable, "-c", code, str(tmp_path), field, value],
-                             env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            for field, value in (("first_name", "Walter"), ("last_name", "Wu"))
-        ]
-        outs = [(p.wait(timeout=120), p.stderr.read()) for p in procs]
-        assert all(rc == 0 for rc, _ in outs), outs
-        p = load(tmp_path)
-        assert (p.first_name, p.last_name) == ("Walter", "Wu")
 
 
 class TestSectorsMatchOfficialForm:
@@ -149,29 +126,3 @@ class TestSectorsMatchOfficialForm:
         assert Profile(sector="library").sector == "library"
 
 
-class TestClearLock:
-    """B2-04：清除与部分更新串行（不会被并发写\"复活\"）。"""
-
-    def test_clear_waits_for_profile_lock(self, tmp_path):
-        import threading
-
-        from data.lock import release_lock
-
-        from settings import _filelock
-        from settings import profile as profile_mod
-
-        save(tmp_path, Profile(first_name="Walter", email="walter@example.com"))
-        lock = _filelock.acquire(tmp_path / "profile")
-        done = threading.Event()
-
-        def clear_it():
-            profile_mod.clear(tmp_path)
-            done.set()
-
-        t = threading.Thread(target=clear_it, daemon=True)
-        t.start()
-        assert not done.wait(0.4)  # 持锁期间被挡住
-        release_lock(lock)
-        assert done.wait(10)
-        t.join(5)
-        assert load(tmp_path) == Profile()

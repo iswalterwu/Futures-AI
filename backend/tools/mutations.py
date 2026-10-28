@@ -34,13 +34,6 @@ MUTATIONS: list[dict] = [
         test="tests/test_settings_sources.py::TestPaths::test_eia_unreadable_credential_reports_error",
     ),
     dict(
-        name="settings/状态文件非原子写",
-        file="settings/onboarding.py",
-        old='        with os.fdopen(fd, "w", encoding="utf-8") as f:\n            json.dump(payload, f, ensure_ascii=False, indent=1)\n        os.replace(tmp, path)',
-        new='        with os.fdopen(fd, "w", encoding="utf-8") as f:\n            f.write(json.dumps(payload, ensure_ascii=False, indent=1)[:5])\n            f.flush()\n        os.replace(tmp, path)',
-        test="tests/test_settings_onboarding.py::TestStateFile::test_concurrent_state_writes_stay_valid",
-    ),
-    dict(
         name="settings/getpass 无法隐藏时仍继续",
         file="settings/cli.py",
         old="    if not (sys.stdin and sys.stdin.isatty()):",

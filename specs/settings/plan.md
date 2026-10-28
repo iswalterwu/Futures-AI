@@ -11,7 +11,7 @@
   - 档案：`<用户数据目录>/profile/profile.bin`——**DPAPI 加密的 JSON**（复用 `data.creds` 的加解密，与凭证同等保护、同等 fail closed）
   - 数据源开通状态：`<用户数据目录>/profile/state.json`——**不含任何凭证**，仅 `{source_id: {verified_at, guide_error}}`
 - **凭证**：沿用 data-layer 的 `<用户数据目录>/creds/<credential_ref>.bin`（DPAPI）
-- **依赖**：`pydantic`（档案模型）、`data`（Service / creds / lock）；EIA 验证由 `settings.onboarding._probe` 自建请求（便于按向导错误码精细分类，不复用 data-layer 的 `_request`）
+- **依赖**：`pydantic`（档案模型）、`data`（Service / creds）；EIA 验证由 `settings.onboarding._probe` 自建请求（便于按向导错误码精细分类，不复用 data-layer 的 `_request`）
 
 ## 2. 模块设计
 
@@ -59,7 +59,7 @@ def clear_key(root) -> bool               # 清除凭证 → 回到免凭证路�
   - **任何失败都不保存**；错误消息不含 key 明文（AC-003-3）
 - 程序**不提交注册表单**：本模块不含向 `register.php` 发 POST 的代码路径（AC-005-1，静态断言守护）
 - **日志脱敏**：`data.adapters.eia.protect_secrets()` 一次性给 `urllib3`/`requests` logger 装 Filter，把 `api_key=...` 替换为 `api_key=***`；不切换日志级别（并发请求下也不失效）
-- **提交边界**：`verify_and_save` 的「写凭证 + 记 verified_at」与 `clear_key` 的「删凭证 + 清状态」都取 `profile/` 目录锁，二者互斥（锁不可重入，内部 `write_state(lock=False)`）
+- **单进程假设（Walter 2026-10-28 裁决）**：档案与开通状态**不做并发写锁**——同一用户同时跑两条 settings 命令时后写者胜（已知限制）；崩溃安全由 `creds.put` 的原子替换与 `state.json` 的临时文件+原子替换保证
 
 ### 2.3 数据源状态（`settings/sources.py`）
 
@@ -137,7 +137,7 @@ def list_with_status(root) -> list[dict]
 | EIA 注册页改版（字段增减） | 档案字段与 `SECTORS` 为 plan 层清单，改版时同步；`guide_fields` 只做展示，不依赖页面结构 |
 | DPAPI 不可用 | fail closed：档案保存/读取失败均报错（复用 creds 语义），不降级明文 |
 | 用户把 key 贴进 shell 历史 | CLI 只经 `_read_key`（非终端拒绝），不接受 key 位置参数；文档明示 |
-| GUI 未就绪 | 本轮只交付可测试核心 + CLI；视图层随 desktop-shell 接，流程不重复实现 |
+| GUI 未就绪 | 本轮只交付可测试核心 + CLI（Walter 2026-10-28 批准的阶段交付）；GUI 类 AC 由 T-08 随 desktop-shell 落地，流程不重复实现 |
 | 验证请求被限流 | 429 明确提示"稍后重试"，不保存；不自动重试（交给用户） |
 
 回滚：本 feature 只新增 `profile/` 目录与 `settings` 包，删除即回到 data-layer v23 状态；不修改既有数据。

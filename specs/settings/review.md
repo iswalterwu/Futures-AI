@@ -38,7 +38,7 @@
 - B2-02 `GetPassWarning` 在读取之后才检查 → `_read_key` 先判终端，非终端直接拒绝（Windows 的 getpass 会降级回显）
 - B2-03 运行态语义错 → 字段分离：`run_status`/`run_at`/`guide_error`，成功不再写进错误字段；失败给可操作提示
 - B2-04 `clear()` 不持锁 → 纳入档案锁
-- B2-05 凭证与状态非同一提交边界 → `verify_and_save`/`clear_key` 同取 `profile/` 锁（`write_state(lock=False)` 避免重入）
+- B2-05 凭证与状态非同一提交边界 → 当时以 `profile/` 锁互斥；**后经 Walter 2026-10-28 裁决去掉锁**（改为单进程假设，见下文未完成项）
 - B2-06 覆盖 data-layer 清单原因 → `reason` 保留原值，派生提示放 `reason_hint`
 - B2-07 DPAPI 保存失败被当校验错误 → `ProgressError`（存储）与 `ValueError`（校验）分开，存错则失败退出且不置完成标记
 - A P2-B plan/tasks 与实现脱节 → 已同步（SECTORS 11 项、path 五值、`_probe` 自建、state 结构、锁边界、日志脱敏）
@@ -56,7 +56,10 @@
 
 ## 未完成项
 
-- **GUI**：档案表单、五步向导、状态卡片等视图层归 desktop-shell（T-08），本轮只交付可测试核心 + CLI，流程不重复实现
+- **GUI 类 AC（Walter 2026-10-28 批准分阶段交付）**：以下子句由 desktop-shell 就绪后的 T-08 承载，本轮未实现——
+  `AC-002-1` 应用启动自动进入引导、`AC-002-3` 跳过后进入主界面/从设置再次进入、`AC-003-3` 的输入框遮蔽、`AC-003-5` 的界面提示；
+  其余 15 条 AC 已在 CLI/核心层实现并有测试
+- **并发写不保证（Walter 2026-10-28 裁决删除锁）**：档案与 state 写入不做跨进程锁，同一用户同时跑两条 settings 命令时后写者胜（已知限制）
 - 真实 EIA 注册流程的端到端人工走查（需要真实邮箱与 key；自动化验证已就绪，注册本身按设计由用户完成）
 - 档案导入/导出（未在 spec 范围；如需再走流程）
 
