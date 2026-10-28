@@ -236,10 +236,6 @@ def _quantity_scale(variety: str, unit: str | None) -> tuple[float, float]:
     return raw[1], decl[1]
 
 
-def _midnight(d: date) -> datetime:
-    return datetime(d.year, d.month, d.day)
-
-
 def _route(symbol: str):
     """源符号 → (取数函数(start, end), 值列名)。"""
     kind = _kind(symbol)
@@ -259,7 +255,8 @@ class AkshareAdapter(Adapter):
         """价格型 = 调用方范围（None = 源全量历史）；仓单 = 滚动窗口，未给端点时按默认回看补全。"""
         if _kind(provide.symbols[0]) == "price":
             return range_start, range_end
-        end = range_end or _midnight(date.today())
+        today = date.today()
+        end = range_end or datetime(today.year, today.month, today.day)
         start = range_start or (end - timedelta(days=RECEIPT_DEFAULT_DAYS))
         return start, end
 

@@ -12,7 +12,9 @@ from pathlib import Path
 from pydantic import BaseModel, field_validator
 
 from data import creds
-from data.lock import release_lock, write_lock
+from data.lock import release_lock
+
+from settings import _filelock
 
 PROFILE_NAME = "profile"  # 档案在 creds 机制里的名字（文件名 profile.bin）
 PROFILE_DIR = "profile"
@@ -77,22 +79,9 @@ def profile_path(root: Path) -> Path:
     return Path(root) / PROFILE_DIR / f"{PROFILE_NAME}.bin"
 
 
-def _lock(root: Path, timeout: float = 5.0):
-    """档案目录写锁（复用 data-layer 的 PID 锁）；并发写短暂排队而不是立刻失败。"""
-    import time
-
-    from data.lock import LockBusy
-
-    directory = Path(root) / PROFILE_DIR
-    directory.mkdir(parents=True, exist_ok=True)
-    deadline = time.monotonic() + timeout
-    while True:
-        try:
-            return write_lock(directory)
-        except LockBusy:
-            if time.monotonic() >= deadline:
-                raise
-            time.sleep(0.02)
+def _lock(root: Path):
+    """档案目录写锁（并发写排队，而不是立刻失败）。"""
+    return _filelock.acquire(Path(root) / PROFILE_DIR)
 
 
 def load(root: Path) -> Profile:

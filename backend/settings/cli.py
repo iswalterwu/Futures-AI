@@ -29,16 +29,13 @@ def _json_out(obj) -> None:
     print(json.dumps(obj, ensure_ascii=False, default=str, indent=1))
 
 
-def _masked(profile: Profile) -> dict:
-    data = profile.model_dump()
-    data["email"] = mask_email(data["email"])
-    data["missing_for_registration"] = missing_for_registration(profile)
-    return data
-
-
 def _cmd_profile(args) -> int:
     if args.profile_cmd == "show":
-        _json_out(_masked(load_profile(Path(args.root))))
+        profile = load_profile(Path(args.root))
+        shown = profile.model_dump()
+        shown["email"] = mask_email(shown["email"])
+        shown["missing_for_registration"] = missing_for_registration(profile)
+        _json_out(shown)
         return 0
     if args.profile_cmd == "clear":
         removed = clear_profile(Path(args.root))

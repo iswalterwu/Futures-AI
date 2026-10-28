@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from data import creds
+
+from settings import _filelock
 from data.adapters.eia import eia_adapter
 from data.fetch.on_demand import FetchError
 
@@ -67,28 +69,11 @@ def _write_json_atomic(path: Path, payload: dict) -> None:
         raise
 
 
-def _lock_dir(directory: Path, timeout: float = 5.0):
-    """状态目录写锁：并发写短暂排队而不是立刻失败（复用 data-layer 的 PID 锁）。"""
-    import time
-
-    from data.lock import LockBusy, write_lock
-
-    directory.mkdir(parents=True, exist_ok=True)
-    deadline = time.monotonic() + timeout
-    while True:
-        try:
-            return write_lock(directory)
-        except LockBusy:
-            if time.monotonic() >= deadline:
-                raise
-            time.sleep(0.02)
-
-
 def write_state(root: Path, source_id: str, **fields) -> None:
     """记录开通状态（不含任何凭证内容）；读—改—写在同一状态文件锁内，写入原子替换。"""
     from data.lock import release_lock
 
-    lock = _lock_dir(Path(root) / STATE_DIR)
+    lock = _filelock.acquire(Path(root) / STATE_DIR)
     try:
         data = read_state(root)
         entry = data.setdefault(source_id, {})
