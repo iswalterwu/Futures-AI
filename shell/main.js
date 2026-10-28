@@ -4,41 +4,20 @@
 // 不直接管 data serve / pi：它们都在后端进程内部（spec Q-001）。
 'use strict'
 
-const { app, BrowserWindow, dialog, shell: electronShell } = require('electron')
+const electron = require('electron')
+const { app, BrowserWindow, dialog, shell: electronShell } = electron
 const { spawn } = require('node:child_process')
 const fs = require('node:fs')
 const http = require('node:http')
 const path = require('node:path')
 const crypto = require('node:crypto')
+const { bootstrap } = require('./src/paths')
+const startup = bootstrap(app, process.env)
 
-const SMOKE = process.argv.includes('--smoke')
-const UI_SMOKE = process.argv.includes('--ui-smoke')
-const HEALTH_TIMEOUT_MS = Number(process.env.FAI_HEALTH_TIMEOUT_MS || 30000)
+const HEALTH_TIMEOUT_MS = process.env.FAI_TEST_HOOKS === '1'
+  ? Number(process.env.FAI_HEALTH_TIMEOUT_MS || 30000) : 30000
 const MAX_RESTARTS = 3
 const SHUTDOWN_GRACE_MS = 5000
-
-// UI 冒烟的页面内断言（T-06：AC-005-1/2/4 的界面部分）
-const UI_ASSERTIONS = `(async () => {
-  const wait = async (fn, ms = 5000) => {
-    const end = Date.now() + ms
-    while (Date.now() < end) { if (fn()) return true; await new Promise(r => setTimeout(r, 100)) }
-    return false
-  }
-  await wait(() => document.querySelector('#sector-select').options.length > 1)
-  const active = document.querySelector('main section.active')
-  return {
-    activeView: active ? active.id : null,
-    onboardVisible: active ? active.id === 'view-onboard' : false,
-    sectorOptions: document.querySelectorAll('#sector-select option').length,
-    sectorOptions2: document.querySelectorAll('#sector-select-2 option').length,
-    keyInputType: document.querySelector('#api-key').type,
-    hasCsp: Boolean(document.querySelector('meta[http-equiv="Content-Security-Policy"]')),
-    meta: document.querySelector('#meta').textContent,
-    hasBridge: Boolean(window.futuresai),
-    backendInfo: window.futuresai ? window.futuresai.backend() : null,
-    hasSettingsSection: Boolean(document.querySelector('#view-settings')),
-  }
-})()`
 
 const state = {
   backend: null,
@@ -48,27 +27,30 @@ const state = {
   window: null,
   logFile: null,
 }
+let hooks = null
+if (process.env.FAI_TEST_HOOKS === '1' && !startup.error) {
+  hooks = require('./src/test-hooks').install(electron, startup, state, () => gracefulQuit(0))
+}
 
 // ---------- 日志（AC-010-1） ----------
 function log(line) {
   const stamp = new Date().toISOString()
   const text = `[${stamp}] ${line}\n`
-  if (SMOKE) process.stdout.write(text)
   try {
-    if (!state.logFile) state.logFile = path.join(app.getPath('userData'), 'logs')
+    if (!state.logFile) state.logFile = path.join(startup.paths.stateDir, 'log')
     fs.mkdirSync(state.logFile, { recursive: true })
-    fs.appendFileSync(path.join(state.logFile, 'shell.log'), text)
+    const file = path.join(state.logFile, 'shell.log')
+    if (hooks && !fs.existsSync(file)) fs.writeFileSync(file, 'TEST HOOKS ENABLED\n')
+    fs.appendFileSync(file, text)
   } catch {
     /* 日志失败不影响主流程 */
   }
 }
 
 // ---------- 数据目录与后端可执行文件（R-004） ----------
-function dataRoot() {
-  return process.env.FAI_DATA_ROOT || path.join(app.getPath('userData'), 'FuturesAI')
-}
-
 function backendCommand() {
+  const replacement = hooks?.backendCommand()
+  if (replacement) return replacement
   const exeName = process.platform === 'win32' ? 'futuresai-backend.exe' : 'futuresai-backend'
   const backendDir = path.resolve(__dirname, '..', 'backend')
 
@@ -93,8 +75,7 @@ function backendCommand() {
 
 // ---------- 后端进程（R-002/R-003） ----------
 function startBackend() {
-  const root = dataRoot()
-  fs.mkdirSync(root, { recursive: true })
+  const root = startup.dataRoot
   const portFile = path.join(root, 'host.json')
   try {
     fs.rmSync(portFile, { force: true })
@@ -103,7 +84,7 @@ function startBackend() {
   }
   const token = crypto.randomBytes(16).toString('hex')
   const { cmd, args, cwd, env } = backendCommand()
-  log(`starting backend: ${cmd} (root=${root})`)
+  log('starting backend')
   const child = spawn(cmd, [...args, '--root', root, '--port-file', portFile, '--token', token], {
     cwd,
     env: { ...process.env, ...env },
@@ -127,7 +108,7 @@ function onBackendCrash() {
       '后端启动失败',
       `后端连续 ${MAX_RESTARTS} 次异常退出。可查看日志或导出诊断后重试。`
     )
-    if (!SMOKE) app.quit()
+    app.quit()
     return
   }
   state.restarts += 1
@@ -217,25 +198,14 @@ async function waitForReady(portFile, token, timeoutMs = HEALTH_TIMEOUT_MS) {
 
 function onReady(health) {
   log(`backend ready: ${JSON.stringify(health)}`)
-  if (SMOKE) {
-    process.stdout.write(`READY ${JSON.stringify({ port: state.backendInfo.port, version: health.version })}\n`)
-    // 冒烟：就绪即退出，验证退出清理（AC-003-1）
-    setTimeout(() => gracefulQuit(0), 300)
-    return
-  }
   createWindow()
 }
 
 function handleNotReady(err) {
   log(`backend not ready: ${err.code || ''} ${err.message}`)
-  if (SMOKE) {
-    process.stdout.write(`NOT_READY ${err.code || 'error'} ${err.message}\n`)
-    gracefulQuit(2)
-    return
-  }
   dialog.showErrorBox(
     '后端启动失败',
-    `${err.message}\n\n可重试，或查看日志：${path.join(app.getPath('userData'), 'logs', 'shell.log')}`
+    `${err.message}\n\n可重试，或查看日志：${path.join(startup.paths.stateDir, 'log', 'shell.log')}`
   )
   app.quit()
 }
@@ -249,6 +219,7 @@ function createWindow() {
     minHeight: 640,
     backgroundColor: '#141519',
     show: false,
+    title: hooks ? 'FuturesAI ［测试钩子］' : 'FuturesAI',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -263,6 +234,7 @@ function createWindow() {
     },
   })
   state.window = win
+  if (hooks) win.on('page-title-updated', event => event.preventDefault())
   win.once('ready-to-show', () => win.show())
   // 外链交给系统浏览器（AC-009-3）
   win.webContents.setWindowOpenHandler(({ url }) => {
@@ -281,19 +253,6 @@ function createWindow() {
   const target = fs.existsSync(frontendIndex) ? frontendIndex : builtinPage
   log(`loading ${target}`)
   win.loadFile(target)
-  if (UI_SMOKE) {
-    win.webContents.once('did-finish-load', async () => {
-      try {
-        const result = await win.webContents.executeJavaScript(UI_ASSERTIONS)
-        process.stdout.write(`UI_SMOKE ${JSON.stringify(result)}
-`)
-      } catch (e) {
-        process.stdout.write(`UI_SMOKE {"error":"${e}"}
-`)
-      }
-      gracefulQuit(0)
-    })
-  }
   win.on('closed', () => {
     state.window = null
   })
@@ -330,15 +289,24 @@ async function gracefulQuit(exitCode = 0) {
 }
 
 // ---------- 单实例（AC-004-1） ----------
-const gotLock = app.requestSingleInstanceLock()
-if (!gotLock) {
+if (startup.error) {
+  // 可操作错误页由 T-05k 接入；这里不回退目录，也不启动后端。
+  process.stderr.write(`STARTUP_FAILED ${JSON.stringify(startup.error)}\n`)
+  app.exit(1)
+} else if (!startup.gotLock) {
   // 第二实例：聚焦已有窗口后退出，不启动第二个后端（AC-004-1）
   app.quit()
 } else {
   app.on('second-instance', () => {
     if (state.window) {
-      if (state.window.isMinimized()) state.window.restore()
+      const calls = []
+      state.window.restore()
+      calls.push('restore')
+      state.window.show()
+      calls.push('show')
       state.window.focus()
+      calls.push('focus')
+      if (hooks) hooks.records.secondInstance.push({ calls })
     }
   })
 
@@ -355,7 +323,9 @@ if (!gotLock) {
   })
 
   app.whenReady().then(async () => {
-    log(`shell starting (smoke=${SMOKE})`)
+    log('shell starting')
+    for (const key of startup.ignored) log(`${key} ignored (packaged)`)
+    if (hooks) await hooks.startControl()
     const { portFile, token } = startBackend()
     try {
       const health = await waitForReady(portFile, token)

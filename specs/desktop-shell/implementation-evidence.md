@@ -230,3 +230,72 @@ rg -n "'pyarrow\.(conftest|tests|tests.util)'" backend/build/pyinstaller/futures
 - **本次结论：T-04b 后端范围完成，原 pyarrow 测试数据黑名单阻塞解除。** 未做整体 Converge、独立代码 Review 或 Gate 2；未修改协调者的进度表。下一个任务仍是 **T-05b**，本 session 到此停止，留协调者集成/提交并决定后续批准批次。
 - 未取得的真实前端/作业引擎/drain/agent、真实 EIA 注册/key、发布通道、干净 Windows、基准机 15 秒、系统 toast/托盘、真实满盘/507 GUI、完整 AC 与 Gate 2 边界均不变；不以本次测试替代这些证据。
 - 证据追加后的静态复查曾报 `new blank line at EOF`（第 232 行）；已用 edit 仅移除新增末尾空行后复跑。Git 另提示本证据文件 LF 将在下次 Git 操作时转换为 CRLF；未修改 Git 配置。此为证据排版检查失败，不是产品测试失败，旧证据未删除（numstat 为仅新增）。
+
+## 7. 2026-10-28 Shell foundation 六任务检查点（T-05b/c/d/m/e/f）
+
+### 7.1 输入、角色与边界
+
+- Implement = **`openai/gpt-6-astra` via openai**；session **`01a18415-9390-7773-9dad-5f1ad7456cd2`**（首次命令只打印 PI_PROVIDER / PI_MODEL / PI_SESSION_ID 与 HEAD，实核）。无模型切换、无其他 agent。
+- 工作树 / 分支：`D:/2030/Futures-AI-desktop-implement` / `feat/desktop-shell-astra`；固定输入及结束 HEAD = **`83b91dba7d2d0ef86e65d40e5878f496ed80651f`**。开始时工作树干净；本次不提交、不 push / PR / merge / reset。
+- Walter 已明确继续；本轮是既有批准实施，不是新 Plan。完整重读 AGENTS、HANDOFF（最新 §11）、docs 四份权威文档与 D-007、feature spec / Plan4 / Tasks / Checklist / Analyze / Review / 本证据。Checklist 独立计数 **41 checked / 0 unchecked**，未修改。原修订 3 的 shell 任务批准未被修订 4 的 T-04b 局部复查撤销。
+- 严格按 **T-05b → T-05c → T-05d → T-05m → T-05e → T-05f** 执行，边界重读对应 Plan/Tasks 段落。到此停止，**未开始 T-05g**，也未提前实现状态机、启动错误页、mock 路由、托盘、活动归约器、日志滚动、诊断、更新或打包。
+- `backend/**`、preload、renderer、冻结文档与协调者进度文件未改；未重建 backend，未运行 npm dist。前轮 **454 passed / 5 online skips、12/12 packaged smoke** 仅为历史证据，本 session 未重跑，未重开 PyArrow 修补或剔除已知 PYZ 辅助模块。
+
+### 7.2 六项实际交付（只限本批 AC 子句）
+
+| 任务 | 本批结果与 AC / 夹具边界 |
+|---|---|
+| T-05b | **完成**。`src/paths.js` / `prefs.js`：默认 LocalAppData 根、缺失不回退、打包覆盖门槛；schema v1 严格校验、tmp + rename、损坏文件不改写、pending 探测后生效/失败保留旧目录、真实 FS 错误映射。覆盖 WO-04、AC-004-3/4 逻辑；不含选择目录 UI / 数据迁移。Electron 精确 33.4.11，新增约定 test:unit 脚本，lock 由 npm 生成 |
+| T-05c | **完成**。生产 `bootstrap(app, env)` 设置 userData/sessionData/crashDumps 后才取单实例锁；锁失败不读偏好、不碰数据根。main 首步接线，只有 paths 模块调用 setPath/锁。记录型 Electron 边界 + 真实临时偏好/文件系统；真实 icacls 拒写与恢复。覆盖 AC-004-1 前提、AC-004-3/4、WO-04；错误页留 T-05k |
+| T-05d | **完成（基础设施）**。真实 check.js 子进程测试：未知名先 exit 2、不运行任何场景；registry/file 不一致 exit 2；零断言/缺工具/缺夹具均 FAIL；显式期望值、无单参数布尔 API；路径越界在 ctx.launch 启动 Electron 前拒绝；成功/失败清理 temp。无新测试框架，不证明产品 AC |
+| T-05m | **完成（协议夹具）**。真实 Python 子进程、端点文件、health 200/503、Bearer shutdown、profile 仅 onboarding 形状、startup_failed/exit 3、stdin EOF、每次实际启动 append registry；slow-ready/hang/exit-before-ready/crash-after-ready 也直接验证。无 data/settings 业务逻辑，不等同真实后端/作业验收 |
+| T-05e | **完成（基础设施集成）**。只在精确 hooks=1 分支加载模块；实际 SMOKE 路径先核查，回环 HTTP 控制通道、系统出口记录器、JSON 数组后端替换；标题/日志诚实标记；旧 smoke/ui-smoke/UI_ASSERTIONS 已退役。真实 Electron + fake ok 的 paths/default root/window/backend/spawn/退出清理验证通过。托盘与 activity 快照为 null，tray-click 明报 409/not_implemented；没有伪造后续能力 |
+| T-05f | **完成（AC-004-1 自动化子句）**。同隔离目录第二 Electron 10s 内 exit 0，实际 OS PID 已退出；第一实例 secondInstance 恰 1 条，记录生产 restore/show/focus 调用；registry 恰 1 个后端，第一后端 PID/port 不变，第一实例及后端仍活。**真实 Windows 前台聚焦仍为人工 M-09，未宣称通过** |
+
+### 7.3 命令、最终结果与运行时
+
+完整输出留 Git 外：**`C:/Users/iswal/AppData/Local/Temp/fai-foundation-01a18415/`**。没有完整会话、测试数据、日志或 credentials 入库。构建机 **Node v25.2.1 / npm 11.7.0 / Python 3.14.2**；真实 Electron 快照：**Electron 33.4.11 / Node 20.18.3 / Chrome 130.0.6723.191**。单测结果不代替 Electron 运行时证据。
+
+最终源代码编辑之后，cwd `shell` 严格执行：
+
+```bash
+npm install --package-lock-only
+npm ci
+npm run test:unit
+npm run check
+```
+
+| 验证 | 实际结果 / 外部完整日志 |
+|---|---|
+| 首次 lock 再生成 + npm ci | exit 0；安装 70 packages；`lock.log` / `ci.log` |
+| T-05b 单测 | **12 passed / 0 failed / 0 skipped**；`t05b.log` |
+| T-05c 初次 / 修正后单测 | **18 passed / 1 failed** → **19 passed / 0 failed / 0 skipped**；`t05c.log` / `t05c-fixed.log` |
+| T-05d 单测 | **28 passed / 0 failed / 0 skipped**；`t05d.log` |
+| T-05m 单测 | **34 passed / 0 failed / 0 skipped**；`t05m.log` |
+| 单独 `npm run check -- harness-selftest` 最后一次 | **18/18 assertions、exit 0**；`t05e-visible.log`（之前失败见 §7.4） |
+| 单独 `npm run check -- single-instance` | **20/20 assertions、exit 0**；`t05f.log`。随后删除一条仅重复读取旧快照的冗余断言，最终该场景为 19 条，不削减任何产品期望；最终两场景联合复跑如下 |
+| 最终 lock 再生成 / 真实 npm ci | **exit 0 / exit 0**；npm ci 安装 70 packages，4s；`lock-final.log` / `ci-final.log`。lock 唯一内容差异为根 devDependency `^33.0.0` → `33.4.11`，没有新增依赖 |
+| 最终完整 `npm run test:unit` | **34 passed / 0 failed / 0 cancelled / 0 skipped，3325.59ms，exit 0**；`unit-final.log`。约定测试名均实际执行（Node 默认 reporter 显示 ✔）；包括真实 check.js 正负子进程及真实 fake_backend 子进程 |
+| 最终默认 `npm run check`（登记表仅本批两场景） | **37/37 assertions / 2 scenes / failures=0 / exit 0** = harness-selftest **18** + single-instance **19**；`e2e-final.log`。两次首实例均生产 request-quit → exit 0；第二实例 exit 0；两场景各恰 1 次后端 spawn |
+
+npm 安装两次都提示 `boolean@3.2.0` deprecated（既有传递依赖）；未升级、未加依赖、未改全局 npm 配置，也不称零警告。安装没有网络/下载失败。
+
+### 7.4 失败历史与修正（不删除、不改验收条件）
+
+1. **T-05c 第一次 18/19**：真实 icacls 拒写期间 `fs.readdirSync(dataRoot)` 本身返回 EPERM；bootstrap 的错误码、路径、无替代目录断言已通过。把空目录核查放到 finally 恢复 ACL 之后，随后再实际写文件证明恢复；未取消拒写、未 mock bootstrap 文件系统。修正后 19/19。
+2. **T-05e 初次**（`t05e.log`）启动等待超时：1/3 assertions，通过项仅 temp 删除；失败项为场景超时和被测 Electron 需要定向 taskkill。**诊断复跑**（`t05e-diagnostic.log`）记录 `Electron startup exception: TypeError`，仍 1/3；两次均发生于后端启动前、无 fake registry spawn、无控制通道，定向 taskkill 后确认 owned Electron PID 已死、temp 已删除。
+3. TypeError 来自尝试重定义 Electron `Notification` 导出；改为返回 `hooks.outlets.Notification` 的系统出口记录器，不重定义 Electron 模块描述符、不实现通知业务。已有 dialog / shell 出口仍只在 `FAI_TEST_SCENARIO` 下替换。未记录异常 payload、argv 或 token，只保留异常类型。
+4. **接着三次窗口可见超时**（`t05e-fixed.log`、`t05e-observe.log`、`t05e-url.log`），每次 **4/5 assertions**。后端 ready、真实窗口存在，实际 file URL 已加载但 visible=false；记录型控制快照而非猜测健康问题。定位为运行器 spawn Electron 使用 `windowsHide:true`，改为 **GUI 进程 windowsHide:false**，不改生产 createWindow/ready-to-show 或 Chromium 安全配置。之后 harness-selftest 18/18。三次失败均经生产 request-quit 正常清理，快照/registry 后端 PID 已死、temp 已删，无泄漏兜底杀后端。
+5. 单实例首次真实运行成功；最终源代码只删除冗余旧快照计数断言，并把 runner 越界负测从调用路径校验函数改为**调用真实 ctx.launch 并在 spawn 前拒绝**，随后完整单测与两场景一起重跑，37/37。
+6. 静态包装命令第一次把新文件的 `git diff --no-index --check /dev/null <file>` 正常差异退出码 1 当作失败而提前结束。读取日志确认无 whitespace error 后按 no-index 语义继续逐文件核查；不是产品失败，未改源码或忽略空白错误。本节追加后另报第 302 行 `new blank line at EOF`，已用 edit 仅去掉追加末尾空行后复查。Git 提示 LF→CRLF，未改 Git 配置。
+
+### 7.5 清理、冻结 diff 与停止点
+
+- 每个真实 Electron 场景使用全新仓库外 temp，注入 LOCALAPPDATA / FAI_SHELL_STATE_DIR / hooks / scenario；默认不设 FAI_DATA_ROOT。`ctx.launch` 检查隔离变量，首条实际 SMOKE paths 再核查后才执行场景动作。单实例第二进程共享该场景目录，锁失败时 dataRoot 为 null（未读偏好），不假造一个已解析的数据目录。
+- 运行器 finally：优先生产 request-quit，等待上限 10s，必要时仅对自己创建的 PID taskkill /T /F；核对快照和 registry 后端 PID，泄漏即使杀掉也判 FAIL；恢复副作用，最多三次移除自己的 temp。两次早期 TypeError 使用定向 Electron taskkill，保留 FAIL；后续失败与最终成功均无残留后端。
+- 直接 Python/runner 单测的 owned 子进程在 teardown/finally 关闭并核查 PID；ACL 只改临时测试子目录，已恢复并实写确认。没有 broad taskkill、没有删除无关目录。
+- 最终独立 CIM 只读核查本工作树 Electron executable 与本工作树 fake_backend.py 子进程：**`OWNED_FOUNDATION_PROCESSES=0`**。无后台服务或端口需要保留。最终两个 e2e temp `fai-e2e-harness-selftest-zP5oks` / `fai-e2e-single-instance-GfWPwV` 均在 runner finally 中实际删除。
+- 静态：`git diff --check` 通过；新文件逐个 no-index --check 无空白错误；`git check-ignore` 对 21 个新源码/测试文件无命中（exit 1）；`git status --short --ignored` 仅本批授权源文件，忽略项只有既存 backend/build、backend/dist 与本轮 node_modules。`rg` 确认 setPath / requestSingleInstanceLock 只在 paths.js，main 的 hooks require 在精确旗标分支内；旧 smoke / ui-smoke / UI_ASSERTIONS 无命中；控制 listen 为 127.0.0.1:0。
+- 相对输入 `83b91db`，**backend 与其他只读路径 diff 为空**；没有任何 backend 写入。源码变化为 4 个既有文件（shell/package.json、生成的 package-lock.json、main.js、check.js）+ 21 个新增文件（src 3、unit 5、e2e 3、fake_backend 1、runner fixtures 9）；本证据仅追加本节。完整含新文件 diff 与 SHA-256 清单冻结到上述外部日志目录 `foundation.diff` / `foundation.sha256`，不提交生成物。
+- **本批六任务自动化检查点完成；下一项 T-05g，未开始。** 既有正常生命周期足以证明本批 harness/single-instance；其旧重启缺陷、stdin 接线、host.json 迁移仍按 T-05g/h 处理，不假称已修。日志目前仍是早期状态目录单日志（加诚实标记），滚动/脱敏/数据根日志接线留 T-08。
+- **未取得**：整体 feature 完成、Converge、独立代码 Review、Gate 2、真实前端/设置页面业务、真实作业引擎/drain/agent、真实 EIA key/注册、发布通道、干净机、基准机 15s、Windows 前台焦点 M-09、系统 toast/托盘及满盘 GUI。fake 只提供协议端点，不以可见窗口或 file 页面加载冒充设置业务成功；本批未执行 settings-sources/csp 正对照，后续若触发 Plan §10 CORS/权限/设计停止规则仍须停报，不自行放宽。

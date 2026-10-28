@@ -6,10 +6,10 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "smoke": "electron . --smoke",
-    "check": "node check.js"
+    "check": "node check.js",
+    "test:unit": "node --test \"test/unit/*.test.js\""
   },
   "devDependencies": {
-    "electron": "^33.0.0"
+    "electron": "33.4.11"
   }
 }
