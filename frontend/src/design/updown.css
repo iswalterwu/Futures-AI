@@ -1,0 +1,7 @@
+.sem-market.is-up {
+  color: var(--fai-updown-up);
+}
+
+.sem-market.is-down {
+  color: var(--fai-updown-down);
+}

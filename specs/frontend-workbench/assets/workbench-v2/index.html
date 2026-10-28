@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light" data-accent="sand">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Futures-AI · 工作台 v2 预览</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="app-shell" id="app">
+  <aside class="rail" aria-label="应用导航">
+    <div class="rail-head">
+      <button class="icon-button rail-toggle" id="rail-toggle" aria-label="收起侧栏" aria-expanded="true" title="收起侧栏"><span data-icon="panel"></span></button>
+      <div class="brand rail-label">Futures<span>·</span>AI</div>
+    </div>
+    <div class="workspace-label rail-label">研究工作区 <span>LOCAL</span></div>
+    <nav class="main-nav" id="main-nav" aria-label="主导航"></nav>
+    <div class="rail-foot">
+      <button class="rail-item" id="settings-toggle" aria-label="设置与外观" aria-expanded="false" title="设置与外观"><span class="rail-glyph" data-icon="settings"></span><span class="rail-label">设置与外观</span><kbd class="rail-label">⌘</kbd></button>
+      <div class="theme-quick">
+        <button class="icon-button" id="theme-toggle" aria-label="切换为深色主题" title="切换为深色主题"><span data-icon="moon"></span></button>
+        <span class="rail-label" id="theme-label">浅色主题</span>
+        <span class="version rail-label">预览 v2</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="workspace">
+    <header class="topbar">
+      <span class="news-tag"><span class="dot"></span>快讯</span>
+      <div class="news-viewport" aria-live="polite" aria-atomic="true"><div class="news-track" id="news-track"></div></div>
+      <span class="news-count mono" id="news-count">01 / 04</span>
+      <button class="icon-button tiny" id="news-pause" aria-label="暂停快讯轮播" title="暂停轮播"><span data-icon="pause"></span></button>
+      <button class="icon-button tiny" id="news-next" aria-label="下一条快讯" title="下一条"><span data-icon="chevron-down"></span></button>
+      <div class="topbar-right"><span class="source-health"><span class="dot"></span>数据通道正常</span><span class="demo-tag">合成演示 · 非实盘</span></div>
+    </header>
+
+    <main class="main-content">
+      <header class="page-head">
+        <div class="page-title"><h1 id="page-title">工作台</h1><span class="breadcrumb" id="page-context">油品研究 <span> / </span> 2026.10.28</span></div>
+        <div class="page-actions"><button class="quiet-button" id="reset-layout" title="恢复预览默认布局"><span data-icon="reset"></span>重置布局</button><button class="outline-button" id="library-toggle"><span data-icon="grid"></span>模块库 <span class="count" id="module-count">7</span></button></div>
+      </header>
+      <section class="focus-band" aria-label="今日焦点">
+        <div class="focus-heading"><span class="eyebrow">DAILY BRIEF</span><strong>今日焦点</strong><span class="focus-summary" title="原油偏强，LPG 小幅回落；库存下降，关注晚间数据。">油品走势分化，关注晚间数据</span></div>
+        <div class="focus-group focus-market" id="focus-market" aria-label="行情数字"></div>
+        <div class="focus-group focus-indicators" id="focus-indicators" aria-label="分析指标"></div>
+      </section>
+      <div class="board-viewport" id="board-viewport"><div class="module-grid" id="module-grid" aria-label="工作台模块"></div></div>
+    </main>
+
+    <footer class="agent-dock">
+      <button class="assistant-mark" id="open-agent" aria-label="展开 AI 对话"><span data-icon="sparkles"></span></button>
+      <form id="agent-form"><input id="agent-input" autocomplete="off" aria-label="向研究助手提问" placeholder="问问研究助手：今天有哪些值得关注的变化？"><span class="agent-note">交互示意</span><button class="send-button" type="submit" aria-label="发送问题"><span data-icon="arrow-up"></span></button></form>
+    </footer>
+  </div>
+</div>
+
+<section class="settings-panel floating-panel" id="settings-panel" aria-label="设置与外观" role="dialog" hidden>
+  <header><strong>设置与外观</strong><button class="icon-button" data-close="settings-panel" aria-label="关闭设置"><span data-icon="close"></span></button></header>
+  <p class="setting-label">显示主题</p>
+  <div class="segmented" id="theme-options"><button data-theme-choice="light"><span data-icon="sun"></span>浅色</button><button data-theme-choice="dark"><span data-icon="moon"></span>深色</button><button data-theme-choice="system"><span data-icon="monitor"></span>系统</button></div>
+  <p class="setting-label">界面点睛色 <small>不改变行情涨跌颜色</small></p>
+  <div class="accent-options"><button data-accent-choice="sand" aria-label="沙饧点睛色"><i></i>沙饧</button><button data-accent-choice="blue" aria-label="黛蓝点睛色"><i></i>黛蓝</button><button data-accent-choice="rose" aria-label="茹藘点睛色"><i></i>茹藘</button></div>
+  <div class="settings-hint">字号已放大一档；设置仅保存在本预览中。</div>
+</section>
+
+<section class="library-panel floating-panel" id="library-panel" aria-label="模块库" role="dialog" hidden>
+  <header><div><strong>模块库</strong><span class="panel-sub">固定尺寸，自由选用</span></div><button class="icon-button" data-close="library-panel" aria-label="关闭模块库"><span data-icon="close"></span></button></header>
+  <div class="size-guide"><span><b>1/2</b> 4×2</span><span><b>1/4</b> 2×2</span><span><b>1/8</b> 2×1</span><span><b>1/16</b> 1×1</span></div>
+  <div id="library-list"></div>
+  <p class="library-hint">1 屏 = 模块可用工作区。内容超出时在模块内滚动。</p>
+</section>
+
+<section class="agent-drawer floating-panel" id="agent-drawer" aria-label="研究助手" role="dialog" hidden>
+  <header><strong><span data-icon="sparkles"></span>研究助手</strong><span class="panel-sub">交互预览 · 不调用模型</span><button class="icon-button" data-close="agent-drawer" aria-label="收起研究助手"><span data-icon="chevron-down"></span></button></header>
+  <div class="chat-content" id="chat-content"><div class="assistant-message">可以试着提问。这一版主要确认模块尺寸、导航和信息密度；回答仅为演示，不接入真实模型。</div></div>
+</section>
+<div class="toast" id="toast" role="status" hidden></div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

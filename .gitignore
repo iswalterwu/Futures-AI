@@ -235,3 +235,9 @@ __marimo__/
 backend/build/
 backend/dist/
 backend/*.egg-info/
+
+# 前端（frontend-workbench）依赖与测试产物
+node_modules/
+frontend/test-results/
+frontend/playwright-report/
+frontend/coverage/

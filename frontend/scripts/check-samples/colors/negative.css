@@ -1,0 +1,17 @@
+/* Comments are not style values: #fff rgb(0 0 0) red. */
+#abc, #dead, .red, [data-label="blue"] {
+  color: var(--fai-text-primary);
+  background: var(--fai-glass-focus-surface);
+  border-color: currentColor;
+  outline-color: inherit;
+  background-color: transparent;
+  border: var(--fai-radius-base) solid var(--fai-accent-red);
+  box-shadow: 0 0 var(--fai-space-grid-gap) var(--fai-glass-focus-border);
+  --local-color: var(--fai-text-secondary);
+  fill: url(#abc);
+  background-image: url("/assets/red.svg#abc");
+  content: "red #fff rgb(0 0 0)";
+  font-family: "Black", var(--fai-font-sans);
+  animation-name: red;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}

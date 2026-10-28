@@ -1,0 +1,20 @@
+.glass-focus {
+  background: var(--fai-glass-focus-surface);
+  border: thin solid var(--fai-glass-focus-border);
+  border-radius: var(--fai-radius-base);
+  backdrop-filter: blur(var(--fai-glass-focus-blur));
+}
+
+.glass-module {
+  background: var(--fai-glass-module-surface);
+  border: thin solid var(--fai-glass-module-border);
+  border-radius: var(--fai-radius-base);
+  backdrop-filter: blur(var(--fai-glass-module-blur));
+}
+
+.glass-drawer {
+  background: var(--fai-glass-drawer-surface);
+  border: thin solid var(--fai-glass-drawer-border);
+  border-radius: var(--fai-radius-base);
+  backdrop-filter: blur(var(--fai-glass-drawer-blur));
+}

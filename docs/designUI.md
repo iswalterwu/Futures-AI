@@ -25,19 +25,22 @@
 |---|---|---|
 | 背景 | 渐变 `#1b1c1f → #121315 → #0f1012` | 全局底（近黑暖灰，非纯黑） |
 | 玻璃面 | `rgba(255,255,255,.035–.06)` + blur 18px | 模块 / 焦点带 / 侧栏表面 |
-| 玻璃边 | `rgba(255,255,255,.07–.12)` | 层级描边 |
+| 玻璃边 | `rgba(255,255,255,.07–.12)`（D-011 结论 5 写 7–14%，此处取其子范围） | 层级描边 |
 | 文字主 | `#e8e6e0` | 主文字、主序列线 |
 | 文字次 | `#9a9892` / `#8f8d87` | 次级文字、占位 |
 | 抽屉面 | `rgba(24,25,28,.82)` + blur 28px | 底部对话抽屉 |
 
 玻璃层级限制**三层**：焦点带 / 模块 / 抽屉，防层级失控。
 
-### 2.2 涨跌颜色（行情模块专属，D-011）
+### 2.2 涨跌颜色（登记的行情语义位置专属，D-011 / D-015）
 
 - 涨 = 茹藘红亮化 **`#C98A8F`**；跌 = 缥碧亮化 **`#8FB8A4`**
-- 分析图表（供需/平衡表等）保持 FTEngine 语义：**红 = 负/减**；两套语义以模块为界，互不渗透
+- 分析图表（供需/平衡表等）保持 FTEngine 语义：**红 = 负/减**；两套语义以模块 / 区块为界，互不渗透
+- 作用域（D-015）：涨跌专色只用于登记的行情语义位置——行情价格模块、关注列表、今日焦点带"行情"段；焦点带分"行情 | 指标"两段，指标段沿用分析语义；状态色不用绿色；新增位置先新增一份后继 ADR（取代 D-015 的位置清单）并同步本节
 
-### 2.3 图表色（暗色适配，随 design/charts 移植定稿）
+### 2.3 图表色（暗色适配）
+
+原色身份与退役清单见 [PALETTE_CORE](../design/charts/PALETTE_CORE.md)；暗色亮化值见 [PALETTE_DARK](../design/charts/PALETTE_DARK.md)，其中 [序列色序](../design/charts/PALETTE_DARK.md#series)、[区间带 / 均值 / 模型线](../design/charts/PALETTE_DARK.md#reference) 与 [对比度方法](../design/charts/PALETTE_DARK.md#contrast) 已登记。
 
 - 主序列线：墨 → 亮化 `#E8E6E0`；多序列排位沿用黛驼体系亮化版
 - 区间带（霜地）/ 均值（绍衣）/ 模型线（齐紫）：暗色亮化对应
@@ -130,6 +133,7 @@
 
 - **保留**：首页工作台 + 焦点带、模块库 + 固定栅格、底部抽屉对话、模块角标、暗色玻璃（D-011 结论 4–8 的原有语义保留，角标扩展见 §3.9）；涨跌颜色语义保留，作用域见 §2.2
 - **变更**：左侧菜单由 8 项扩为 9 项（"专题研究"→"作业"，新增"格物致知"——D-016 原名"学习"，D-018 更名）；工作台新增作业轨道固定件；对话从"唯一 AI 入口"降为"接口之一"（视觉形态不变）
+- **已交付地基（frontend-workbench v1，2026-10-28 合入）**：v1 按 Gate 1 冻结规格实现 D-011 形态——8 项菜单（含"专题研究"）、焦点带 + 模块栅格、底部抽屉 + CoT 时间线、模块角标，涨跌作用域按 D-015；它是本节变更的起点而非偏离。9 项菜单、作业轨道、格物致知等变更由 `frontend-workbench` v2 与 `workbench-interaction` 各自规格（重过 Gate 1）承载，不在 v1 代码上直接回改
 
 ## 4. 图表系统
 
@@ -184,12 +188,14 @@ season-daily（日/周度年份叠线）· season-monthly（月度年份叠线�
 
 ## 6. UI 组件与布局（移植自 FTEngine design/UI，暗色适配）
 
-- 卡片家族与图卡契约、卡高档位
-- 表格四式：通用表、盘面网格、卡内小表、大平衡表/季度表
-- 组件：胶囊、徽章、灯、芯片、页签、脚注、浮层、空态
+基础原则见 [UI_FOUNDATIONS](../design/ui/UI_FOUNDATIONS.md)，移植来源与采用范围见 [UI 索引](../design/ui/README.md)；本 feature 的采用边界以各条目文末「暗色适配」为准。
+
+- 卡片家族与图卡契约、卡高档位：见 [UI_CARDS](../design/ui/UI_CARDS.md)
+- 表格四式：通用表、盘面网格、卡内小表、大平衡表/季度表，见 [UI_TABLES](../design/ui/UI_TABLES.md)
+- 组件：胶囊、徽章、灯、芯片、页签、脚注、浮层、空态，见 [UI_COMPONENTS](../design/ui/UI_COMPONENTS.md)
 - 新增组件（D-016）：阶段轨道、作业卡、产物卡、来源徽、状态徽、冲突芯片、diff 视图、块批注、验证卡、协议卡、学习卡；移植 / 自制决策随实施登记
-- 界面色令牌（CSS 变量）、字体栈（三族分工）、字号阶梯、间距圆角
-- 桌面适配：暗色玻璃外壳、侧栏导航、窗口 / 托盘、设置页、作业页、格物致知
+- 界面色令牌（CSS 变量）、字体栈（三族分工）、字号阶梯、间距圆角：分别见 [UI_COLORS](../design/ui/UI_COLORS.md)、[UI_FONTS](../design/ui/UI_FONTS.md)、[UI_LAYOUT](../design/ui/UI_LAYOUT.md)
+- 桌面适配：暗色玻璃外壳、侧栏导航、窗口 / 托盘、设置页、作业页、格物致知；已移植的导航与工作台补充登记见 [UI_NAV](../design/ui/UI_NAV.md)、[UI_DARK_ADDITIONS](../design/ui/UI_DARK_ADDITIONS.md)
 
 ## 7. 交付物与学习产物设计
 
@@ -203,8 +209,8 @@ season-daily（日/周度年份叠线）· season-monthly（月度年份叠线�
 
 ## 8. 规范资产移植计划
 
-- `design/charts/`：FTEngine design/Graphs 各条目文件（Base/Kinds/Palette/Seasonal/Tooltip/Formats/Copy/Lint_Rules）
-- `design/ui/`：FTEngine design/UI 各条目文件（Layout/Cards/Tables/Colors/Fonts/Components/Foundations）
+- `design/charts/`：已移植配色原件 [PALETTE_CORE](../design/charts/PALETTE_CORE.md) 与暗色适配 [PALETTE_DARK](../design/charts/PALETTE_DARK.md)，来源与采用边界见 [图表索引](../design/charts/README.md)；FTEngine design/Graphs 的 Base/Kinds/Seasonal/Tooltip/Formats/Copy/Lint_Rules 仍随对应 feature 按需移植
+- `design/ui/`：已移植 FTEngine design/UI 的 [Layout](../design/ui/UI_LAYOUT.md)、[Cards](../design/ui/UI_CARDS.md)、[Tables](../design/ui/UI_TABLES.md)、[Colors](../design/ui/UI_COLORS.md)、[Fonts](../design/ui/UI_FONTS.md)、[Components](../design/ui/UI_COMPONENTS.md)、[Foundations](../design/ui/UI_FOUNDATIONS.md)、[Navigation](../design/ui/UI_NAV.md)，并登记 [工作台暗色补充](../design/ui/UI_DARK_ADDITIONS.md)；来源与采用边界见 [UI 索引](../design/ui/README.md)
 - 原则：实现对应模块时按需逐份搬运并登记，不一次性搬空；每份保留原条目 id 与"为什么"
 - 新增组件与状态 / 来源语义（D-016）随实现逐份登记到 `design/ui/`；状态色令牌在实施阶段登记数值，不在本文先定值
 - 注：`specs/` 目录留给功能规格（spec-driven 工作流，见 AGENTS.md §2），规范资产统一放 `design/`
