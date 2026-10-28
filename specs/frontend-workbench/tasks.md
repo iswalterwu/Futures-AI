@@ -35,7 +35,7 @@
 - **依赖**：T-01　**预计**：2 h
 - **完成标准**：
   1. 生成物与令牌逐字一致，可重复生成（AC-001-1，静态部分）
-  2. 令牌 `source` 指向 `design/ui/*`、`PALETTE_DARK` 或 `designUI.md` 的既有锚（AC-008-2 的数据前提）
+  2. 令牌 `source` 按 plan §2.1 的三种形式填写（`design/ui/*#锚`、`PALETTE_DARK#锚`、`designUI.md#节号`）；此时条目尚未建立，可解析性由 T-05 校验（AC-008-2 的数据前提）
 - **验证命令**：
   1. `pnpm -C frontend tokens:check`
   2. `pnpm -C frontend tokens:check`（令牌 `source` 能否解析由 T-05 验证）
@@ -117,7 +117,7 @@
 - **依赖**：T-04、T-07　**预计**：2 h
 - **完成标准**：
   1. 八项菜单固定顺序、当前项 `aria-current`、占位页注明归属 feature、直接打开非工作台地址刷新仍停留（AC-002-2）
-  2. 首帧骨架可见 → 就绪进入工作台页；`boot-error` 显示原因并可重试（AC-002-1、AC-002-7）
+  2. 首帧骨架可见 → 就绪进入工作台页；加载页显示进度与 `notice` 通知文案；`boot-error` 显示原因并可重试，重试成功进入工作台（AC-002-1、AC-002-7）
   3. 侧栏折叠持久化（AC-002-5）
   4. 顶栏 ticker 与状态点渲染 mock，状态类取令牌（AC-002-4）
   5. 专题研究子项由研究列表驱动，注入一项后菜单多一项（AC-002-3）
@@ -152,7 +152,7 @@
 - **修改范围**：`src/workbench/{FocusBand.vue,WorkbenchPage.vue}`、`tests/component/focus-band.spec.ts`、`e2e/workbench.spec.ts`
 - **依赖**：T-09　**预计**：1.5 h
 - **完成标准**：
-  1. 渲染 mock 摘要：结论数、数字、方向色（AC-003-1）
+  1. 渲染 mock 摘要：结论条目（≤ 3 条，超出截断）、数字、方向色（AC-003-1）
   2. market 只在行情段、analysis 只在指标段，涨跌色只在行情段（AC-003-4、AC-003-5）
   3. 空态文案 = 契约 reason（AC-003-3）；点击 → `/daily/<date>`（AC-003-2）
   4. 焦点带不出现在模块库、无移除钮，增删模块后仍在（AC-003-6）
@@ -231,7 +231,7 @@
 ### T-15 一条命令、人工验收清单与文档指针
 
 - **上下文**：plan §2.8（`pnpm test` 串联）、spec R-009、docs/plan.md §5（目录 README）。
-- **修改范围**：`frontend/package.json` 的 `test` 脚本、`specs/frontend-workbench/manual-acceptance.md`（M-01 ~ M-08）、`frontend/README.md`、`docs/designUI.md`（§2.3 / §6 / §8 指向已移植条目）、`tests/unit/manual-acceptance.spec.ts`、`tests/unit/design-registry.spec.ts`（docs 指针断言）
+- **修改范围**：`frontend/package.json` 的 `test` 脚本、`specs/frontend-workbench/manual-acceptance.md`（M-01 ~ M-08）、`frontend/README.md`、`docs/designUI.md`（§2.3 / §6 / §8 指向已移植条目）、`tests/unit/manual-acceptance.spec.ts`、`tests/unit/design-registry.spec.ts`（在 T-05 已建的文件上追加 docs 指针断言）
 - **依赖**：T-01 ~ T-14　**预计**：1 h
 - **完成标准**：
   1. `pnpm test` 一条命令全绿（AC-009-1）

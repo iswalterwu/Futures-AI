@@ -47,6 +47,8 @@
 
 **三层玻璃**（AC-001-3）：`.glass-focus`（.035 / .07 / 18px，焦点带、侧栏、顶栏）、`.glass-module`（.045 / .09 / 18px，模块壳）、`.glass-drawer`（`rgba(24,25,28,.82)` / .12 / 28px，抽屉、模块库）。只在 `src/design/glass.css` 定义。**焦点带是内容区里的独立一行，不与模块区重叠**，因此文字只落在一层玻璃上，对比度按单层卡面判定。
 
+**双语层级**（R-001）：中文作主标题，英文作副标——全大写、`type.en_sub` 字号、加宽字距（`letter-spacing`）伴随主标题。
+
 **字体三族**（Q-019）：衬线 = 品牌字标、页标题、KPI 大数（"数值等宽"的唯一例外）；无衬线 = 正文、导航、按钮、表格文字、模块壳标题；等宽 = 其余数值（`.num`：mono + `tabular-nums` + 右对齐）、代码、单位、ticker。
 
 **数值**（`shared/format.ts`）：`fmtValue(v, {decimals, unit})`、`fmtDelta(v, {decimals, kind})`——先按显示位取整再判零；空值 `–`；差值正号；零中性；返回 `{text, tone}`。`Num` 只输出语义类（`sem-market` / `sem-analysis` + `is-up` / `is-down` / `is-neutral`）：analysis 的颜色在 `shared/num.css`（chart.pos / chart.neg），market 的颜色只在 `src/design/updown.css`，且只写 `color`。
@@ -80,7 +82,7 @@
 ### 2.2 应用外壳与导航（R-002）
 
 - `AppShell.vue`：`.shell` 两栏（侧栏 + `.content`，`.content { min-width: 0 }`）+ `.content` 内三行（顶栏 / 路由区 / 底部输入栏）；`< 980px` 窗口切顶部横向导航、单列
-- **启动**：`index.html` 静态骨架（首帧样式来自生成块）→ 挂载后同构骨架 → `bootstrap()` 成功：地址为 `/` 才跳 `/workbench`，其余地址原样保留；失败：显示原因 + 重试
+- **启动**：`index.html` 静态骨架（首帧样式来自生成块）→ 挂载后同构骨架（显示加载进度与 `bootstrap()` 返回的 `notice` 通知文案）→ `bootstrap()` 成功：地址为 `/` 才跳 `/workbench`，其余地址原样保留；失败：显示原因 + 重试
 - `nav.ts`：八项固定序（工作台 / 日报 / 价格 / 平衡表 / 物流 / 专题研究 / 知识库 / 设置）；专题研究子项由 `getResearchList()` 驱动；除工作台外为占位页（`PlaceholderPage.vue` 读 `placeholderOwner`）
 - `Rail.vue`：字标（衬线）、当前项加粗 + `aria-current` + 左侧点睛红竖条、折叠钮（localStorage `fai.rail`）
 - `TopBar.vue`：资讯 ticker（CSS 平移，`prefers-reduced-motion` 静止可横滚）+ 数据源状态点（fresh / stale 令牌类）
@@ -143,8 +145,9 @@ send({sessionId?, message}) / subscribe(cb)
 - 数值三类形态（AC-007-4）：`Figure = {label, value, unit, decimals, freq, delta?, deltaKind?, semantic, asOf, seriesId?}`；`BoardCell = {state, figure}`（`ok ⇔ figure ≠ null`）；`SparkSeries = {points, unit, freq, semantic, asOf, seriesId}`
 - 参数语义（写入 CONTRACT.md）：`date` = 交易日 `YYYY-MM-DD`；`asOf` / `ts` = ISO 8601 带偏移；`getReleaseCalendar(from, to)` 闭区间、升序；v1 全部列表一次返回不分页；`deltaKind='pct'` 时 `delta` 是百分数值
 - 校验只在边界：mock / real 实现对自己返回的数据做一次 `parse`（AGENTS §5.2），内部组件直接消费已确定类型的值
-- `contract-build.mjs` 由 zod + 方法语义表生成 `contracts/CONTRACT.md` 与 `schema.json`（backend `api` feature 的输入），生成物入库、不手改（`check:generated` 重生成后比对）
+- `contract-build.mjs` 由 zod + 方法语义表生成 `contracts/CONTRACT.md` 与 `schema.json`（backend `api` feature 的输入），生成物入库、不手改（`pnpm check --only generated` 重生成后比对）
 - **错误形态**（spec R-007 "错误形态"的落点）：统一 `{error: {code, message, retryable}}`，`code` 集合 = mock 实际使用的值（`not_found / validation_error / rate_limited / adapter_error / internal`），写入 CONTRACT.md；模块错误态与 `run.failed` 复用此形态
+- **实现切换**（R-007）：`VITE_DATA_MODE = mock | real`，默认 mock；`src/contracts/index.ts` 按此选实现
 - **mock 场景**：`normal`；`empty`（模块数据空、`brief=null`）；`error`（`bootstrap()` 与 `getModuleCatalog()` 成功，模块数据方法返回固定错误）；`slow`（延迟 1500ms）；`boot-error`（`bootstrap()` 首次失败、重试成功）。选择 `?scenario=` > `VITE_MOCK_SCENARIO` > normal；`window.__FAI_MOCK__` 可覆盖 fixture 或选脚本
 - `real/index.ts` 全部方法抛 `NotImplementedError`；网络调用只许出现在 `src/contracts/real/`（`check.mjs` 一条 grep）
 
@@ -185,11 +188,11 @@ send({sessionId?, message}) / subscribe(cb)
 
 | AC | 位置与验证 |
 |---|---|
-| AC-001-1 | `tokens-build` + `check:generated`（含 `@media` 阈值） |
-| AC-001-2 / -6 | `check:colors` |
-| AC-001-3 | `check:glass`；M-01 人工看层次 |
+| AC-001-1 | `tokens-build` + `check --only generated`（含 `@media` 阈值） |
+| AC-001-2、AC-001-6 | `check --only colors` |
+| AC-001-3 | `check --only glass`；M-01 人工看层次 |
 | AC-001-4 | `format.spec`、`typography.spec`（类）；`tokens.spec` 浏览器内读计算字体族 |
-| AC-001-5 | `check:updown`；组件测试：market 带涨跌类、analysis 不带；e2e：`.sem-market` 只在登记容器且背景非涨跌色 |
+| AC-001-5 | `check --only updown`；组件测试：market 带涨跌类、analysis 不带；e2e：`.sem-market` 只在登记容器且背景非涨跌色 |
 | AC-002-1 | e2e：首帧骨架可见 → 工作台（骨架由 T-08 提供） |
 | AC-002-2 | e2e：八项顺序、`aria-current`、直接打开非工作台地址并刷新仍停留 |
 | AC-002-3 | e2e：`__FAI_MOCK__` 注入研究项 → 菜单多一项 |
@@ -197,15 +200,15 @@ send({sessionId?, message}) / subscribe(cb)
 | AC-002-5 | e2e：折叠 → reload 仍折叠 |
 | AC-002-6 | e2e：960 / 979 / 981 / 1239 / 1241 / 1399 / 1401 / 1499 / 1501 / 1440×900，断言侧栏形态、栅格列数、焦点带卡数、无横向溢出 |
 | AC-002-7 | e2e：`boot-error` 显示原因 → 重试 → 进入工作台 |
-| AC-003-1 ~ -4 | 组件：结论数、数字与方向类、空态文案、market / analysis 取色 |
+| AC-003-1、AC-003-3、AC-003-4 | 组件：结论数、空态文案、market / analysis 取色 |
 | AC-003-2 | e2e：点击 → `/daily/<date>` |
 | AC-003-5 | 组件：market 只在行情段、analysis 只在指标段；M-03 |
 | AC-003-6 | e2e：模块库无焦点带、无移除钮；增删模块后仍在 |
-| AC-004-1 / -2 | e2e：默认七个且按目录顺序、模块库七项带状态与 `description`、`grid-column` 取 `min(defaultSpan, 列数)`；增删移 → reload 保持 |
+| AC-004-1、AC-004-2 | e2e：默认七个且按目录顺序、模块库七项带状态与 `description`、`grid-column` 取 `min(defaultSpan, 列数)`；增删移 → reload 保持 |
 | AC-004-3 | 组件逐模块 + e2e 页面遍历结构契约 |
 | AC-004-4 | 组件三态 + 剪贴板；e2e：`error` 场景模块错误态可达 |
 | AC-004-5 | 组件：盘面三态格、关注列表数值与红涨绿跌、日程升序；M-04 |
-| AC-004-6 | `check:grid` |
+| AC-004-6 | `check --only grid` |
 | AC-005-1 | e2e：八路由输入栏可见、提交 → 抽屉展开显示用户消息 |
 | AC-005-2 | 组件：success / failure / retry 回放，step.error 呈现、唯一终态行 |
 | AC-005-3 | e2e：`long` 脚本切页与收抽屉两种，同一 run、步骤增加、无重复 |
@@ -213,13 +216,13 @@ send({sessionId?, message}) / subscribe(cb)
 | AC-005-5 | e2e：布局内 → 高亮；已移除（从 `/prices` 发起）→ 提示 + 加回后完成四步；不存在 → 提示且不跳 |
 | AC-005-6 | unit：四份脚本与事件契约校验、恰好一个终态；CONTRACT.md 含十种事件 |
 | AC-005-7 | e2e：三态切换 + reload 保持；运行中指示出现 / 终态消失 |
-| AC-006-1 / -2 | unit：主题不含退役色；序列 / 类目色对卡面 ≥ 3、文字用色 ≥ 4.5（中性退后色豁免登记） |
-| AC-006-3 / -4 | e2e：`getOption().color` 与令牌一致、`backgroundColor` 透明；M-08 |
-| AC-007-1 | `check:network` |
+| AC-006-1、AC-006-2 | unit：主题不含退役色；序列 / 类目色对卡面 ≥ 3、文字用色 ≥ 4.5（中性退后色豁免登记） |
+| AC-006-3、AC-006-4 | e2e：`getOption().color` 与令牌一致、`backgroundColor` 透明；M-08 |
+| AC-007-1 | `check --only network` |
 | AC-007-2 | unit：五种场景；e2e：normal / empty / error / slow |
-| AC-007-3 | `check:generated`（重生成并比对）+ unit：CONTRACT.md 覆盖全部方法、错误形态与字段描述 |
+| AC-007-3 | `check --only generated`（重生成并比对）+ unit：CONTRACT.md 覆盖全部方法、错误形态与字段描述 |
 | AC-007-4 | unit：fixtures 全部过 schema；Figure 缺元数据、`BoardCell` ok 缺 figure、`SparkSeries` 缺元数据 → 失败 |
-| AC-008-1 / -2 / -3 | unit `design-registry.spec`：条目 front matter 齐备、令牌 `source` 可解析、PALETTE_DARK 覆盖 14 个 palette-core 原色（按不同 hex 计） |
+| AC-008-1、AC-008-2、AC-008-3 | unit `design-registry.spec`：条目 front matter 齐备、令牌 `source` 可解析、PALETTE_DARK 覆盖 14 个 palette-core 原色（按不同 hex 计） |
 | AC-009-1 | `pnpm test` 退出码 0 |
 | AC-009-2 | `manual-acceptance.md`（M-01 ~ M-08）+ Handoff 截图 |
 
@@ -231,6 +234,6 @@ send({sessionId?, message}) / subscribe(cb)
 | Playwright 找不到本机 Chrome | `channel` 回退 `msedge`，再不行 `playwright install chromium` |
 | happy-dom 无 `matchMedia` / 计算样式 | 断点与计算样式只在 Playwright 验 |
 | 暗色序列色区分度（ΔE2000 13.2） | 接受并登记；chart-templates 画出真实季节图后复核 |
-| 生成物漂移 | `check:generated` 在 `pnpm test` 首位，覆盖 `design/generated`、首帧块与 `contracts/*` |
+| 生成物漂移 | `pnpm check --only generated` 在 `pnpm test` 首位，覆盖 `design/generated`、首帧块与 `contracts/*` |
 
 **回滚**：删除 `frontend/`、`design/`、`specs/frontend-workbench/`；去掉 `.gitignore` 追加行与 `specs/README.md` 本 feature 行；`docs/designUI.md` 只回退本 feature 改的引用指针（用 `git checkout <起点> -- docs/designUI.md`，回退前确认该文件无其他改动）；`docs/decisions/20261027-updown-scope.md` 不删除（ADR 历史），在 `docs/plan.md` §3 标 superseded 并另写后继 ADR。
