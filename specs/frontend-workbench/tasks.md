@@ -360,6 +360,7 @@ Review 后新增 T-16 / T-17 共 2.5 小时，合计 17 项 / 28 小时；不新
 ## v2 任务（spec v2.1 / plan §7）
 
 > **恢复修订 R3（2026-10-28，用户“按 HANDOFF.md 继续”后）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`（会话由用户以该通道启动；本会话未探 bridge、未改 provider / 路由 / 配置）。基线 `ded7161`，分支 `docs/frontend-workbench-v2-resume`。内容：登记 v1 Handoff SHA `43b6d79` 并按其真实代码复核 v1 事实；落实 A R2 非阻断建议 V2-S10～S12；按 Handoff 代码消解 T-V2-01 对 `AppShell.vue` 的条件写入。无需求变化、不改 spec / 两份 Checklist / v1 任务正文。**R3 修订未经 A 定向复核**（闸门 2 须 A 对 R3 基线重新确认），定向 Analyze 见 `analyze-v2-r3.md`。
+> **集成记录 R4（2026-10-28，G-03 关闭）**：本次文档 merge 执行者 = `claude-opus-5-5` via `anthropic`（协调器 `openai/gpt-6.1-sol` 指定为唯一执行者，仅限本次串行文档集成；不是 Implement，也不是审核员 A）。合并提交 `eb6ebd8` 把 v1 Handoff `43b6d79` 合入本分支，4 处冲突按“v1 段取 Handoff 版本、v2 段原样保留”解决；本节（v2 段）合并时逐字未变，合并后只补本行和 1.1 / §9 / T-V2-01 状态行。冲突均非语义冲突，定向 Analyze 见 `analyze-v2-r4.md`。上方 v1 段现为 Handoff 版本（T-01～T-17、P3 台账），v2 页首所称“15 个任务 / 25.5 h”指 v1 原始基线，T-16 / T-17 与 v2 的关系见第 2 节 R3 补充。
 >
 > 本节是 v2 唯一有效的任务清单，目前是草案，需要等 Analyze 和 A 定向复核。**所有任务都未开始，状态都是 blocked。** 本节列出的测试文件、测试标题和 fixture 用法都是计划，要到实施后才能执行；本轮没有运行任何命令，所以不是验收证据。
 
@@ -374,9 +375,9 @@ Review 后新增 T-16 / T-17 共 2.5 小时，合计 17 项 / 28 小时；不新
 | 当前有效清单 | `specs/frontend-workbench/checklist-v2.md` | 旧 `checklist.md` 不改，也不授权 v2 |
 | Tasks 起草基线 | `a8ab444a28e8e6a9fd056401b55f63a1b25a2c4a` | 只读 |
 | **v1 Review / Gate 2 / Handoff 合入 main 的 SHA** | **`43b6d79681a49562f41751368b2ae00c24062f56`**（R3 登记） | PR #7「Merge PR #7: frontend-workbench v1（Gate 2 已确认，Handoff）」的 merge commit；`gh pr view 7` = MERGED、`mergeCommit.oid` 同值；`git merge-base --is-ancestor 43b6d79 main` 与 `… origin/main` 均成立。双方实施起点都是它。不得改填 `fdaa7d8`、`0ffa15e`、`b19427a` 或 `8920b06`。**v1 事实复核**：`git diff 0ffa15e 43b6d79 -- frontend` 只有 12 个文件（R1-01 变化量精度：`contracts/{types.ts,CONTRACT.md,schema.json}`、`shared/{format.ts,components/Kpi.vue,components/BoardGrid.vue}` 及 6 个测试），`design/` 无差异；第 4 节壳文件中只有 `e2e/workbench.spec.ts` 变化（新增一条 `AC-003-1 R1-01` 用例，T-V2-06 在其上追加、不改它）。plan §7 以 `0ffa15e` 核对的壳文件事实（`AppShell` 三行、`AgentDrawer` 定位、`agent/store.ts` 建 run、`stores/app.ts` 4 步、`Rail.vue` / `PlaceholderPage.vue` 的 research 依赖）在 `43b6d79` 上逐字不变。契约仍为 `1.0.0`，新增可选 `Figure.deltaDecimals`（归契约拥有者，壳不涉）。窄窗顶部导航样式在 `Rail.vue`（`.rail[data-viewport-collapsed='true'] .nav-list { flex-wrap: wrap }`），不在 `AppShell.vue` |
-| 壳 v2 实施 worktree / 分支 | 未取得（开工前登记） | 从 v1 Handoff SHA 建立；壳实施者是唯一写入者。**R3 注**：本规格分支（`spec/frontend-workbench-v2` 及其 docs 分支）尚未合入 `43b6d79`；`git merge-tree --write-tree HEAD 43b6d79` 预演有 4 处冲突：`.gitignore`、`specs/README.md`、`specs/frontend-workbench/plan.md`、`specs/frontend-workbench/tasks.md`（v1 段在 main 上新增「原任务实施记录」、T-16、T-17、P3 台账）。按第 2 节末段由集成人合并：v1 段取 Handoff 版本、v2 段原样保留；涉及语义的冲突解决后回到 Analyze |
+| 壳 v2 实施 worktree / 分支 | 未取得（开工前登记） | 从 v1 Handoff SHA 建立；壳实施者是唯一写入者。**R4 注**：已于合并提交 `eb6ebd8` 把 `43b6d79` 合入 `docs/frontend-workbench-v2-resume`（G-03 关闭，见 `analyze-v2-r4.md`）；实施分支须从含 `43b6d79` 的基线建立（如 `eb6ebd8` 或其后续）。**R3 注（历史）**：本规格分支（`spec/frontend-workbench-v2` 及其 docs 分支）当时尚未合入 `43b6d79`；`git merge-tree --write-tree HEAD 43b6d79` 预演有 4 处冲突：`.gitignore`、`specs/README.md`、`specs/frontend-workbench/plan.md`、`specs/frontend-workbench/tasks.md`（v1 段在 main 上新增「原任务实施记录」、T-16、T-17、P3 台账）。按第 2 节末段由集成人合并：v1 段取 Handoff 版本、v2 段原样保留；涉及语义的冲突解决后回到 Analyze |
 | 集成验证分支名 | 未取得（开工前由集成人登记） | 只有指定集成人能写；其他会话只读 |
-| 指定集成人 | 未取得（开工前登记） | 负责把生产方交接单元和壳提交串行集成进来 |
+| 指定集成人 | 未取得（开工前登记）。R4：`43b6d79` 文档合并（`eb6ebd8`）由 `claude-opus-5-5` via `anthropic` 执行，系协调器仅就本次指定，不等于本行登记 | 负责把生产方交接单元和壳提交串行集成进来 |
 | 最近一轮 Analyze | R3（定向，R3 修订落盘提交上，见 `analyze-v2-r3.md`）；R2 固定 `6bda6c910343b887fad2ffede062fe241f034752`，索引 `analyze-v2.md`，作者原文 `analyze-v2-r2.md` | R2：R1 的 F-01～F-07 全部关闭，无新增 F。R3 只覆盖本轮恢复修订；外部前置仍 blocked，R3 修订还需 A 定向复核 |
 | A 对 Tasks（及 plan §7 小改）定向复核产物的已提交 SHA | R2：`f1f755bad8e4bab7577c415f4aea3d297c9d37a8`（审 `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`）；**R3：未取得** | A = claude-fable-5-1 via anthropic；R2 通过、0 阻断，I-01b / V-02 由 A 正式勾选。R2 的审查对象不含 R3 修订（V2-S10～S12 落实、v1 Handoff 登记、T-V2-01 `AppShell` 条件消解），所以闸门 2 (a) 要等 A 新开独立会话审 R3 落盘提交后才算满足；实施者不改清单 |
 | 本 Tasks 落盘提交 SHA | `b364971`（初稿）；`6bda6c9`（按 F-01～F-07 修正）；R3 恢复修订见 `git log -1 --format=%H -- specs/frontend-workbench/analyze-v2-r3.md`（不在文件内写自身提交号） | Analyze R2 审查 `6bda6c9`；A R3 须固定到 R3 落盘提交 |
@@ -487,7 +488,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 
 #### T-V2-01 九项导航、路由与侧栏（S0）
 
-- [ ] **状态**：blocked。blocked_by：v1 Handoff SHA（R3 已登记 `43b6d79`）之外，还剩：第 5 节闸门 2（A 复核 R3 修订）；壳实施 worktree / 集成验证分支 / 集成人登记（实施分支须从含 `43b6d79` 的基线建立）；第 1.1 节“待 Walter 裁定”的窄窗导航形态
+- [ ] **状态**：blocked。blocked_by：v1 Handoff SHA（R3 已登记 `43b6d79`）之外，还剩：第 5 节闸门 2（A 复核 R3 修订）；壳实施 worktree / 集成验证分支 / 集成人登记（实施分支须从含 `43b6d79` 的基线建立；R4：`43b6d79` 已于 `eb6ebd8` 合入规格分支）；第 1.1 节“待 Walter 裁定”的窄窗导航形态
 - **上下文**：
   - 依据：plan §7.4、§7.1；spec R-002、Q-023、Q-027。
   - 作业详情路由只由 H-3 提供，壳只生成名为 `jobs` 的占位路由。
@@ -891,7 +892,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
   1. 已完成：v1 Handoff SHA 登记（`43b6d79`）、V2-S10～S12 落实、R3 定向 Analyze（`analyze-v2-r3.md`）。
   2. Walter 裁定窄窗导航形态（1.1「待 Walter 裁定」）；如果改为横向滚动，先改 plan §7.4 / T-V2-01，再重跑 Analyze。
   3. A 新开独立会话，定向复核 R3 落盘提交，并把复核结果登记进 1.1（闸门 2）。
-  4. 登记集成人、集成验证分支和壳实施 worktree；集成人把 `43b6d79` 合入 v2 规格分支（预演有 4 处冲突，见 1.1），涉及语义的冲突解决后回 Analyze。
+  4. 登记集成人、集成验证分支和壳实施 worktree。`43b6d79` 合入 v2 规格分支已完成（R4：合并提交 `eb6ebd8`，4 处冲突均非语义冲突，定向 Analyze 见 `analyze-v2-r4.md`）。
   5. 以上都满足后，S0（T-V2-01 → T-V2-02）可以开工，因为它不依赖任何 H-x。S1 / S2 仍要等互动方交付 H-x：互动方 `8af343f` 的 plan / Tasks r5 还没有吸收 README「跨 feature 待同步事项」第一行的新增要求（共享未筛选缓存与 ensure/refresh、进行中口径、写 action 交接、H-3 路由切片先行、`sessionStore` 同一次导航内清空、`intakeStore.open(jobId?)` 快照与容器约定、`jobFixtures` 整集合替换）。这一项由互动方按其流程处理，壳不代写。
 - **本清单不启动实施。** 暂停前列出的后续顺序（历史）：
   1. Tasks 落盘；

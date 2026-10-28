@@ -5,6 +5,8 @@
 
 > **恢复记录（2026-10-28，用户“按 HANDOFF.md 继续”）**：本文件以下内容是暂停时的历史快照。恢复后由 Plan/Tasks 作者（`claude-opus-5-5` via anthropic）在 worktree `D:/2030/Futures-AI-workbench-v2-resume`、分支 `docs/frontend-workbench-v2-resume` 继续。已做：登记 v1 Handoff SHA `43b6d79`（PR #7 merge commit，已在 main 上）；落实 V2-S10～S12；完成 R3 定向 Analyze（`specs/frontend-workbench/analyze-v2-r3.md`）。**仍未 Implement**；当前状态以 tasks.md 1.1 / §9 和 analyze-v2-r3.md 为准。
 
+> **集成记录 R4（2026-10-28）**：协调器指定 `claude-opus-5-5` via anthropic 为本次文档 merge 唯一执行者，已以合并提交 `eb6ebd8` 把 v1 Handoff `43b6d79` 合入 `docs/frontend-workbench-v2-resume`（G-03 关闭，`specs/frontend-workbench/analyze-v2-r4.md`）。仍未 Implement、未 push。
+
 ## 1. 目标、位置与当前安全点
 
 - 目标：重读项目规范，产出 `specs/frontend-workbench/plan.md` 的 v2 部分；随后用户说「继续」，推进到独立 Checklist、Tasks、Analyze 和 Tasks 定向复核。
