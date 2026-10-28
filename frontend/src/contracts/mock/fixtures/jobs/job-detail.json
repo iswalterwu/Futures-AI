@@ -1,0 +1,3762 @@
+{
+  "j-collect": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-collect-source-1",
+          "jobId": "j-collect",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-collect/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "pending_validation",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-collect-source-2",
+          "jobId": "j-collect",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-collect/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "pending_validation",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-collect-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-collect-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-collect-dataset-r1",
+          "artifactId": "j-collect-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-collect-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "pending_validation"
+            },
+            {
+              "uploadId": "j-collect-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "pending_validation"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-collect-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-collect-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-collect-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-collect-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-collect-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-collect-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-collect-recipe",
+          "kind": "recipe",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-collect-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-collect-recipe-r1",
+          "artifactId": "j-collect-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-collect-step-1",
+              "label": "单位归一化",
+              "input": "j-collect-series-1",
+              "output": "j-collect-normalized"
+            },
+            {
+              "id": "j-collect-step-2",
+              "label": "自然日对齐",
+              "input": "j-collect-normalized",
+              "output": "j-collect-aligned"
+            },
+            {
+              "id": "j-collect-step-3",
+              "label": "按日聚合",
+              "input": "j-collect-aligned",
+              "output": "j-collect-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-collect-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-collect-analysis",
+          "kind": "analysis",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-collect-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-collect-analysis-r1",
+          "artifactId": "j-collect-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-collect-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-collect-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-collect-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-collect-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-collect-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-collect-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-collect-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-collect-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-collect-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-collect-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-collect-series-1",
+        "sources": [
+          {
+            "id": "j-collect-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-collect-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-collect-series-2",
+        "sources": [
+          {
+            "id": "j-collect-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-collect-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  },
+  "j-process": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-process-source-1",
+          "jobId": "j-process",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-process/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-process-source-2",
+          "jobId": "j-process",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-process/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-process-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-process-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-process-dataset-r1",
+          "artifactId": "j-process-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-process-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            },
+            {
+              "uploadId": "j-process-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-process-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-process-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-process-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-process-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-process-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-process-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-process-recipe",
+          "kind": "recipe",
+          "status": "provisional",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-process-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-process-recipe-r1",
+          "artifactId": "j-process-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-process-step-1",
+              "label": "单位归一化",
+              "input": "j-process-series-1",
+              "output": "j-process-normalized"
+            },
+            {
+              "id": "j-process-step-2",
+              "label": "自然日对齐",
+              "input": "j-process-normalized",
+              "output": "j-process-aligned"
+            },
+            {
+              "id": "j-process-step-3",
+              "label": "按日聚合",
+              "input": "j-process-aligned",
+              "output": "j-process-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-process-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-process-analysis",
+          "kind": "analysis",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-process-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-process-analysis-r1",
+          "artifactId": "j-process-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-process-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-process-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-process-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-process-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-process-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-process-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-process-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-process-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-process-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-process-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-process-series-1",
+        "sources": [
+          {
+            "id": "j-process-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-process-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-process-series-2",
+        "sources": [
+          {
+            "id": "j-process-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-process-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  },
+  "j-deliver": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-deliver-source-1",
+          "jobId": "j-deliver",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-deliver/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-deliver-source-2",
+          "jobId": "j-deliver",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-deliver/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-deliver-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-deliver-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-deliver-dataset-r1",
+          "artifactId": "j-deliver-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-deliver-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            },
+            {
+              "uploadId": "j-deliver-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-deliver-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-deliver-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-deliver-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-deliver-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-deliver-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-deliver-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-deliver-recipe",
+          "kind": "recipe",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-deliver-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-deliver-recipe-r1",
+          "artifactId": "j-deliver-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-deliver-step-1",
+              "label": "单位归一化",
+              "input": "j-deliver-series-1",
+              "output": "j-deliver-normalized"
+            },
+            {
+              "id": "j-deliver-step-2",
+              "label": "自然日对齐",
+              "input": "j-deliver-normalized",
+              "output": "j-deliver-aligned"
+            },
+            {
+              "id": "j-deliver-step-3",
+              "label": "按日聚合",
+              "input": "j-deliver-aligned",
+              "output": "j-deliver-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-deliver-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-deliver-analysis",
+          "kind": "analysis",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-deliver-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-deliver-analysis-r1",
+          "artifactId": "j-deliver-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-deliver-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-deliver-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-deliver-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-deliver-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-deliver-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-deliver-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-deliver-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-deliver-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-deliver-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-deliver-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-deliver-series-1",
+        "sources": [
+          {
+            "id": "j-deliver-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-deliver-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-deliver-series-2",
+        "sources": [
+          {
+            "id": "j-deliver-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-deliver-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  },
+  "j-failed": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-failed-source-1",
+          "jobId": "j-failed",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-failed/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-failed-source-2",
+          "jobId": "j-failed",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-failed/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-failed-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-failed-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-failed-dataset-r1",
+          "artifactId": "j-failed-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-failed-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            },
+            {
+              "uploadId": "j-failed-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-failed-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-failed-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-failed-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-failed-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-failed-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-failed-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-failed-recipe",
+          "kind": "recipe",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-failed-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-failed-recipe-r1",
+          "artifactId": "j-failed-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-failed-step-1",
+              "label": "单位归一化",
+              "input": "j-failed-series-1",
+              "output": "j-failed-normalized"
+            },
+            {
+              "id": "j-failed-step-2",
+              "label": "自然日对齐",
+              "input": "j-failed-normalized",
+              "output": "j-failed-aligned"
+            },
+            {
+              "id": "j-failed-step-3",
+              "label": "按日聚合",
+              "input": "j-failed-aligned",
+              "output": "j-failed-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-failed-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-failed-analysis",
+          "kind": "analysis",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-failed-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-failed-analysis-r1",
+          "artifactId": "j-failed-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-failed-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-failed-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-failed-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-failed-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-failed-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-failed-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-failed-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-failed-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-failed-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-failed-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-failed-series-1",
+        "sources": [
+          {
+            "id": "j-failed-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-failed-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-failed-series-2",
+        "sources": [
+          {
+            "id": "j-failed-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-failed-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  },
+  "j-cancelled": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-cancelled-source-1",
+          "jobId": "j-cancelled",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-cancelled/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-cancelled-source-2",
+          "jobId": "j-cancelled",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-cancelled/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-cancelled-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-cancelled-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-cancelled-dataset-r1",
+          "artifactId": "j-cancelled-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-cancelled-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            },
+            {
+              "uploadId": "j-cancelled-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-cancelled-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-cancelled-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-cancelled-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-cancelled-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-cancelled-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-cancelled-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-cancelled-recipe",
+          "kind": "recipe",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-cancelled-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-cancelled-recipe-r1",
+          "artifactId": "j-cancelled-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-cancelled-step-1",
+              "label": "单位归一化",
+              "input": "j-cancelled-series-1",
+              "output": "j-cancelled-normalized"
+            },
+            {
+              "id": "j-cancelled-step-2",
+              "label": "自然日对齐",
+              "input": "j-cancelled-normalized",
+              "output": "j-cancelled-aligned"
+            },
+            {
+              "id": "j-cancelled-step-3",
+              "label": "按日聚合",
+              "input": "j-cancelled-aligned",
+              "output": "j-cancelled-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-cancelled-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-cancelled-analysis",
+          "kind": "analysis",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-cancelled-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-cancelled-analysis-r1",
+          "artifactId": "j-cancelled-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-cancelled-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-cancelled-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-cancelled-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-cancelled-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-cancelled-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-cancelled-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-cancelled-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-cancelled-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-cancelled-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-cancelled-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-cancelled-series-1",
+        "sources": [
+          {
+            "id": "j-cancelled-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-cancelled-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-cancelled-series-2",
+        "sources": [
+          {
+            "id": "j-cancelled-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-cancelled-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  },
+  "j-running": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-running-source-1",
+          "jobId": "j-running",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-running/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-running-source-2",
+          "jobId": "j-running",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-running/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-running-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-running-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-running-dataset-r1",
+          "artifactId": "j-running-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-running-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            },
+            {
+              "uploadId": "j-running-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-running-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-running-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-running-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-running-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-running-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-running-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-running-recipe",
+          "kind": "recipe",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-running-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-running-recipe-r1",
+          "artifactId": "j-running-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-running-step-1",
+              "label": "单位归一化",
+              "input": "j-running-series-1",
+              "output": "j-running-normalized"
+            },
+            {
+              "id": "j-running-step-2",
+              "label": "自然日对齐",
+              "input": "j-running-normalized",
+              "output": "j-running-aligned"
+            },
+            {
+              "id": "j-running-step-3",
+              "label": "按日聚合",
+              "input": "j-running-aligned",
+              "output": "j-running-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-running-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-running-analysis",
+          "kind": "analysis",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-running-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-running-analysis-r1",
+          "artifactId": "j-running-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-running-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-running-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-running-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-running-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-running-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-running-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-running-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-running-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-running-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-running-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-running-series-1",
+        "sources": [
+          {
+            "id": "j-running-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-running-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-running-series-2",
+        "sources": [
+          {
+            "id": "j-running-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-running-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  },
+  "j-human": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-human-source-1",
+          "jobId": "j-human",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-human/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-human-source-2",
+          "jobId": "j-human",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-human/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-human-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-human-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-human-dataset-r1",
+          "artifactId": "j-human-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-human-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            },
+            {
+              "uploadId": "j-human-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-human-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-human-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-human-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-human-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-human-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-human-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-human-recipe",
+          "kind": "recipe",
+          "status": "provisional",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-human-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-human-recipe-r1",
+          "artifactId": "j-human-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-human-step-1",
+              "label": "单位归一化",
+              "input": "j-human-series-1",
+              "output": "j-human-normalized"
+            },
+            {
+              "id": "j-human-step-2",
+              "label": "自然日对齐",
+              "input": "j-human-normalized",
+              "output": "j-human-aligned"
+            },
+            {
+              "id": "j-human-step-3",
+              "label": "按日聚合",
+              "input": "j-human-aligned",
+              "output": "j-human-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-human-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-human-analysis",
+          "kind": "analysis",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-human-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-human-analysis-r1",
+          "artifactId": "j-human-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-human-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-human-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-human-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-human-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-human-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-human-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-human-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-human-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-human-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-human-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-human-series-1",
+        "sources": [
+          {
+            "id": "j-human-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-human-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-human-series-2",
+        "sources": [
+          {
+            "id": "j-human-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-human-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  },
+  "j-merge": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-merge-source-1",
+          "jobId": "j-merge",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-merge/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-merge-source-2",
+          "jobId": "j-merge",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-merge/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-merge-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-merge-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-merge-dataset-r1",
+          "artifactId": "j-merge-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-merge-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            },
+            {
+              "uploadId": "j-merge-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-merge-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-merge-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-merge-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-merge-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-merge-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-merge-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-merge-recipe",
+          "kind": "recipe",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-merge-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-merge-recipe-r1",
+          "artifactId": "j-merge-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-merge-step-1",
+              "label": "单位归一化",
+              "input": "j-merge-series-1",
+              "output": "j-merge-normalized"
+            },
+            {
+              "id": "j-merge-step-2",
+              "label": "自然日对齐",
+              "input": "j-merge-normalized",
+              "output": "j-merge-aligned"
+            },
+            {
+              "id": "j-merge-step-3",
+              "label": "按日聚合",
+              "input": "j-merge-aligned",
+              "output": "j-merge-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-merge-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-merge-analysis",
+          "kind": "analysis",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-merge-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-merge-analysis-r1",
+          "artifactId": "j-merge-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-merge-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-merge-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-merge-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-merge-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-merge-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-merge-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-merge-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-merge-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-merge-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-merge-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-merge-series-1",
+        "sources": [
+          {
+            "id": "j-merge-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-merge-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-merge-series-2",
+        "sources": [
+          {
+            "id": "j-merge-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-merge-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  },
+  "j-conflict": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-conflict-source-1",
+          "jobId": "j-conflict",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-conflict/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-conflict-source-2",
+          "jobId": "j-conflict",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-conflict/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-conflict-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-conflict-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-conflict-dataset-r1",
+          "artifactId": "j-conflict-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-conflict-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            },
+            {
+              "uploadId": "j-conflict-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-conflict-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-conflict-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-conflict-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-conflict-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-conflict-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-conflict-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-conflict-recipe",
+          "kind": "recipe",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-conflict-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-conflict-recipe-r1",
+          "artifactId": "j-conflict-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-conflict-step-1",
+              "label": "单位归一化",
+              "input": "j-conflict-series-1",
+              "output": "j-conflict-normalized"
+            },
+            {
+              "id": "j-conflict-step-2",
+              "label": "自然日对齐",
+              "input": "j-conflict-normalized",
+              "output": "j-conflict-aligned"
+            },
+            {
+              "id": "j-conflict-step-3",
+              "label": "按日聚合",
+              "input": "j-conflict-aligned",
+              "output": "j-conflict-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-conflict-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-conflict-analysis",
+          "kind": "analysis",
+          "status": "conflict",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-conflict-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-conflict-analysis-r1",
+          "artifactId": "j-conflict-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-conflict-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-conflict-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-conflict-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-conflict-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-conflict-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-conflict-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-conflict-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-conflict-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "j-conflict-analysis-r2",
+          "artifactId": "j-conflict-analysis",
+          "artifactKind": "analysis",
+          "number": 2,
+          "baseRev": "j-conflict-analysis-r1",
+          "author": "human",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v2",
+          "changeSummary": "保留旧版，补充口径说明",
+          "conclusions": [
+            {
+              "id": "j-conflict-c1",
+              "text": "人版：库存差异可能来自统计边界。",
+              "status": "conflict",
+              "source": "human",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-conflict-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-conflict-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-conflict-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-conflict-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-conflict-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-conflict-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-conflict-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "j-conflict-analysis-r3",
+          "artifactId": "j-conflict-analysis",
+          "artifactKind": "analysis",
+          "number": 3,
+          "baseRev": "j-conflict-analysis-r1",
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v3",
+          "changeSummary": "保留旧版，补充口径说明",
+          "conclusions": [
+            {
+              "id": "j-conflict-c1",
+              "text": "agent 版：库存差异可能来自修订时点。",
+              "status": "conflict",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-conflict-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-conflict-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-conflict-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-conflict-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-conflict-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-conflict-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-conflict-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-conflict-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-conflict-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-conflict-series-1",
+        "sources": [
+          {
+            "id": "j-conflict-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-conflict-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-conflict-series-2",
+        "sources": [
+          {
+            "id": "j-conflict-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-conflict-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  },
+  "j-delivered": {
+    "collect": {
+      "stage": "collect",
+      "uploads": [
+        {
+          "id": "j-delivered-source-1",
+          "jobId": "j-delivered",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-delivered/1",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        },
+        {
+          "id": "j-delivered-source-2",
+          "jobId": "j-delivered",
+          "inputKind": "url",
+          "url": "https://example.invalid/j-delivered/2",
+          "sourceNote": {
+            "purpose": "对照合成库存口径",
+            "reliability": "medium",
+            "publishedAt": "2026-10-27",
+            "validUntil": "2026-11-03",
+            "scopeNote": "全为合成数据，不读取真实材料。"
+          },
+          "status": "ingested",
+          "mapping": [
+            {
+              "sourceField": "库存",
+              "targetField": "inventory",
+              "unit": "kt"
+            }
+          ],
+          "createdAt": "2026-10-28T08:00:00Z",
+          "removed": false
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-delivered-dataset",
+          "kind": "dataset",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-delivered-dataset-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-delivered-dataset-r1",
+          "artifactId": "j-delivered-dataset",
+          "artifactKind": "dataset",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成dataset v1",
+          "changeSummary": "初始合成样例",
+          "uploads": [
+            {
+              "uploadId": "j-delivered-source-1",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            },
+            {
+              "uploadId": "j-delivered-source-2",
+              "mapping": [
+                {
+                  "sourceField": "库存",
+                  "targetField": "inventory",
+                  "unit": "kt"
+                }
+              ],
+              "status": "ingested"
+            }
+          ]
+        }
+      ]
+    },
+    "process": {
+      "stage": "process",
+      "sources": [
+        {
+          "id": "j-delivered-source-1",
+          "name": "合成数据源 1"
+        },
+        {
+          "id": "j-delivered-source-2",
+          "name": "合成数据源 2"
+        }
+      ],
+      "series": [
+        {
+          "seriesId": "j-delivered-series-1",
+          "label": "合成库存序列 1",
+          "sourceId": "j-delivered-source-1",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        },
+        {
+          "seriesId": "j-delivered-series-2",
+          "label": "合成库存序列 2",
+          "sourceId": "j-delivered-source-2",
+          "unit": "kt",
+          "freq": "1d",
+          "semantic": "analysis",
+          "asOf": "2026-10-28T08:00:00Z"
+        }
+      ],
+      "artifacts": [
+        {
+          "id": "j-delivered-recipe",
+          "kind": "recipe",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-delivered-recipe-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-delivered-recipe-r1",
+          "artifactId": "j-delivered-recipe",
+          "artifactKind": "recipe",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成recipe v1",
+          "changeSummary": "初始合成样例",
+          "params": {
+            "unit": "kt",
+            "timezone": "UTC",
+            "calendar": "natural",
+            "resample": "1d",
+            "aggregation": "sum"
+          },
+          "steps": [
+            {
+              "id": "j-delivered-step-1",
+              "label": "单位归一化",
+              "input": "j-delivered-series-1",
+              "output": "j-delivered-normalized"
+            },
+            {
+              "id": "j-delivered-step-2",
+              "label": "自然日对齐",
+              "input": "j-delivered-normalized",
+              "output": "j-delivered-aligned"
+            },
+            {
+              "id": "j-delivered-step-3",
+              "label": "按日聚合",
+              "input": "j-delivered-aligned",
+              "output": "j-delivered-daily"
+            }
+          ]
+        }
+      ],
+      "derivedValues": [
+        {
+          "value": 100,
+          "unit": "kt",
+          "lineage": [
+            {
+              "kind": "observation",
+              "ref": "j-delivered-series-1@2026-10-28T08:00:00Z",
+              "label": "合成主来源库存观测"
+            }
+          ]
+        }
+      ]
+    },
+    "analyze": {
+      "stage": "analyze",
+      "artifacts": [
+        {
+          "id": "j-delivered-analysis",
+          "kind": "analysis",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "latestMergedRev": "j-delivered-analysis-r1",
+          "overlayRev": null,
+          "pendingMerge": false,
+          "pendingRunId": null
+        }
+      ],
+      "revisions": [
+        {
+          "id": "j-delivered-analysis-r1",
+          "artifactId": "j-delivered-analysis",
+          "artifactKind": "analysis",
+          "number": 1,
+          "baseRev": null,
+          "author": "agent",
+          "createdAt": "2026-10-28T08:00:00Z",
+          "summary": "合成analysis v1",
+          "changeSummary": "初始合成样例",
+          "conclusions": [
+            {
+              "id": "j-delivered-c1",
+              "text": "合成库存主来源为 100 千吨，次来源为 104 千吨。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "series",
+                  "ref": "j-delivered-series-1",
+                  "label": "合成库存序列 1"
+                },
+                {
+                  "kind": "source",
+                  "ref": "j-delivered-source-1",
+                  "label": "合成库存来源"
+                }
+              ]
+            },
+            {
+              "id": "j-delivered-c2",
+              "text": "合成两来源差异为 4 千吨，需核对统计边界。",
+              "status": "draft",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "assertion",
+                  "ref": "j-delivered-c1",
+                  "label": "库存对照结论（内部生成）"
+                }
+              ]
+            },
+            {
+              "id": "j-delivered-c3",
+              "text": "到港变化暂不足以解释库存差异。",
+              "status": "provisional",
+              "source": "agent",
+              "origin": "derived",
+              "evidence": [
+                {
+                  "kind": "source",
+                  "ref": "j-delivered-source-2",
+                  "label": "合成辅助来源"
+                },
+                {
+                  "kind": "series",
+                  "ref": "j-delivered-series-2",
+                  "label": "合成库存序列 2"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "previews": {
+      "j-delivered-source-1": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      },
+      "j-delivered-source-2": {
+        "detectedType": "合成时间序列表",
+        "fields": [
+          {
+            "sourceField": "库存",
+            "targetField": "inventory",
+            "unit": "kt"
+          }
+        ],
+        "unit": "kt",
+        "timeRange": {
+          "start": "2026-10-27",
+          "end": "2026-10-28"
+        }
+      }
+    },
+    "reconciliations": [
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-delivered-series-1",
+        "sources": [
+          {
+            "id": "j-delivered-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-delivered-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": [
+          {
+            "ts": "2026-10-28T08:00:00Z",
+            "leftValue": 100,
+            "rightValue": 104,
+            "difference": 4,
+            "differs": true
+          }
+        ]
+      },
+      {
+        "unit": "kt",
+        "freq": "1d",
+        "semantic": "analysis",
+        "asOf": "2026-10-28T08:00:00Z",
+        "seriesId": "j-delivered-series-2",
+        "sources": [
+          {
+            "id": "j-delivered-source-1",
+            "name": "合成数据源 1"
+          },
+          {
+            "id": "j-delivered-source-2",
+            "name": "合成数据源 2"
+          }
+        ],
+        "rows": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,372 @@
+{
+  "normal": [
+    {
+      "id": "j-collect",
+      "title": "合成油品研究 · j-collect",
+      "type": "daily",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "schedule",
+      "status": "collecting",
+      "currentStage": "collect",
+      "updatedAt": "2026-10-28T09:00:00Z",
+      "parentJobId": null,
+      "reason": null,
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "running",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "not_started",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "not_started",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "not_started",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    },
+    {
+      "id": "j-process",
+      "title": "合成油品研究 · j-process",
+      "type": "research",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "human",
+      "status": "processing",
+      "currentStage": "process",
+      "updatedAt": "2026-10-28T10:00:00Z",
+      "parentJobId": null,
+      "reason": null,
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "running",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "not_started",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "not_started",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    },
+    {
+      "id": "j-deliver",
+      "title": "合成油品研究 · j-deliver",
+      "type": "adhoc",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "human",
+      "status": "delivering",
+      "currentStage": "deliver",
+      "updatedAt": "2026-10-28T11:00:00Z",
+      "parentJobId": null,
+      "reason": null,
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "running",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    },
+    {
+      "id": "j-failed",
+      "title": "合成油品研究 · j-failed",
+      "type": "daily",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "schedule",
+      "status": "failed",
+      "currentStage": "analyze",
+      "updatedAt": "2026-10-28T12:00:00Z",
+      "parentJobId": null,
+      "reason": "合成运行失败；运行失败以 conflict 阶段呈现，分析产物仍为 draft，重试归后续 feature。",
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "conflict",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "not_started",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    },
+    {
+      "id": "j-cancelled",
+      "title": "合成油品研究 · j-cancelled",
+      "type": "research",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "human",
+      "status": "cancelled",
+      "currentStage": "collect",
+      "updatedAt": "2026-10-28T13:00:00Z",
+      "parentJobId": null,
+      "reason": "用户取消合成采集任务。",
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "not_started",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "not_started",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "not_started",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "not_started",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    }
+  ],
+  "job-running": [
+    {
+      "id": "j-running",
+      "title": "合成油品研究 · j-running",
+      "type": "adhoc",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "human",
+      "status": "analyzing",
+      "currentStage": "analyze",
+      "updatedAt": "2026-10-28T14:00:00Z",
+      "parentJobId": null,
+      "reason": null,
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "running",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "not_started",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    },
+    {
+      "id": "j-human",
+      "title": "合成油品研究 · j-human",
+      "type": "daily",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "schedule",
+      "status": "needs_human",
+      "currentStage": "process",
+      "updatedAt": "2026-10-28T15:00:00Z",
+      "parentJobId": null,
+      "reason": null,
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "needs_human",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "running",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "not_started",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    }
+  ],
+  "job-pending-merge": [
+    {
+      "id": "j-merge",
+      "title": "合成油品研究 · j-merge",
+      "type": "research",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "human",
+      "status": "delivering",
+      "currentStage": "deliver",
+      "updatedAt": "2026-10-28T16:00:00Z",
+      "parentJobId": null,
+      "reason": null,
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "running",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    }
+  ],
+  "job-conflict": [
+    {
+      "id": "j-conflict",
+      "title": "合成油品研究 · j-conflict",
+      "type": "adhoc",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "human",
+      "status": "needs_human",
+      "currentStage": "analyze",
+      "updatedAt": "2026-10-28T17:00:00Z",
+      "parentJobId": null,
+      "reason": null,
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "conflict",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "running",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    }
+  ],
+  "job-delivered": [
+    {
+      "id": "j-delivered",
+      "title": "合成油品研究 · j-delivered",
+      "type": "daily",
+      "subject": "柴油 / LPG",
+      "goal": "合成样例：对照库存与到港口径，不构成交易建议。",
+      "createdBy": "schedule",
+      "status": "delivered",
+      "currentStage": "deliver",
+      "updatedAt": "2026-10-28T18:00:00Z",
+      "parentJobId": null,
+      "reason": null,
+      "stages": [
+        {
+          "stage": "collect",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "process",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "analyze",
+          "state": "done",
+          "pendingCount": 0
+        },
+        {
+          "stage": "deliver",
+          "state": "done",
+          "pendingCount": 0
+        }
+      ],
+      "pendingCount": 0
+    }
+  ]
+}

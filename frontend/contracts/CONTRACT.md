@@ -128,6 +128,28 @@
 类型中的枚举与常量直接来自 schema；必填不等于非空，null、空列表与零的语义见字段说明。
 完整格式、范围与长度约束见 `schema.json`；AgentRun 的唯一终态、同次运行与 stepId 单调约束还须遵守通用约定，不能只依赖 JSON Schema。
 
+### `JobCollections`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 作业样例按场景集合分键；empty / error / slow / boot-error 使用 normal 种子再应用场景规则。 |
+| `$.normal` | 是 | `Job[]` |  |
+| `$.normal[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
+| `$.job-running` | 是 | `Job[]` |  |
+| `$.job-running[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
+| `$.job-pending-merge` | 是 | `Job[]` |  |
+| `$.job-pending-merge[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
+| `$.job-conflict` | 是 | `Job[]` |  |
+| `$.job-conflict[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
+| `$.job-delivered` | 是 | `Job[]` |  |
+| `$.job-delivered[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
+
+### `JobDetails`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 以作业 id 为键的采集 / 处理 / 分析样例；预览与对账复用契约边界 schema。 |
+
 ### `InterventionPayload`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |

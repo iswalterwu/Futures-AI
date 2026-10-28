@@ -511,6 +511,20 @@ export const StageWorkspaceSchema = z.discriminatedUnion('stage', [
     revisions: z.array(deliverableRevisionSchema).describe('交付物修订集合。'),
   }).describe('交付工作区：交付物、快照及产物修订；继承 S-18 三锚一致性校验。'),
 ]).describe('按 stage 判别的工作区结果；各阶段只携带对应类型的产物与修订，不混用内容。')
+export const JobCollectionsSchema = z.strictObject({
+  normal: z.array(JobSchema),
+  'job-running': z.array(JobSchema),
+  'job-pending-merge': z.array(JobSchema),
+  'job-conflict': z.array(JobSchema),
+  'job-delivered': z.array(JobSchema),
+}).describe('作业样例按场景集合分键；empty / error / slow / boot-error 使用 normal 种子再应用场景规则。')
+export const JobDetailsSchema = z.record(z.string().min(1), z.strictObject({
+  collect: StageWorkspaceSchema.options[0],
+  process: StageWorkspaceSchema.options[1],
+  analyze: StageWorkspaceSchema.options[2],
+  previews: z.record(z.string().min(1), ExtractionPreviewSchema).describe('按 Upload.id 索引的合成预览。'),
+  reconciliations: z.array(ReconciliationDiffSchema).describe('按 seriesId 查询的对账样例。'),
+})).describe('以作业 id 为键的采集 / 处理 / 分析样例；预览与对账复用契约边界 schema。')
 export const InboxCountsSchema = z.strictObject({
   unread: z.int().nonnegative().describe('未读且未解决条目总数。'),
   byStage: z.strictObject({
@@ -569,6 +583,8 @@ export const WriteReceiptSchema = z.strictObject({
 }).describe('领域写回执，携带变更对象与收件箱计数；不表示 agent run 已完成。')
 
 export const contractSchemas = {
+  JobCollections: JobCollectionsSchema,
+  JobDetails: JobDetailsSchema,
   InterventionPayload: InterventionPayloadSchema,
   Intervention: InterventionSchema,
   Artifact: ArtifactSchema,
