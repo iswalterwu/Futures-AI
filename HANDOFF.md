@@ -1,6 +1,6 @@
 # 恢复交接 — frontend-workbench v2
 
-> **当前状态（2026-10-28，用户已明确恢复）**：已登记并合入 v1 正式 Handoff `43b6d79681a49562f41751368b2ae00c24062f56`，已落实 S10～S12；本轮没有新写 v2 实现，代码 / 权威 docs 与该 v1 SHA 一致。合并后的独立 Analyze R5 审 `5ba40ad` 发现 2 P2 / 3 P3，已由 Opus 在 `71a21ad` 修正文档，待只读复跑确认和 A 定向复核；G-02 窄窗导航形态与 S1/S2 的 H-x 实现交接仍缺，不能启动实施。
+> **当前状态（2026-10-28，用户已明确恢复）**：已登记并合入 v1 正式 Handoff `43b6d79681a49562f41751368b2ae00c24062f56`，已落实 S10～S12；本轮没有新写 v2 实现，代码 / 权威 docs 与该 v1 SHA 一致。合并后的独立 Analyze R5 / R6 发现的文档问题已修正，R7 固定审 `217960d` 确认全部关闭、无新增 P1/P2/P3（原文 `specs/frontend-workbench/analyze-v2-r7.md`）。仍待 A 对本轮完整恢复增量的固定提交定向复核；G-02 窄窗导航形态与 S1/S2 的 H-x 实现交接仍缺，不能启动实施。
 > **工作树登记**：协调 / 串行集成 = 当前 `openai/gpt-6.1-sol` 会话；主规格树仍为 `D:/2030/Futures-AI-workbench-v2` / `spec/frontend-workbench-v2`。另已从 `43b6d79` 建立 `D:/2030/Futures-AI-workbench-v2-integration` / `integration/frontend-workbench-v2` 和 `D:/2030/Futures-AI-workbench-v2-implement` / `feat/frontend-workbench-v2-s0`，尚无 v2 实现提交。详见 tasks §1.1。建立工作树不等于放行。
 > **模型记录（脱敏）**：Plan/Tasks / v1 文档合并 = `claude-opus-5-5 via anthropic`，由协调器派出独立会话，不是用户直接切换模型；本次恢复已最小真实探活 Opus bridge，返回额度 / 限流类失败，同模型 anthropic 返回 OK。只换通道、未改配置。下方 R3/R4 的“用户以该通道启动”属作者措辞，本段给出实际派工事实。
 
