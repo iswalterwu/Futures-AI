@@ -9,9 +9,10 @@ F-07：上游错误脱敏（API key 不进入错误消息）；错误按类型�
 """
 from __future__ import annotations
 
-import contextlib
 import io
 import json
+import logging
+import re
 from datetime import datetime
 
 import pandas as pd
@@ -27,20 +28,33 @@ _FREQ_CODES = {"1w": "w", "1m": "m", "1d": "d"}
 _DNAV_SHEET = "Data 1"
 
 
-@contextlib.contextmanager
-def _suppress_http_debug():
-    """请求期间把 urllib3/requests 的日志压到 WARNING：key 在查询参数里，DEBUG 日志会记录完整 URL。"""
-    import logging
+_SECRET_RE = re.compile(r"(api_key=)[^&\s'\"<>]+")
+_FILTER_INSTALLED = False
 
-    names = ("urllib3", "urllib3.connectionpool", "requests")
-    saved = {n: logging.getLogger(n).level for n in names}
-    try:
-        for n in names:
-            logging.getLogger(n).setLevel(logging.WARNING)
-        yield
-    finally:
-        for n, level in saved.items():
-            logging.getLogger(n).setLevel(level)
+
+class _SecretFilter(logging.Filter):
+    """把日志里 `api_key=...` 的值替换成 `***`（key 在查询参数里，HTTP 客户端 DEBUG 会记录完整 URL）。"""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        try:
+            msg = record.getMessage()
+        except Exception:
+            return True
+        if "api_key" in msg:
+            record.msg = _SECRET_RE.sub(r"\1***", msg)
+            record.args = ()
+        return True
+
+
+def protect_secrets() -> None:
+    """给 HTTP 客户端 logger 装脱敏过滤器（幂等，不影响日志级别）。"""
+    global _FILTER_INSTALLED
+    if _FILTER_INSTALLED:
+        return
+    flt = _SecretFilter()
+    for name in ("urllib3", "urllib3.connectionpool", "requests"):
+        logging.getLogger(name).addFilter(flt)
+    _FILTER_INSTALLED = True
 
 
 def _request(series_id: str, api_key: str, start, end):
@@ -57,8 +71,8 @@ def _request(series_id: str, api_key: str, start, end):
     if end:
         params["end"] = end.strftime("%Y-%m-%dT%H")
     try:
-        with _suppress_http_debug():
-            resp = requests.get(url, params=params, timeout=30)
+        protect_secrets()
+        resp = requests.get(url, params=params, timeout=30)
     except requests.exceptions.RequestException:
         # F-07：网络异常不携带 URL/参数（防 key 泄露）
         raise FetchError("adapter_error", "EIA 网络请求失败")

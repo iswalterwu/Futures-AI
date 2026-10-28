@@ -57,3 +57,10 @@
 ## 后续（依赖 desktop-shell）
 
 - T-08 设置界面（档案表单、开通向导五步、数据源状态卡片）：等 desktop-shell 落地后接，复用 T-02~T-05 的核心接口，不重复实现流程
+
+## 追加任务（评审驱动修复）
+
+| # | 任务（修改范围） | 关联发现 | 完成标准（AC） | 验证命令 | 状态 |
+|---|---|---|---|---|---|
+| T-09 | 引导逐项校验（非法不落盘、可重试、中断可续）、引导完成标记、档案/状态并发锁、`unreadable` 阻断态、写锁时经 data-layer 只读通道、`Library` 选项 | 第一轮 A/B 的 F-01~F-09 | AC-001-1/2、AC-002-1~4、AC-004-1~3 | `pytest tests/test_settings_*.py -q` | ✅ |
+| T-10 | 日志脱敏改用一次性 `logging.Filter`（不再切全局级别）、`_read_key` 非终端拒绝、运行态字段分离（`run_status`/`run_at`/`guide_error`）、`clear`/`clear_key` 纳入锁与统一提交边界、保留 data-layer 清单原因（`reason`/`reason_hint`）、DPAPI 失败不误报、plan/tasks 同步 | 第二轮 A/B 的 B2-01~B2-07、P2-A、P2-B | AC-001-3/4、AC-003-2~5、AC-004-1、AC-005-3 | `pytest tests/test_settings_*.py -q` + `python tools/mutations.py` | ✅ |

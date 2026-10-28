@@ -101,8 +101,9 @@ class TestRuntime:
         finally:
             svc.close()
         row = _by_id(sources.list_with_status(tmp_path))["akshare"]
-        assert row["last_fetch_status"] == "succeeded"
-        assert row["last_fetch_at"]
+        assert row["run_status"] == "succeeded" and row["run_at"]
+        assert row["guide_error"] is None  # 成功不是错误
+
 
 
     def test_write_process_without_channel_fails_cleanly(self, tmp_path, capsys):
@@ -135,3 +136,58 @@ class TestRuntime:
         finally:
             holder.kill()
             holder.wait()
+
+
+class TestReasonAndFailure:
+    """B2-03 / B2-06：失败要有可操作原因；data-layer 的清单原因不被覆盖。"""
+
+    def test_failed_run_reports_actionable_hint(self, tmp_path, monkeypatch):
+        from data.adapters.akshare import akshare_adapter as ak_mod
+        from data.service import Service
+
+        def boom(symbol):
+            raise RuntimeError("upstream down")
+
+        monkeypatch.setattr(ak_mod, "_get_main", boom)
+        svc = Service(tmp_path).init()
+        try:
+            from data.catalog.descriptor import derive_id
+
+            sid = derive_id({"asset": "sc", "geo": "cn", "measure": "close", "contract": ""})
+            try:
+                svc.fetch(sid, do_fetch=True)
+            except Exception:
+                pass
+        finally:
+            svc.close()
+        row = _by_id(sources.list_with_status(tmp_path))["akshare"]
+        assert row["run_status"] == "failed"
+        assert "最近一次取数失败" in (row.get("reason") or "") or "最近一次取数失败" in (row.get("reason_hint") or "")
+
+    def test_bad_manifest_reason_preserved(self, tmp_path):
+        """坏件：data-layer 给出的原因（含路径/字段）不被 settings 覆盖。"""
+        d = tmp_path / "adapters" / "bad-one"
+        d.mkdir(parents=True)
+        (d / "manifest.yaml").write_text(
+            chr(10).join([
+                'id: bad-one',
+                'name: B',
+                'version: 1',
+                'credentials: none',
+                'provides:',
+                '  - descriptor: {asset: rb, geo: cn, measure: close, contract: ""}',
+                '    symbols: [X]',
+                '    unit: cny_ton',
+                '    freq: 1d',
+                '    tz: Asia/Shanghai',
+                '    fetch: {modes: [on_demand], history_days: 1}',
+                '    update: {lag_min: 0, revises: true}',
+            ]),
+            encoding="utf-8",
+        )
+        from data.service import Service
+
+        Service(tmp_path).init().close()
+        rows = sources.list_with_status(tmp_path)
+        err = [r for r in rows if r["status"] == "error"]
+        assert err and "asset" in (err[0]["reason"] or "")  # 保留真实校验原因

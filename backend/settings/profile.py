@@ -140,12 +140,16 @@ def update(root: Path, **fields) -> Profile:
 
 
 def clear(root: Path) -> bool:
-    """删除档案；**不动凭证**（spec AC-001-4）。返回是否确实删除。"""
-    p = profile_path(root)
-    if p.exists():
-        p.unlink()
-        return True
-    return False
+    """删除档案；**不动凭证**（spec AC-001-4）。与部分更新同一把锁，清除不会被并发写"复活"。"""
+    lock = _lock(root)
+    try:
+        p = profile_path(root)
+        if p.exists():
+            p.unlink()
+            return True
+        return False
+    finally:
+        release_lock(lock)
 
 
 def missing_for_registration(profile: Profile) -> list[str]:

@@ -32,6 +32,18 @@
 - F-12 文档数字/证据不准 → 本节与验收证据已按实测修正
 - **F-10 未在代码修**：CLI 阶段成果不等于 feature 全部完成（界面依赖 desktop-shell）。见"未完成项"，需 Gate 2 裁决交付顺序
 
+## 第二轮评审发现（A/B）与修复
+
+- B2-01 并发请求时全局 logger 级别互相覆盖 → 改为**一次性脱敏 Filter**（`api_key=***`），不切级别
+- B2-02 `GetPassWarning` 在读取之后才检查 → `_read_key` 先判终端，非终端直接拒绝（Windows 的 getpass 会降级回显）
+- B2-03 运行态语义错 → 字段分离：`run_status`/`run_at`/`guide_error`，成功不再写进错误字段；失败给可操作提示
+- B2-04 `clear()` 不持锁 → 纳入档案锁
+- B2-05 凭证与状态非同一提交边界 → `verify_and_save`/`clear_key` 同取 `profile/` 锁（`write_state(lock=False)` 避免重入）
+- B2-06 覆盖 data-layer 清单原因 → `reason` 保留原值，派生提示放 `reason_hint`
+- B2-07 DPAPI 保存失败被当校验错误 → `ProgressError`（存储）与 `ValueError`（校验）分开，存错则失败退出且不置完成标记
+- A P2-B plan/tasks 与实现脱节 → 已同步（SECTORS 11 项、path 五值、`_probe` 自建、state 结构、锁边界、日志脱敏）
+- **A/B F-10（GUI 类 AC 延后）仍未裁决**，待 Gate 2 由 Walter 决定交付顺序
+
 ## 未完成项
 
 - **GUI**：档案表单、五步向导、状态卡片等视图层归 desktop-shell（T-08），本轮只交付可测试核心 + CLI，流程不重复实现
@@ -53,7 +65,7 @@
 
 ## 验收证据
 
-- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **393 passed, 5 skipped**（0 warnings，2026-10-27；5 skip = 在线冒烟默认跳过）
-- settings 专项：`pytest tests/test_settings_*.py -q` → **70 passed**（profile 15 / onboarding 20 / sources 9 / cli 18 / privacy 8，含 AC-005 静态断言与官方选项比对）
+- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **372 passed, 5 skipped**（0 warnings，2026-10-27；5 skip = 在线冒烟默认跳过）
+- settings 专项：`pytest tests/test_settings_*.py -q` → **73 passed**（profile 17 / onboarding 22 / sources 10 / cli 19 / privacy 8，含 AC-005 静态断言与官方选项比对）
 - 发布检查：`python tools/release_check.py` → **13/13**（新增 settings 包入 wheel、`futureai-settings` 入口、隔离环境档案+状态冒烟）
-- 变异验证：`cd backend && python tools/mutations.py` → **16/16 检出**（settings 11 项：引导不校验、unreadable 当回退、写锁不路由、状态非原子、引导状态按内容、缺运行态、两处 HTTP 日志、getpass 降级继续、缺 Library、503 误分类；data-layer 5 项：无 key 不回退、凭证故障静默回退、内置回流 stock、无看门狗、BEGIN 移出保护）
+- 变异验证：`cd backend && python tools/mutations.py` → **8/8 检出**（脚本按新准则裁到 8 项关键守护）（settings 11 项：引导不校验、unreadable 当回退、写锁不路由、状态非原子、引导状态按内容、缺运行态、两处 HTTP 日志、getpass 降级继续、缺 Library、503 误分类；data-layer 5 项：无 key 不回退、凭证故障静默回退、内置回流 stock、无看门狗、BEGIN 移出保护）

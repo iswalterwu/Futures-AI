@@ -153,7 +153,7 @@ class TestSourceCli:
         """AC-003-2/3/4：不回显读 key → 验证 → 保存 → 显示路径与时间。"""
         save_profile(tmp_path, FULL)
         monkeypatch.setattr(onboarding, "_probe", lambda key: None)
-        monkeypatch.setattr("getpass.getpass", lambda prompt="": "k-" + "cli-open-0001")
+        monkeypatch.setattr(cli, "_read_key", lambda: "k-" + "cli-open-0001")
         assert run(tmp_path, "source", "open", "eia") == 0
         out = json.loads(capsys.readouterr().out)
         assert out["ok"] is True and out["path"] == "api" and out["verified_at"]
@@ -169,7 +169,7 @@ class TestSourceCli:
             raise FetchError("unauthorized", "injected")
 
         monkeypatch.setattr(onboarding, "_probe", boom)
-        monkeypatch.setattr("getpass.getpass", lambda prompt="": "k-" + "bad-0001")
+        monkeypatch.setattr(cli, "_read_key", lambda: "k-" + "bad-0001")
         assert run(tmp_path, "source", "open", "eia") == 1
         out = json.loads(capsys.readouterr().out)
         assert out["ok"] is False and out["error"] == "invalid_key"
@@ -184,20 +184,35 @@ class TestSourceCli:
 
 
 class TestEchoSafety:
-    def test_aborts_when_echo_cannot_be_hidden(self, tmp_path, monkeypatch, capsys):
-        """F-08：终端无法隐藏输入（GetPassWarning）→ 中止，不验证、不保存。"""
-        import getpass
-        import warnings
+    def test_non_tty_input_aborts_without_reading(self, tmp_path, monkeypatch, capsys):
+        """F-08/B2-02：非终端（无法保证隐藏输入）→ 不读取、不验证、不保存。"""
+        import io
 
         save_profile(tmp_path, FULL)
-
-        def warn_getpass(prompt=""):
-            warnings.warn(getpass.GetPassWarning("Can not control echo on the terminal."))
-            return "k-" + "echo-0001"
-
+        fake_stdin = io.StringIO("k-" + "should-not-be-read")
+        monkeypatch.setattr("sys.stdin", fake_stdin)
         probed = []
-        monkeypatch.setattr("getpass.getpass", warn_getpass)
         monkeypatch.setattr(onboarding, "_probe", lambda key: probed.append(key))
         assert run(tmp_path, "source", "open", "eia") == 1
         assert "无法在此终端隐藏输入" in capsys.readouterr().err
+        assert fake_stdin.tell() == 0  # 没有读取任何输入
         assert probed == [] and not onboarding.has_key(tmp_path)
+
+
+class TestStorageFailure:
+    def test_dpapi_failure_is_not_reported_as_saved(self, tmp_path, monkeypatch, capsys):
+        """B2-07：存储失败（DPAPI）→ 失败退出、不置完成标记、不报 saved。"""
+        from data import creds
+        from settings import profile as profile_mod
+
+        def boom(*a, **k):
+            raise creds.CredsError("DPAPI 不可用（injected）")
+
+        monkeypatch.setattr(profile_mod.creds, "put", boom)
+        answers = iter(["Walter", "Wu", "", ""])
+        monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
+        assert run(tmp_path, "onboard") == 1
+        out = capsys.readouterr()
+        assert "saved" not in out.out
+        assert "DPAPI" in out.err
+        assert onboarding.onboard_state(tmp_path)["completed"] is False

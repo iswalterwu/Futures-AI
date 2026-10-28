@@ -77,13 +77,13 @@ class TestEia:
         rows, _ = EiaAdapter(tmp_path / "creds").fetch(m.provides[0], None, None)
         assert len(rows) == 1 and rows[0][1] == pytest.approx(120.5)
 
-    def test_api_request_suppresses_http_debug_logs(self, monkeypatch):
-        """EIA key 在查询参数里：API 请求期间 HTTP 客户端日志压到 WARNING（F-07）。"""
+    def test_api_request_redacts_key_in_logs(self, monkeypatch, caplog, tmp_path):
+        """EIA key 在查询参数里：DEBUG 日志中的 key 被脱敏（一次 Filter，不切级别）。"""
         import logging
 
         import requests
 
-        levels = []
+        secret = "k-" + "api-redact-0001"
 
         class Resp:
             status_code = 200
@@ -93,17 +93,14 @@ class TestEia:
                 return {"response": {"data": []}}
 
         def fake_get(url, params=None, timeout=None):
-            levels.append(logging.getLogger("urllib3.connectionpool").level)
+            logging.getLogger("urllib3.connectionpool").debug("send: GET %s?api_key=%s", url, params["api_key"])
             return Resp()
 
         monkeypatch.setattr(requests, "get", fake_get)
-        logger = logging.getLogger("urllib3.connectionpool")
-        logger.setLevel(logging.DEBUG)
-        try:
-            eia_mod._request("WDISTUS1", "k-" + "log-test-0001", None, None)
-        finally:
-            logger.setLevel(logging.WARNING)
-        assert levels == [logging.WARNING]
+        with caplog.at_level(logging.DEBUG, logger="urllib3.connectionpool"):
+            eia_mod._request("WDISTUS1", secret, None, None)
+        joined = chr(10).join(r.getMessage() for r in caplog.records)
+        assert "api_key=***" in joined and secret not in joined
 
     def test_key_present_uses_api(self, tmp_path, monkeypatch):
         """D-014：配置了 key → 走官方 API（不触碰免凭证路径）。"""

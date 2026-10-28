@@ -149,3 +149,31 @@ class TestSectorsMatchOfficialForm:
 
     def test_library_present(self):
         assert Profile(sector="library").sector == "library"
+
+
+class TestClearLock:
+    """B2-04：清除与部分更新串行（不会被并发写\"复活\"）。"""
+
+    def test_clear_waits_for_profile_lock(self, tmp_path):
+        import threading
+
+        from data.lock import release_lock
+
+        from settings import _filelock
+        from settings import profile as profile_mod
+
+        save(tmp_path, Profile(first_name="Walter", email="walter@example.com"))
+        lock = _filelock.acquire(tmp_path / "profile")
+        done = threading.Event()
+
+        def clear_it():
+            profile_mod.clear(tmp_path)
+            done.set()
+
+        t = threading.Thread(target=clear_it, daemon=True)
+        t.start()
+        assert not done.wait(0.4)  # 持锁期间被挡住
+        release_lock(lock)
+        assert done.wait(10)
+        t.join(5)
+        assert load(tmp_path) == Profile()

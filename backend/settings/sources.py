@@ -123,24 +123,32 @@ def list_with_status(root: Path) -> list[dict]:
         if credential_state == "unreadable":
             status = "error"  # 清单状态 ok ≠ 可用：凭证故障必须反映为错误
         row = {
-            **src,
+            **src,  # 含 data-layer 的 reason（坏件/重复 id/已移除），不覆盖
             "status": status,
             "implementation": implementation,
             "credential_state": credential_state,
             "path": path,
             "verified_at": entry.get("verified_at"),
-            "last_error": entry.get("last_error") or run.get("last_fetch_status"),
-            "last_fetch_at": run.get("last_fetch_at"),
-            "last_fetch_status": run.get("last_fetch_status"),
+            "guide_error": entry.get("last_error"),  # 向导期的凭证错误码
+            "run_status": run.get("last_fetch_status"),  # 运行态：succeeded/failed/running
+            "run_at": run.get("last_fetch_at"),
         }
-        if runtime_note:
-            row["runtime_note"] = runtime_note
+        hints = []
         if credential_state == "unreadable":
-            row["reason"] = "凭证文件存在但读取/解密失败（不回退免凭证路径；请重新配置或清除凭证）"
+            hints.append("凭证文件存在但读取/解密失败（不回退；请重新配置或清除凭证）")
         elif path == PATH_OFFLINE:
-            row["reason"] = "未配置凭证：当前使用免凭证回退路径"
+            hints.append("未配置凭证：当前使用免凭证回退路径")
         elif path == PATH_DECLARATION_ONLY:
-            row["reason"] = "清单未声明取数实现（仅声明数据，不可取数）"
+            hints.append("清单未声明取数实现（仅声明数据，不可取数）")
+        if run.get("last_fetch_status") == "failed":
+            hints.append("最近一次取数失败（failed）：可重试，或检查凭证/网络")
+        if runtime_note:
+            hints.append(runtime_note)
+        if hints:
+            if row.get("reason"):
+                row["reason_hint"] = "；".join(hints)  # 保留原因为主
+            else:
+                row["reason"] = "；".join(hints)
         rows.append(row)
     return rows
 

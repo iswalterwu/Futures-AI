@@ -43,8 +43,8 @@ MUTATIONS: list[dict] = [
     dict(
         name="settings/getpass 无法隐藏时仍继续",
         file="settings/cli.py",
-        old="        if any(issubclass(w.category, getpass.GetPassWarning) for w in caught):",
-        new="        if False:",
+        old="    if not (sys.stdin and sys.stdin.isatty()):",
+        new="    if False:",
         test="tests/test_settings_cli.py::TestEchoSafety::test_aborts_when_echo_cannot_be_hidden",
     ),
     dict(

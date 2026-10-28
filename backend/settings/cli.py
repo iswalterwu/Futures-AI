@@ -99,8 +99,11 @@ def _cmd_onboard(args) -> int:
             try:
                 profile = update_profile(root, **{field: raw})  # 逐项校验并落盘（非法不写）
                 break
-            except (ProfileError, ValueError) as e:
+            except ValueError as e:  # 输入校验失败：可重试/跳过
                 print(f"输入不合法：{e}" + ("，请重新输入" if attempt == 0 else "（已跳过该项）"), file=sys.stderr)
+            except ProfileError as e:  # 存储失败（如 DPAPI 不可用）：直接失败，不跳过、不置完成
+                print(f"错误：{e}", file=sys.stderr)
+                return 1
     onboarding.set_onboard_state(root, completed=True, skipped=False)
     missing = missing_for_registration(load_profile(root))
     _json_out({"saved": True, "missing_for_registration": missing})
@@ -108,6 +111,21 @@ def _cmd_onboard(args) -> int:
         print("提示：以下字段在开通需要凭证的数据源时会被要求：" + "、".join(missing), file=sys.stderr)
     return 0
 
+
+def _read_key() -> str | None:
+    """交互读取 key（不回显）。无法保证隐藏输入时返回 None（不读取、不验证、不保存）。"""
+    import getpass
+    import sys
+    import warnings
+
+    if not (sys.stdin and sys.stdin.isatty()):
+        return None  # 非终端：Windows 下 getpass 会降级为回显读取，必须先拒绝
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", getpass.GetPassWarning)
+            return getpass.getpass("把收到的 API key 粘贴到此处（不回显）: ")
+    except getpass.GetPassWarning:
+        return None
 
 def _cmd_source(args) -> int:
     root = Path(args.root)
@@ -136,20 +154,10 @@ def _cmd_source(args) -> int:
     print(f"\n请在浏览器打开：{hint.detail['url']}", file=sys.stderr)
     for note in hint.detail["notes"]:
         print(f"  - {note}", file=sys.stderr)
-    try:
-        import getpass
-        import warnings
-
-        with warnings.catch_warnings(record=True) as caught:
-            warnings.simplefilter("always")
-            key = getpass.getpass("\n把收到的 API key 粘贴到此处（不回显）: ")
-        if any(issubclass(w.category, getpass.GetPassWarning) for w in caught):
-            # 终端不支持隐藏输入：继续会有明文回显风险 → 中止，不验证、不保存
-            print("错误：无法在此终端隐藏输入（可能被回显），已中止且未保存。"
-                  "请在图形界面或支持不回显的终端中执行", file=sys.stderr)
-            return 1
-    except (KeyboardInterrupt, EOFError):
-        print("\n已取消，未保存任何内容", file=sys.stderr)
+    key = _read_key()
+    if key is None:
+        print("错误：无法在此终端隐藏输入（非终端或被回显），已中止且未保存。"
+              "请在图形界面或支持不回显的终端中执行", file=sys.stderr)
         return 1
     result = onboarding.verify_and_save(root, key)
     _json_out({"ok": result.detail.get("ok"), **{k: v for k, v in result.detail.items() if k != "ok"}})
