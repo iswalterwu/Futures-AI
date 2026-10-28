@@ -166,6 +166,1214 @@
     }
   },
   "$defs": {
+    "Artifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "$ref": "#/$defs/ArtifactKind"
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "origin": {
+          "$ref": "#/$defs/Origin"
+        },
+        "latestMergedRev": {
+          "type": "string",
+          "minLength": 1,
+          "description": "最新已合并 Revision.id；agent 只读此修订，不读 overlay。"
+        },
+        "overlayRev": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "人的旁路 Revision.id；没有 overlay 时 null。"
+        },
+        "pendingMerge": {
+          "type": "boolean",
+          "description": "待合并标记；true 时 overlayRev 必须非空。"
+        },
+        "pendingRunId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "待合并对应的 run；无 run 时 null，支持手动检查点。"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "status",
+        "source",
+        "origin",
+        "latestMergedRev",
+        "overlayRev",
+        "pendingMerge",
+        "pendingRunId"
+      ],
+      "additionalProperties": false,
+      "description": "阶段产物与修订锚；修订内容另由 Revision 保存。"
+    },
+    "Revision": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "artifactId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "number": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "description": "从 1 开始的修订版本号。"
+            },
+            "baseRev": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "基线 Revision.id；初版为 null。"
+            },
+            "author": {
+              "type": "string",
+              "enum": [
+                "human",
+                "agent"
+              ],
+              "description": "本次修订作者。"
+            },
+            "createdAt": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "summary": {
+              "type": "string",
+              "description": "版本历史摘要。"
+            },
+            "changeSummary": {
+              "type": "string",
+              "description": "与基线相比的变更摘要。"
+            },
+            "artifactKind": {
+              "type": "string",
+              "const": "dataset"
+            },
+            "uploads": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "uploadId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mapping": {
+                    "$ref": "#/$defs/FieldMapping"
+                  },
+                  "status": {
+                    "$ref": "#/$defs/UploadStatus"
+                  }
+                },
+                "required": [
+                  "uploadId",
+                  "mapping",
+                  "status"
+                ],
+                "additionalProperties": false
+              },
+              "description": "入库摘要，不含投放原文。"
+            }
+          },
+          "required": [
+            "id",
+            "artifactId",
+            "number",
+            "baseRev",
+            "author",
+            "createdAt",
+            "summary",
+            "changeSummary",
+            "artifactKind",
+            "uploads"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "artifactId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "number": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "description": "从 1 开始的修订版本号。"
+            },
+            "baseRev": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "基线 Revision.id；初版为 null。"
+            },
+            "author": {
+              "type": "string",
+              "enum": [
+                "human",
+                "agent"
+              ],
+              "description": "本次修订作者。"
+            },
+            "createdAt": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "summary": {
+              "type": "string",
+              "description": "版本历史摘要。"
+            },
+            "changeSummary": {
+              "type": "string",
+              "description": "与基线相比的变更摘要。"
+            },
+            "artifactKind": {
+              "type": "string",
+              "const": "recipe"
+            },
+            "params": {
+              "$ref": "#/$defs/ParamSet"
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/RecipeStep"
+              },
+              "description": "按执行顺序排列的只读单链配方；空列表为无配方。"
+            }
+          },
+          "required": [
+            "id",
+            "artifactId",
+            "number",
+            "baseRev",
+            "author",
+            "createdAt",
+            "summary",
+            "changeSummary",
+            "artifactKind",
+            "params",
+            "steps"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "artifactId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "number": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "description": "从 1 开始的修订版本号。"
+            },
+            "baseRev": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "基线 Revision.id；初版为 null。"
+            },
+            "author": {
+              "type": "string",
+              "enum": [
+                "human",
+                "agent"
+              ],
+              "description": "本次修订作者。"
+            },
+            "createdAt": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "summary": {
+              "type": "string",
+              "description": "版本历史摘要。"
+            },
+            "changeSummary": {
+              "type": "string",
+              "description": "与基线相比的变更摘要。"
+            },
+            "artifactKind": {
+              "type": "string",
+              "const": "analysis"
+            },
+            "conclusions": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Conclusion"
+              },
+              "description": "分析稿完整快照，删除 / 否决用 tombstone 保留内容。"
+            }
+          },
+          "required": [
+            "id",
+            "artifactId",
+            "number",
+            "baseRev",
+            "author",
+            "createdAt",
+            "summary",
+            "changeSummary",
+            "artifactKind",
+            "conclusions"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "artifactId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "number": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "description": "从 1 开始的修订版本号。"
+            },
+            "baseRev": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "基线 Revision.id；初版为 null。"
+            },
+            "author": {
+              "type": "string",
+              "enum": [
+                "human",
+                "agent"
+              ],
+              "description": "本次修订作者。"
+            },
+            "createdAt": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "summary": {
+              "type": "string",
+              "description": "版本历史摘要。"
+            },
+            "changeSummary": {
+              "type": "string",
+              "description": "与基线相比的变更摘要。"
+            },
+            "artifactKind": {
+              "type": "string",
+              "const": "deliverable"
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Block"
+              },
+              "description": "有序块完整快照，与 FinalSnapshot.blocks 同形。"
+            }
+          },
+          "required": [
+            "id",
+            "artifactId",
+            "number",
+            "baseRev",
+            "author",
+            "createdAt",
+            "summary",
+            "changeSummary",
+            "artifactKind",
+            "blocks"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "四种产物修订的判别联合；提交深拷贝，读 API 返回副本，历史不可变。"
+    },
+    "StageWorkspace": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "stage": {
+              "type": "string",
+              "const": "collect"
+            },
+            "uploads": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Upload"
+              }
+            },
+            "artifacts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "dataset"
+                  },
+                  "status": {
+                    "$ref": "#/$defs/ArtifactStatus"
+                  },
+                  "source": {
+                    "$ref": "#/$defs/Source"
+                  },
+                  "origin": {
+                    "$ref": "#/$defs/Origin"
+                  },
+                  "latestMergedRev": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "最新已合并 Revision.id；agent 只读此修订，不读 overlay。"
+                  },
+                  "overlayRev": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "人的旁路 Revision.id；没有 overlay 时 null。"
+                  },
+                  "pendingMerge": {
+                    "type": "boolean",
+                    "description": "待合并标记；true 时 overlayRev 必须非空。"
+                  },
+                  "pendingRunId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "待合并对应的 run；无 run 时 null，支持手动检查点。"
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "status",
+                  "source",
+                  "origin",
+                  "latestMergedRev",
+                  "overlayRev",
+                  "pendingMerge",
+                  "pendingRunId"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "revisions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "artifactId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "number": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "从 1 开始的修订版本号。"
+                  },
+                  "baseRev": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "基线 Revision.id；初版为 null。"
+                  },
+                  "author": {
+                    "type": "string",
+                    "enum": [
+                      "human",
+                      "agent"
+                    ],
+                    "description": "本次修订作者。"
+                  },
+                  "createdAt": {
+                    "$ref": "#/$defs/Timestamp"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "版本历史摘要。"
+                  },
+                  "changeSummary": {
+                    "type": "string",
+                    "description": "与基线相比的变更摘要。"
+                  },
+                  "artifactKind": {
+                    "type": "string",
+                    "const": "dataset"
+                  },
+                  "uploads": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "uploadId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "mapping": {
+                          "$ref": "#/$defs/FieldMapping"
+                        },
+                        "status": {
+                          "$ref": "#/$defs/UploadStatus"
+                        }
+                      },
+                      "required": [
+                        "uploadId",
+                        "mapping",
+                        "status"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "入库摘要，不含投放原文。"
+                  }
+                },
+                "required": [
+                  "id",
+                  "artifactId",
+                  "number",
+                  "baseRev",
+                  "author",
+                  "createdAt",
+                  "summary",
+                  "changeSummary",
+                  "artifactKind",
+                  "uploads"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "stage",
+            "uploads",
+            "artifacts",
+            "revisions"
+          ],
+          "additionalProperties": false,
+          "description": "采集工作区：投放、dataset 产物与其修订；空态使用空集合。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "stage": {
+              "type": "string",
+              "const": "process"
+            },
+            "sources": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/DataSourceRef"
+              }
+            },
+            "series": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/SeriesRef"
+              }
+            },
+            "artifacts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "recipe"
+                  },
+                  "status": {
+                    "$ref": "#/$defs/ArtifactStatus"
+                  },
+                  "source": {
+                    "$ref": "#/$defs/Source"
+                  },
+                  "origin": {
+                    "$ref": "#/$defs/Origin"
+                  },
+                  "latestMergedRev": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "最新已合并 Revision.id；agent 只读此修订，不读 overlay。"
+                  },
+                  "overlayRev": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "人的旁路 Revision.id；没有 overlay 时 null。"
+                  },
+                  "pendingMerge": {
+                    "type": "boolean",
+                    "description": "待合并标记；true 时 overlayRev 必须非空。"
+                  },
+                  "pendingRunId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "待合并对应的 run；无 run 时 null，支持手动检查点。"
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "status",
+                  "source",
+                  "origin",
+                  "latestMergedRev",
+                  "overlayRev",
+                  "pendingMerge",
+                  "pendingRunId"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "revisions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "artifactId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "number": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "从 1 开始的修订版本号。"
+                  },
+                  "baseRev": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "基线 Revision.id；初版为 null。"
+                  },
+                  "author": {
+                    "type": "string",
+                    "enum": [
+                      "human",
+                      "agent"
+                    ],
+                    "description": "本次修订作者。"
+                  },
+                  "createdAt": {
+                    "$ref": "#/$defs/Timestamp"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "版本历史摘要。"
+                  },
+                  "changeSummary": {
+                    "type": "string",
+                    "description": "与基线相比的变更摘要。"
+                  },
+                  "artifactKind": {
+                    "type": "string",
+                    "const": "recipe"
+                  },
+                  "params": {
+                    "$ref": "#/$defs/ParamSet"
+                  },
+                  "steps": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/RecipeStep"
+                    },
+                    "description": "按执行顺序排列的只读单链配方；空列表为无配方。"
+                  }
+                },
+                "required": [
+                  "id",
+                  "artifactId",
+                  "number",
+                  "baseRev",
+                  "author",
+                  "createdAt",
+                  "summary",
+                  "changeSummary",
+                  "artifactKind",
+                  "params",
+                  "steps"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "derivedValues": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/DerivedValue"
+              }
+            }
+          },
+          "required": [
+            "stage",
+            "sources",
+            "series",
+            "artifacts",
+            "revisions",
+            "derivedValues"
+          ],
+          "additionalProperties": false,
+          "description": "处理工作区：来源 / 序列 / recipe 产物与修订 / 派生值；空集合不等于错误。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "stage": {
+              "type": "string",
+              "const": "analyze"
+            },
+            "artifacts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "analysis"
+                  },
+                  "status": {
+                    "$ref": "#/$defs/ArtifactStatus"
+                  },
+                  "source": {
+                    "$ref": "#/$defs/Source"
+                  },
+                  "origin": {
+                    "$ref": "#/$defs/Origin"
+                  },
+                  "latestMergedRev": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "最新已合并 Revision.id；agent 只读此修订，不读 overlay。"
+                  },
+                  "overlayRev": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "人的旁路 Revision.id；没有 overlay 时 null。"
+                  },
+                  "pendingMerge": {
+                    "type": "boolean",
+                    "description": "待合并标记；true 时 overlayRev 必须非空。"
+                  },
+                  "pendingRunId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "待合并对应的 run；无 run 时 null，支持手动检查点。"
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "status",
+                  "source",
+                  "origin",
+                  "latestMergedRev",
+                  "overlayRev",
+                  "pendingMerge",
+                  "pendingRunId"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "revisions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "artifactId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "number": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "从 1 开始的修订版本号。"
+                  },
+                  "baseRev": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "基线 Revision.id；初版为 null。"
+                  },
+                  "author": {
+                    "type": "string",
+                    "enum": [
+                      "human",
+                      "agent"
+                    ],
+                    "description": "本次修订作者。"
+                  },
+                  "createdAt": {
+                    "$ref": "#/$defs/Timestamp"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "版本历史摘要。"
+                  },
+                  "changeSummary": {
+                    "type": "string",
+                    "description": "与基线相比的变更摘要。"
+                  },
+                  "artifactKind": {
+                    "type": "string",
+                    "const": "analysis"
+                  },
+                  "conclusions": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/Conclusion"
+                    },
+                    "description": "分析稿完整快照，删除 / 否决用 tombstone 保留内容。"
+                  }
+                },
+                "required": [
+                  "id",
+                  "artifactId",
+                  "number",
+                  "baseRev",
+                  "author",
+                  "createdAt",
+                  "summary",
+                  "changeSummary",
+                  "artifactKind",
+                  "conclusions"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "stage",
+            "artifacts",
+            "revisions"
+          ],
+          "additionalProperties": false,
+          "description": "分析工作区：analysis 产物及含结论的修订。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "deliverable": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Deliverable"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "交付物；空工作区为 null。"
+            },
+            "finalSnapshot": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/FinalSnapshot"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "定稿快照；草稿 / 空工作区必须为 null。"
+            },
+            "stage": {
+              "type": "string",
+              "const": "deliver"
+            },
+            "artifacts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "deliverable"
+                  },
+                  "status": {
+                    "$ref": "#/$defs/ArtifactStatus"
+                  },
+                  "source": {
+                    "$ref": "#/$defs/Source"
+                  },
+                  "origin": {
+                    "$ref": "#/$defs/Origin"
+                  },
+                  "latestMergedRev": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "最新已合并 Revision.id；agent 只读此修订，不读 overlay。"
+                  },
+                  "overlayRev": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "人的旁路 Revision.id；没有 overlay 时 null。"
+                  },
+                  "pendingMerge": {
+                    "type": "boolean",
+                    "description": "待合并标记；true 时 overlayRev 必须非空。"
+                  },
+                  "pendingRunId": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "待合并对应的 run；无 run 时 null，支持手动检查点。"
+                  }
+                },
+                "required": [
+                  "id",
+                  "kind",
+                  "status",
+                  "source",
+                  "origin",
+                  "latestMergedRev",
+                  "overlayRev",
+                  "pendingMerge",
+                  "pendingRunId"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "revisions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "artifactId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "number": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "从 1 开始的修订版本号。"
+                  },
+                  "baseRev": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ],
+                    "description": "基线 Revision.id；初版为 null。"
+                  },
+                  "author": {
+                    "type": "string",
+                    "enum": [
+                      "human",
+                      "agent"
+                    ],
+                    "description": "本次修订作者。"
+                  },
+                  "createdAt": {
+                    "$ref": "#/$defs/Timestamp"
+                  },
+                  "summary": {
+                    "type": "string",
+                    "description": "版本历史摘要。"
+                  },
+                  "changeSummary": {
+                    "type": "string",
+                    "description": "与基线相比的变更摘要。"
+                  },
+                  "artifactKind": {
+                    "type": "string",
+                    "const": "deliverable"
+                  },
+                  "blocks": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/$defs/Block"
+                    },
+                    "description": "有序块完整快照，与 FinalSnapshot.blocks 同形。"
+                  }
+                },
+                "required": [
+                  "id",
+                  "artifactId",
+                  "number",
+                  "baseRev",
+                  "author",
+                  "createdAt",
+                  "summary",
+                  "changeSummary",
+                  "artifactKind",
+                  "blocks"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "deliverable",
+            "finalSnapshot",
+            "stage",
+            "artifacts",
+            "revisions"
+          ],
+          "additionalProperties": false,
+          "description": "交付工作区：交付物、快照及产物修订；继承 S-18 三锚一致性校验。"
+        }
+      ],
+      "description": "按 stage 判别的工作区结果；各阶段只携带对应类型的产物与修订，不混用内容。"
+    },
+    "InboxCounts": {
+      "type": "object",
+      "properties": {
+        "unread": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "未读且未解决条目总数。"
+        },
+        "byStage": {
+          "type": "object",
+          "properties": {
+            "collect": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "process": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "analyze": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "deliver": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "collect",
+            "process",
+            "analyze",
+            "deliver"
+          ],
+          "additionalProperties": false,
+          "description": "固定四阶段的未读且未解决条目计数。"
+        }
+      },
+      "required": [
+        "unread",
+        "byStage"
+      ],
+      "additionalProperties": false,
+      "description": "契约提供的收件箱计数，不由 UI 从状态推导。"
+    },
+    "WriteReceipt": {
+      "type": "object",
+      "properties": {
+        "jobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Job"
+          },
+          "description": "本次写入改变的作业。"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Artifact"
+          },
+          "description": "本次改变的产物。"
+        },
+        "revisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Revision"
+          },
+          "description": "本次产生的修订。"
+        },
+        "inbox": {
+          "$ref": "#/$defs/InboxCounts"
+        }
+      },
+      "required": [
+        "jobs",
+        "artifacts",
+        "revisions",
+        "inbox"
+      ],
+      "additionalProperties": false,
+      "description": "领域写回执，携带变更对象与收件箱计数；不表示 agent run 已完成。"
+    },
     "ChartSpec": {
       "type": "object",
       "properties": {

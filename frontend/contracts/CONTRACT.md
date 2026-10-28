@@ -128,6 +128,268 @@
 类型中的枚举与常量直接来自 schema；必填不等于非空，null、空列表与零的语义见字段说明。
 完整格式、范围与长度约束见 `schema.json`；AgentRun 的唯一终态、同次运行与 stepId 单调约束还须遵守通用约定，不能只依赖 JSON Schema。
 
+### `Artifact`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 阶段产物与修订锚；修订内容另由 Revision 保存。 |
+| `$.id` | 是 | `string` |  |
+| `$.kind` | 是 | `ArtifactKind` | 阶段产物类型：数据集、配方、分析稿、交付物。 |
+| `$.status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.latestMergedRev` | 是 | `string` | 最新已合并 Revision.id；agent 只读此修订，不读 overlay。 |
+| `$.overlayRev` | 是 | `string &#124; null` | 人的旁路 Revision.id；没有 overlay 时 null。 |
+| `$.overlayRev.anyOf[0]` | 是 | `string` |  |
+| `$.overlayRev.anyOf[1]` | 是 | `null` |  |
+| `$.pendingMerge` | 是 | `boolean` | 待合并标记；true 时 overlayRev 必须非空。 |
+| `$.pendingRunId` | 是 | `string &#124; null` | 待合并对应的 run；无 run 时 null，支持手动检查点。 |
+| `$.pendingRunId.anyOf[0]` | 是 | `string` |  |
+| `$.pendingRunId.anyOf[1]` | 是 | `null` |  |
+
+### `Revision`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object &#124; object &#124; object &#124; object` | 四种产物修订的判别联合；提交深拷贝，读 API 返回副本，历史不可变。 |
+| `$.oneOf[0]` | 是 | `object` |  |
+| `$.oneOf[0].id` | 是 | `string` |  |
+| `$.oneOf[0].artifactId` | 是 | `string` |  |
+| `$.oneOf[0].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
+| `$.oneOf[0].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
+| `$.oneOf[0].baseRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[0].baseRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[0].author` | 是 | `"human" &#124; "agent"` | 本次修订作者。 |
+| `$.oneOf[0].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[0].summary` | 是 | `string` | 版本历史摘要。 |
+| `$.oneOf[0].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
+| `$.oneOf[0].artifactKind` | 是 | `"dataset"` |  |
+| `$.oneOf[0].uploads` | 是 | `object[]` | 入库摘要，不含投放原文。 |
+| `$.oneOf[0].uploads[]` | 是 | `object` |  |
+| `$.oneOf[0].uploads[].uploadId` | 是 | `string` |  |
+| `$.oneOf[0].uploads[].mapping` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
+| `$.oneOf[0].uploads[].status` | 是 | `UploadStatus` | 抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。 |
+| `$.oneOf[1]` | 是 | `object` |  |
+| `$.oneOf[1].id` | 是 | `string` |  |
+| `$.oneOf[1].artifactId` | 是 | `string` |  |
+| `$.oneOf[1].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
+| `$.oneOf[1].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
+| `$.oneOf[1].baseRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[1].baseRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[1].author` | 是 | `"human" &#124; "agent"` | 本次修订作者。 |
+| `$.oneOf[1].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[1].summary` | 是 | `string` | 版本历史摘要。 |
+| `$.oneOf[1].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
+| `$.oneOf[1].artifactKind` | 是 | `"recipe"` |  |
+| `$.oneOf[1].params` | 是 | `ParamSet` | 加工参数；v1 保存口径字符串，不执行真实数据处理。 |
+| `$.oneOf[1].steps` | 是 | `RecipeStep[]` | 按执行顺序排列的只读单链配方；空列表为无配方。 |
+| `$.oneOf[1].steps[]` | 是 | `RecipeStep` | 按列表顺序呈现的单链配方步骤；只读，不提供 DAG 编辑。 |
+| `$.oneOf[2]` | 是 | `object` |  |
+| `$.oneOf[2].id` | 是 | `string` |  |
+| `$.oneOf[2].artifactId` | 是 | `string` |  |
+| `$.oneOf[2].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
+| `$.oneOf[2].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
+| `$.oneOf[2].baseRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[2].baseRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[2].author` | 是 | `"human" &#124; "agent"` | 本次修订作者。 |
+| `$.oneOf[2].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[2].summary` | 是 | `string` | 版本历史摘要。 |
+| `$.oneOf[2].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
+| `$.oneOf[2].artifactKind` | 是 | `"analysis"` |  |
+| `$.oneOf[2].conclusions` | 是 | `Conclusion[]` | 分析稿完整快照，删除 / 否决用 tombstone 保留内容。 |
+| `$.oneOf[2].conclusions[]` | 是 | `Conclusion` | 分析结论卡及其证据链、状态和来源。 |
+| `$.oneOf[3]` | 是 | `object` |  |
+| `$.oneOf[3].id` | 是 | `string` |  |
+| `$.oneOf[3].artifactId` | 是 | `string` |  |
+| `$.oneOf[3].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
+| `$.oneOf[3].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
+| `$.oneOf[3].baseRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[3].baseRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[3].author` | 是 | `"human" &#124; "agent"` | 本次修订作者。 |
+| `$.oneOf[3].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[3].summary` | 是 | `string` | 版本历史摘要。 |
+| `$.oneOf[3].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
+| `$.oneOf[3].artifactKind` | 是 | `"deliverable"` |  |
+| `$.oneOf[3].blocks` | 是 | `Block[]` | 有序块完整快照，与 FinalSnapshot.blocks 同形。 |
+| `$.oneOf[3].blocks[]` | 是 | `Block` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
+
+### `StageWorkspace`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object &#124; object &#124; object &#124; object` | 按 stage 判别的工作区结果；各阶段只携带对应类型的产物与修订，不混用内容。 |
+| `$.oneOf[0]` | 是 | `object` | 采集工作区：投放、dataset 产物与其修订；空态使用空集合。 |
+| `$.oneOf[0].stage` | 是 | `"collect"` |  |
+| `$.oneOf[0].uploads` | 是 | `Upload[]` |  |
+| `$.oneOf[0].uploads[]` | 是 | `Upload` | 投放持久化记录；只含元数据 / 来源语境 / 映射 / 状态，拒绝粘贴正文与完整提交参数。 |
+| `$.oneOf[0].artifacts` | 是 | `object[]` |  |
+| `$.oneOf[0].artifacts[]` | 是 | `object` |  |
+| `$.oneOf[0].artifacts[].id` | 是 | `string` |  |
+| `$.oneOf[0].artifacts[].kind` | 是 | `"dataset"` |  |
+| `$.oneOf[0].artifacts[].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[0].artifacts[].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[0].artifacts[].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[0].artifacts[].latestMergedRev` | 是 | `string` | 最新已合并 Revision.id；agent 只读此修订，不读 overlay。 |
+| `$.oneOf[0].artifacts[].overlayRev` | 是 | `string &#124; null` | 人的旁路 Revision.id；没有 overlay 时 null。 |
+| `$.oneOf[0].artifacts[].overlayRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[0].artifacts[].overlayRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[0].artifacts[].pendingMerge` | 是 | `boolean` | 待合并标记；true 时 overlayRev 必须非空。 |
+| `$.oneOf[0].artifacts[].pendingRunId` | 是 | `string &#124; null` | 待合并对应的 run；无 run 时 null，支持手动检查点。 |
+| `$.oneOf[0].artifacts[].pendingRunId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[0].artifacts[].pendingRunId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[0].revisions` | 是 | `object[]` |  |
+| `$.oneOf[0].revisions[]` | 是 | `object` |  |
+| `$.oneOf[0].revisions[].id` | 是 | `string` |  |
+| `$.oneOf[0].revisions[].artifactId` | 是 | `string` |  |
+| `$.oneOf[0].revisions[].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
+| `$.oneOf[0].revisions[].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
+| `$.oneOf[0].revisions[].baseRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[0].revisions[].baseRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[0].revisions[].author` | 是 | `"human" &#124; "agent"` | 本次修订作者。 |
+| `$.oneOf[0].revisions[].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[0].revisions[].summary` | 是 | `string` | 版本历史摘要。 |
+| `$.oneOf[0].revisions[].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
+| `$.oneOf[0].revisions[].artifactKind` | 是 | `"dataset"` |  |
+| `$.oneOf[0].revisions[].uploads` | 是 | `object[]` | 入库摘要，不含投放原文。 |
+| `$.oneOf[0].revisions[].uploads[]` | 是 | `object` |  |
+| `$.oneOf[0].revisions[].uploads[].uploadId` | 是 | `string` |  |
+| `$.oneOf[0].revisions[].uploads[].mapping` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
+| `$.oneOf[0].revisions[].uploads[].status` | 是 | `UploadStatus` | 抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。 |
+| `$.oneOf[1]` | 是 | `object` | 处理工作区：来源 / 序列 / recipe 产物与修订 / 派生值；空集合不等于错误。 |
+| `$.oneOf[1].stage` | 是 | `"process"` |  |
+| `$.oneOf[1].sources` | 是 | `DataSourceRef[]` |  |
+| `$.oneOf[1].sources[]` | 是 | `DataSourceRef` | 处理台数据源引用，不复制源数据。 |
+| `$.oneOf[1].series` | 是 | `SeriesRef[]` |  |
+| `$.oneOf[1].series[]` | 是 | `SeriesRef` | 处理台序列引用及元数据，不含观测点。 |
+| `$.oneOf[1].artifacts` | 是 | `object[]` |  |
+| `$.oneOf[1].artifacts[]` | 是 | `object` |  |
+| `$.oneOf[1].artifacts[].id` | 是 | `string` |  |
+| `$.oneOf[1].artifacts[].kind` | 是 | `"recipe"` |  |
+| `$.oneOf[1].artifacts[].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[1].artifacts[].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[1].artifacts[].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[1].artifacts[].latestMergedRev` | 是 | `string` | 最新已合并 Revision.id；agent 只读此修订，不读 overlay。 |
+| `$.oneOf[1].artifacts[].overlayRev` | 是 | `string &#124; null` | 人的旁路 Revision.id；没有 overlay 时 null。 |
+| `$.oneOf[1].artifacts[].overlayRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[1].artifacts[].overlayRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[1].artifacts[].pendingMerge` | 是 | `boolean` | 待合并标记；true 时 overlayRev 必须非空。 |
+| `$.oneOf[1].artifacts[].pendingRunId` | 是 | `string &#124; null` | 待合并对应的 run；无 run 时 null，支持手动检查点。 |
+| `$.oneOf[1].artifacts[].pendingRunId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[1].artifacts[].pendingRunId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[1].revisions` | 是 | `object[]` |  |
+| `$.oneOf[1].revisions[]` | 是 | `object` |  |
+| `$.oneOf[1].revisions[].id` | 是 | `string` |  |
+| `$.oneOf[1].revisions[].artifactId` | 是 | `string` |  |
+| `$.oneOf[1].revisions[].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
+| `$.oneOf[1].revisions[].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
+| `$.oneOf[1].revisions[].baseRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[1].revisions[].baseRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[1].revisions[].author` | 是 | `"human" &#124; "agent"` | 本次修订作者。 |
+| `$.oneOf[1].revisions[].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[1].revisions[].summary` | 是 | `string` | 版本历史摘要。 |
+| `$.oneOf[1].revisions[].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
+| `$.oneOf[1].revisions[].artifactKind` | 是 | `"recipe"` |  |
+| `$.oneOf[1].revisions[].params` | 是 | `ParamSet` | 加工参数；v1 保存口径字符串，不执行真实数据处理。 |
+| `$.oneOf[1].revisions[].steps` | 是 | `RecipeStep[]` | 按执行顺序排列的只读单链配方；空列表为无配方。 |
+| `$.oneOf[1].revisions[].steps[]` | 是 | `RecipeStep` | 按列表顺序呈现的单链配方步骤；只读，不提供 DAG 编辑。 |
+| `$.oneOf[1].derivedValues` | 是 | `DerivedValue[]` |  |
+| `$.oneOf[1].derivedValues[]` | 是 | `DerivedValue` | 可回溯来源的派生值。 |
+| `$.oneOf[2]` | 是 | `object` | 分析工作区：analysis 产物及含结论的修订。 |
+| `$.oneOf[2].stage` | 是 | `"analyze"` |  |
+| `$.oneOf[2].artifacts` | 是 | `object[]` |  |
+| `$.oneOf[2].artifacts[]` | 是 | `object` |  |
+| `$.oneOf[2].artifacts[].id` | 是 | `string` |  |
+| `$.oneOf[2].artifacts[].kind` | 是 | `"analysis"` |  |
+| `$.oneOf[2].artifacts[].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[2].artifacts[].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[2].artifacts[].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[2].artifacts[].latestMergedRev` | 是 | `string` | 最新已合并 Revision.id；agent 只读此修订，不读 overlay。 |
+| `$.oneOf[2].artifacts[].overlayRev` | 是 | `string &#124; null` | 人的旁路 Revision.id；没有 overlay 时 null。 |
+| `$.oneOf[2].artifacts[].overlayRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[2].artifacts[].overlayRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[2].artifacts[].pendingMerge` | 是 | `boolean` | 待合并标记；true 时 overlayRev 必须非空。 |
+| `$.oneOf[2].artifacts[].pendingRunId` | 是 | `string &#124; null` | 待合并对应的 run；无 run 时 null，支持手动检查点。 |
+| `$.oneOf[2].artifacts[].pendingRunId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[2].artifacts[].pendingRunId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[2].revisions` | 是 | `object[]` |  |
+| `$.oneOf[2].revisions[]` | 是 | `object` |  |
+| `$.oneOf[2].revisions[].id` | 是 | `string` |  |
+| `$.oneOf[2].revisions[].artifactId` | 是 | `string` |  |
+| `$.oneOf[2].revisions[].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
+| `$.oneOf[2].revisions[].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
+| `$.oneOf[2].revisions[].baseRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[2].revisions[].baseRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[2].revisions[].author` | 是 | `"human" &#124; "agent"` | 本次修订作者。 |
+| `$.oneOf[2].revisions[].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[2].revisions[].summary` | 是 | `string` | 版本历史摘要。 |
+| `$.oneOf[2].revisions[].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
+| `$.oneOf[2].revisions[].artifactKind` | 是 | `"analysis"` |  |
+| `$.oneOf[2].revisions[].conclusions` | 是 | `Conclusion[]` | 分析稿完整快照，删除 / 否决用 tombstone 保留内容。 |
+| `$.oneOf[2].revisions[].conclusions[]` | 是 | `Conclusion` | 分析结论卡及其证据链、状态和来源。 |
+| `$.oneOf[3]` | 是 | `object` | 交付工作区：交付物、快照及产物修订；继承 S-18 三锚一致性校验。 |
+| `$.oneOf[3].deliverable` | 是 | `Deliverable &#124; null` | 交付物；空工作区为 null。 |
+| `$.oneOf[3].deliverable.anyOf[0]` | 是 | `Deliverable` | 交付物定稿状态为独立判别联合；只由 finalizeDeliverable 显式改变，不从 job.status 或快照存在推导。 |
+| `$.oneOf[3].deliverable.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[3].finalSnapshot` | 是 | `FinalSnapshot &#124; null` | 定稿快照；草稿 / 空工作区必须为 null。 |
+| `$.oneOf[3].finalSnapshot.anyOf[0]` | 是 | `FinalSnapshot` | 不可变定稿快照；修订 id 与版本号同时保留。 |
+| `$.oneOf[3].finalSnapshot.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[3].stage` | 是 | `"deliver"` |  |
+| `$.oneOf[3].artifacts` | 是 | `object[]` |  |
+| `$.oneOf[3].artifacts[]` | 是 | `object` |  |
+| `$.oneOf[3].artifacts[].id` | 是 | `string` |  |
+| `$.oneOf[3].artifacts[].kind` | 是 | `"deliverable"` |  |
+| `$.oneOf[3].artifacts[].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[3].artifacts[].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[3].artifacts[].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[3].artifacts[].latestMergedRev` | 是 | `string` | 最新已合并 Revision.id；agent 只读此修订，不读 overlay。 |
+| `$.oneOf[3].artifacts[].overlayRev` | 是 | `string &#124; null` | 人的旁路 Revision.id；没有 overlay 时 null。 |
+| `$.oneOf[3].artifacts[].overlayRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[3].artifacts[].overlayRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[3].artifacts[].pendingMerge` | 是 | `boolean` | 待合并标记；true 时 overlayRev 必须非空。 |
+| `$.oneOf[3].artifacts[].pendingRunId` | 是 | `string &#124; null` | 待合并对应的 run；无 run 时 null，支持手动检查点。 |
+| `$.oneOf[3].artifacts[].pendingRunId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[3].artifacts[].pendingRunId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[3].revisions` | 是 | `object[]` |  |
+| `$.oneOf[3].revisions[]` | 是 | `object` |  |
+| `$.oneOf[3].revisions[].id` | 是 | `string` |  |
+| `$.oneOf[3].revisions[].artifactId` | 是 | `string` |  |
+| `$.oneOf[3].revisions[].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
+| `$.oneOf[3].revisions[].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
+| `$.oneOf[3].revisions[].baseRev.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[3].revisions[].baseRev.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[3].revisions[].author` | 是 | `"human" &#124; "agent"` | 本次修订作者。 |
+| `$.oneOf[3].revisions[].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[3].revisions[].summary` | 是 | `string` | 版本历史摘要。 |
+| `$.oneOf[3].revisions[].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
+| `$.oneOf[3].revisions[].artifactKind` | 是 | `"deliverable"` |  |
+| `$.oneOf[3].revisions[].blocks` | 是 | `Block[]` | 有序块完整快照，与 FinalSnapshot.blocks 同形。 |
+| `$.oneOf[3].revisions[].blocks[]` | 是 | `Block` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
+
+### `InboxCounts`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 契约提供的收件箱计数，不由 UI 从状态推导。 |
+| `$.unread` | 是 | `integer` | 未读且未解决条目总数。 |
+| `$.byStage` | 是 | `object` | 固定四阶段的未读且未解决条目计数。 |
+| `$.byStage.collect` | 是 | `integer` |  |
+| `$.byStage.process` | 是 | `integer` |  |
+| `$.byStage.analyze` | 是 | `integer` |  |
+| `$.byStage.deliver` | 是 | `integer` |  |
+
+### `WriteReceipt`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 领域写回执，携带变更对象与收件箱计数；不表示 agent run 已完成。 |
+| `$.jobs` | 是 | `Job[]` | 本次写入改变的作业。 |
+| `$.jobs[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
+| `$.artifacts` | 是 | `Artifact[]` | 本次改变的产物。 |
+| `$.artifacts[]` | 是 | `Artifact` | 阶段产物与修订锚；修订内容另由 Revision 保存。 |
+| `$.revisions` | 是 | `Revision[]` | 本次产生的修订。 |
+| `$.revisions[]` | 是 | `Revision` | 四种产物修订的判别联合；提交深拷贝，读 API 返回副本，历史不可变。 |
+| `$.inbox` | 是 | `InboxCounts` | 契约提供的收件箱计数，不由 UI 从状态推导。 |
+
 ### `ChartSpec`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |

@@ -450,7 +450,82 @@ export const DeliverWorkspaceSchema = z.strictObject({
   }
 }).describe('交付工作区边界：一次 zod 校验三锚与快照一致；draft / 空工作区不带快照。JSON Schema 不表达跨字段相等约束。')
 
+export const ArtifactSchema = z.strictObject({
+  id: z.string().min(1), kind: ArtifactKindSchema, status: ArtifactStatusSchema,
+  source: SourceSchema, origin: OriginSchema,
+  latestMergedRev: z.string().min(1).describe('最新已合并 Revision.id；agent 只读此修订，不读 overlay。'),
+  overlayRev: z.string().min(1).nullable().describe('人的旁路 Revision.id；没有 overlay 时 null。'),
+  pendingMerge: z.boolean().describe('待合并标记；true 时 overlayRev 必须非空。'),
+  pendingRunId: z.string().min(1).nullable().describe('待合并对应的 run；无 run 时 null，支持手动检查点。'),
+}).refine(artifact => !artifact.pendingMerge || artifact.overlayRev !== null, {
+  path: ['overlayRev'], message: 'pendingMerge=true 时必须有 overlayRev',
+}).describe('阶段产物与修订锚；修订内容另由 Revision 保存。')
+const revisionFields = {
+  id: z.string().min(1), artifactId: z.string().min(1),
+  number: z.int().positive().describe('从 1 开始的修订版本号。'),
+  baseRev: z.string().min(1).nullable().describe('基线 Revision.id；初版为 null。'),
+  author: z.enum(['human', 'agent']).describe('本次修订作者。'),
+  createdAt: TimestampSchema,
+  summary: z.string().describe('版本历史摘要。'),
+  changeSummary: z.string().describe('与基线相比的变更摘要。'),
+}
+const datasetRevisionSchema = z.strictObject({
+  ...revisionFields, artifactKind: z.literal('dataset'),
+  uploads: z.array(z.strictObject({ uploadId: z.string().min(1), mapping: FieldMappingSchema, status: UploadStatusSchema })).describe('入库摘要，不含投放原文。'),
+})
+const recipeRevisionSchema = z.strictObject({
+  ...revisionFields, artifactKind: z.literal('recipe'), params: ParamSetSchema,
+  steps: z.array(RecipeStepSchema).describe('按执行顺序排列的只读单链配方；空列表为无配方。'),
+})
+const analysisRevisionSchema = z.strictObject({
+  ...revisionFields, artifactKind: z.literal('analysis'),
+  conclusions: z.array(ConclusionSchema).describe('分析稿完整快照，删除 / 否决用 tombstone 保留内容。'),
+})
+const deliverableRevisionSchema = z.strictObject({
+  ...revisionFields, artifactKind: z.literal('deliverable'), blocks: z.array(BlockSchema).describe('有序块完整快照，与 FinalSnapshot.blocks 同形。'),
+})
+export const RevisionSchema = z.discriminatedUnion('artifactKind', [
+  datasetRevisionSchema, recipeRevisionSchema, analysisRevisionSchema, deliverableRevisionSchema,
+]).describe('四种产物修订的判别联合；提交深拷贝，读 API 返回副本，历史不可变。')
+export const StageWorkspaceSchema = z.discriminatedUnion('stage', [
+  z.strictObject({
+    stage: z.literal('collect'), uploads: z.array(UploadSchema),
+    artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('dataset') })),
+    revisions: z.array(datasetRevisionSchema),
+  }).describe('采集工作区：投放、dataset 产物与其修订；空态使用空集合。'),
+  z.strictObject({
+    stage: z.literal('process'), sources: z.array(DataSourceRefSchema), series: z.array(SeriesRefSchema),
+    artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('recipe') })),
+    revisions: z.array(recipeRevisionSchema), derivedValues: z.array(DerivedValueSchema),
+  }).describe('处理工作区：来源 / 序列 / recipe 产物与修订 / 派生值；空集合不等于错误。'),
+  z.strictObject({
+    stage: z.literal('analyze'), artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('analysis') })),
+    revisions: z.array(analysisRevisionSchema),
+  }).describe('分析工作区：analysis 产物及含结论的修订。'),
+  DeliverWorkspaceSchema.safeExtend({
+    stage: z.literal('deliver'), artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('deliverable') })),
+    revisions: z.array(deliverableRevisionSchema),
+  }).describe('交付工作区：交付物、快照及产物修订；继承 S-18 三锚一致性校验。'),
+]).describe('按 stage 判别的工作区结果；各阶段只携带对应类型的产物与修订，不混用内容。')
+export const InboxCountsSchema = z.strictObject({
+  unread: z.int().nonnegative().describe('未读且未解决条目总数。'),
+  byStage: z.strictObject({
+    collect: z.int().nonnegative(), process: z.int().nonnegative(), analyze: z.int().nonnegative(), deliver: z.int().nonnegative(),
+  }).describe('固定四阶段的未读且未解决条目计数。'),
+}).describe('契约提供的收件箱计数，不由 UI 从状态推导。')
+export const WriteReceiptSchema = z.strictObject({
+  jobs: z.array(JobSchema).describe('本次写入改变的作业。'),
+  artifacts: z.array(ArtifactSchema).describe('本次改变的产物。'),
+  revisions: z.array(RevisionSchema).describe('本次产生的修订。'),
+  inbox: InboxCountsSchema,
+}).describe('领域写回执，携带变更对象与收件箱计数；不表示 agent run 已完成。')
+
 export const contractSchemas = {
+  Artifact: ArtifactSchema,
+  Revision: RevisionSchema,
+  StageWorkspace: StageWorkspaceSchema,
+  InboxCounts: InboxCountsSchema,
+  WriteReceipt: WriteReceiptSchema,
   ChartSpec: ChartSpecSchema,
   BlockComment: BlockCommentSchema,
   BlockCommentThread: BlockCommentThreadSchema,
@@ -589,3 +664,8 @@ export type Block = z.infer<typeof BlockSchema>
 export type Deliverable = z.infer<typeof DeliverableSchema>
 export type FinalSnapshot = z.infer<typeof FinalSnapshotSchema>
 export type DeliverWorkspace = z.infer<typeof DeliverWorkspaceSchema>
+export type Artifact = z.infer<typeof ArtifactSchema>
+export type Revision = z.infer<typeof RevisionSchema>
+export type StageWorkspace = z.infer<typeof StageWorkspaceSchema>
+export type InboxCounts = z.infer<typeof InboxCountsSchema>
+export type WriteReceipt = z.infer<typeof WriteReceiptSchema>
