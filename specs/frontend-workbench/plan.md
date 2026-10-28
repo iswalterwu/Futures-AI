@@ -143,7 +143,8 @@ send({sessionId?, message}) / subscribe(cb)
 - 数值三类形态（AC-007-4）：`Figure = {label, value, unit, decimals, freq, delta?, deltaKind?, semantic, asOf, seriesId?}`；`BoardCell = {state, figure}`（`ok ⇔ figure ≠ null`）；`SparkSeries = {points, unit, freq, semantic, asOf, seriesId}`
 - 参数语义（写入 CONTRACT.md）：`date` = 交易日 `YYYY-MM-DD`；`asOf` / `ts` = ISO 8601 带偏移；`getReleaseCalendar(from, to)` 闭区间、升序；v1 全部列表一次返回不分页；`deltaKind='pct'` 时 `delta` 是百分数值
 - 校验只在边界：mock / real 实现对自己返回的数据做一次 `parse`（AGENTS §5.2），内部组件直接消费已确定类型的值
-- `contract-build.mjs` 由 zod + 方法语义表生成 `contracts/CONTRACT.md` 与 `schema.json`（backend `api` feature 的输入）
+- `contract-build.mjs` 由 zod + 方法语义表生成 `contracts/CONTRACT.md` 与 `schema.json`（backend `api` feature 的输入），生成物入库、不手改（`check:generated` 重生成后比对）
+- **错误形态**（spec R-007 "错误形态"的落点）：统一 `{error: {code, message, retryable}}`，`code` 集合 = mock 实际使用的值（`not_found / validation_error / rate_limited / adapter_error / internal`），写入 CONTRACT.md；模块错误态与 `run.failed` 复用此形态
 - **mock 场景**：`normal`；`empty`（模块数据空、`brief=null`）；`error`（`bootstrap()` 与 `getModuleCatalog()` 成功，模块数据方法返回固定错误）；`slow`（延迟 1500ms）；`boot-error`（`bootstrap()` 首次失败、重试成功）。选择 `?scenario=` > `VITE_MOCK_SCENARIO` > normal；`window.__FAI_MOCK__` 可覆盖 fixture 或选脚本
 - `real/index.ts` 全部方法抛 `NotImplementedError`；网络调用只许出现在 `src/contracts/real/`（`check.mjs` 一条 grep）
 
@@ -151,14 +152,14 @@ send({sessionId?, message}) / subscribe(cb)
 
 | 检查 | 规则 | AC |
 |---|---|---|
-| generated | 重新生成 `generated/*` 与 `index.html` 首帧块，与仓库内容逐字比对；`@media` 宽度阈值 ∈ 令牌断点（`max-width` 取断点 − 1） | AC-001-1 |
-| colors | `src/**` 与 `index.html`（首帧块除外）不得出现 `#hex`、`rgb()/hsl()/oklch()` 等颜色函数与 CSS 具名色（`transparent / currentColor / inherit` 除外）；退役色五值不得出现在令牌、生成物与源码 | AC-001-2、AC-001-6 |
+| generated | 重新生成 `src/design/generated/*`、`index.html` 首帧块与 `contracts/{CONTRACT.md,schema.json}`，与仓库内容逐字比对；`@media` 宽度阈值 ∈ 令牌断点（`max-width` 取断点 − 1） | AC-001-1、AC-007-3 |
+| colors | `src/**` 与 `index.html`（首帧块除外）不得出现 `#hex`、`rgb()/hsl()/oklch()` 等颜色函数与 CSS 具名色（只在样式声明值位置识别；`transparent / currentColor / inherit` 除外）；登记处 `src/design/tokens.json` 与 `src/design/generated/*` 豁免；**先跑 `scripts/check-samples/colors/{positive,negative}.css`**（阳性全部命中、阴性不中）；退役色五值不得出现在令牌、生成物与源码 | AC-001-2、AC-001-6 |
 | glass | `backdrop-filter` 只出现在 `src/design/glass.css`，`.glass-*` 只有三个类 | AC-001-3 |
-| updown | 涨跌令牌只在 `updown.css`；`updown.css` 只被 `market-board/`、`watchlist/`、`FocusBand.vue` 引入 | AC-001-5 |
+| updown | 涨跌令牌只在 `updown.css`；`updown.css` 内引用涨跌令牌的声明只能是 `color:`（不得用于背景 / 边框 / 填充）；`updown.css` 只被 `market-board/`、`watchlist/`、`FocusBand.vue` 引入 | AC-001-5 |
 | grid | `grid-template-columns` 不得用裸 `1fr`（须 `minmax()`） | AC-004-6 |
 | network | `fetch(` / `XMLHttpRequest` / `WebSocket` / `EventSource` / `axios` 只在 `src/contracts/real/` | AC-007-1 |
 
-`pnpm test` = `tokens:check`（同 generated 检查）+ `check` + `typecheck` + `lint` + `test:unit` + `test:e2e`（AC-009-1）。**不写样例自检**：检查直接对真实仓库运行（AGENTS §5.6）。
+运行：`pnpm check [--only <name>]`（name ∈ generated / colors / glass / updown / grid / network）。`pnpm test` = `check` + `typecheck` + `lint` + `test:unit` + `test:e2e`（AC-009-1）。**除 AC-001-2 明定的最小样例外不写样例自检**：其余检查直接对真实仓库运行（AGENTS §5.6）。
 
 ### 2.9 规范资产移植（R-008）
 
@@ -230,6 +231,6 @@ send({sessionId?, message}) / subscribe(cb)
 | Playwright 找不到本机 Chrome | `channel` 回退 `msedge`，再不行 `playwright install chromium` |
 | happy-dom 无 `matchMedia` / 计算样式 | 断点与计算样式只在 Playwright 验 |
 | 暗色序列色区分度（ΔE2000 13.2） | 接受并登记；chart-templates 画出真实季节图后复核 |
-| 生成物漂移 | `check:generated` 在 `pnpm test` 首位 |
+| 生成物漂移 | `check:generated` 在 `pnpm test` 首位，覆盖 `design/generated`、首帧块与 `contracts/*` |
 
 **回滚**：删除 `frontend/`、`design/`、`specs/frontend-workbench/`；去掉 `.gitignore` 追加行与 `specs/README.md` 本 feature 行；`docs/designUI.md` 只回退本 feature 改的引用指针（用 `git checkout <起点> -- docs/designUI.md`，回退前确认该文件无其他改动）；`docs/decisions/20261027-updown-scope.md` 不删除（ADR 历史），在 `docs/plan.md` §3 标 superseded 并另写后继 ADR。
