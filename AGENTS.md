@@ -5,19 +5,23 @@
 
 ## 0. 这是什么
 
-Futures-AI：给期货交易者的本地化 AI 分析软件（桌面应用）。用户下载安装后指定文档文件夹授权读取；
-程序把文档与 agent 生成的知识沉淀为本地知识库；agent（pi 底座）结合用户自选的数据源，每天产出个性化的
-可视化图表与日报。v1 从油品（柴油/LPG 等能源品种）垂直切入；架构底座品种无关，后续横向扩展其他品种。
+Futures-AI：给期货交易者的本地化 **Agent+人 研究工作台**（桌面应用）。用户下载安装后指定文档文件夹授权读取；
+程序把外部材料与 agent 产出沉淀为**带溯源的知识底座**；agent（pi 底座）结合用户自选的数据源，以"作业"为单位
+人机共同交付：数据提取 → 数据处理 → 分析延申 → 交付物；交付物生成验证性需求驱动下一轮采集；另设学习区支持
+复盘与认知强化。人可在任意阶段介入但不干扰自动化，介入痕迹沉淀为分析协议。v1 从油品（柴油/LPG 等能源品种）
+垂直切入；架构底座品种无关，后续横向扩展其他品种。
 
-核心循环：用户文档 + 自选数据源 → 本地知识库 + 统一数据层 → pi agent → 个性化图表 + 日报。
+核心循环（双循环）：交付循环（提取 → 处理 → 分析 → 交付 → 验证性需求 → 新作业）+ 学习循环（用户发起 →
+阅读/复盘/深挖 → 认知产物 → 回流）；两者共享知识底座与分析协议。交互与协作模型权威见 `docs/interaction.md`。
 
 ## 1. 文档地图
 
 | 文档 | 内容 | 何时读 |
 |---|---|---|
 | `docs/plan.md` | 总方案：目标、决策记录、文档体系、目录结构、路线图、扩展性设计（app 端/模型/数据源/收费） | 任何任务前先读 |
-| `docs/architecture.md` | 产品架构：分层职责、数据底座、知识层、agent 集成、报告管线、授权模块 | 动架构相关代码前必读 |
-| `docs/designUI.md` | 全局设计理念：配色系统、图表系统、chart-spec 模型、UI 组件、日报设计 | 动前端/图表/日报样式前必读 |
+| `docs/architecture.md` | 产品架构：分层职责、数据底座、知识层（写入闸门/断言台账）、agent 集成、交付管线、授权模块 | 动架构相关代码前必读 |
+| `docs/interaction.md` | 交互架构：双循环、作业与四阶段契约、介入机制、验证性需求、知识回流规则、学习循环与分析协议 | 动交互/工作流/交付物/知识回流/学习相关设计前必读 |
+| `docs/designUI.md` | 全局设计理念：配色系统、图表系统、chart-spec 模型、交付物块模型、UI 组件、界面形态 | 动前端/图表/交付物/学习界面样式前必读 |
 | `docs/decisions/` | ADR 决策记录（编号、日期、背景、取舍） | 新决策先登记再实现 |
 | `specs/<feature>/` | 功能规格目录：spec.md / plan.md / tasks.md / review.md | 开发任何功能时（唯一实施入口） |
 | `templates/` | spec-driven 工作流模板（spec/plan/tasks/checklist/review） | 新建功能规格时 |
@@ -32,7 +36,7 @@ Constitution → Spec → Clarify → 【Gate 1】 → Plan → Checklist → Ta
 **总规则**：每一步开始时重新读取对应文件（AGENTS.md、docs/、`specs/<feature>/` 产物），不依赖会话记忆。
 
 1. **Constitution**：先固化项目原则，明确安全边界、什么该做什么不该做。
-   载体：本文件（§3 决策红线、§4 工作约定）+ `docs/`（plan/architecture/designUI）+ `docs/decisions/` ADR。
+   载体：本文件（§3 决策红线、§4 工作约定）+ `docs/`（plan/architecture/interaction/designUI）+ `docs/decisions/` ADR。
 2. **Spec**：按照 what/why 写 feature 的需求，不写技术方案；每条需求必须能映射到具体的验收规则。
    产物：`specs/<feature>/spec.md`。
 3. **Clarify**：AI Agent 追问所有描述不明确的地方和歧义点；能从仓库、文档、既有方案推断的，不问用户；
@@ -95,7 +99,9 @@ specs/<feature>/          # 每个功能性 feature 一个独立规格目录（�
 
 ## 3. 已确认的关键决策（实现不得偏离）
 
-- **技术栈**：Python 后端核心 + Web 前端（Vue 3 + TS + ECharts）+ 桌面外壳（候选见 plan.md §9，未冻结前不写外壳代码）
+- **技术栈**：Python 后端核心 + Web 前端（Vue 3 + TS + ECharts）+ 桌面外壳 Electron（D-007）
+- **交互架构**：交付+学习双循环，以"作业"为一等对象、四阶段契约与旁路介入、交付物块模型与验证性需求；对话是接口之一（D-016，权威 `docs/interaction.md`）
+- **知识回流**：写入闸门 L0–L5、断言台账、派生内容隔离与晋升、防自引用；去重 = 归并 + 加边（D-017，见 `interaction.md` §5、`architecture.md` §4.7）
 - **AI 底座**：pi coding agent。Python 侧经 `pi --mode rpc` 子进程驱动；agent 工具经本地 MCP server 暴露
 - **数据底座**：声明式数据源适配器 + 描述符派生序列 ID + 溯源/修订/对齐层（见 architecture.md §3）
 - **渲染**：ECharts。图表 = 绑定序列 ID 的声明式 chart-spec；v1 固定模板，v2 用户自定义
@@ -107,6 +113,7 @@ specs/<feature>/          # 每个功能性 feature 一个独立规格目录（�
 
 - 所有功能开发必须走 §2 spec-driven 工作流；`specs/<feature>/` 是实施的唯一入口
 - 决策先写 ADR（`docs/decisions/`）再改代码；方案变更先改 docs 再动实现
+- 交互/工作流/交付物/知识回流变更先改 `docs/interaction.md`（+ ADR），再动 frontend/backend；界面细则以 `docs/designUI.md` 为准
 - 用户文档、私有数据、凭证永不入库；`.gitignore` 锚点不得移除
 - 凭证只在 `.env` 或用户本地数据目录，代码零 fallback 字面量
 - 手改数据必须走事务接口并记台账（继承 FTEngine 审计纪律）
