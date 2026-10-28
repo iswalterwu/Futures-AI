@@ -2,6 +2,7 @@
 
 > **性质**：本 feature 作为“生产方 / 互动方”，对 frontend-workbench v2（“壳方”）交接切片 H-1～H-6 与页面切片的**设计对拍与交付登记**。它不是 v2 的规格副本，也不是 v2 会话的接收结论；v2 的需求与消费要求以 v2 自己的 spec / plan / tasks 为准，本文件只引用编号并写本 feature 的落点。
 > **当前状态（2026-10-28 恢复轮 r6）**：所有切片 **未交付**。没有实现代码、没有定向测试输出、没有集成 SHA；本文件中的接口名称是 r6 设计，须经 A 新会话定向复核（Checklist R7）后才可作为实施依据。对比 v2 的只读接口不代表对方会话已人工接收，**不宣称双向已签收**。
+> **当前状态（2026-10-28 r6.1；以本行为准，上一行“须经 R7 复核”为当时原文）**：r6 接口设计已经 A Checklist R7 通过（`9acf3de`）；r6.1 只吸收 R7 S-27 / S-29 / S-30 的措辞精度（§3 `MockOverrides.jobFixtures` 行、§5-7），接口名称与语义不变。IMPL-GATE-R6 三项已满足（Walter “允许”代码实施并指定协调会话为集成人；工作树见 §0），但**实现未开始**，所有切片仍**未交付**；生产方集成树 `integration/workbench-interaction` 的 SHA 只是生产方验证证据，**不等于** v2 接收方已集成或签收。
 > **阶段记录（脱敏）**：作者 = claude-opus-5-5 via anthropic（Plan / Tasks / Analyze 角色；本窗口 `claude-bridge/claude-opus-5-5` 经协调器探活 exit 1，quota / rate / spend_limit 类，未重试；未改 provider / key / 全局配置）。
 
 ## 0. 固定参照
@@ -11,22 +12,26 @@
 | 本 feature 规格分支 | `docs/workbench-interaction-resume-20261028`，起点 `8af343ff085c0f958068b6b50008a6985f51d170`（R6 暂停快照） |
 | 实施基线 | `implementation_base_sha = 43b6d79681a49562f41751368b2ae00c24062f56`（PR #7 merge commit，已在 origin/main；v1 源交付 `eba5002`）。基线门已满足；实现分支未建立 |
 | v2 只读参照 | `D:/2030/Futures-AI-interaction-v2-ref-ded7161` @ `ded716100381fcd2b4b5d3481f4f56e44c9869fd`：spec v2.1（Gate 1 已批准，52 AC）、plan §7.2（文件唯一写入者）/ §7.3（H-1～H-6）/ §7.13（分阶段依赖）、tasks v2 §1.2（交接登记）/ §5（开工闸门）；v2 A Checklist R2 产物 `f1f755bad8e4bab7577c415f4aea3d297c9d37a8`（审 `949a232`） |
-| 本 feature 审核证据 | Checklist R6（26/26）已提交于 `8af343f`，**只覆盖 r5 设计**；r6 新增的接口精化须 R7 复核后生效 |
+| 本 feature 审核证据 | Checklist R6（26/26）已提交于 `8af343f`，**只覆盖 r5 设计**；r6 新增的接口精化须 R7 复核后生效。【r6.1】**Checklist R7 通过**：原件提交 `9acf3de661187840ea5be6f6d6f78205872ac356`（审 `0e37fbf`，26/26、0 P1/P2）；r6.1 精度修订按 R7「下一步」2 不需重审 |
+| 实施 / 生产方集成（r6.1 登记） | 实施树 `D:/2030/Futures-AI-interaction-implement` / `feat/workbench-interaction-astra`；生产方集成验证树 `D:/2030/Futures-AI-interaction-integration` / `integration/workbench-interaction`，唯一串行写入者 = 协调会话 `01a18388-a371-7746-8158-9fb15d55d819`（`openai/gpt-6.1-sol`）。两树自 `43b6d79` 建立、ff-only 到 main `90187f7`（`upstream_start_sha`；`implementation_base_sha` 仍为 `43b6d79`）；尚未带入本规格、无实现代码 |
+| v2 最新只读参照（r6.1） | `D:/2030/Futures-AI-interaction-v2-ref-79b5212` @ `79b521207a93567c4da8651e5f6e53c665e3d098`：相对 `ded7161` 的 plan §7.3 / tasks §1.2 只增状态补记、V2-S11 / V2-S12 与集成登记，H-1～H-6 / 页面切片的消费要求未变。v2 自有集成树 `D:/2030/Futures-AI-workbench-v2-integration`（`integration/frontend-workbench-v2`）与实施树归另一协调会话所有，本 feature **只读、不写、不代 merge** |
 
 ## 1. 交付登记（四项齐全才“已交付”）
 
 四项 = ① 生产实现固定 commit；② 生产方已提交的有效 Checklist SHA / 轮次；③ 定向测试命令与输出摘要；④ 集成验证分支上的集成 SHA（由指定集成人登记）。设计对拍、任务完成、本地测试绿都不等于交付。
 
+【r6.1 口径】④ 指 **v2 消费方**集成验证分支（`integration/frontend-workbench-v2`）上的集成 SHA，由该分支所有者在真正集成后登记；本 feature 的 `integration/workbench-interaction` 只做生产方串行验证 / 集成，其 SHA 可作为 ①③ 的旁证记入 `implementation-log.md`，**不能填作 ④**。生产方先形成 ①②③ 三项可消费证据即可；② 当前有效轮次为 R7 `9acf3de`（若实施中触发新一轮 A 复核，以交接时已提交的有效轮次为准）。
+
 | 切片 | 提供任务（tasks §2a） | 定向测试（交付时执行） | ① commit | ② Checklist SHA | ③ 测试摘要 | ④ 集成 SHA | 状态 |
 |---|---|---|---|---|---|---|---|
-| H-1 | T-A02、T-A09、T-A09a | `agent-context-contract.spec.ts`；`contract-version.spec.ts -t "WI scenarios"` | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
-| H-2·标签 | T-A01、T-A23 | `contract-labels.spec.ts -t "WI labels"`；`badges.spec.ts -t "WI status badges"` | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
-| H-2·列表 | T-A01、T-A02、T-A10、T-A12、T-A22a | `jobs-store.spec.ts -t "WI H-2"` | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
-| H-3·路由切片 | T-A22 | `routes.spec.ts` | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
-| 页面切片 | T-B01、T-B02、T-B04、T-C01、T-C01a、T-C02、T-C03、T-C04 | `e2e/jobs/intake.spec.ts`；`detail-stage.spec.ts -g "WI AC-002-2"`；`job-list.spec.ts` | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
-| H-4 | T-A22b | `session-context.spec.ts -t "WI H-4"` | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
-| H-5 | T-C01、T-C01a | `intake.spec.ts -t "WI H-5"` | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
-| H-6 | T-A07、T-A09、T-A10、T-A11、T-A21 | `contract-version.spec.ts -t "WI jobFixtures"`；`job-state-read.spec.ts -t "WI scenarios read"`；`job-state-inbox.spec.ts -t "WI inbox seed"` | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
+| H-1 | T-A02、T-A09、T-A09a | `agent-context-contract.spec.ts`；`contract-version.spec.ts -t "WI scenarios"` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
+| H-2·标签 | T-A01、T-A23 | `contract-labels.spec.ts -t "WI labels"`；`badges.spec.ts -t "WI status badges"` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
+| H-2·列表 | T-A01、T-A02、T-A10、T-A12、T-A22a | `jobs-store.spec.ts -t "WI H-2"` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
+| H-3·路由切片 | T-A22 | `routes.spec.ts` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
+| 页面切片 | T-B01、T-B02、T-B04、T-C01、T-C01a、T-C02、T-C03、T-C04 | `e2e/jobs/intake.spec.ts`；`detail-stage.spec.ts -g "WI AC-002-2"`；`job-list.spec.ts` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
+| H-4 | T-A22b | `session-context.spec.ts -t "WI H-4"` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
+| H-5 | T-C01、T-C01a | `intake.spec.ts -t "WI H-5"` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
+| H-6 | T-A07、T-A09、T-A10、T-A11、T-A21 | `contract-version.spec.ts -t "WI jobFixtures"`；`job-state-read.spec.ts -t "WI scenarios read"`；`job-state-inbox.spec.ts -t "WI inbox seed"` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
 
 （测试文件均在 `frontend/tests/{unit,component}/jobs/` 或 `frontend/e2e/jobs/`；命令前缀 `pnpm -C frontend test:unit|test:e2e`。）
 
@@ -74,7 +79,7 @@
 | `frontend/src/jobs/stores/session.ts` | `useSessionStore()`：只读 `context: JobContext \| null` | H-4；无公开 setter，只经导航改变 |
 | `frontend/src/jobs/stores/intake.ts` | `useIntakeStore()`：`open(jobId?)`、`close()`、只读 `isOpen`、`jobId` | H-5；jobId 为打开时快照 |
 | `frontend/src/jobs/stages/IntakeDrawer.vue` | 无必需 props；根元素 `.glass-drawer`，填满父容器 | H-5；v2 前由本 feature 两个页面挂载，v2 后由 AppShell `.intake-slot` 挂载并由 T-H01 移除页面级挂载 |
-| `frontend/src/contracts/mock/index.ts` | `MockOverrides.jobFixtures`：键 = `fixtures/jobs` 文件名，值整体替换；`jobs` 按场景集合分键 | H-6；每个 client 状态建立时读取一次；切换覆盖值需新建 client（沿用 v1 测试在系统边界 spy 委托的做法） |
+| `frontend/src/contracts/mock/index.ts` | `MockOverrides.jobFixtures`：键 = `fixtures/jobs` 文件名，值整体替换；`jobs` 按场景集合分键 | H-6；每个 client 状态建立时读取一次；切换覆盖值需新建 client（沿用 v1 测试在系统边界 spy 委托的做法）。r6.1（R7 S-27）：`job-state.ts` 为模块级唯一共享会话状态，每次 `createMockDataClient()` 时据 scenario / `jobFixtures` 重建，AgentClient 与各 DataClient 共用当前状态；`jobFixtures` “建状态时读一次”，与 v1 `fixtures` “每次请求读取”时机不同 |
 | `frontend/src/main.ts` | `registerJobRoutes(router, pinia)`；`agentClient.subscribe(useJobsStore(pinia).receiveAgentEvent)` | 本 feature 写入；壳不改 |
 
 ## 4. 不做的事（生产方边界）
@@ -91,9 +96,11 @@
 3. H-6 的角标样例在 job-running（j-human）/ job-conflict（j-conflict）场景，normal 场景不预置；其交付依赖 T-A21（链路较深）。是否把 H-6 拆成“场景 / 覆盖”与“角标样例”两批交接，须 v2 接收方同意，本 feature 不预设。
 4. `jobFixtures` 的形状（`jobs` 按场景集合分键）与“每 client 读一次”语义；`failed` 计入进行中、`draft` 计入。
 5. 待归属池位于 IntakeDrawer 内。
-6. 合并注意（集成人）：`43b6d79` 不含 `specs/workbench-interaction/**`；main 的 `specs/README.md` 无本 feature 行，且仍有已完成的“D-018 → workbench-interaction 回 Clarify”待同步行（本分支已于 `c238bd8` / `8bd1b31` 完成），合并时保留本 feature 行并删除该已完成行；v2 参照分支 README 中对本 feature 的待同步行，在交付完成前保留。
+6. 合并注意（集成人）：`43b6d79` 不含 `specs/workbench-interaction/**`；main 的 `specs/README.md` 无本 feature 行，且仍有已完成的“D-018 → workbench-interaction 回 Clarify”待同步行（本分支已于 `c238bd8` / `8bd1b31` 完成），合并时保留本 feature 行并删除该已完成行；v2 参照分支 README 中对本 feature 的待同步行，在交付完成前保留。【r6.1】main 已前进到 `90187f7`：其 `specs/README.md` 仍无本 feature 行、仍有已完成的 D-018 行，并新增 D-020 等跨 feature 行（含“`workbench-interaction` 冻结 spec 不加 AC”）；带入时只定向导入本规格目录与本 feature 行，不整文件覆盖 main 的 `docs/**`、README 或其他 feature 规格。
+7. 【r6.1，R7 S-30，仅知悉】作业内分析台追问经 `contracts/index.ts` 的 `agentClient.send({message, jobContext})` 直接发送，不经 `agent/store.ts`、不带 `sessionId`；基线 mock 为每次这样的 send 分配新的 `mock-session-*`，即**独立 mock session**，与 v2 plan §7.7 “会话 ID 沿用 v1 单会话”不同轨。壳的 `running` 由 runs 派生仍能禁发，时间线仍回放；本 feature 不改该行为，请 v2 接收方知悉。
 
 ## 6. 已登记的外部风险（不升级为本 feature 新硬阻塞）
 
+- 【r6.1 更新】H-01 已经 PR #8 修复并完成该 feature 的 Gate 2 / Handoff（main `90187f7`；只改 `SampleChart.vue` 与 `e2e/theme.spec.ts`，对本 feature 无影响）；H-02 仍为 frontend-workbench v2 事项。下句为 r6 原文：
 - frontend-workbench v1 Handoff 新发现 H-01（图注断行）/ H-02（<980 顶部导航过高，960～979×900 模块区约 215 px）未经 Walter 处置；H-02 可能影响本 feature T-G07 / M-10 在 960 视口的截图观感（T-G07 只断言无横向溢出、关键控件可达），不改变本 feature 的 AC。
 - v1 M-01～M-08 为 AI 截图，人工勾选未签字；11 项 P3 已接受为后续、未修复（含 R1-03：agent store 对未知 runId 硬断言）。本会话不代批。

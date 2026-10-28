@@ -1,7 +1,8 @@
 # 暂停交接 — workbench-interaction
 
 > ⚠️ **恢复更新见 §9（2026-10-28 22:20 +04:00）；下方 §1～§8 的旧暂停状态已被 §9 新记录替代，仅作历史保留。**
-> 当前要点：v1 基线已合入 main（`43b6d79`）并登记；r6 设计经独立 A Checklist R7 通过（`9acf3de`）；**仍 BLOCKED 于 Walter 代码实施授权 + 集成人 / 集成验证分支 / 实施 worktree 登记**；H 组仍待外部 v2。本文件仍不是正式 feature Handoff，不表示实现完成或 Gate 2 通过。
+> 🔖 **最新：§10 开工登记（2026-10-28，r6.1）**——Walter 原话“允许”代码实施并指定协调会话为集成人；IMPL-GATE-R6 三项已满足；实施树 / 生产方集成树已建立（`43b6d79` 起、ff-only 到 main `90187f7`）；r6.1 只吸收 R7 S-27～S-32 精度；**尚未开码**（待集成人把规格带入实施分支），66 任务全部未开始；H 组仍待外部 v2；H-x 全部未交付。§9 及以前为历史。
+> 【§9 时点原文】当前要点：v1 基线已合入 main（`43b6d79`）并登记；r6 设计经独立 A Checklist R7 通过（`9acf3de`）；**仍 BLOCKED 于 Walter 代码实施授权 + 集成人 / 集成验证分支 / 实施 worktree 登记**；H 组仍待外部 v2。本文件仍不是正式 feature Handoff，不表示实现完成或 Gate 2 通过。
 
 > 用户暂停指令下的会话存档，不是 AGENTS.md 工作流里的正式 feature Handoff，不表示实现完成或 Gate 2 通过。
 > 记录时间：2026-10-28 17:55 +04:00。收到暂停后未开启新任务、未启动新 agent、构建、测试、下载或服务；仅保存状态、核验文档、检查本会话子进程并做本地 WIP 提交。
@@ -238,3 +239,72 @@ fi
 ### 9.9 下次恢复后发给用户的第一句话（取代 §8）
 
 > 已读取交接记录：v1 基线 `43b6d79` 已合入并登记，r6 设计已过独立 A Checklist R7；现在只等你确认是否允许代码实施、以及本会话是否担任集成人，答复前我不写代码。
+
+## 10. 开工登记（2026-10-28，r6.1；替代 §9.5 / §9.6 / §9.9 的“待授权”状态）
+
+> 开工前文档记账，**不是**正式 feature Handoff，不走也不代批 Gate 2，不表示任何任务完成。
+> 记账执行者：`claude-opus-5-5 via anthropic`（本限额窗口 `claude-bridge` 已真实返回 quota / rate / spend_limit 类失败，exit 1，按 AGENTS §6 规则 5 不重试；同模型 `anthropic` 最小调用与正式文档任务 exit 0；未换模型、未改 provider / key / 路由 / 全局配置）。
+
+### 10.1 新增授权（原话）
+
+- 协调会话上一轮问：“是否允许开始代码实施，并由本会话担任集成人？” Walter 回复原话：“**允许**”。
+- 解读边界：新增 = 本 feature 已审 tasks 内的代码实施授权 + 指定该协调会话（`PI_SESSION_ID=01a18388-a371-7746-8158-9fb15d55d819`，`openai/gpt-6.1-sol`）为集成人。**不**代其他 feature 的 Gate 1 / Gate 2，**不**授权扩范围、不改冻结 spec / AC、不代 v2 接收方签收。
+
+### 10.2 工作树与基线（协调器已实际创建；本轮只读核验）
+
+| 项 | 值 |
+|---|---|
+| 实施树 | `D:/2030/Futures-AI-interaction-implement` / `feat/workbench-interaction-astra` |
+| 生产方集成验证树（仅集成人串行写） | `D:/2030/Futures-AI-interaction-integration` / `integration/workbench-interaction` |
+| 创建起点 → 当前 | 均自 `43b6d79` 创建，fetch 发现 main 前进后 ff-only 到 `90187f7d8907316e554d2441d846827468c5371f`（PR #8 H-01 修复 + PR #9 D-020～D-024 文档）；clean、无本 feature 代码、尚无 `specs/workbench-interaction/**` |
+| `implementation_base_sha` | **仍为 `43b6d79`**（v1 正式 Handoff）；另登记 `upstream_start_sha = 90187f7` |
+| 只读参照 | main `D:/2030/Futures-AI-interaction-main-ref-90187f7`；旧基线 `D:/2030/Futures-AI-interaction-base-43b6d79`；v2 `D:/2030/Futures-AI-interaction-v2-ref-79b5212`（`79b5212`，H 消费要求与 `ded7161` 相同） |
+| v2 自有树（他人所有，严禁写 / 代 merge） | `D:/2030/Futures-AI-workbench-v2-integration`（`integration/frontend-workbench-v2`）及其实施树；即使其协调会话也是 Sol，也不是本 session |
+
+### 10.3 本轮文档改动（规格写入树 `D:/2030/Futures-AI-interaction-resume`，起点 `5e9e1f4`，未 commit）
+
+- `plan.md`：页首 r6.1 记录；§2.3 种子句（S-29）；§2.4 `jobFixtures` 句（S-27）；动作矩阵“追问”行（S-30）。
+- `tasks.md`：页首新增「当前开工状态（r6.1）」块；§0.0 末“r6.1 upstream 复核”；T-A07（S-29）、T-A10 / T-A18 修改范围（S-27）、T-A18 标准 4（S-28）、T-A21 标准 5（S-29）、T-A22 提示（S-32）、T-E03（S-30）、§7 Converge 核对项（S-31）。任务数 / 工时 / 依赖 / AC / 命令不变。
+- `interface-handoff.md`：页首当前状态；§0 增实施 / 集成树与 v2 最新参照行；§1 ④ 口径（= v2 集成树所有者登记，生产方集成 SHA 不能代填）与 ② = R7 `9acf3de`；§3 `jobFixtures` 行（S-27）；§5-6 补 main `90187f7` 合并口径；新增 §5-7（S-30）；§6 H-01 已修复。
+- `analyze.md`：页首当前结论；文末新增「Analyze R7」（只读，结论：无实质新问题，精度修订在 R7 授权范围内，不需重过 R7 / 另起 A）。
+- 新建 `implementation-log.md`：授权、基线、工作树、模型候选、首批派工范围、实施提示、证据与派工记录表（全部待填，非 Gate 2 Handoff）。
+- `specs/README.md`：只改本 feature 行（→ in-progress）与本 feature 的跨 feature 待同步行。
+- **未改**：`spec.md`、`checklist.md`（blob 仍为 `7c219c0…`）、`checklist-review-request.md`、`docs/**`、`frontend/**`、`backend/**`、`shell/**`、`design/**`、AGENTS.md、全局配置、其他 worktree。
+
+### 10.4 main `90187f7` 文档影响（只读核验，详见 analyze.md「Analyze R7」§3）
+
+- D-020 ADR 末条：“`workbench-interaction`（已冻结）不加 AC”；main `docs/plan.md` §8 保留 Phase 1.5；§9 明写产品批准“不是其他 feature 的 Gate 1 / Gate 2”。
+- 本 feature 不加 calls / `basis=private` / 观点·call·决策块 / 世界模型（`slot_fix`）/ 常驻研究台与自主度 / 多主体 / 协议冷启动（`interview`）等，只登记由后续 feature 承接。
+- H-01 已经 PR #8 修复（§3 / §9 中“H-01 未处置”为当时历史）；H-02 仍为 frontend-workbench v2 事项。
+- 现阶段不 merge main 进规格分支、不改权威 docs；后续把本规格目录定向导入 `90187f7` 起点的实施分支，不整文件覆盖 main 的 `docs/**`、`specs/README.md` 或其他 feature 规格。
+
+### 10.5 门槛现状（取代 §9.5）
+
+| 门槛 | 状态 |
+|---|---|
+| spec v1.1 Gate 1 | 已过（冻结，未改） |
+| `implementation_base_sha` | 已满足：`43b6d79`（`upstream_start_sha = 90187f7` 另记） |
+| IMPL-GATE-R6 (1) A R7 | 已满足：`9acf3de` |
+| IMPL-GATE-R6 (2) Walter 代码授权 | **已取得**：原话“允许” |
+| IMPL-GATE-R6 (3) 集成人 / 集成验证分支 / 实施 worktree | **已登记**（§10.2） |
+| 开码前置：实施分支带入 r6.1 规格 | **未完成**（集成人执行） |
+| H 组外部 v2 S1 / S2 | 阻塞（不变） |
+| H-x 八切片 | 全部未交付；② = R7 `9acf3de`，①③ 待实现，④ 待 v2 集成树所有者真正集成后登记 |
+| interface-handoff §5 v2 接收方确认 | 未办 |
+
+### 10.6 下一步（按顺序）
+
+1. 协调器 / 集成人提交本轮文档改动（本记账者不 commit），在规格分支上核验 `git diff --check` 与结构。
+2. 集成人把含 r6.1 的 `specs/workbench-interaction/**`（及 README 本 feature 行）定向带入 `feat/workbench-interaction-astra`，登记带入 SHA 于 `implementation-log.md` §2。**此前不写代码。**
+3. 按 AGENTS §6 派 Implement（首选 `openai/gpt-6-astra`，新会话、在实施树）做首批 **T-A01～T-A09、T-A09a**，按 DAG；每任务回报 commit 与验证命令输出摘要，由集成人串行并入 `integration/workbench-interaction` 并登记证据。
+4. H-1 在 T-A09a 后形成 ①②③ 三项生产方证据，通知 v2 所有者；④ 由其集成后登记，本 session 不写 v2 树、不代其 merge。
+5. 后续批次、Converge（含 S-31 逐写路径刷新核对）、Review（A 新会话异模型）、Gate 2、Handoff 按 AGENTS §2。
+
+### 10.7 验证与未执行项
+
+- 已做（纯文档）：脚本复算 66 任务 / 101.5 h / 每项 1～2 h；220 ↔ 220 逐任务 1:1；46 AC = 矩阵；DAG 无环、部分前置均为最终任务祖先、任务 ↔ 矩阵双向一致；18 条 e2e AC 最终命令均为 `e2e/jobs`；213 个 `-t` / `-g` 标题 = 211 WI + 2 占位；测试路径隔离。`git diff --check` 结果见交付回复。
+- **未执行**：任何产品单测 / e2e / 构建 / 安装 / 服务 / 下载；fetch / commit / push / PR / merge；写其他 worktree。临时脚本与片段只在独占目录 `C:/Users/iswal/AppData/Local/Temp/wi-implement-01a18388-72nsu9xh/`（不清理、不入库）；未触碰共享 `/tmp`。
+
+### 10.8 下次恢复后发给用户的第一句话（取代 §9.9）
+
+> 已读取交接记录：代码实施已获授权、本会话为集成人，工作树已建；r6.1 精度修订已落文档，下一步由集成人把规格带入实施分支后派 Implement 做首批 T-A01～T-A09 / T-A09a，此前不写代码。

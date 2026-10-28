@@ -5,6 +5,7 @@
 > **2026-10-28 Checklist R1 修订**：针对 A 的 B-01～B-08 / S-01～S-10 补设计；冻结 spec 不变。以下是待 A 复核的修正，不是审核通过，不授权 Tasks / Implement。
 > **2026-10-28 Checklist R3 补正（待 A R4 复核）**：只针对 R3 阻断项做设计补全——B-09（§2.4 `SourceNote.publishedAt`、§3 日期命名）与 B-10（§2.4 `Deliverable` 定稿元数据与 `DeliverableStatusLabel`、§2.4 场景样例、§4.1 / §4.6、§5 AC-003-3 / AC-006-7 / AC-008-1 断言落点）。冻结 spec v1.1、AC 数量与需求、docs 权威均不变；B-01～B-08 已闭环的方法、场景、状态迁移、版本 / 旁路语义，六类块、产物状态与外部依赖闸门不变；S-11～S-17 仍归 Tasks。本补正待 A 新开会话做 R4 复核，**不表示 B-09 / B-10 已审核关闭**，不授权 Tasks / Implement。
 > **2026-10-28 恢复轮 r6（接口精化 + 实施基线登记；待 A 新会话定向复核 = Checklist R7）**：① 登记 `implementation_base_sha = 43b6d79681a49562f41751368b2ae00c24062f56`（PR #7 merge commit，见 §1.1）；② 与 frontend-workbench v2（只读参照 `ded7161`，v2.1 Gate 1 已批准）plan §7.3 / tasks §1.2 的 H-1～H-6 与页面切片对拍，在**既有需求与既有设计意图内**补接口机制精度：§1 文件边界（`main.ts` 作业注册内容）、§2.1（`registerJobRoutes` 与会话上下文守卫）、§2.3（jobsStore 共享未筛选缓存与统一刷新、intakeStore 公开接口、sessionStore 设置 / 清空时机、fixture 初始收件箱条目）、§2.4（`ACTIVE_JOB_STATUSES`、`JobListItem` 字段、`jobFixtures` 语义）、§6 回滚、§7。冻结 spec v1.1、46 AC、方法集、动作矩阵、九场景、样例表、rerun 迁移表、定稿语义均不变；完整对拍见 `interface-handoff.md`。本补正**不是审核通过**，不授权 Implement。阶段记录：Plan = claude-opus-5-5 via anthropic（本窗口协调器探活 `claude-bridge/claude-opus-5-5` exit 1，quota / rate / spend_limit 类；同模型 anthropic exit 0；只换通道、未改配置）。
+> **2026-10-28 r6.1（Checklist R7 P3 精度修订，开工前）**：按 R7「下一步」2 的授权范围只吸收措辞 / 断言精度——S-27（§2.4 `jobFixtures` 句：`job-state.ts` 为模块级唯一共享会话状态，由 `createMockDataClient()` 建立 / 重建，AgentClient 共用当前状态）、S-29（§2.3 种子句：j-failed 只有阶段态 conflict，分析产物 draft，不预置条目）、S-30（动作矩阵“追问”行：经 `agentClient.send` 直接发送、不带 sessionId）；S-28 落在 tasks T-A18 标准 4。不改行为、方法集、AC、任务数、依赖与工时，不需重过 R7。IMPL-GATE-R6 当前状态（三项已满足、实现分支待带入本规格后开码）以 tasks.md 页首「当前开工状态」块为准；本文件 §1.1 / §7 中“待 R7 / 待授权”为当时原文。作者 = claude-opus-5-5 via anthropic（bridge 本窗口已限额，未重试；未改配置）。
 > **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
@@ -73,7 +74,7 @@
 - **契约 mock 层持有唯一可变状态**（`contracts/mock/job-state.ts`），读写均经契约方法；UI store 只做视图缓存。这样 `api` feature 落地时只需替换实现，不动组件
 - 本地持久化 key：`fai.jobs.v1`（作业、产物/版本、投放的允许子集、介入事件、交付物/定稿快照、收件箱条目）；`fai.inbox.v1`（已读 id）。非 normal 场景使用 fixture + 会话内可变副本，**不读、不写、不清**这两个 key；切场景不会清空正常模式数据
 - 待处理项由 mock 契约状态层生成：阶段首次进入 `needs_human`、产物首次 `conflict`、人的 overlay 首次待合并、agent 改稿待接受/回退各生成一条 `InboxItem`（同一目标/原因不重复生成；修订号变化可产生新项）。阶段进度不由 UI 推导，计数亦由 `JobListItem.pendingCount` / 阶段 `pendingCount` 提供
-- 状态建立时对 fixture 初始状态应用同一生成规则（r6）：预置的 H 阶段 / conflict 产物各有一条未读条目，因此 job-running 的 j-human、job-conflict 的 j-conflict 初始即带角标（AC-007-4 与 v2 H-6 的角标样例）
+- 状态建立时对 fixture 初始状态应用同一生成规则（r6）：预置的 H 阶段 / conflict 产物各有一条未读条目，因此 job-running 的 j-human、job-conflict 的 j-conflict 初始即带角标（AC-007-4 与 v2 H-6 的角标样例）。“conflict 产物”指产物 `status=conflict`；normal 的 j-failed 只有分析**阶段态** conflict（运行失败的呈现，S-14）与 reason，其分析产物为 draft，故 normal 场景不预置条目（r6.1，R7 S-29）
 - `listInbox(jobId?)` 返回条目、已读/已解决状态及作业/阶段计数（只数未读且未解决项）；`markInboxRead(ids)` 将本次实际展示的 id 标已读，清除相应角标但保留条目和介入历史。打开前请求后一次标记，之后新来的条目仍未读；已读不等于已解决，冲突/待合并状态徽继续显示。阶段离开 H、冲突被裁定、overlay 合并、候选被接受/回退时由 mock 层把对应条目标 resolved，完成态不常驻角标。角标位置：列表卡、详情阶段轨道（本 feature），首页作业轨道（v2 消费同一计数）
 
 ### 2.4 契约 v2（R-008）
@@ -123,7 +124,7 @@ resetMockData()
 
 - `listJobs` 按状态/类型与标题子串组合筛选，缺省 updatedAt 倒序，清空筛选恢复全列表；`getJob` 未知 id 返回 not_found。读取历史版本不改变当前版本。写回执包含已改变的作业/产物/版本/事件与 inbox 计数，UI 以回执或重新读取消费，不自行改业务状态
 - `AgentClient.send` 增加可选 `jobContext`；`AgentEvent` 公共可选 `jobContext`（不改变十类事件/唯一终态）。mock DataClient 与 AgentClient 共享 `job-state.ts`；AgentClient 先让该状态层处理事件，再通知 UI 订阅者。runId→作业/阶段/改稿请求的关联在 mock 层，页面卸载不移除它；UI 只刷新缓存
-- mock fixture 为 `jobs.json/job-detail.json/deliverable.json/interventions.json/uploads.json`；`MockOverrides` 增加 `jobFixtures`，**不新增 `jobScript`**。r6（H-6）：`jobs.json` 按场景集合分键（normal / job-running / job-pending-merge / job-conflict / job-delivered），`job-detail.json` / `deliverable.json` 以作业 id 为键；`jobFixtures` 的每个给出的键整体替换对应内置文件（不深合并，与 v1 `fixtures` 覆盖口径一致），在每个 mock DataClient 的会话状态建立时读取一次并在边界校验；覆盖集合中缺工作区样例的作业返回带阶段的空工作区；存在覆盖时会话只在内存，不读写两个本地 key。作业运行统一经既有 `send({jobContext})` 的 success/failure/retry/long 脚本驱动；不因读取页面自动启动、不新造检查点事件种类
+- mock fixture 为 `jobs.json/job-detail.json/deliverable.json/interventions.json/uploads.json`；`MockOverrides` 增加 `jobFixtures`，**不新增 `jobScript`**。r6（H-6）：`jobs.json` 按场景集合分键（normal / job-running / job-pending-merge / job-conflict / job-delivered），`job-detail.json` / `deliverable.json` 以作业 id 为键；`jobFixtures` 的每个给出的键整体替换对应内置文件（不深合并，与 v1 `fixtures` 覆盖口径一致），在每个 mock DataClient 的会话状态建立时读取一次并在边界校验（r6.1，R7 S-27：`job-state.ts` 持有**模块级唯一共享会话状态**，每次 `createMockDataClient()` 时建立 / 重建它——读 scenario 与 `jobFixtures` 各一次；`createMockAgentClient()` 与所有 DataClient 实例共用当前状态，不各持一份；故 `jobFixtures` 为“建状态时读一次”，与 v1 `fixtures` 的“每次请求读取”时机不同，切换覆盖值须新建 client）；覆盖集合中缺工作区样例的作业返回带阶段的空工作区；存在覆盖时会话只在内存，不读写两个本地 key。作业运行统一经既有 `send({jobContext})` 的 success/failure/retry/long 脚本驱动；不因读取页面自动启动、不新造检查点事件种类
 - 错误形态沿用 `{error:{code,message,retryable}}` 与既有 code；本 feature 的无效操作/只读写入/定稿未决项均返回 validation_error，payload 含说明；未知锚返回 not_found。方法输入/输出/参数字义写进 `methods.ts` 与生成文档
 
 #### 动作 → 契约方法 → 介入 kind（B-01）
@@ -136,7 +137,7 @@ resetMockData()
 | 修正映射/单位后确认 | confirmIntake | map_fix | action=map_fix, uploadId, mapping；原记录与修正前 mapping 保留 |
 | 参数/口径修正 | updateParams | recipe | action=recipe, artifactId, changes |
 | 结论级批注 | submitIntervention | framework | action=annotate, conclusionId, note |
-| 追问“依据” / “如果” | submitIntervention | ask_why / question | action=ask_why 或 what_if, conclusionId, question；同时由抽屉 send 保留上下文，不重复写两条事件 |
+| 追问“依据” / “如果” | submitIntervention | ask_why / question | action=ask_why 或 what_if, conclusionId, question；同时经 `contracts/index.ts` 的 `agentClient.send({message, jobContext})` 直接发送以保留上下文（不经 `agent/store.ts`、不带 sessionId，基线 mock 为其分配独立 mock session，抽屉时间线仍回放；r6.1，R7 S-30），不重复写两条事件 |
 | 要求深挖 | submitIntervention | rewrite | action=deepen, conclusionId, instruction |
 | 删除结论 / 否决 | submitIntervention | delete / veto | action=delete_conclusion 或 veto, conclusionId, reason；删除用 tombstone 新 revision，不删旧内容 |
 | 候选规则 | submitIntervention | pin_rule | action=pin_rule, ruleText, state='candidate'；不自动激活/蒸馏 |
