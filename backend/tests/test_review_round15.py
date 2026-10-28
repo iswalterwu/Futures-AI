@@ -174,7 +174,7 @@ class TestCliExit:
             def timeout(*a, **k):
                 raise TimeoutError("timed out")
 
-            monkeypatch.setattr(cli, "_internal_get", timeout)
+            monkeypatch.setattr(cli, "internal_get", timeout)
             monkeypatch.setattr(cli, "READ_WAIT_S", 0.3)
             assert cli_run(tmp_path, "list", "sources") == 1
             err = capsys.readouterr().err

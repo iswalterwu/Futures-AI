@@ -1,7 +1,7 @@
 # Feature: settings 评审记录（review.md）
 
 > Handoff 材料。Review 由第三方 agent（独立会话、与实施隔离）参考 spec + plan + tasks + 实际代码差异执行。
-> 审核员：A = claude-fable-5-1，B = gpt-6.1-sol；共识：两审一致通过才算通过。
+> 审核员：A = claude-fable-5-1（**单审**，2026-10-28 起；A 的结论即审核结论）。
 > **通道记录（2026-10-28）**：本轮 A 经 **anthropic** 通道（`--provider anthropic --model claude-fable-5-1`）
 > —— claude-bridge 通道周限额（seven_day，10-30 18:00 重置）不可用，按 AGENTS.md §2 的通道优先级切换；
 > 同一 Claude 模型、仅换接入路径，审核员身份不变。
@@ -42,7 +42,8 @@
 - B2-06 覆盖 data-layer 清单原因 → `reason` 保留原值，派生提示放 `reason_hint`
 - B2-07 DPAPI 保存失败被当校验错误 → `ProgressError`（存储）与 `ValueError`（校验）分开，存错则失败退出且不置完成标记
 - A P2-B plan/tasks 与实现脱节 → 已同步（SECTORS 11 项、path 五值、`_probe` 自建、state 结构、锁边界、日志脱敏）
-- **A/B F-10（GUI 类 AC 延后）仍未裁决**，待 Gate 2 由 Walter 决定交付顺序
+- 第三轮 A（单审）指出 F3-01/F3-02（变异脚本假阳性、重复类遮蔽脱敏测试）与 13 项 P3，已修：测试去重、变异脚本区分 BROKEN、`declaration_only` 走真实路径、`creds.remove()`、锁超时消息、settings 与 data CLI 的等待一致、死代码清理、data-layer plan 与文档同步
+- **F-10（GUI 类 AC 延后）仍未裁决**，待 Gate 2 由 Walter 决定交付顺序
 
 ## 未完成项
 
@@ -65,7 +66,7 @@
 
 ## 验收证据
 
-- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **372 passed, 5 skipped**（0 warnings，2026-10-27；5 skip = 在线冒烟默认跳过）
-- settings 专项：`pytest tests/test_settings_*.py -q` → **73 passed**（profile 17 / onboarding 22 / sources 10 / cli 19 / privacy 8，含 AC-005 静态断言与官方选项比对）
+- 测试命令输出摘要：`cd backend && python -m pytest tests/ -q` → **373 passed, 5 skipped**（0 warnings，2026-10-27；5 skip = 在线冒烟默认跳过）
+- settings 专项：`pytest tests/test_settings_*.py -q` → **74 passed**（profile 16 / onboarding 19 / sources 10 / cli 19 / privacy 10，含 AC-005 静态断言与官方选项比对）
 - 发布检查：`python tools/release_check.py` → **13/13**（新增 settings 包入 wheel、`futureai-settings` 入口、隔离环境档案+状态冒烟）
 - 变异验证：`cd backend && python tools/mutations.py` → **8/8 检出**（脚本按新准则裁到 8 项关键守护）（settings 11 项：引导不校验、unreadable 当回退、写锁不路由、状态非原子、引导状态按内容、缺运行态、两处 HTTP 日志、getpass 降级继续、缺 Library、503 误分类；data-layer 5 项：无 key 不回退、凭证故障静默回退、内置回流 stock、无看门狗、BEGIN 移出保护）

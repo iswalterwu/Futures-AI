@@ -45,7 +45,7 @@ MUTATIONS: list[dict] = [
         file="settings/cli.py",
         old="    if not (sys.stdin and sys.stdin.isatty()):",
         new="    if False:",
-        test="tests/test_settings_cli.py::TestEchoSafety::test_aborts_when_echo_cannot_be_hidden",
+        test="tests/test_settings_cli.py::TestEchoSafety::test_non_tty_input_aborts_without_reading",
     ),
     dict(
         name="data-layer/无 key 不回退（直接报错）",
@@ -101,6 +101,8 @@ def run_mutation(m: dict) -> tuple[str, str]:
             timeout=600,
             env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )
+        if r.returncode in (4, 5) or "no tests ran" in r.stdout:
+            return "BROKEN(测试未执行)", (r.stdout.strip().splitlines() or [""])[-1]
         if r.returncode != 0:
             return "KILLED", (r.stdout.strip().splitlines() or [""])[-1]
         return "SURVIVED", "目标测试仍通过（该行为未被守护）"
@@ -119,7 +121,7 @@ def main(argv: list[str]) -> int:
         status, detail = run_mutation(m)
         results.append((m["name"], status, detail))
         print(f"{status:14s} {m['name']}  — {detail}")
-    survived = [r for r in results if r[1] != "KILLED"]
+    survived = [r for r in results if r[1] != "KILLED"]  # BROKEN 也计入未检出
     print(f"\n{len(results) - len(survived)}/{len(results)} 被检出")
     return 0 if not survived else 1
 

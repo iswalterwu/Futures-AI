@@ -9,7 +9,7 @@
 - **界面宿主**：v1 只交付**CLI + 可测试核心**；GUI 归 desktop-shell（本 feature 的界面在 shell 就绪后接，落地时只做视图层，不重复实现流程）
 - **存储**：
   - 档案：`<用户数据目录>/profile/profile.bin`——**DPAPI 加密的 JSON**（复用 `data.creds` 的加解密，与凭证同等保护、同等 fail closed）
-  - 数据源开通状态：`<用户数据目录>/profile/state.json`——**不含任何凭证**，仅 `{source_id: {verified_at, last_error}}`
+  - 数据源开通状态：`<用户数据目录>/profile/state.json`——**不含任何凭证**，仅 `{source_id: {verified_at, guide_error}}`
 - **凭证**：沿用 data-layer 的 `<用户数据目录>/creds/<credential_ref>.bin`（DPAPI）
 - **依赖**：`pydantic`（档案模型）、`data`（Service / creds / FetchError）；EIA 验证复用 data-layer 的 API 请求点
 
@@ -50,7 +50,7 @@ def prepare(root) -> Step            # 用档案预填；缺项时 detail["missi
 def registration_url() -> str        # https://www.eia.gov/opendata/register.php + 逐项指引
 def guide_fields(profile) -> list[dict]   # [{label, value}] 供界面照抄到浏览器表单
 def verify_and_save(root, key) -> Step    # 真实验证 → 成功才保存（AC-003-2/3）
-def clear_key(root) -> None               # 清除凭证 → 回到免凭证路径（AC-003-5）
+def clear_key(root) -> bool               # 清除凭证 → 回到免凭证路径（AC-003-5）
 ```
 
 - `verify_and_save` 的验证 = **真实调用 EIA API 一次**（注入点 `settings.onboarding._probe`；默认实现自建请求以便精细分类，不复用 data-layer 的 `_request`——后者把 5xx 与网络错误都归为 `adapter_error`，分不出 server_error/unreachable）：
@@ -65,7 +65,7 @@ def clear_key(root) -> None               # 清除凭证 → 回到免凭证路�
 
 ```python
 def list_with_status(root) -> list[dict]
-# [{adapter_id, name, enabled, status, credential_state, path, verified_at, last_error}]
+# [{adapter_id, name, enabled, status, credential_state, path, verified_at, guide_error}]
 # credential_state: configured | missing | unreadable
 # path: api | offline | builtin | declaration_only | blocked
 #   api=有凭证走官方 API；offline=未配置凭证走免凭证回退；builtin=内置实现无需凭证；
@@ -99,7 +99,7 @@ def list_with_status(root) -> list[dict]
 
 ```
 <root>/profile/profile.bin     # DPAPI 加密的档案 JSON（不在 Git）
-<root>/profile/state.json      # {source_id: {verified_at, last_error}, onboard: {completed, skipped}}（不含凭证）
+<root>/profile/state.json      # {source_id: {verified_at, guide_error}, onboard: {completed, skipped}}（不含凭证）
 <root>/creds/eia_api_key.bin   # 既有：DPAPI 凭证（data-layer 管）
 ```
 

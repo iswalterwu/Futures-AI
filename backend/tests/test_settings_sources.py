@@ -58,45 +58,42 @@ class TestPaths:
         assert row["status"] == "error"  # 清单 ok ≠ 可用
         assert "读取/解密失败" in row["reason"]
 
-    def test_declaration_only_source(self, tmp_path, monkeypatch):
+    def test_declaration_only_source(self, tmp_path):
         """清单未声明 implementation → declaration_only（仅声明、不可取数）。"""
-        from data.catalog.registry import BUILTIN_ADAPTERS_DIR
-        from data.manifest import load as load_manifest
-        from settings import sources as mod
+        from data.service import Service
 
-        real = mod._manifests
-
-        def with_decl(root):
-            out = real(root)
-            out["decl-only"] = {"implementation": None, "credential_ref": None, "name": "decl"}
-            return out
-
-        monkeypatch.setattr(mod, "_manifests", with_decl)
-        rows = mod.list_with_status(tmp_path)
-        # 仅当该源存在于 data-layer 列表时才有意义：直接断言推导函数的语义
-        assert mod.PATH_DECLARATION_ONLY == "declaration_only"
-        assert isinstance(rows, list)
-
+        d = tmp_path / "adapters" / "decl-only"
+        d.mkdir(parents=True)
+        (d / "manifest.yaml").write_text(
+            chr(10).join([
+                "id: decl-only", "name: Decl", "version: 1", "credentials: none", "provides:",
+                "  - descriptor: {asset: bu, geo: cn, measure: close, contract: \"\"}",
+                "    symbols: [B]", "    unit: cny_ton", "    freq: 1d", "    tz: Asia/Shanghai",
+                "    fetch: {modes: [on_demand], history_days: 1}",
+                "    update: {lag_min: 0, revises: true}",
+            ]),
+            encoding="utf-8",
+        )
+        Service(tmp_path).init().close()  # 目录编译：登记该源（仅声明）
+        row = _by_id(sources.list_with_status(tmp_path))["decl-only"]
+        assert row["path"] == sources.PATH_DECLARATION_ONLY
+        assert row["implementation"] is None
 
 class TestRuntime:
     """F-02/F-03/F-06：运行态与写锁场景。"""
 
-    def test_last_fetch_reported(self, tmp_path):
+    def test_last_fetch_reported(self, tmp_path, monkeypatch):
         """最近一次取数（成功）出现在状态里，而不是只有向导的 verified_at。"""
-        from datetime import datetime
+        import pandas as pd
 
+        from data.adapters.akshare import akshare_adapter as ak_mod
+        from data.catalog.descriptor import derive_id
         from data.service import Service
 
+        monkeypatch.setattr(ak_mod, "_get_main", lambda symbol: pd.DataFrame({"日期": ["2026-10-01"], "收盘价": [1.0]}))
         svc = Service(tmp_path).init()
         try:
-            from data.adapters.akshare import akshare_adapter as ak_mod
-
-            ak_mod._get_main = lambda symbol: __import__("pandas").DataFrame(
-                {"日期": ["2026-10-01"], "收盘价": [1.0]}
-            )
-            sid = __import__("data.catalog.descriptor", fromlist=["derive_id"]).derive_id(
-                {"asset": "sc", "geo": "cn", "measure": "close", "contract": ""}
-            )
+            sid = derive_id({"asset": "sc", "geo": "cn", "measure": "close", "contract": ""})
             svc.fetch(sid, do_fetch=True)
         finally:
             svc.close()
@@ -106,7 +103,7 @@ class TestRuntime:
 
 
 
-    def test_write_process_without_channel_fails_cleanly(self, tmp_path, capsys):
+    def test_write_process_without_channel_fails_cleanly(self, tmp_path, capsys, monkeypatch):
         """写进程已开启观测库但未发布只读通道：结构化提示，不抛裸 traceback。"""
         import os
         import subprocess
@@ -114,6 +111,7 @@ class TestRuntime:
 
         from settings import cli
 
+        monkeypatch.setattr(sources, "READ_WAIT_S", 1.0)  # 缩短等待窗口
         backend = str(Path(__file__).resolve().parent.parent)
         env = dict(os.environ, PYTHONPATH=backend, PYTHONIOENCODING="utf-8")
         code = chr(10).join([

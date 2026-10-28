@@ -20,7 +20,8 @@ PATH_API = "api"
 PATH_OFFLINE = "offline"
 PATH_BUILTIN = "builtin"
 PATH_DECLARATION_ONLY = "declaration_only"
-PATH_BLOCKED = "blocked"  # 凭证故障：不回退、不可用（区别于"未配置 → 免凭证回退"）
+PATH_BLOCKED = "blocked"
+READ_WAIT_S = 30.0  # 写进程启停过渡窗口内的等待上限（与 data-layer 一致）  # 凭证故障：不回退、不可用（区别于"未配置 → 免凭证回退"）
 
 
 def _manifests(root: Path) -> dict[str, dict]:
@@ -57,26 +58,31 @@ def _credential_state(root: Path, ref: str | None) -> str:
 
 
 def _sources_and_runtime(root: Path) -> tuple[list[dict], dict[str, dict], str | None]:
-    """取源列表与运行态。返回 (sources, 运行态{source_id: {last_fetch_at, last_fetch_status}}, 说明)。
+    """取源列表与运行态。返回 (sources, 运行态, 说明)。
 
-    - 无写锁：本地只读 Service（顺带查最近批次）
-    - 有写锁（serve 或 CLI 写命令运行中）：经 data-layer 的内部只读通道路由（不在本进程另开库）
+    - 有写锁且有只读端点（serve 在跑）：经 data-layer 的内部通道读，不另开库
+    - 否则本地只读打开（顺带查最近批次）；写进程正在启停时短暂等待
     """
-    from data.lock import lock_held, read_endpoint
+    import time
+
+    from data.lock import LockBusy, lock_held, read_endpoint
 
     data_dir = Path(root) / "data"
-    if lock_held(data_dir) and read_endpoint(data_dir):
-        from data.cli import _internal_get  # 复用 data-layer 的唯一读取路径
+    deadline = time.monotonic() + READ_WAIT_S
+    while True:
+        if lock_held(data_dir) and read_endpoint(data_dir):
+            from data.cli import internal_get  # 复用 data-layer 唯一的读取路径
 
-        payload = _internal_get(root, "/internal/sources", {})
-        return payload["sources"], {}, "写进程运行中：运行态由写进程持有，此处仅显示清单状态"
+            payload = internal_get(Path(root), "/internal/sources", {})
+            return payload["sources"], {}, "写进程运行中：运行态由写进程持有，此处仅显示清单状态"
+        try:
+            svc = Service(Path(root), readonly=True)
+            break
+        except LockBusy as e:
+            if time.monotonic() >= deadline:
+                raise RuntimeError(f"数据目录被写进程占用，请稍后重试（{e}）") from e
+            time.sleep(0.2)
 
-    from data.lock import LockBusy
-
-    try:
-        svc = Service(Path(root), readonly=True)
-    except LockBusy as e:  # 写进程刚取锁、端点尚未发布
-        raise RuntimeError(f"数据目录被写进程占用，请稍后重试（{e}）") from e
     try:
         svc.init()
         sources = svc.list_sources()["sources"]
@@ -92,7 +98,6 @@ def _sources_and_runtime(root: Path) -> tuple[list[dict], dict[str, dict], str |
         return sources, runtime, None
     finally:
         svc.close()
-
 
 def list_with_status(root: Path) -> list[dict]:
     """源列表 + 路径 + 验证时间 + 最近取数运行态 + 不可用原因（与 data-layer list_sources 同口径）。"""
@@ -151,7 +156,3 @@ def list_with_status(root: Path) -> list[dict]:
                 row["reason"] = "；".join(hints)
         rows.append(row)
     return rows
-
-
-def state_file(root: Path) -> Path:
-    return Path(root) / "profile" / STATE_FILE

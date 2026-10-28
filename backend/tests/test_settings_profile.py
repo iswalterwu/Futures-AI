@@ -104,12 +104,10 @@ class TestUpdate:
             update(tmp_path, email="not-an-email")
         assert load(tmp_path).email == "walter@example.com"  # 原档案未受影响
 
-    def test_exists_distinguishes_empty_profile(self, tmp_path):
-        from settings.profile import exists
-
-        assert exists(tmp_path) is False
+    def test_empty_profile_still_creates_file(self, tmp_path):
+        assert profile_path(tmp_path).is_file() is False
         save(tmp_path, Profile())  # 全空也算建立
-        assert exists(tmp_path) is True
+        assert profile_path(tmp_path).is_file() is True
 
     def test_two_processes_keep_both_fields(self, tmp_path):
         """并发 set 不同字段：排队执行，两者都保留。"""

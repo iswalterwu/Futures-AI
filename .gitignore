@@ -230,3 +230,8 @@ __marimo__/
 *.duckdb
 *.duckdb.wal
 *.sqlite
+
+# Python 构建产物（生成物不入库）
+backend/build/
+backend/dist/
+backend/*.egg-info/

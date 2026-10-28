@@ -10,14 +10,18 @@ RETRY_S = 0.02
 TIMEOUT_S = 5.0
 
 
+class LockTimeout(Exception):
+    """取锁超时（另一个 settings 进程正在写档案/状态）。"""
+
+
 def acquire(directory: Path, timeout: float = TIMEOUT_S):
-    """取目录写锁；被占用时排队重试，超时才抛 LockBusy。"""
+    """取目录写锁；被占用时排队重试，超时抛 LockTimeout（消息面向 settings 用户）。"""
     directory.mkdir(parents=True, exist_ok=True)
     deadline = time.monotonic() + timeout
     while True:
         try:
             return write_lock(directory)
-        except LockBusy:
+        except LockBusy as e:
             if time.monotonic() >= deadline:
-                raise
+                raise LockTimeout(f"{directory.name} 正被另一个设置进程写入，请稍后重试") from e
             time.sleep(RETRY_S)

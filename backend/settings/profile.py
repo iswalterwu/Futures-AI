@@ -99,15 +99,6 @@ def load(root: Path) -> Profile:
         raise ProfileError(f"档案内容损坏: {e}") from e
 
 
-def exists(root: Path) -> bool:
-    """档案文件是否存在（与"内容是否为空"无关：可留空但已建立）。"""
-    return prof_exists(root)
-
-
-def prof_exists(root: Path) -> bool:
-    return (Path(root) / PROFILE_DIR / f"{PROFILE_NAME}.bin").is_file()
-
-
 def _save_locked(root: Path, profile: Profile) -> Path:
     directory = Path(root) / PROFILE_DIR
     try:

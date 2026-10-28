@@ -1,9 +1,8 @@
 """CLI（plan §2.2，AC-004-5/6、AC-005-1/2 交付入口、AC-007-3 交互向导）。
 
 - 写命令：构造写 Service（先取锁后开库，LockBusy → 报错退出）
-- 写命令执行期间提供内部只读通道（随机端口 + 端点文件），与 serve 一样不阻塞只读命令（AC-004-6）
 - 只读命令：先探测写锁——无锁直接只读 Service（空目录首启 = 内存库，不建库）；
-  有锁经持锁进程的内部只读通道路由；写进程启停过渡窗口内短暂等待
+  有锁时：serve 在跑则经其内部只读通道路由；否则等待写命令结束（≤30s）后本地读取
 - 错误：业务错误输出结构化 {error:{code,message,retryable}} 并返回 1；不抛裸异常
 - import：交互式向导（目标选择/确认 → 复用映射/改列）+ 统一批次生命周期（F-08）
 """
@@ -77,12 +76,11 @@ def _route_timeout() -> TimeoutError:
     return TimeoutError("只读通道响应超时（超出统一截止时间）")
 
 
-def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TIMEOUT_S):
+def internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TIMEOUT_S):
     """经持锁进程的内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。
 
     端点文件已消失、HTTP 503（关闭屏障：通道即将停止）→ ConnectionError，由调用方按“通道不可用”等待。
-    timeout 是整次请求的硬上限：看门狗到期直接 shutdown 套接字，覆盖连接、响应头、
-    分块传输帧与 Connection: close 型响应体的全部读取阶段。
+    timeout 是整次请求的上限：单次 socket 超时取剩余时间，响应体逐段核对截止时间。
     """
     ep = read_endpoint(root / "data")
     if not ep:
@@ -109,7 +107,7 @@ def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TI
                     raise _route_timeout()
                 break
             body.extend(chunk)
-    except TimeoutError as e:  # 含看门狗触发的读取中断
+    except TimeoutError as e:
         if time.monotonic() >= deadline:
             raise _route_timeout() from e
         raise ConnectionError(f"只读通道读取失败：{e}") from e
@@ -138,14 +136,14 @@ def _lock_held(root: Path) -> bool:
 def _route_readonly(root: Path, args, timeout: float = ROUTE_TIMEOUT_S) -> object:
     if args.cmd == "list":
         path = {"series": "/internal/search", "sources": "/internal/sources", "jobs": "/internal/jobs"}
-        return _internal_get(root, path[args.what], {}, timeout=timeout)
+        return internal_get(root, path[args.what], {}, timeout=timeout)
     if args.cmd == "jobs":
-        return _internal_get(root, "/internal/jobs", {}, timeout=timeout)
+        return internal_get(root, "/internal/jobs", {}, timeout=timeout)
     if args.cmd == "reconcile":
-        return _internal_get(root, "/internal/reconcile", {"series_id": args.series_id}, timeout=timeout)
+        return internal_get(root, "/internal/reconcile", {"series_id": args.series_id}, timeout=timeout)
     if args.cmd == "provenance":
-        return _internal_get(root, "/internal/provenance", {"series_id": args.series_id}, timeout=timeout)
-    return _internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b}, timeout=timeout)
+        return internal_get(root, "/internal/provenance", {"series_id": args.series_id}, timeout=timeout)
+    return internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b}, timeout=timeout)
 
 
 def _readonly(root: Path, args) -> int:

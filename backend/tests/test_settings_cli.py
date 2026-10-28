@@ -192,11 +192,14 @@ class TestEchoSafety:
         fake_stdin = io.StringIO("k-" + "should-not-be-read")
         monkeypatch.setattr("sys.stdin", fake_stdin)
         probed = []
+        called = []
         monkeypatch.setattr(onboarding, "_probe", lambda key: probed.append(key))
+        monkeypatch.setattr("getpass.getpass", lambda prompt="": called.append(1) or "k-" + "nope")
         assert run(tmp_path, "source", "open", "eia") == 1
         assert "无法在此终端隐藏输入" in capsys.readouterr().err
         assert fake_stdin.tell() == 0  # 没有读取任何输入
-        assert probed == [] and not onboarding.has_key(tmp_path)
+        assert probed == [] and called == []  # 未验证、也未调用 getpass
+        assert not onboarding.has_key(tmp_path)
 
 
 class TestStorageFailure:

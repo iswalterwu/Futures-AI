@@ -236,10 +236,7 @@ def clear_key(root: Path) -> bool:
     """清除凭证 → 回到免凭证路径（spec AC-003-5）。与验证提交同一把锁。"""
     lock = _filelock.acquire(Path(root) / STATE_DIR)
     try:
-        p = Path(root) / "creds" / f"{CREDENTIAL_REF}.bin"
-        existed = p.exists()
-        if existed:
-            p.unlink()
+        existed = creds.remove(Path(root) / "creds", CREDENTIAL_REF)
         write_state(root, SOURCE_ID, lock=False, verified_at=None, last_error=None)
         return existed
     finally:

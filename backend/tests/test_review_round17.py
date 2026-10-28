@@ -63,7 +63,7 @@ class TestRouteRetry:
                     raise ConnectionRefusedError("[WinError 10061] refused (injected)")
                 return {"sources": [{"adapter_id": "akshare"}]}
 
-            monkeypatch.setattr(cli, "_internal_get", flaky)
+            monkeypatch.setattr(cli, "internal_get", flaky)
             t0 = time.monotonic()
             assert cli_run(tmp_path, "list", "sources") == 0
             assert len(calls) == 3 and time.monotonic() - t0 < 10
