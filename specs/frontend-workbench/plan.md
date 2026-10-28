@@ -2,6 +2,7 @@
 
 > Plan 阶段产物。需求在 spec.md（2026-10-27 Gate 1 批准冻结，45 条 AC），本文只写实现机制与验收落点。
 > **2026-10-28 精简版**：按 AGENTS.md §5 工程准则重写——去掉为"将来可能需要"而建的东西（评审用中间件、守卫自检样例、跨字段校验、抽象层、逐锚盘点），保留能直接验证 spec 的部分。spec 未改动。
+> **2026-10-28 Review 整改**：按 R1-01 补全变化量独立精度（§2.1 / §2.7），新增 T-16 / T-17；回写 T-01 实际 TypeScript 版本。修复冻结的数值展示需求，不新增用户行为、不修改 spec 或 Checklist。其余 P3 的后续归属见 tasks.md，未获 Gate 2 风险接受。
 >
 > **v2 Plan 追加（2026-10-28）**：新增 §7「v2 实施设计（v2.1 冻结需求）」。需求依据是 spec v2.1：Walter 已于 2026-10-28 批准 Gate 1，范围包括 Q-023～Q-031，52 条 AC 已冻结。§1～§6 原文保留，作为 v1 历史基线；v1 的 45 条 AC 设计没有废弃。§1～§6 与 §7 冲突时以 §7 为准，覆盖范围见 §7.1。本轮只更新本文件（页首记录与 §7）和 `specs/README.md` 本 feature 一行；没有修改 spec、tasks、checklist、产品 ADR 或代码。§7 中的新增令牌、文件和测试都只是计划，本轮不写入，也不授权实施。
 > **v2 Plan 模型记录**：Plan = `claude-opus-5-5` via `anthropic`。`claude-bridge/claude-opus-5-5` 的最小真实调用因额度或限流失败；按规则只换通道、不换模型，当前限额窗口内不再重试 bridge。协调与落盘 = `openai/gpt-6.1-sol`，只负责读取和串行集成，不是审核员 A。任务 = frontend-workbench v2 Plan §7 文本收敛。基线 = `spec/frontend-workbench-v2` @ `fec355650f614ef42138f409afc748206e941ba1`。失败类别 = 通道额度或限流；本记录已脱敏，不含密钥、token 或原始鉴权报错。
@@ -13,7 +14,7 @@
 
 ## 1. 技术方案
 
-- **栈**：Vue 3.5 + Vite 8 + TypeScript、Pinia、vue-router、ECharts 6（D-008 / D-004）；契约 schema 用 zod 4
+- **栈**：Vue 3.5 + Vite 8 + TypeScript **5.9.2**（T-01 冒烟后锁定，未采用 TS 7）、Pinia、vue-router、ECharts 6（D-008 / D-004）；契约 schema 用 zod 4
 - **测试**：Vitest + @vue/test-utils（单元 / 组件）、Playwright（端到端，复用本机 Chrome）
 - **工具链**：pnpm；Node ≥ 22.12；ESLint（换行统一交 `.gitattributes`，不另引 Prettier）；版本在 T-01 冒烟后锁进 `pnpm-lock.yaml`
 - **文件边界**（spec §4）：不碰 `backend/`；共享文件为 `.gitignore`（追加）、`specs/README.md`（本 feature 一行）、`docs/designUI.md`（引用指针）、`docs/decisions/`（D-015）、`docs/plan.md` §3（D-015 行）
@@ -60,6 +61,8 @@
 **字体三族**（Q-019）：衬线 = 品牌字标、页标题、KPI 大数（"数值等宽"的唯一例外）；无衬线 = 正文、导航、按钮、表格文字、模块壳标题；等宽 = 其余数值（`.num`：mono + `tabular-nums` + 右对齐）、代码、单位、ticker。
 
 **数值**（`shared/format.ts`）：`fmtValue(v, {decimals, unit})`、`fmtDelta(v, {decimals, kind})`——先按显示位取整再判零；空值 `–`；差值正号；零中性；返回 `{text, tone}`。`Num` 只输出语义类（`sem-market` / `sem-analysis` + `is-up` / `is-down` / `is-neutral`）：analysis 的颜色在 `shared/num.css`（chart.pos / chart.neg），market 的颜色只在 `src/design/updown.css`，且只写 `color`。
+
+**变化量独立精度（R1-01）**：`Figure.decimals` 只控制主数值；可选 `deltaDecimals` 是非负整数，控制变化量。缺省时 `deltaKind='pct'` 用两位，`abs` / 未指定口径沿用 `decimals`；显式 `0` 必须生效。`shared/format.ts` 的 `figureDeltaDecimals(figure)` 统一解析，供 `Kpi` 与 `BoardGrid` 复用（盘面字色也按变化量的精度判方向）。`fmtValue` / `fmtDelta` 的取整、空态与零中性规则不变；小于变化量显示精度的正负数仍中性，不能改成“所有非零原值都着色”。契约字段描述为后端的精度约定来源，文档 / schema 只经生成器更新；v1 尚未 Handoff，契约保留 `1.0.0`，新增字段可缺省、旧 fixture 无需迁移。
 
 **涨跌色作用域**（D-015）：涨跌令牌只在 `updown.css` 引用；`updown.css` 只被 `modules/market-board/`、`modules/watchlist/`、`workbench/FocusBand.vue` 引入（`check.mjs` 三条 grep）。
 
@@ -150,7 +153,7 @@ getNewsTicker() / getSourceStatus() / getResearchList()
 send({sessionId?, message}) / subscribe(cb)
 ```
 
-- 数值三类形态（AC-007-4）：`Figure = {label, value, unit, decimals, freq, delta?, deltaKind?, semantic, asOf, seriesId?}`；`BoardCell = {state, figure}`（`ok ⇔ figure ≠ null`）；`SparkSeries = {points, unit, freq, semantic, asOf, seriesId}`
+- 数值三类形态（AC-007-4）：`Figure = {label, value, unit, decimals, freq, delta?, deltaKind?, deltaDecimals?, semantic, asOf, seriesId?}`；`BoardCell = {state, figure}`（`ok ⇔ figure ≠ null`）；`SparkSeries = {points, unit, freq, semantic, asOf, seriesId}`
 - 参数语义（写入 CONTRACT.md）：`date` = 交易日 `YYYY-MM-DD`；`asOf` / `ts` = ISO 8601 带偏移；`getReleaseCalendar(from, to)` 闭区间、升序；v1 全部列表一次返回不分页；`deltaKind='pct'` 时 `delta` 是百分数值
 - 校验只在边界：mock / real 实现对自己返回的数据做一次 `parse`（AGENTS §5.2），内部组件直接消费已确定类型的值
 - `contract-build.mjs` 由 zod + 方法语义表生成 `contracts/CONTRACT.md` 与 `schema.json`（backend `api` feature 的输入），生成物入库、不手改（`pnpm check --only generated` 重生成后比对）
@@ -229,7 +232,7 @@ send({sessionId?, message}) / subscribe(cb)
 | AC-007-1 | `check --only network` |
 | AC-007-2 | unit：五种场景；e2e：normal / empty / error / slow |
 | AC-007-3 | `check --only generated`（重生成并比对）+ unit：CONTRACT.md 覆盖全部方法、错误形态与字段描述 |
-| AC-007-4 | unit：fixtures 全部过 schema；Figure 缺元数据、`BoardCell` ok 缺 figure、`SparkSeries` 缺元数据 → 失败 |
+| AC-007-4 | unit：fixtures 全部过 schema；Figure 缺元数据、`BoardCell` ok 缺 figure、`SparkSeries` 缺元数据 → 失败；T-16 验证可选 `deltaDecimals`（含显式 0）、拒绝无效精度，组件 / e2e 验证百分比与价格精度独立（R1-01） |
 | AC-008-1、AC-008-2、AC-008-3 | unit `design-registry.spec`：条目 front matter 齐备、令牌 `source` 可解析、PALETTE_DARK 覆盖 14 个 palette-core 原色（按不同 hex 计） |
 | AC-009-1 | `pnpm test` 退出码 0 |
 | AC-009-2 | `manual-acceptance.md`（M-01 ~ M-08）+ Handoff 截图 |
@@ -238,7 +241,7 @@ send({sessionId?, message}) / subscribe(cb)
 
 | 风险 | 对策 |
 |---|---|
-| Node 25 / TS 7 / Vite 8 / Vitest 5 组合未验证 | T-01 冒烟；vue-tsc 不兼容则锁 TS 5.9.x |
+| Node 25 非 LTS；后续工具链升级的兼容性 | T-01 已锁 TS 5.9.2；当前组合已通过冒烟与完整测试，升级时重跑 `pnpm test` / `pnpm build` |
 | Playwright 找不到本机 Chrome | `channel` 回退 `msedge`，再不行 `playwright install chromium` |
 | happy-dom 无 `matchMedia` / 计算样式 | 断点与计算样式只在 Playwright 验 |
 | 暗色序列色区分度（ΔE2000 13.2） | 接受并登记；chart-templates 画出真实季节图后复核 |

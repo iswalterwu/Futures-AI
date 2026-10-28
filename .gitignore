@@ -236,7 +236,7 @@ backend/build/
 backend/dist/
 backend/*.egg-info/
 
-# 前端工具产物（frontend-workbench）
+# 前端（frontend-workbench）依赖与测试产物
 node_modules/
 frontend/test-results/
 frontend/playwright-report/

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Figure } from '../../contracts/types.ts'
-import { fmtValue } from '../format.ts'
+import { figureDeltaDecimals, fmtValue } from '../format.ts'
 import Num from './Num.vue'
 
 defineOptions({ name: 'FaiKpi' })
@@ -23,7 +23,7 @@ const value = computed(() => fmtValue(props.figure.value, { decimals: props.figu
       v-if="figure.delta !== undefined"
       class="kpi-delta"
       :value="figure.delta"
-      :decimals="figure.decimals"
+      :decimals="figureDeltaDecimals(figure)"
       :semantic="figure.semantic"
       :kind="figure.deltaKind"
       delta

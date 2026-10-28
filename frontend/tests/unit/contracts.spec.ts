@@ -86,6 +86,20 @@ describe('AC-007-4 types', () => {
     expect(SparkSeriesSchema.parse({ ...spark, points: [] }).points).toEqual([])
   })
 
+  test('R1-01 preserves optional delta precision independently of the headline precision, including zero', () => {
+    expectTypeOf<Figure['deltaDecimals']>().toEqualTypeOf<number | undefined>()
+    expect(FigureSchema.parse(figure)).not.toHaveProperty('deltaDecimals')
+    for (const deltaDecimals of [0, 2, 3]) {
+      expect(FigureSchema.parse({ ...figure, decimals: 0, deltaDecimals })).toMatchObject({
+        decimals: 0, deltaDecimals, delta: 1.5, deltaKind: 'pct',
+      })
+    }
+  })
+
+  test.each([-1, 1.5, '2', null])('R1-01 rejects invalid deltaDecimals %j at the contract boundary', (deltaDecimals) => {
+    expect(FigureSchema.safeParse({ ...figure, deltaDecimals }).success).toBe(false)
+  })
+
   test.each(['unit', 'freq', 'semantic', 'asOf'] as const)('rejects missing %s on Figure and SparkSeries', (key) => {
     const incompleteFigure: Record<string, unknown> = { ...figure }
     const incompleteSpark: Record<string, unknown> = { ...spark }

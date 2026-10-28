@@ -223,7 +223,7 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 9007199254740991,
-          "description": "显示小数位数；方向与零值按此精度取整后判定。"
+          "description": "主数值的显示小数位数；主数值按此精度取整后判零，不决定百分比变化量精度。"
         },
         "freq": {
           "type": "string",
@@ -244,6 +244,12 @@
             "abs",
             "pct"
           ]
+        },
+        "deltaDecimals": {
+          "description": "变化量的独立显示小数位数，显式 0 有效；缺省时 pct 用 2 位，abs 或未指定口径沿用 decimals。变化量方向与零中性按此精度取整后判定。",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
         },
         "semantic": {
           "$ref": "#/$defs/Semantic"

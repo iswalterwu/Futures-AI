@@ -160,10 +160,11 @@
 | `$.label` | 是 | `string` | 数值的显示名称。 |
 | `$.value` | 是 | `number &#124; null` | 数值；null 表示缺数，显示 en dash，不等同于零。 |
 | `$.unit` | 是 | `string` | 显示单位；无量纲值也须明确填写单位。 |
-| `$.decimals` | 是 | `integer` | 显示小数位数；方向与零值按此精度取整后判定。 |
+| `$.decimals` | 是 | `integer` | 主数值的显示小数位数；主数值按此精度取整后判零，不决定百分比变化量精度。 |
 | `$.freq` | 是 | `string` | 数据频率，例如 1d、1w、1mo。 |
 | `$.delta` | 否 | `number &#124; null` | 变化量；缺省表示未提供，null 表示缺数；pct 时为百分数值，1.5 表示 1.5%。 |
 | `$.deltaKind` | 否 | `"abs" &#124; "pct"` | 变化量口径：abs 为本单位绝对变化，pct 为百分数值；缺省按 abs。 |
+| `$.deltaDecimals` | 否 | `integer` | 变化量的独立显示小数位数，显式 0 有效；缺省时 pct 用 2 位，abs 或未指定口径沿用 decimals。变化量方向与零中性按此精度取整后判定。 |
 | `$.semantic` | 是 | `Semantic` | market 为行情涨跌；analysis 为分析增减（红表示负）。 |
 | `$.asOf` | 是 | `Timestamp` | 该数值的数据截至时间，ISO 8601 带偏移。 |
 | `$.seriesId` | 否 | `string` | 可选的规范序列 ID，用于溯源。 |

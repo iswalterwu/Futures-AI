@@ -1,4 +1,13 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import { useLayoutStore } from '../stores/layout.ts'
+import FocusBand from './FocusBand.vue'
+import ModuleGrid from './ModuleGrid.vue'
+import ModuleLibrary from './ModuleLibrary.vue'
+
+const layout = useLayoutStore()
+const libraryOpen = ref(false)
+onMounted(() => layout.loadCatalog())
 </script>
 
 <template>
@@ -6,27 +15,30 @@
     class="workbench"
     data-page="workbench"
   >
-    <header>
-      <h1>工作台</h1>
-      <p class="en">
-        Workbench
-      </p>
+    <header class="workbench-header">
+      <div>
+        <h1>工作台</h1>
+        <p class="en">
+          Workbench
+        </p>
+      </div>
+      <button
+        type="button"
+        class="library-toggle"
+        aria-haspopup="dialog"
+        :aria-expanded="libraryOpen"
+        :disabled="layout.status !== 'ready'"
+        @click="libraryOpen = true"
+      >
+        模块库
+      </button>
     </header>
-    <section
-      class="focus-placeholder glass-focus"
-      aria-labelledby="focus-placeholder-title"
-    >
-      <h2 id="focus-placeholder-title">
-        今日焦点 <span class="en">Daily focus</span>
-      </h2>
-      <p>日报摘要与关键数字将在此呈现。</p>
-    </section>
-    <section
-      class="modules-container"
-      aria-label="工作台模块区"
-    >
-      <p>工作台模块区待接入。</p>
-    </section>
+    <FocusBand />
+    <ModuleGrid />
+    <ModuleLibrary
+      v-if="libraryOpen"
+      @close="libraryOpen = false"
+    />
   </div>
 </template>
 
@@ -40,25 +52,29 @@
   min-height: 0;
 }
 
-.focus-placeholder {
+.workbench-header {
+  display: flex;
   flex: none;
-  padding: var(--fai-space-section-gap);
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--fai-space-grid-gap);
 }
 
-.focus-placeholder h2 {
-  margin-bottom: var(--fai-space-grid-gap);
-  font-size: var(--fai-type-sec-title);
-  font-weight: var(--fai-weight-emphasis);
+.library-toggle {
+  padding: calc(var(--fai-space-grid-gap) / 2) var(--fai-space-grid-gap);
+  border: thin solid var(--fai-glass-module-border);
+  border-radius: var(--fai-radius-control);
+  background: transparent;
+  cursor: pointer;
 }
 
-.focus-placeholder p,
-.modules-container {
-  color: var(--fai-text-secondary);
+.library-toggle:disabled {
+  color: var(--fai-text-muted);
+  cursor: default;
 }
 
-.modules-container {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+.library-toggle:hover:not(:disabled),
+.library-toggle:focus-visible {
+  border-color: var(--fai-accent-link);
 }
 </style>

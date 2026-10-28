@@ -1,3 +1,5 @@
+import type { Figure } from '../contracts/types.ts'
+
 export type Tone = 'up' | 'down' | 'neutral'
 
 export interface FormattedNumber {
@@ -26,6 +28,10 @@ export function fmtDelta(
     text: formatted.text + (kind === 'pct' && formatted.text !== '–' ? '%' : ''),
     tone: formatted.tone,
   }
+}
+
+export function figureDeltaDecimals({ decimals, deltaDecimals, deltaKind }: Figure): number {
+  return deltaDecimals ?? (deltaKind === 'pct' ? 2 : decimals)
 }
 
 function formatNumber(value: number | null | undefined, decimals: number): FormattedNumber {

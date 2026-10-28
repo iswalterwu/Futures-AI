@@ -21,7 +21,8 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| frontend-workbench | blocked（已恢复；R3 Tasks 精度修订待 A 定向复核与 Walter 裁定窄窗导航形态，实施外部前置未齐） | 无后端依赖；v1 Handoff 已合入 main = 43b6d79（PR #7，R3 登记）。S0 还需：A 复核 R3、集成人 / 集成验证分支 / 实施 worktree 登记、把 43b6d79 合入 v2 规格分支（预演 4 处冲突）。S1 / S2 还需：H-1～H-6 / 页面切片的固定提交、有效已提交 Checklist SHA、测试摘要及集成 SHA，全部未登记；互动方 8af343f 尚未吸收下方“跨 feature 待同步事项”第一行 | 2026-10-28 | 52 AC、12 任务 / 22 h；R3 落实 V2-S10～S12、消解 T-V2-01 的 AppShell 条件写入，定向 Analyze 见 analyze-v2-r3.md。A R2（f1f755b，审 949a232）通过，但不覆盖 R3；未启动 Implement、未改代码、未 push |
+| frontend-workbench（v1） | done（v1） | 无（与后端唯一接口为 R-007 契约） | 2026-10-28 | v1：独立 A 第二轮 Review 通过；Gate 2 已确认（Walter 2026-10-28，11 项 P3 接受为后续、未修复）；Handoff 经 [PR #7](https://github.com/iswalterwu/Futures-AI/pull/7) 合并到 main，证据见 [review.md §9](frontend-workbench/review.md#9-handoff-记录2026-10-28)。待办：Walter 人工复核 M-01 ~ M-08（AI 截图已附），处置 Handoff 新发现 H-01 / H-02。v2 在独立规格分支推进，不属 v1。 |
+| frontend-workbench（v2） | blocked（已恢复；R3 Tasks 精度修订待 A 定向复核与 Walter 裁定窄窗导航形态，实施外部前置未齐） | 无后端依赖；v1 Handoff 已合入 main = 43b6d79（PR #7，R3 登记）。S0 还需：A 复核 R3、集成人 / 集成验证分支 / 实施 worktree 登记、把 43b6d79 合入 v2 规格分支（预演 4 处冲突）。S1 / S2 还需：H-1～H-6 / 页面切片的固定提交、有效已提交 Checklist SHA、测试摘要及集成 SHA，全部未登记；互动方 8af343f 尚未吸收下方“跨 feature 待同步事项”第一行 | 2026-10-28 | 52 AC、12 任务 / 22 h；R3 落实 V2-S10～S12、消解 T-V2-01 的 AppShell 条件写入，定向 Analyze 见 analyze-v2-r3.md。A R2（f1f755b，审 949a232）通过，但不覆盖 R3；未启动 Implement、未改代码、未 push |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
