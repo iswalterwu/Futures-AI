@@ -1,0 +1,22 @@
+.num {
+  font-family: var(--fai-font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+span.num {
+  display: block;
+}
+
+.sem-analysis.is-up {
+  color: var(--fai-chart-pos);
+}
+
+.sem-analysis.is-down {
+  color: var(--fai-chart-neg);
+}
+
+.num.is-neutral {
+  color: var(--fai-text-primary);
+}
