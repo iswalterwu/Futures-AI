@@ -1,0 +1,112 @@
+// Loaded exclusively by main.js when FAI_TEST_HOOKS === '1'. System boundaries only.
+'use strict'
+const http = require('node:http')
+const { EventEmitter } = require('node:events')
+
+function install(electron, startup, state, requestQuit) {
+  const { app } = electron
+  const paths = { stateDir: startup.paths.stateDir, userData: app.getPath('userData'),
+    sessionData: app.getPath('sessionData'), crashDumps: app.getPath('crashDumps'),
+    dataRoot: startup.dataRoot ?? null }
+  emit({ event: 'paths', paths, gotLock: startup.gotLock })
+  const records = { dialogs: [], notifications: [], external: [], secondInstance: [] }
+  const answers = []
+  const outlets = { Notification: electron.Notification }
+  if (process.env.FAI_TEST_SCENARIO) {
+    electron.dialog.showMessageBox = async (...args) => {
+      const options = args.at(-1)
+      const answer = answers[0]?.type === 'message' ? answers.shift() : undefined
+      const response = answer ? options.buttons.indexOf(answer.button) : -1
+      records.dialogs.push({ type: 'message', buttons: options.buttons, unanswered: response < 0 })
+      return { response: response < 0 ? (options.cancelId ?? options.buttons.length - 1) : response, checkboxChecked: false }
+    }
+    electron.dialog.showOpenDialog = async () => {
+      const answer = answers[0]?.type === 'open' ? answers.shift() : undefined
+      records.dialogs.push({ type: 'open', unanswered: !answer })
+      return { canceled: !answer, filePaths: answer?.paths || [] }
+    }
+    class RecordedNotification extends EventEmitter {
+      constructor(options) { super(); this.options = options }
+      show() {
+        const { kind, title, body } = this.options
+        records.notifications.push({ kind, title, body })
+      }
+      static isSupported() { return true }
+    }
+    // Electron exports Notification via a non-configurable accessor. Replace the
+    // notifier outlet, not Electron's module descriptor; consumers use this outlet.
+    outlets.Notification = RecordedNotification
+    for (const method of ['openExternal', 'openPath', 'showItemInFolder']) {
+      electron.shell[method] = value => {
+        records.external.push({ method, value })
+        if (method !== 'showItemInFolder') return Promise.resolve(method === 'openPath' ? '' : undefined)
+      }
+    }
+  }
+  function snapshot() {
+    const win = state.window
+    const exists = Boolean(win && !win.isDestroyed())
+    const backendAlive = Boolean(state.backend && state.backend.exitCode === null)
+    return {
+      paths,
+      versions: { electron: process.versions.electron, node: process.versions.node, chrome: process.versions.chrome },
+      window: exists ? { exists: true, visible: win.isVisible(), minimized: win.isMinimized(),
+        url: win.webContents.getURL(), title: win.getTitle() } : { exists: false },
+      // No invented lifecycle history/gen or tray/activity before their implementation tasks.
+      backend: { phase: state.quitting ? 'stopping' : (state.backendInfo && backendAlive ? 'ready' : 'starting'),
+        pid: backendAlive ? state.backend.pid : null, port: state.backendInfo?.port ?? null, restarts: state.restarts },
+      tray: null, activity: null, records, prefs: startup.prefs,
+    }
+  }
+  function backendCommand() {
+    if (!process.env.FAI_BACKEND_CMD) return null
+    const command = JSON.parse(process.env.FAI_BACKEND_CMD)
+    if (!Array.isArray(command) || command.length === 0 || command.some(arg => typeof arg !== 'string' || !arg)) {
+      throw new Error('FAI_BACKEND_CMD must be a nonempty JSON string array')
+    }
+    return { cmd: command[0], args: command.slice(1), cwd: app.getAppPath(), env: {} }
+  }
+  async function startControl() {
+    const server = http.createServer(async (req, res) => {
+      const send = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)) }
+      if (req.method !== 'POST' || req.url !== '/cmd') { send(404, { error: 'not_found' }); return }
+      let text = ''
+      for await (const chunk of req) text += chunk
+      try {
+        const message = JSON.parse(text)
+        switch (message.command) {
+          case 'snapshot': send(200, snapshot()); break
+          case 'eval':
+            if (typeof message.js !== 'string') { send(400, { error: 'invalid_js' }); break }
+            send(200, { value: await state.window.webContents.executeJavaScript(message.js) }); break
+          case 'answer':
+            if (!Array.isArray(message.queue) || message.queue.some(answer =>
+              !answer || (answer.type !== 'message' && answer.type !== 'open') ||
+              (answer.type === 'message' ? typeof answer.button !== 'string' :
+                !Array.isArray(answer.paths) || answer.paths.some(p => typeof p !== 'string')))) {
+              send(400, { error: 'invalid_answers' }); break
+            }
+            answers.push(...message.queue); send(200, { queued: answers.length }); break
+          case 'close-window': state.window.close(); send(200, { accepted: true }); break
+          case 'tray-click': send(409, { error: 'tray_not_implemented' }); break
+          case 'request-quit':
+            send(200, { accepted: true })
+            setImmediate(() => requestQuit())
+            break
+          default: send(400, { error: 'unknown_command' })
+        }
+      } catch {
+        send(400, { error: 'command_failed' }) // Do not echo JS, payloads or exception input.
+      }
+    })
+    await new Promise((resolve, reject) => {
+      server.once('error', reject)
+      server.listen(0, '127.0.0.1', resolve)
+    })
+    app.once('will-quit', () => server.close())
+    emit({ event: 'control', port: server.address().port })
+  }
+  return { records, outlets, backendCommand, startControl }
+}
+function emit(message) { process.stdout.write(`SMOKE ${JSON.stringify(message)}\n`) }
+module.exports = { install }
