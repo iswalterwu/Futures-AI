@@ -58,6 +58,84 @@ test('AC-006-3 sample follows container resizing and releases its instance when 
   await instance.dispose()
 })
 
+for (const width of [T.window.width, T.window.min_width]) {
+  test(`AC-001-4 AC-006-3 H-01 caption stays inline without changing other numeric layouts at ${width}`, async ({ page, browser }, testInfo) => {
+    await page.setViewportSize({ width, height: T.window.height })
+    await openSample(page)
+    await expect(page.locator('.fai-module[data-module-id="watchlist"]')).toHaveAttribute('data-state', 'ready')
+    await expect(page.locator('.focus-band')).toHaveAttribute('data-state', 'ready')
+    const caption = page.locator('[data-chart-id="market-board"] figcaption')
+    // H-02 still limits the narrow module viewport: capture the caption, not a clipped figure.
+    await caption.scrollIntoViewIfNeeded()
+    await caption.screenshot({ path: testInfo.outputPath(`sample-chart-${width}x${T.window.height}.png`) })
+    console.log(`H-01 capture: Chrome ${browser.version()}, viewport ${width}x${T.window.height}, mock normal, figcaption`)
+
+    const geometry = await caption.evaluate(element => {
+      const label = element.firstElementChild!
+      const walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT)
+      const segments = []
+      while (walker.nextNode()) {
+        const node = walker.currentNode
+        if (!node.textContent?.trim()) continue
+        const range = document.createRange()
+        range.selectNodeContents(node)
+        segments.push({ text: node.textContent.trim(), rects: Array.from(range.getClientRects(), rect => rect.toJSON()) })
+      }
+      const number = getComputedStyle(label.querySelector('.num')!)
+      const unit = element.querySelector('.unit')!
+      return {
+        segments,
+        number: { display: number.display, font: number.fontFamily, variant: number.fontVariantNumeric, align: number.textAlign },
+        unit: { text: unit.textContent, rect: unit.getBoundingClientRect().toJSON() },
+        caption: element.getBoundingClientRect().toJSON(),
+        captionOverflow: element.scrollWidth > element.clientWidth,
+        pageOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      }
+    })
+    expect(geometry.segments.map(segment => segment.text)).toEqual(['近', '60', '日收盘 · 样例'])
+    for (const segment of geometry.segments) expect(segment.rects, segment.text).toHaveLength(1)
+    const rects = geometry.segments.map(segment => segment.rects[0])
+    // Font content boxes may differ: require a shared vertical interval, not identical tops.
+    expect(Math.max(...rects.map(rect => rect.top)), 'caption text and number share one line')
+      .toBeLessThan(Math.min(...rects.map(rect => rect.bottom)))
+    expect(rects[0].right).toBeLessThanOrEqual(rects[1].left)
+    expect(rects[1].right).toBeLessThanOrEqual(rects[2].left)
+    expect(geometry.number.display).toBe('inline')
+    const firstFont = (stack: string) => stack.split(',')[0].trim().replace(/^["']|["']$/g, '')
+    expect(firstFont(geometry.number.font)).toBe(firstFont(T.font.mono))
+    expect(geometry.number.variant).toContain('tabular-nums')
+    expect(geometry.number.align).toBe('right')
+    expect(geometry.unit.text).toBe(board.series.unit)
+    expect(geometry.unit.rect.width).toBeGreaterThan(0)
+    expect(geometry.unit.rect.height).toBeGreaterThan(0)
+    expect(geometry.unit.rect.left).toBeGreaterThanOrEqual(geometry.caption.left)
+    expect(geometry.unit.rect.right).toBeLessThanOrEqual(geometry.caption.right)
+    expect(Math.max(geometry.unit.rect.top, ...rects.map(rect => rect.top)))
+      .toBeLessThan(Math.min(geometry.unit.rect.bottom, ...rects.map(rect => rect.bottom)))
+    expect(rects[2].right).toBeLessThanOrEqual(geometry.unit.rect.left)
+    expect(geometry.captionOverflow).toBe(false)
+    expect(geometry.pageOverflow).toBe(false)
+
+    const numbers = await page.locator('span.num').evaluateAll(elements => elements
+      .filter(element => !element.closest('.sample-chart figcaption'))
+      .map(element => {
+        const style = getComputedStyle(element)
+        return {
+          scope: element.closest('[data-module-id]')?.getAttribute('data-module-id')
+            ?? (element.closest('.focus-band') ? 'focus' : ''),
+          display: style.display, font: style.fontFamily, variant: style.fontVariantNumeric, align: style.textAlign,
+        }
+      }))
+    expect(numbers.map(number => number.scope)).toEqual(expect.arrayContaining(['market-board', 'watchlist', 'focus']))
+    for (const number of numbers) {
+      expect(number.display, number.scope).toBe('block')
+      expect(firstFont(number.font), number.scope).toBe(firstFont(T.font.mono))
+      expect(number.variant, number.scope).toContain('tabular-nums')
+      expect(number.align, number.scope).toBe('right')
+    }
+  })
+}
+
 test('AC-006-4 sample background remains transparent over the module glass', async ({ page }) => {
   await openSample(page)
   expect(await page.evaluate(() => window.__FAI_TEST__!.charts['market-board'].getOption().backgroundColor)).toBe('transparent')
