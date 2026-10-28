@@ -5,7 +5,7 @@
 > **通道记录（2026-10-28）**：本轮 A 经 **anthropic** 通道（`--provider anthropic --model claude-fable-5-1`）
 > —— claude-bridge 通道周限额（seven_day，10-30 18:00 重置）不可用，按 AGENTS.md §2 的通道优先级切换；
 > 同一 Claude 模型、仅换接入路径，审核员身份不变。
-> Gate 2：待 Walter 确认（GUI 部分待 desktop-shell，本轮交付核心 + CLI）。
+> Gate 2：**Walter 2026-10-28 确认**（三项裁决见文末）。
 
 ## 完成项
 
@@ -82,3 +82,5 @@
 - settings 专项：`pytest tests/test_settings_*.py -q` → **76 passed**（profile 16 / onboarding 22 / sources 10 / cli 19 / privacy 9，含 AC-005 静态断言与官方选项比对）
 - 发布检查：`python tools/release_check.py` → **13/13**（新增 settings 包入 wheel、`futureai-settings` 入口、隔离环境档案+状态冒烟）
 - 变异验证：`cd backend && python tools/mutations.py` → **8/8 检出**（settings：引导不校验落盘、unreadable 当回退、状态文件非原子写、getpass 降级继续；data-layer：无 key 不回退、凭证故障静默回退、内置清单回流 stock、BEGIN 移出保护）
+
+- Gate 2 确认记录（Walter 2026-10-28）：① 同意 F-10 分阶段交付（v1 = 核心 + CLI，GUI 类 AC 由 T-08 承载，状态表 `in-progress（核心完成，GUI blocked）`，不标 done）；② 删除档案/状态/提交边界的并发锁（改单进程假设）；③ 认可 spec Q-008（引导按完成标记判定）。
