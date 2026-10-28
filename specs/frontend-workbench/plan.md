@@ -250,7 +250,7 @@ send({sessionId?, message}) / subscribe(cb)
 ### 7.0 阶段、闸门、基线与依据
 
 - **当前阶段**：Plan（v2）。Gate 1 已通过：spec v2.1 由 Walter 于 2026-10-28 批准，52 条 AC 已冻结。各需求的 AC 数为：R-001～R-009 分别 6/8/9/6/9/4/5/3/2。后续流程：A 独立做 v2 Checklist → Tasks（追加 v2 任务）→ Analyze → Implement。
-- **本节不做的事**：不修改 spec、tasks、checklist、产品 ADR 或代码；不授权实施。
+- **本节不做的事**：不修改 spec、tasks、checklist、产品 ADR 或代码；不授权实施。**Tasks 阶段补充（2026-10-28）**：Tasks = `claude-opus-5-5` via `anthropic`（bridge 本限额窗口额度不可用，未换模型）。为落实 checklist-v2 建议 V2-S02～S07、S09，并修正两处依赖表述，对 §7.0、§7.1、§7.3、§7.5、§7.7、§7.11、§7.13 做了实施细节小改；没有需求变化，不改 spec，也不改产品 ADR。这些小改**未经审核**：A 的通过只针对 `d2bf5a7`，须由 A 新开独立会话定向复核后，才能作为实施依据。
 - **设计依据**：
   - AGENTS §2/§4/§5/§6；
   - `docs/interaction.md` §2.4、§3.3、§7.2；
@@ -271,7 +271,7 @@ send({sessionId?, message}) / subscribe(cb)
   - 互动方分支后续移动，不算已交付证据。§7.3 各交接项须按其规则交付后，壳方对应任务才能开启。
 - **实施起点（硬前置）**：Tasks 头部必须登记 v1 完成 Review、Gate 2、Handoff 并合入 main 的准确 SHA。双方都以它作为实施起点，v2 实现分支也从这个 SHA 建立。
   - `fdaa7d8`（本分支前端快照）不能作为开工基线。
-  - `0ffa15e`（v1 实施分支 HEAD，尚未 Handoff）也不能作为开工基线。
+  - `0ffa15e`（Plan 与 A 核对时使用的 v1 实施分支固定历史参照，不是当前 HEAD，尚未 Handoff）也不能作为开工基线。v1 实施分支其后的移动（如 `b19427a`）只是只读元信息，同样不代表 Handoff，也不能作为开工基线。
   - 本节引用的 v1 文件以 Handoff SHA 的实际内容为准，包括 `agent/store.ts`、`AgentDock.vue`、`AgentDrawer.vue`、`CotTimeline.vue`、`app/AppShell.vue`、`workbench/*` 和 `stores/{app,ui,badges,layout}.ts`。Tasks 起草时必须重新读取。
   - 当前只读参照的是 v1 实施 worktree `D:/2030/Futures-AI-frontend`，它尚未 Handoff：
     - `AgentDrawer` 位于底栏 `.agent-dock` 内，样式为 `position:absolute; inset-inline:0; bottom:100%`；
@@ -289,7 +289,7 @@ send({sessionId?, message}) / subscribe(cb)
 | §2.5 对话 | 新增作业上下文的捕获、绑定、展示和按作业查看（§7.7）。两档高度、时间线、模块角标、引导跳转和唯一终态不变 |
 | §2.7 契约 | 契约从 1.0.0 升到 2.0.0，只由互动方执行（§7.8）。壳不改 schema、version 或 mock，也不新增 schema 方法 |
 | §3 存储 | 不变（§7.9） |
-| §5 验收 | 新增 7 条 AC。AC-002-2/002-3/002-4/002-7/005-1 的验收落点由 §7.11 取代；其余沿用旧落点，并加入 v2 回归 |
+| §5 验收 | 新增 7 条 AC。AC-002-2/002-3/002-4/002-7/005-1 的验收落点由 §7.11 取代；其余沿用旧落点，并加入 v2 回归。其余各条的回归与扩充（如 AC-001-x、AC-002-6、AC-003-6、AC-004-x、AC-007-x、AC-008-2、AC-009-2）见 §7.11，以 §7.11 为准 |
 | §6 风险末尾的回滚段 | 旧的“删除 `frontend/`”对 v2 不适用，改用 §7.12 的精确回滚 |
 
 §2.1、§2.4、§2.6、§2.8、§2.9 全部沿用；v1 的 45 条 AC 不废弃。
@@ -332,8 +332,8 @@ send({sessionId?, message}) / subscribe(cb)
 | # | 生产方需落实的内容（尚未存在的部分已标出） | 解锁的壳任务 |
 |---|---|---|
 | H-1 | `CONTRACT_VERSION = '2.0.0'`，并导出 `JobContext = {jobId, stage}`。`SendMessage.jobContext?` 和十类 `AgentEvent` 都带公共可选字段 `jobContext`。mock `send` 把 payload 中的上下文原样写入该 run 的全部事件。原十类事件和旧 fixtures 不带该字段时仍能解析 | S1-ctx：AC-005-8 单元部分、AC-005-9 |
-| H-2 | **数据**：`listJobs(filter?)` 返回 `JobListItem[]`，至少含 `id/title/type/status/currentStage/stages[4]{stage,state,pendingCount}/pendingCount/updatedAt`，默认按 `updatedAt` 倒序。契约导出 `JobStatusLabel/StageLabel/StageStateLabel`，带文案和图标。<br>**共享列表缓存（尚不存在）**：互动方 plan §2.3 的 `jobsStore` 目前只写了“当前作业、阶段工作区视图缓存”。需要在 `jobsStore` 中补充：<br>① 一个只读的**未筛选**作业列表视图缓存，以及它的读状态（加载中）和错误；<br>② 共享的 ensure/load action 和 refresh action，方法名由生产方确定；<br>③ “进行中”判定：可以是 selector，也可以是 `ACTIVE_JOB_STATUSES` 一类契约常量；<br>④ 列表页筛选用 selector 派生，或单独保存筛选结果，不能覆盖未筛选缓存；<br>⑤ 互动方已有“写回执 / agent 通知后重读”的机制，这个机制必须刷新同一份缓存。凡是会改变作业摘要的写操作都要覆盖，包括投放提交、确认、归属、`createJob`、`submitIntervention`、`markInboxRead` 等；agent 通知也要覆盖（mock 状态层先处理事件，再通知 UI）。<br>**还缺**：`JobTypeLabel`。<br>以上由互动方在其 Plan/Tasks 中落实；对方拒绝时报 Walter 裁决，壳不自建映射、缓存或刷新机制 | S1-track：AC-003-7～AC-003-9 |
-| H-3 | `jobs/routes.ts` 导出 `jobs`（`/jobs`）和 `job-detail`（`/jobs/:id/:stage?`）两条路由。`stage ∈ collect/process/analyze/deliver`，`meta = {title, en, navId:'jobs'}`。`main.ts` 在 mount 前调用 `addRoute`，用同名记录替换壳的 `jobs` 占位 | S2：AC-002-2 集成部分、AC-002-3、AC-003-7 集成部分 |
+| H-2 | **数据**：`listJobs(filter?)` 返回 `JobListItem[]`，至少含 `id/title/type/status/currentStage/stages[4]{stage,state,pendingCount}/pendingCount/updatedAt`，默认按 `updatedAt` 倒序。契约导出 `JobStatusLabel/StageLabel/StageStateLabel`，带文案和图标。<br>**共享列表缓存（尚不存在）**：互动方 plan §2.3 的 `jobsStore` 目前只写了“当前作业、阶段工作区视图缓存”。需要在 `jobsStore` 中补充：<br>① 一个只读的**未筛选**作业列表视图缓存，以及它的读状态（加载中）和错误；<br>② 共享的 ensure/load action 和 refresh action，方法名由生产方确定；<br>③ “进行中”判定：可以是 selector，也可以是 `ACTIVE_JOB_STATUSES` 一类契约常量。壳的最低期望：等待人工确认的作业、存在冲突待介入的作业必须在集合内，终结态作业不在；具体枚举由生产方用契约常量定义并登记进 CONTRACT.md，壳不自定；<br>④ 列表页筛选用 selector 派生，或单独保存筛选结果，不能覆盖未筛选缓存；<br>⑤ 互动方已有“写回执 / agent 通知后重读”的机制，这个机制必须刷新同一份缓存。凡是会改变作业摘要的写操作都要覆盖，包括投放提交、确认、归属、`createJob`、`submitIntervention`、`markInboxRead` 等；agent 通知也要覆盖（mock 状态层先处理事件，再通知 UI）。<br>**还缺**：`JobTypeLabel`；以及轨道复用的作业状态徽标组件 `JobStatusBadge`（属于 §7.2 中互动方的徽标组件），随本交接单元交付。<br>以上由互动方在其 Plan/Tasks 中落实；对方拒绝时报 Walter 裁决，壳不自建映射、缓存或刷新机制。标签导出与 `JobStatusBadge` 可以和列表缓存分批交接 | S1-track：AC-003-7～AC-003-9（需要全部内容）；S1-ctx 的 chip 只需要其中的 `StageLabel` 导出 |
+| H-3 | `jobs/routes.ts` 导出 `jobs`（`/jobs`）和 `job-detail`（`/jobs/:id/:stage?`）两条路由。`stage ∈ collect/process/analyze/deliver`，`meta = {title, en, navId:'jobs'}`。`main.ts` 在 mount 前调用 `addRoute`，用同名记录替换壳的 `jobs` 占位 | S2：AC-002-2 集成部分、AC-002-3、AC-003-7 集成部分。其中“路由定义与 `main.ts` 注册”这一切片（不含列表/详情页面功能）先解锁 S1-track 的卡片跳转（AC-003-7 组件部分） |
 | H-4 | `sessionStore.context: JobContext \| null`，只读。进入作业详情或切换阶段时设置；离开 `job-detail` 时，必须在同一次路由导航内同步清空，例如在路由守卫中清空。这个值不能从 lastRun 推导 | S1-ctx、S1-intake：AC-005-8 |
 | H-5 | `intakeStore` 提供 `open(jobId?: string)`、`close()`、`isOpen` 和 `jobId`；`jobId` 是打开时的快照，提交时使用该快照。`IntakeDrawer.vue` 根元素用 `.glass-drawer`，填满壳提供的容器。它不能自设 `position: fixed`、遮罩、`aria-modal` 或焦点锁；关闭时不导航，也不调用 agent。它的写操作按 H-2 ⑤ 刷新共享列表缓存 | S1-intake：AC-002-8 |
 | H-6 | 场景 `empty`、`error`、`slow` 覆盖 `listJobs`；`jobFixtures` 覆盖项可以新增作业；fixtures 中至少有一个进行中作业带未读待处理项，供角标测试使用 | S1-track：AC-003-9；S2：AC-002-3 |
@@ -389,11 +389,11 @@ send({sessionId?, message}) / subscribe(cb)
   - 显示标题和类型文案（`JobTypeLabel`）。
   - 四阶段固定按提取 → 处理 → 分析 → 交付排列。每段显示 `StageLabel`，再加 `StageStateLabel` 的图标和文案；运行中、待人工确认和冲突必须有文字。
   - `pendingCount > 0` 时显示“待介入 N”角标。
-  - 作业状态优先复用互动方已交接的 `JobStatusBadge`；壳不维护第二份映射。
-- **点击行为**：执行 `router.push({name:'job-detail', params:{id, stage: item.currentStage}})`。壳不推进阶段，也不改作业状态。
+  - 作业状态复用互动方随 H-2 交接的 `JobStatusBadge`；未交接前 S1-track 保持 blocked，壳不用 `JobStatusLabel` 文案直出替代，也不维护第二份映射。
+- **点击行为**：执行 `router.push({name:'job-detail', params:{id, stage: item.currentStage}})`。壳不推进阶段，也不改作业状态。具名路由 `job-detail` 只由 H-3 提供，未注册时 push 会抛错；壳不加 `hasRoute` 兜底，也不改为按 path 跳转。因此 S1-track 依赖 H-3 的“路由定义与 `main.ts` 注册”切片，但不等列表/详情页面功能：该切片集成前卡片不可点，S1-track 保持 blocked，也不提前演示未集成的界面。
 - **三种状态**（读取 store 的读状态和错误）：
   - 加载：沿用 v1 的 Loading。
-  - 空：显示“暂无进行中的作业”和原因，并提供 `/jobs` 链接。
+  - 空：按共享未筛选缓存区分两种静态文案，都提供 `/jobs` 链接。缓存为空时显示“暂无作业”，原因“还没有创建任何作业”；缓存非空但进行中集合为空时显示“暂无进行中的作业”，原因“现有作业均不在进行中”。原因由这两种情形静态给出，不为此在契约中加 `reason` 字段。
   - 错误：沿用 v1 的 ErrorState，诊断信息为 `{source:'job-track', code, message, ts}`；`code` 和 `message` 取自 store 错误，`ts` 是这次失败的时间；可以复制诊断。重试调用共享 refresh action。
   - 三种状态都不影响焦点带和模块区独立渲染。
 - **刷新**：
@@ -428,7 +428,7 @@ send({sessionId?, message}) / subscribe(cb)
 
 ### 7.7 对话的作业上下文（R-005）
 
-- **发送时捕获**：`agent/store.ts` 的 `send(message)` 在第一个 `await` 之前，同步读取 `useSessionStore().context` 的快照。
+- **发送时捕获**：`agent/store.ts` 的 `send(message)` 在第一个 `await` 之前，同步读取 `useSessionStore().context` 的快照。`useSessionStore()` 只在 `send` 函数体内调用，不在模块顶层求值：互动方的 `jobs/**` 也导入 `agent/store.ts`，顶层调用会在模块初始化时形成循环；不为此新增抽象。
   - 有上下文时，调用 `agentClient.send({sessionId, message, jobContext})`。
   - 没有上下文时，payload 不出现 `jobContext` 键，形状与 v1 一致。
   - 不读 lastRun，也不读路由。
@@ -487,11 +487,11 @@ S0、S1-*、S2 的定义见 §7.13。`blocked_by` 表示：要等对应的生产
 | AC-003-6 | 不变 + 回归 | `workbench.spec`：增删模块后，焦点带和轨道都还在 | S1-track |
 | AC-003-7 | 新增；部分集成 | **组件部分**（`job-track.spec`）：使用真实 Pinia、互动方真实 `jobsStore` 和真实 mock `dataClient`，只在系统边界通过 mock 覆盖或场景注入，不 `vi.mock` 内部模块，不抄业务逻辑。验证：名称、类型文案、四阶段顺序、状态文案和图标、待介入角标。**关键用例**：轨道保持挂载，`agent.runs` 中没有任何终态，调用互动方的写 action（如 `markInboxRead`，或投放归属）→ “待介入 N”或卡片顺序自动变化，且与该 store 列表 selector 中同一作业的值一致；测试不调用任何手动重读。<br>**集成部分**（`integration-v2`）：在工作台打开投放，完成到进行中作业的归属，期间轨道不卸载 → 轨道更新 → 进入 `/jobs`，进行中项的集合、顺序和待介入数都与轨道一致 → 点击卡片进入 `/jobs/:id/<currentStage>`。集成部分 blocked_by H-3/H-5 | S1-track / S2 |
 | AC-003-8 | 新增 | `workbench.spec` 和 `modules.spec`：DOM 顺序为 Focus → Track → Grid；模块库中没有轨道；轨道没有移除、上移或下移操作；增删、移动模块并刷新后，轨道位置不变 | S1-track |
-| AC-003-9 | 新增 | `job-track.spec`：`slow` 触发加载态；`empty` 触发空态，并提供 `/jobs` 入口；`error` 触发错误态，可复制诊断，重试调用共享 refresh。三种状态下焦点带和模块区都能独立渲染 | S1-track |
+| AC-003-9 | 新增 | `job-track.spec`：`slow` 触发加载态；`empty` 触发“暂无作业”空态；用 `jobFixtures` 覆盖为只含非进行中作业时，触发“暂无进行中的作业”空态（如果覆盖项只能追加、不能替换，这个子用例 blocked 并回报生产方）；两种空态都提供 `/jobs` 入口；`error` 触发错误态，可复制诊断，重试调用共享 refresh。三种状态下焦点带和模块区都能独立渲染 | S1-track |
 | AC-004-1、AC-004-2、AC-004-3、AC-004-4、AC-004-5、AC-004-6 | 不变 | 旧 §5。AC-004-1、AC-004-2 的回归与 AC-003-8 共用 | S0/S1 |
 | AC-005-1 | 修改（路由数） | `agent.spec`：九个导航路由上输入栏都可见；提交后抽屉展开并显示用户消息 | S0 |
 | AC-005-2、AC-005-3、AC-005-4、AC-005-5、AC-005-6、AC-005-7 | 不变 | 旧 §5：`timeline.spec` / `agent.spec`。v1 的无上下文脚本全部照旧通过 | S1-ctx |
-| AC-005-8 | 新增；部分集成 | **单元部分**（`agent-context.spec`）：发送时捕获快照；无上下文时 payload 中没有该键；归属由 `run.started` 绑定；sessionStore 变化不改已有 run。<br>**端到端部分**（`integration-v2`）：在 `/jobs/:id/analyze` 用 `long` 发送，chip 显示该作业和阶段；切到 `deliver`，再切到 `/prices`，原 run 的 chip 不变；之后的全局发送显示“全局”。端到端部分 blocked_by H-1/H-3/H-4 | S1-ctx / S2 |
+| AC-005-8 | 新增；部分集成 | **单元部分**（`agent-context.spec`）：发送时捕获快照；无上下文时 payload 中没有该键；归属由 `run.started` 绑定；sessionStore 变化不改已有 run。<br>**端到端部分**（`integration-v2`）：在 `/jobs/:id/analyze` 用 `long` 发送，chip 显示该作业和阶段；切到 `deliver`，再切到 `/prices`，原 run 的 chip 不变。之后等原 `long` run 出现唯一终态、输入栏运行中指示消失（运行中禁止再发，所以须显式等待，不用固定延时），再做全局发送：新 run 显示“全局”，且不带 `jobContext`。H-1 的 mock 会把 payload 上下文原样写进事件，所以新 run 没有上下文，就证明 payload 没有沿用旧上下文；payload 中没有该键由单元部分直接断言。端到端部分 blocked_by H-1/H-3/H-4 | S1-ctx / S2 |
 | AC-005-9 | 新增 | `agent-context.spec`：使用真实 mock `AgentClient` 和 fake timers，交错回放作业 A、作业 B 和无上下文 run。`runsFor('A')` 只含 A 的 run，`runsFor()` 包含全部 run（含无上下文）；`receive` 收到全部事件；模块角标不变；每个 run 恰好一个终态。`timeline.spec` 补充选择器和 chip 断言（全局 run 显示“全局”） | S1-ctx |
 | AC-006-1、AC-006-2、AC-006-3、AC-006-4 | 不变 | 旧 §5 | S0 |
 | AC-007-1、AC-007-2、AC-007-3、AC-007-4 | 不变 | 旧 §5。network 守卫纳入新文件；壳侧 e2e 继续使用 normal、empty、error、slow 场景。2.0.0 文档由生产方重新生成，壳只跑 `check --only generated` 作为回归 | S1 |
@@ -531,9 +531,9 @@ S0、S1-*、S2 的定义见 §7.13。`blocked_by` 表示：要等对应的生产
 | 阶段 | 内容 | 依赖（交接单元按 §7.3 集成） | 可验证 | 说明 |
 |---|---|---|---|---|
 | S0 壳独立 | nav、router、Rail、`stores/app.ts` 最小派生修改；TopBar 按钮；M-09～M-12 文本 | v1 Handoff SHA | AC-002-2 壳部分、AC-002-4、AC-002-7、AC-005-1，以及不变项回归 | 未接线的按钮不能宣称满足 AC-002-8；S0 不单独 Handoff |
-| S1-ctx | agent 上下文：store、chip、`runsFor`、选择器 | S0 + H-1、H-4 | AC-005-8 单元部分、AC-005-9、AC-005-2～AC-005-7 回归 | 可以独立开启 |
-| S1-track | `JobTrack` | S0 + H-2、H-6 | AC-003-7 组件部分、AC-003-8、AC-003-9、AC-003-6 和 AC-002-6 回归 | 可以独立开启；H-2 共享缓存未交接时保持 blocked |
-| S1-intake | AppShell slot、令牌、AgentDrawer 避让 | S0 + H-4、H-5 | AC-008-2 新令牌、AC-002-6 双抽屉回归 | 可以独立开启 |
+| S1-ctx | agent 上下文：store、chip、`runsFor`、选择器 | S0 + H-1、H-4；chip 另外需要 H-2 中的 `StageLabel` 导出（不需要等共享列表缓存） | AC-005-8 单元部分、AC-005-9、AC-005-2～AC-005-7 回归 | 可以独立开启 |
+| S1-track | `JobTrack` | S0 + H-2（含 `JobTypeLabel`、`JobStatusBadge`）、H-3 的路由定义与注册切片（不含页面功能）、H-6 | AC-003-7 组件部分、AC-003-8、AC-003-9、AC-003-6 和 AC-002-6 回归 | 可以独立开启；H-2 共享缓存、`JobStatusBadge` 或 H-3 路由切片任一未交接时保持 blocked |
+| S1-intake | AppShell slot、令牌、AgentDrawer 避让 | S0 + H-4、H-5 | AC-008-2 新令牌、AC-002-6 双抽屉回归 | 从依赖上看可以独立开启；但它和 S1-ctx 都要写 `AgentDrawer.vue`，Tasks 按文件唯一写入者串行（先做 S1-ctx 的选择器，再做 S1-intake 的避让），所以实际排期会继承 S1-ctx 的交接前置 |
 | S2 集成 | `integration-v2`、全量命令、人工截图 | 全部 S1-* + H-3 + 互动方页面和 `IntakeDrawer` 已集成 | 集成部分：AC-002-2、AC-002-3、AC-002-8、AC-003-7、AC-005-8；AC-009-1；AC-009-2 截图 | 外部阻塞未解除时，Converge 必须报告“未收敛（外部阻塞）” |
 
 **依赖链是单向的**：
