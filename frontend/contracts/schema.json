@@ -166,6 +166,627 @@
     }
   },
   "$defs": {
+    "InterventionPayload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "ingest"
+            },
+            "uploadId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourceNote": {
+              "$ref": "#/$defs/SourceNote"
+            }
+          },
+          "required": [
+            "action",
+            "uploadId",
+            "sourceNote"
+          ],
+          "additionalProperties": false,
+          "description": "kind=ingest；投放 / 归入作业，只记录来源摘要。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "map_fix"
+            },
+            "uploadId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mapping": {
+              "$ref": "#/$defs/FieldMapping"
+            }
+          },
+          "required": [
+            "action",
+            "uploadId",
+            "mapping"
+          ],
+          "additionalProperties": false,
+          "description": "kind=map_fix；修正映射与单位后确认。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "recipe"
+            },
+            "artifactId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "changes": {
+              "$ref": "#/$defs/ParamChange"
+            }
+          },
+          "required": [
+            "action",
+            "artifactId",
+            "changes"
+          ],
+          "additionalProperties": false,
+          "description": "kind=recipe；参数 / 口径修正。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "annotate"
+            },
+            "conclusionId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "note": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "conclusionId",
+            "note"
+          ],
+          "additionalProperties": false,
+          "description": "kind=framework；结论级批注。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "ask_why"
+            },
+            "conclusionId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "conclusionId",
+            "question"
+          ],
+          "additionalProperties": false,
+          "description": "kind=ask_why；追问依据，send 不重复记介入。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "what_if"
+            },
+            "conclusionId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "conclusionId",
+            "question"
+          ],
+          "additionalProperties": false,
+          "description": "kind=question；追问如果。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "deepen"
+            },
+            "conclusionId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "instruction": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "conclusionId",
+            "instruction"
+          ],
+          "additionalProperties": false,
+          "description": "kind=rewrite；要求深挖。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "delete_conclusion"
+            },
+            "conclusionId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "conclusionId",
+            "reason"
+          ],
+          "additionalProperties": false,
+          "description": "kind=delete；删除结论，以 tombstone 保留历史。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "veto"
+            },
+            "conclusionId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "conclusionId",
+            "reason"
+          ],
+          "additionalProperties": false,
+          "description": "kind=veto；否决结论，以 tombstone 保留历史。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "pin_rule"
+            },
+            "ruleText": {
+              "type": "string",
+              "minLength": 1
+            },
+            "state": {
+              "type": "string",
+              "const": "candidate"
+            }
+          },
+          "required": [
+            "action",
+            "ruleText",
+            "state"
+          ],
+          "additionalProperties": false,
+          "description": "kind=pin_rule；规则仅为 candidate，不自动激活或蒸馏。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "remove_source"
+            },
+            "uploadId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "uploadId",
+            "reason"
+          ],
+          "additionalProperties": false,
+          "description": "kind=delete；移除来源，历史锚保留。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "cancel_job"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "reason"
+          ],
+          "additionalProperties": false,
+          "description": "kind=delete；取消作业，不 abort 已有 run。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "edit_block"
+            },
+            "blockId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "blockId",
+            "text"
+          ],
+          "additionalProperties": false,
+          "description": "kind=rewrite；结论 / 备注 inline 编辑。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "revise_blocks"
+            },
+            "blockIds": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "instruction": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "blockIds",
+            "instruction"
+          ],
+          "additionalProperties": false,
+          "description": "kind=rewrite；指定块的 agent 改稿请求。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "block_comment"
+            },
+            "blockId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "blockId",
+            "text"
+          ],
+          "additionalProperties": false,
+          "description": "kind=framework；新建块批注。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "reply_comment"
+            },
+            "threadId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "threadId",
+            "text"
+          ],
+          "additionalProperties": false,
+          "description": "kind=framework；回复批注线程。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "resolve_comment"
+            },
+            "threadId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "threadId"
+          ],
+          "additionalProperties": false,
+          "description": "kind=framework；标记线程已解决。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "mark_provisional"
+            },
+            "artifactId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "artifactId"
+          ],
+          "additionalProperties": false,
+          "description": "kind=approve；标记产物暂定并向下游透传。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "rerun"
+            },
+            "stage": {
+              "$ref": "#/$defs/Stage"
+            },
+            "affectedStages": {
+              "minItems": 1,
+              "maxItems": 4,
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Stage"
+              }
+            }
+          },
+          "required": [
+            "action",
+            "stage",
+            "affectedStages"
+          ],
+          "additionalProperties": false,
+          "description": "kind=rerun；显式重跑本阶段及下游，affectedStages 按阶段顺序列出受影响阶段。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "accept"
+            },
+            "revisionId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "revisionId"
+          ],
+          "additionalProperties": false,
+          "description": "kind=approve；接受 agent 候选版本。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "revert"
+            },
+            "revisionId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "revisionId"
+          ],
+          "additionalProperties": false,
+          "description": "kind=rewrite；回退请求涉及的块，产生新 revision、不删除旧版本。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "resolve_conflict"
+            },
+            "blockId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "humanRevId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "agentRevId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "choice": {
+              "type": "string",
+              "enum": [
+                "human",
+                "agent"
+              ]
+            }
+          },
+          "required": [
+            "action",
+            "blockId",
+            "humanRevId",
+            "agentRevId",
+            "choice"
+          ],
+          "additionalProperties": false,
+          "description": "kind=approve；定稿前显式选择冲突块版本，保留两版。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "const": "finalize"
+            },
+            "revisionId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "snapshotId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "action",
+            "revisionId",
+            "snapshotId"
+          ],
+          "additionalProperties": false,
+          "description": "kind=finalize；一次显式定稿只产生一条事件。"
+        }
+      ],
+      "description": "介入 payload：按 action 判别的确定类型，覆盖动作矩阵；不接受任意 JSON 或未知 action。"
+    },
+    "Intervention": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "jobId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "$ref": "#/$defs/Stage"
+        },
+        "artifactId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "产物锚；作业级事件可为 null。"
+        },
+        "baseRev": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "基线 Revision.id；作业级事件 / 初版可为 null。"
+        },
+        "kind": {
+          "$ref": "#/$defs/InterventionKind"
+        },
+        "payload": {
+          "$ref": "#/$defs/InterventionPayload"
+        },
+        "reason": {
+          "description": "介入理由；普通补充可为 null，破坏性动作在 payload 中有必填理由。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "outcome": {
+          "$ref": "#/$defs/InterventionOutcome"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      },
+      "required": [
+        "id",
+        "jobId",
+        "stage",
+        "artifactId",
+        "baseRev",
+        "kind",
+        "payload",
+        "reason",
+        "outcome",
+        "createdAt"
+      ],
+      "additionalProperties": false,
+      "description": "介入事件十个必有字段，camelCase；原动作不可改，检查点仅更新 outcome。action↔kind 对应关系由 zod 边界校验，见各 payload 分支的 kind 说明。"
+    },
     "Artifact": {
       "type": "object",
       "properties": {
@@ -1361,6 +1982,13 @@
           },
           "description": "本次产生的修订。"
         },
+        "interventions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Intervention"
+          },
+          "description": "本次新增或更新 outcome 的介入事件。"
+        },
         "inbox": {
           "$ref": "#/$defs/InboxCounts"
         }
@@ -1369,6 +1997,7 @@
         "jobs",
         "artifacts",
         "revisions",
+        "interventions",
         "inbox"
       ],
       "additionalProperties": false,

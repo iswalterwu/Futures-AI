@@ -513,14 +513,59 @@ export const InboxCountsSchema = z.strictObject({
     collect: z.int().nonnegative(), process: z.int().nonnegative(), analyze: z.int().nonnegative(), deliver: z.int().nonnegative(),
   }).describe('固定四阶段的未读且未解决条目计数。'),
 }).describe('契约提供的收件箱计数，不由 UI 从状态推导。')
+export const InterventionPayloadSchema = z.discriminatedUnion('action', [
+  z.strictObject({ action: z.literal('ingest'), uploadId: z.string().min(1), sourceNote: SourceNoteSchema }).describe('kind=ingest；投放 / 归入作业，只记录来源摘要。'),
+  z.strictObject({ action: z.literal('map_fix'), uploadId: z.string().min(1), mapping: FieldMappingSchema }).describe('kind=map_fix；修正映射与单位后确认。'),
+  z.strictObject({ action: z.literal('recipe'), artifactId: z.string().min(1), changes: ParamChangeSchema }).describe('kind=recipe；参数 / 口径修正。'),
+  z.strictObject({ action: z.literal('annotate'), conclusionId: z.string().min(1), note: z.string().trim().min(1) }).describe('kind=framework；结论级批注。'),
+  z.strictObject({ action: z.literal('ask_why'), conclusionId: z.string().min(1), question: z.string().trim().min(1) }).describe('kind=ask_why；追问依据，send 不重复记介入。'),
+  z.strictObject({ action: z.literal('what_if'), conclusionId: z.string().min(1), question: z.string().trim().min(1) }).describe('kind=question；追问如果。'),
+  z.strictObject({ action: z.literal('deepen'), conclusionId: z.string().min(1), instruction: z.string().trim().min(1) }).describe('kind=rewrite；要求深挖。'),
+  z.strictObject({ action: z.literal('delete_conclusion'), conclusionId: z.string().min(1), reason: z.string().trim().min(1) }).describe('kind=delete；删除结论，以 tombstone 保留历史。'),
+  z.strictObject({ action: z.literal('veto'), conclusionId: z.string().min(1), reason: z.string().trim().min(1) }).describe('kind=veto；否决结论，以 tombstone 保留历史。'),
+  z.strictObject({ action: z.literal('pin_rule'), ruleText: z.string().trim().min(1), state: z.literal('candidate') }).describe('kind=pin_rule；规则仅为 candidate，不自动激活或蒸馏。'),
+  z.strictObject({ action: z.literal('remove_source'), uploadId: z.string().min(1), reason: z.string().trim().min(1) }).describe('kind=delete；移除来源，历史锚保留。'),
+  z.strictObject({ action: z.literal('cancel_job'), reason: z.string().trim().min(1) }).describe('kind=delete；取消作业，不 abort 已有 run。'),
+  z.strictObject({ action: z.literal('edit_block'), blockId: z.string().min(1), text: z.string() }).describe('kind=rewrite；结论 / 备注 inline 编辑。'),
+  z.strictObject({ action: z.literal('revise_blocks'), blockIds: z.array(z.string().min(1)).min(1), instruction: z.string().trim().min(1) }).describe('kind=rewrite；指定块的 agent 改稿请求。'),
+  z.strictObject({ action: z.literal('block_comment'), blockId: z.string().min(1), text: z.string().trim().min(1) }).describe('kind=framework；新建块批注。'),
+  z.strictObject({ action: z.literal('reply_comment'), threadId: z.string().min(1), text: z.string().trim().min(1) }).describe('kind=framework；回复批注线程。'),
+  z.strictObject({ action: z.literal('resolve_comment'), threadId: z.string().min(1) }).describe('kind=framework；标记线程已解决。'),
+  z.strictObject({ action: z.literal('mark_provisional'), artifactId: z.string().min(1) }).describe('kind=approve；标记产物暂定并向下游透传。'),
+  z.strictObject({ action: z.literal('rerun'), stage: StageSchema, affectedStages: z.array(StageSchema).min(1).max(4) }).describe('kind=rerun；显式重跑本阶段及下游，affectedStages 按阶段顺序列出受影响阶段。'),
+  z.strictObject({ action: z.literal('accept'), revisionId: z.string().min(1) }).describe('kind=approve；接受 agent 候选版本。'),
+  z.strictObject({ action: z.literal('revert'), revisionId: z.string().min(1) }).describe('kind=rewrite；回退请求涉及的块，产生新 revision、不删除旧版本。'),
+  z.strictObject({ action: z.literal('resolve_conflict'), blockId: z.string().min(1), humanRevId: z.string().min(1), agentRevId: z.string().min(1), choice: z.enum(['human', 'agent']) }).describe('kind=approve；定稿前显式选择冲突块版本，保留两版。'),
+  z.strictObject({ action: z.literal('finalize'), revisionId: z.string().min(1), snapshotId: z.string().min(1) }).describe('kind=finalize；一次显式定稿只产生一条事件。'),
+]).describe('介入 payload：按 action 判别的确定类型，覆盖动作矩阵；不接受任意 JSON 或未知 action。')
+const interventionKindByAction = {
+  ingest: 'ingest', map_fix: 'map_fix', recipe: 'recipe', annotate: 'framework', ask_why: 'ask_why', what_if: 'question',
+  deepen: 'rewrite', delete_conclusion: 'delete', veto: 'veto', pin_rule: 'pin_rule', remove_source: 'delete', cancel_job: 'delete',
+  edit_block: 'rewrite', revise_blocks: 'rewrite', block_comment: 'framework', reply_comment: 'framework', resolve_comment: 'framework',
+  mark_provisional: 'approve', rerun: 'rerun', accept: 'approve', revert: 'rewrite', resolve_conflict: 'approve', finalize: 'finalize',
+} as const satisfies Record<z.infer<typeof InterventionPayloadSchema>['action'], InterventionKind>
+export const InterventionSchema = z.strictObject({
+  id: z.string().min(1), jobId: z.string().min(1), stage: StageSchema,
+  artifactId: z.string().min(1).nullable().describe('产物锚；作业级事件可为 null。'),
+  baseRev: z.string().min(1).nullable().describe('基线 Revision.id；作业级事件 / 初版可为 null。'),
+  kind: InterventionKindSchema, payload: InterventionPayloadSchema,
+  reason: z.string().nullable().describe('介入理由；普通补充可为 null，破坏性动作在 payload 中有必填理由。'),
+  outcome: InterventionOutcomeSchema, createdAt: TimestampSchema,
+}).refine(event => interventionKindByAction[event.payload.action] === event.kind, {
+  path: ['kind'], message: 'kind 必须与 payload.action 的动作矩阵对应',
+}).describe('介入事件十个必有字段，camelCase；原动作不可改，检查点仅更新 outcome。action↔kind 对应关系由 zod 边界校验，见各 payload 分支的 kind 说明。')
+
 export const WriteReceiptSchema = z.strictObject({
   jobs: z.array(JobSchema).describe('本次写入改变的作业。'),
   artifacts: z.array(ArtifactSchema).describe('本次改变的产物。'),
   revisions: z.array(RevisionSchema).describe('本次产生的修订。'),
+  interventions: z.array(InterventionSchema).describe('本次新增或更新 outcome 的介入事件。'),
   inbox: InboxCountsSchema,
 }).describe('领域写回执，携带变更对象与收件箱计数；不表示 agent run 已完成。')
 
 export const contractSchemas = {
+  InterventionPayload: InterventionPayloadSchema,
+  Intervention: InterventionSchema,
   Artifact: ArtifactSchema,
   Revision: RevisionSchema,
   StageWorkspace: StageWorkspaceSchema,
@@ -669,3 +714,5 @@ export type Revision = z.infer<typeof RevisionSchema>
 export type StageWorkspace = z.infer<typeof StageWorkspaceSchema>
 export type InboxCounts = z.infer<typeof InboxCountsSchema>
 export type WriteReceipt = z.infer<typeof WriteReceiptSchema>
+export type InterventionPayload = z.infer<typeof InterventionPayloadSchema>
+export type Intervention = z.infer<typeof InterventionSchema>

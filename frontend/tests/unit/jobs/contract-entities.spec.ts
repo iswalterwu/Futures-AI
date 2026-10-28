@@ -112,9 +112,81 @@ describe('WI workspace — AC-001-4 / AC-004-5 / AC-005-6 schema 前置', () => 
     expect(c.StageWorkspaceSchema.safeParse({ ...workspaces[3], finalSnapshot: snapshot }).success).toBe(false)
   })
   test('write receipt carries changed entities and full inbox counts', () => {
-    const receipt = { jobs: [job], artifacts: [artifact], revisions, inbox: { unread: 0, byStage: { collect: 0, process: 0, analyze: 0, deliver: 0 } } }
+    const receipt = { jobs: [job], artifacts: [artifact], revisions, interventions: [], inbox: { unread: 0, byStage: { collect: 0, process: 0, analyze: 0, deliver: 0 } } }
     expect(c.WriteReceiptSchema.parse(receipt)).toEqual(receipt)
     expect(c.WriteReceiptSchema.safeParse({ ...receipt, inbox: { unread: 0, byStage: { collect: 0 } } }).success).toBe(false)
+  })
+})
+
+// 手写的动作矩阵验收输入；不导入实现映射来计算期望 kind。
+const interventionExamples = [
+  { kind: 'ingest', payload: { action: 'ingest', uploadId: 'u1', sourceNote: { purpose: '合成用途', reliability: 'high', publishedAt: null, validUntil: null, scopeNote: null } } },
+  { kind: 'map_fix', payload: { action: 'map_fix', uploadId: 'u1', mapping: [] } },
+  { kind: 'recipe', payload: { action: 'recipe', artifactId: 'a1', changes: { unit: 'kt' } } },
+  { kind: 'framework', payload: { action: 'annotate', conclusionId: 'c1', note: '批注' } },
+  { kind: 'ask_why', payload: { action: 'ask_why', conclusionId: 'c1', question: '依据？' } },
+  { kind: 'question', payload: { action: 'what_if', conclusionId: 'c1', question: '如果？' } },
+  { kind: 'rewrite', payload: { action: 'deepen', conclusionId: 'c1', instruction: '深挖' } },
+  { kind: 'delete', payload: { action: 'delete_conclusion', conclusionId: 'c1', reason: '删除理由' } },
+  { kind: 'veto', payload: { action: 'veto', conclusionId: 'c1', reason: '否决理由' } },
+  { kind: 'pin_rule', payload: { action: 'pin_rule', ruleText: '合成规则', state: 'candidate' } },
+  { kind: 'delete', payload: { action: 'remove_source', uploadId: 'u1', reason: '删除理由' } },
+  { kind: 'delete', payload: { action: 'cancel_job', reason: '取消理由' } },
+  { kind: 'rewrite', payload: { action: 'edit_block', blockId: 'b1', text: '新正文' } },
+  { kind: 'rewrite', payload: { action: 'revise_blocks', blockIds: ['b1'], instruction: '改稿' } },
+  { kind: 'framework', payload: { action: 'block_comment', blockId: 'b1', text: '批注' } },
+  { kind: 'framework', payload: { action: 'reply_comment', threadId: 't1', text: '回复' } },
+  { kind: 'framework', payload: { action: 'resolve_comment', threadId: 't1' } },
+  { kind: 'approve', payload: { action: 'mark_provisional', artifactId: 'a1' } },
+  { kind: 'rerun', payload: { action: 'rerun', stage: 'analyze', affectedStages: ['analyze', 'deliver'] } },
+  { kind: 'approve', payload: { action: 'accept', revisionId: 'r2' } },
+  { kind: 'rewrite', payload: { action: 'revert', revisionId: 'r2' } },
+  { kind: 'approve', payload: { action: 'resolve_conflict', blockId: 'b1', humanRevId: 'r2', agentRevId: 'r3', choice: 'human' } },
+  { kind: 'finalize', payload: { action: 'finalize', revisionId: 'r2', snapshotId: 'f1' } },
+]
+const eventBase = { id: 'i1', jobId: 'j1', stage: 'analyze', artifactId: null, baseRev: null, reason: null, outcome: 'recorded', createdAt: timestamp }
+
+describe('WI intervention kinds — AC-005-3 / AC-007-1 schema 前置', () => {
+  test.each(interventionExamples)('$payload.action accepts only $kind', example => {
+    const event = { ...eventBase, ...example }
+    expect(c.InterventionSchema.parse(event)).toEqual(event)
+    expect(c.InterventionPayloadSchema.parse(example.payload)).toEqual(example.payload)
+    for (const kind of c.InterventionKindSchema.options.filter(kind => kind !== example.kind)) expect(c.InterventionSchema.safeParse({ ...event, kind }).success, kind).toBe(false)
+  })
+  test('all 23 actions have examples and cover all 13 kinds', () => {
+    expect(interventionExamples).toHaveLength(23)
+    expect(new Set(interventionExamples.map(example => example.kind))).toEqual(new Set(c.InterventionKindSchema.options))
+    expect(interventionExamples.map(example => example.payload.action)).toEqual(c.InterventionPayloadSchema.options.map(schema => schema.shape.action.value))
+  })
+})
+
+test('WI pin_rule candidate — AC-005-4 rejects omitted or non-candidate state', () => {
+  const event = { ...eventBase, kind: 'pin_rule', payload: { action: 'pin_rule', ruleText: '合成规则', state: 'candidate' } }
+  expect(c.InterventionSchema.safeParse(event).success).toBe(true)
+  for (const state of [undefined, null, 'active', 'proposed', '']) expect(c.InterventionSchema.safeParse({ ...event, payload: { ...event.payload, state } }).success).toBe(false)
+})
+
+describe('WI intervention fields — AC-007-1 / AC-008-1 schema 前置', () => {
+  test('exactly ten mandatory fields, with nullable job-level anchors', () => {
+    const event = { ...eventBase, ...interventionExamples[11] }
+    const parsed = c.InterventionSchema.parse(event)
+    expect(Object.keys(parsed)).toEqual(['id', 'jobId', 'stage', 'artifactId', 'baseRev', 'kind', 'payload', 'reason', 'outcome', 'createdAt'])
+    for (const key of Object.keys(parsed)) expect(c.InterventionSchema.safeParse({ ...event, [key]: undefined }).success, key).toBe(false)
+    expect(c.InterventionSchema.safeParse({ ...event, basis: 'private' }).success).toBe(false)
+  })
+  test('each action requires its declared fields and rejects unstructured JSON', () => {
+    for (const { kind, payload } of interventionExamples) {
+      for (const key of Object.keys(payload)) expect(c.InterventionSchema.safeParse({ ...eventBase, kind, payload: { ...payload, [key]: undefined } }).success, `${payload.action}.${key}`).toBe(false)
+      expect(c.InterventionPayloadSchema.safeParse({ ...payload, arbitrary: {} }).success).toBe(false)
+    }
+    for (const payload of [null, [], {}, { action: 'unfinalize' }, { action: 'annotate', data: { anything: true } }]) expect(c.InterventionPayloadSchema.safeParse(payload).success).toBe(false)
+  })
+  test('write receipt requires interventions and checks their actual action-kind matrix', () => {
+    const event = { ...eventBase, ...interventionExamples[3] }
+    const receipt = { jobs: [], artifacts: [], revisions: [], interventions: [event], inbox: { unread: 0, byStage: { collect: 0, process: 0, analyze: 0, deliver: 0 } } }
+    expect(c.WriteReceiptSchema.parse(receipt)).toEqual(receipt)
+    expect(c.WriteReceiptSchema.safeParse({ ...receipt, interventions: undefined }).success).toBe(false)
+    expect(c.WriteReceiptSchema.safeParse({ ...receipt, interventions: [{ ...event, kind: 'veto' }] }).success).toBe(false)
   })
 })
 

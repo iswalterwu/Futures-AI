@@ -128,6 +128,123 @@
 类型中的枚举与常量直接来自 schema；必填不等于非空，null、空列表与零的语义见字段说明。
 完整格式、范围与长度约束见 `schema.json`；AgentRun 的唯一终态、同次运行与 stepId 单调约束还须遵守通用约定，不能只依赖 JSON Schema。
 
+### `InterventionPayload`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object` | 介入 payload：按 action 判别的确定类型，覆盖动作矩阵；不接受任意 JSON 或未知 action。 |
+| `$.oneOf[0]` | 是 | `object` | kind=ingest；投放 / 归入作业，只记录来源摘要。 |
+| `$.oneOf[0].action` | 是 | `"ingest"` |  |
+| `$.oneOf[0].uploadId` | 是 | `string` |  |
+| `$.oneOf[0].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
+| `$.oneOf[1]` | 是 | `object` | kind=map_fix；修正映射与单位后确认。 |
+| `$.oneOf[1].action` | 是 | `"map_fix"` |  |
+| `$.oneOf[1].uploadId` | 是 | `string` |  |
+| `$.oneOf[1].mapping` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
+| `$.oneOf[2]` | 是 | `object` | kind=recipe；参数 / 口径修正。 |
+| `$.oneOf[2].action` | 是 | `"recipe"` |  |
+| `$.oneOf[2].artifactId` | 是 | `string` |  |
+| `$.oneOf[2].changes` | 是 | `ParamChange` | 参数补丁：至少一项 unit / timezone / calendar / resample / aggregation，不接受其他参数。 |
+| `$.oneOf[3]` | 是 | `object` | kind=framework；结论级批注。 |
+| `$.oneOf[3].action` | 是 | `"annotate"` |  |
+| `$.oneOf[3].conclusionId` | 是 | `string` |  |
+| `$.oneOf[3].note` | 是 | `string` |  |
+| `$.oneOf[4]` | 是 | `object` | kind=ask_why；追问依据，send 不重复记介入。 |
+| `$.oneOf[4].action` | 是 | `"ask_why"` |  |
+| `$.oneOf[4].conclusionId` | 是 | `string` |  |
+| `$.oneOf[4].question` | 是 | `string` |  |
+| `$.oneOf[5]` | 是 | `object` | kind=question；追问如果。 |
+| `$.oneOf[5].action` | 是 | `"what_if"` |  |
+| `$.oneOf[5].conclusionId` | 是 | `string` |  |
+| `$.oneOf[5].question` | 是 | `string` |  |
+| `$.oneOf[6]` | 是 | `object` | kind=rewrite；要求深挖。 |
+| `$.oneOf[6].action` | 是 | `"deepen"` |  |
+| `$.oneOf[6].conclusionId` | 是 | `string` |  |
+| `$.oneOf[6].instruction` | 是 | `string` |  |
+| `$.oneOf[7]` | 是 | `object` | kind=delete；删除结论，以 tombstone 保留历史。 |
+| `$.oneOf[7].action` | 是 | `"delete_conclusion"` |  |
+| `$.oneOf[7].conclusionId` | 是 | `string` |  |
+| `$.oneOf[7].reason` | 是 | `string` |  |
+| `$.oneOf[8]` | 是 | `object` | kind=veto；否决结论，以 tombstone 保留历史。 |
+| `$.oneOf[8].action` | 是 | `"veto"` |  |
+| `$.oneOf[8].conclusionId` | 是 | `string` |  |
+| `$.oneOf[8].reason` | 是 | `string` |  |
+| `$.oneOf[9]` | 是 | `object` | kind=pin_rule；规则仅为 candidate，不自动激活或蒸馏。 |
+| `$.oneOf[9].action` | 是 | `"pin_rule"` |  |
+| `$.oneOf[9].ruleText` | 是 | `string` |  |
+| `$.oneOf[9].state` | 是 | `"candidate"` |  |
+| `$.oneOf[10]` | 是 | `object` | kind=delete；移除来源，历史锚保留。 |
+| `$.oneOf[10].action` | 是 | `"remove_source"` |  |
+| `$.oneOf[10].uploadId` | 是 | `string` |  |
+| `$.oneOf[10].reason` | 是 | `string` |  |
+| `$.oneOf[11]` | 是 | `object` | kind=delete；取消作业，不 abort 已有 run。 |
+| `$.oneOf[11].action` | 是 | `"cancel_job"` |  |
+| `$.oneOf[11].reason` | 是 | `string` |  |
+| `$.oneOf[12]` | 是 | `object` | kind=rewrite；结论 / 备注 inline 编辑。 |
+| `$.oneOf[12].action` | 是 | `"edit_block"` |  |
+| `$.oneOf[12].blockId` | 是 | `string` |  |
+| `$.oneOf[12].text` | 是 | `string` |  |
+| `$.oneOf[13]` | 是 | `object` | kind=rewrite；指定块的 agent 改稿请求。 |
+| `$.oneOf[13].action` | 是 | `"revise_blocks"` |  |
+| `$.oneOf[13].blockIds` | 是 | `string[]` |  |
+| `$.oneOf[13].blockIds[]` | 是 | `string` |  |
+| `$.oneOf[13].instruction` | 是 | `string` |  |
+| `$.oneOf[14]` | 是 | `object` | kind=framework；新建块批注。 |
+| `$.oneOf[14].action` | 是 | `"block_comment"` |  |
+| `$.oneOf[14].blockId` | 是 | `string` |  |
+| `$.oneOf[14].text` | 是 | `string` |  |
+| `$.oneOf[15]` | 是 | `object` | kind=framework；回复批注线程。 |
+| `$.oneOf[15].action` | 是 | `"reply_comment"` |  |
+| `$.oneOf[15].threadId` | 是 | `string` |  |
+| `$.oneOf[15].text` | 是 | `string` |  |
+| `$.oneOf[16]` | 是 | `object` | kind=framework；标记线程已解决。 |
+| `$.oneOf[16].action` | 是 | `"resolve_comment"` |  |
+| `$.oneOf[16].threadId` | 是 | `string` |  |
+| `$.oneOf[17]` | 是 | `object` | kind=approve；标记产物暂定并向下游透传。 |
+| `$.oneOf[17].action` | 是 | `"mark_provisional"` |  |
+| `$.oneOf[17].artifactId` | 是 | `string` |  |
+| `$.oneOf[18]` | 是 | `object` | kind=rerun；显式重跑本阶段及下游，affectedStages 按阶段顺序列出受影响阶段。 |
+| `$.oneOf[18].action` | 是 | `"rerun"` |  |
+| `$.oneOf[18].stage` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
+| `$.oneOf[18].affectedStages` | 是 | `Stage[]` |  |
+| `$.oneOf[18].affectedStages[]` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
+| `$.oneOf[19]` | 是 | `object` | kind=approve；接受 agent 候选版本。 |
+| `$.oneOf[19].action` | 是 | `"accept"` |  |
+| `$.oneOf[19].revisionId` | 是 | `string` |  |
+| `$.oneOf[20]` | 是 | `object` | kind=rewrite；回退请求涉及的块，产生新 revision、不删除旧版本。 |
+| `$.oneOf[20].action` | 是 | `"revert"` |  |
+| `$.oneOf[20].revisionId` | 是 | `string` |  |
+| `$.oneOf[21]` | 是 | `object` | kind=approve；定稿前显式选择冲突块版本，保留两版。 |
+| `$.oneOf[21].action` | 是 | `"resolve_conflict"` |  |
+| `$.oneOf[21].blockId` | 是 | `string` |  |
+| `$.oneOf[21].humanRevId` | 是 | `string` |  |
+| `$.oneOf[21].agentRevId` | 是 | `string` |  |
+| `$.oneOf[21].choice` | 是 | `"human" &#124; "agent"` |  |
+| `$.oneOf[22]` | 是 | `object` | kind=finalize；一次显式定稿只产生一条事件。 |
+| `$.oneOf[22].action` | 是 | `"finalize"` |  |
+| `$.oneOf[22].revisionId` | 是 | `string` |  |
+| `$.oneOf[22].snapshotId` | 是 | `string` |  |
+
+### `Intervention`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 介入事件十个必有字段，camelCase；原动作不可改，检查点仅更新 outcome。action↔kind 对应关系由 zod 边界校验，见各 payload 分支的 kind 说明。 |
+| `$.id` | 是 | `string` |  |
+| `$.jobId` | 是 | `string` |  |
+| `$.stage` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
+| `$.artifactId` | 是 | `string &#124; null` | 产物锚；作业级事件可为 null。 |
+| `$.artifactId.anyOf[0]` | 是 | `string` |  |
+| `$.artifactId.anyOf[1]` | 是 | `null` |  |
+| `$.baseRev` | 是 | `string &#124; null` | 基线 Revision.id；作业级事件 / 初版可为 null。 |
+| `$.baseRev.anyOf[0]` | 是 | `string` |  |
+| `$.baseRev.anyOf[1]` | 是 | `null` |  |
+| `$.kind` | 是 | `InterventionKind` | v1 子集；interaction §3.4 的 source_pref / value_fix 归后续处理台 / data-layer 映射 feature；定稿在 interaction 示意表中归 approve，本契约用独立的 finalize 承载。 |
+| `$.payload` | 是 | `InterventionPayload` | 介入 payload：按 action 判别的确定类型，覆盖动作矩阵；不接受任意 JSON 或未知 action。 |
+| `$.reason` | 是 | `string &#124; null` | 介入理由；普通补充可为 null，破坏性动作在 payload 中有必填理由。 |
+| `$.outcome` | 是 | `InterventionOutcome` | 介入处理结果；检查点只更新 outcome，不改原动作。 |
+| `$.createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+
 ### `Artifact`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
@@ -388,6 +505,8 @@
 | `$.artifacts[]` | 是 | `Artifact` | 阶段产物与修订锚；修订内容另由 Revision 保存。 |
 | `$.revisions` | 是 | `Revision[]` | 本次产生的修订。 |
 | `$.revisions[]` | 是 | `Revision` | 四种产物修订的判别联合；提交深拷贝，读 API 返回副本，历史不可变。 |
+| `$.interventions` | 是 | `Intervention[]` | 本次新增或更新 outcome 的介入事件。 |
+| `$.interventions[]` | 是 | `Intervention` | 介入事件十个必有字段，camelCase；原动作不可改，检查点仅更新 outcome。action↔kind 对应关系由 zod 边界校验，见各 payload 分支的 kind 说明。 |
 | `$.inbox` | 是 | `InboxCounts` | 契约提供的收件箱计数，不由 UI 从状态推导。 |
 
 ### `ChartSpec`
