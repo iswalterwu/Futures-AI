@@ -15,6 +15,8 @@
 
 **结论（首轮）：通过——无阻断项（V2-B：0）；建议 9 条（V2-S01～S09，不阻断、不计入判定）。允许进入 Tasks；不授权 Implement。** Implement 开工另需：(1) Tasks 头部登记 v1 完成 Review / Gate 2 / Handoff 并合入 main 的准确 SHA；(2) 各 S1 / S2 子阶段对应的生产方交接单元（plan §7.3 H-1～H-6）按固定 commit + 定向测试摘要交付并由集成人串行集成；(3) v2 Tasks 与 Analyze 产出后由 A 新开独立会话复核并在本文件「阶段说明」对应项补勾。
 
+> **R2 当前有效结论（2026-10-28，定向复核，固定 HEAD `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`）：通过——V2-B 0 项；新增建议 V2-S10～S12（不阻断）。I-01b、V-02 由 A 补设正式复选框并勾选（见文末「R2 定向复核」）。本轮完成 Tasks / Analyze 质量复核，仍不授权 Implement：tasks §5 闸门 1（v1 Handoff SHA）与闸门 3（H-x 交接集成）全部未过。** 上方首轮（R1，审 `d2bf5a7`）全文保留为历史，其 V2-S01～S09 的落地核验见 R2-C01。
+
 ## 需求完整性
 
 - [x] **N-01 每条编号需求至少有一条可验证的验收规则。** spec R-001～R-009 共 52 条 AC（6 / 8 / 9 / 6 / 9 / 4 / 5 / 3 / 2），编号连续；每条写明验证形态（自动 / 组件 / 端到端 / 契约 / 人工），跨 feature 集成项在条文内显式标注（AC-002-2 / 002-3 / 002-8 / 003-7 / 005-8）。脚本核验：spec AC 集合 = plan §7.11 集合，missing=[]、extra=[]。
@@ -109,11 +111,11 @@
 
 ## 阶段说明（不设复选框；后续由 A 新开独立会话复核并补勾）
 
-- **I-01b spec / plan / tasks 无冲突（Analyze）**：v2 tasks.md 尚不存在，Analyze 未发生。Tasks 产出后由 A 复核。复核要点：v2 任务不得修改或勾选 v1 历史任务，但须**显式声明取代**与 v2 冲突的 v1 完成标准——T-08.1 / T-08 上下文「八项菜单」（tasks:115、119）、T-08.5「专题研究子项由研究列表驱动」（tasks:123）、T-13.1「八路由」（tasks:203）、T-15.2「M-01～M-08 八项」（tasks:238）、T-08 `stores/app.ts` 状态文案；旧 tasks 不得当 v2 任务生效。
-- **V-02 任务粒度与验证命令满足 tasks.md 模板要求**：Tasks 产出后由 A 复核——每条完成标准引用 AC 编号、验证命令一一对应、0.5–2 h、依赖无前向无环；S1 / S2 任务显式 `blocked_by: H-x`（指向固定交接 SHA）；头部登记 v1 Handoff SHA 与集成验证分支名；AC-002-8 / 003-7 / 005-8 集成子项不得由占位任务「完成」。
+- **I-01b spec / plan / tasks 无冲突（Analyze）**：v2 tasks.md 尚不存在，Analyze 未发生。Tasks 产出后由 A 复核。复核要点：v2 任务不得修改或勾选 v1 历史任务，但须**显式声明取代**与 v2 冲突的 v1 完成标准——T-08.1 / T-08 上下文「八项菜单」（tasks:115、119）、T-08.5「专题研究子项由研究列表驱动」（tasks:123）、T-13.1「八路由」（tasks:203）、T-15.2「M-01～M-08 八项」（tasks:238）、T-08 `stores/app.ts` 状态文案；旧 tasks 不得当 v2 任务生效。 **R2 确认（HEAD `949a232`）：已复核通过，正式复选框见文末「R2 定向复核」I-01b。**
+- **V-02 任务粒度与验证命令满足 tasks.md 模板要求**：Tasks 产出后由 A 复核——每条完成标准引用 AC 编号、验证命令一一对应、0.5–2 h、依赖无前向无环；S1 / S2 任务显式 `blocked_by: H-x`（指向固定交接 SHA）；头部登记 v1 Handoff SHA 与集成验证分支名；AC-002-8 / 003-7 / 005-8 集成子项不得由占位任务「完成」。 **R2 确认（HEAD `949a232`）：已复核通过，正式复选框见文末「R2 定向复核」V-02。**
 - **P-4 主函数只写正常流程（§5.4）**：代码级准则，Review 阶段核 `JobTrack` 三态分支、`AppShell` 投放事件处理、`send` 快照与 `receive` 绑定。
 - **AC-009-1 命令输出 / AC-009-2 截图 / AC-007-5 生产方证据**：属 Implement / Handoff 证据，当前不声称。
-- **Implement 前置**：本文件当前有效复选框全部勾选，但开工另需 (1) Tasks 经 A 复核补勾；(2) Tasks 头部登记 v1 Handoff SHA；(3) 各子阶段的 H-x 交接单元以固定 commit + 定向测试摘要交付并由集成人集成；(4) 外部阻塞未解除时 Converge 必报「未收敛（外部阻塞）」，不得报全量。
+- **Implement 前置**：本文件当前有效复选框全部勾选，但开工另需 (1) Tasks 经 A 复核补勾；(2) Tasks 头部登记 v1 Handoff SHA；(3) 各子阶段的 H-x 交接单元以固定 commit + 定向测试摘要交付并由集成人集成；(4) 外部阻塞未解除时 Converge 必报「未收敛（外部阻塞）」，不得报全量。 **R2 补记**：(1) 已由 R2 完成（tasks §5 闸门 2 的 (b) 明确通过记录 = 文末 R2 节；(a) 以本文件被集成人提交后的 SHA 登记进 tasks 1.1:304）；(2)(3)(4) 仍未满足，12 个 v2 任务全部 blocked。
 
 ## 结构核验证据（只读内存脚本 + git，未写文件、未安装依赖）
 
@@ -136,3 +138,77 @@ EXT_8bd1b31  checklist 当前轮次 = R2 通过（审 630e06f）；plan:16 所�
 3. **不授权 Implement**：前置见「阶段说明」；v1 Handoff SHA 与 H-1～H-6 交接单元未就绪前不得以 `fdaa7d8` / `0ffa15e` 开工，也不得用占位宣称集成 AC 通过。
 4. 若后续 Plan 因 Tasks / Analyze 发现需修改 §7 实质设计（非编辑性），回到本文件由同一模型新开独立会话定向复核；审核员切换只在调用失败时按 AGENTS §6 回退。
 5. 本轮只写本文件；未修改 spec / plan / tasks / 旧 checklist / docs / README，未 commit。本文件勾选是需求 / 设计质量证据，不是实现验收证据。
+
+---
+
+# R2 定向复核（Tasks / Plan §7 细化 / Analyze F-01～F-07）——当前有效
+
+> **审核员**：A = `claude-fable-5-1` **via `anthropic`**（`--model anthropic/claude-fable-5-1`）。**通道原因**：同模型 `claude-bridge` 最小真实探活在本限额窗口因额度 / 限流失败，`anthropic` 探活成功；只换通道、不换模型，本窗口不重复试 bridge。失败类别 = 通道额度或限流；本记录已脱敏，不含鉴权报错。
+> **独立性**：全新会话；独占 worktree `D:/2030/Futures-AI-workbench-v2-tasks-review`，分支 `review/frontend-workbench-v2-tasks`，进入前 `git status` 干净。A 不是 Plan / Tasks / Analyze / 修正的作者（均 `claude-opus-5-5` via anthropic），不是协调集成人（`openai/gpt-6.1-sol`），不是未来实施者（`openai/gpt-6-astra` 首选）；单审，本节结论即审核结论。
+> **任务**：Checklist R2 = 对 Tasks（T-V2-01～12）、随 Tasks 落盘的 plan §7 小改、Analyze R1 修正与 R2 结论做定向复核，并补记 I-01b / V-02。R1 只覆盖 `d2bf5a7` 的 plan §7。
+> **固定基线**：HEAD = `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`（`git rev-parse HEAD`）。冻结 spec v2.1：`git diff --quiet fec3556 949a232 -- spec.md` 为空，52 条 AC 不变。
+> **真实 diff 三层**：(1) Tasks + Plan 细化 `git diff a8ab444 b364971 -- specs/frontend-workbench/{plan,tasks}.md specs/README.md`：plan 14 + / 14 −（§7.0 / 7.1 / 7.3 / 7.5 / 7.7 / 7.11 / 7.13 共 8 个 hunk，§1～§6 零改动）、tasks 518 + / 0 −（页首 +7 行 + 末尾追加 v2 段）、README 2 / 2；(2) Analyze R1 修正 `git diff b364971 6bda6c9 -- specs/frontend-workbench/{plan,tasks,analyze-v2}.md specs/README.md`：plan 10 / 8、tasks 42 / 27、analyze-v2 +125、README 2 / 2；(3) `git diff 6bda6c9 949a232`：README 1 / 1、analyze-v2 +8、analyze-v2-r2 +82（新增）、plan 页首 2 / 1、tasks 页首 + 1.1 + 闸门 4 共 9 / 4——纯状态记账，无技术设计变更。`a8ab444..949a232` 下 `spec.md` / `checklist.md` / `checklist-v2.md` / `docs/` / `AGENTS.md` / `frontend/` 零改动。
+> **只读参照**：v1 固定历史参照 `0ffa15e`（`git show 0ffa15e:<path>`）、互动方固定设计 `8bd1b31`；未读取任何外部 worktree；没有生产方已交付的 H-x SHA，也没有 v1 Handoff SHA（两者在 tasks 1.1 / 1.2 均为「未取得」）。
+> **只读审核**：未安装依赖、未运行 pnpm / vitest / playwright / 应用、未调用其他 agent、未读取凭证或全局配置、未 commit / push；唯一写入文件为本文件。结构核验用 git 只读 + 内存 Python（stdin，不落盘），结果见文末 R2 证据块。
+
+**R2 结论：通过——阻断 V2-B：0；新增建议 V2-S10～S12（不阻断、不计入判定）。I-01b、V-02 正式勾选。完成 Tasks / Analyze 质量复核；仍不得 Implement，直到 tasks §5 闸门 1（v1 Handoff SHA 在 main 上）与闸门 3（本任务所需 H-x 已按四项登记集成）满足。本通过只解除闸门 2 中「A 定向复核」这一内部审核项，不授权跳过 v1 Handoff 或任何 H-x 交接。**
+
+## R2 正式复选框
+
+- [x] **I-01b spec / plan / tasks 无冲突（Analyze 复核；固定 `949a232`）。** 依据：
+  - (a) **spec 冻结未动**：`fec3556..949a232` spec 零改动；tasks 1.1:295「AC 集合与 `fec3556` 一致」属实；V2-S09 按建议处理——spec 不改、tasks 1.1 注明以页首批准为准、plan:294 补「其余回归见 §7.11」。
+  - (b) **spec ↔ tasks 逐 AC**：tasks §7 矩阵（:705–765）52 行、无重复无遗漏；12 个任务完成标准引用的 AC 并集 = 52（missing = []、extra = []）；矩阵里每个「T-V2-xx#n」都指向确实写有该 AC 的那条标准（bad refs = []）。spec 标注跨 feature 集成的 5 条 AC（002-2 / 002-3 / 002-8 / 003-7 / 005-8）全部落在 T-V2-09 / T-V2-10，blocked_by 指向具体 H-x 与页面切片（tasks:610、:636）；S0 / S1 任务不宣称集成——T-V2-01#1「`/jobs` 占位 owner 子断言仅作 S0 证据」（:428）、T-V2-02「不宣称满足 AC-002-8」（:443）、T-V2-07#4「只提供实现，不验收」——与 spec §2 非目标 / §4「不能把占位路由视为已验收」一致。spec R-003 三态、点击进当前阶段、不持第二套状态 ↔ T-V2-05 / 06；R-005 快照 / 归属不变 / 按作业查看 / 旧脚本有效 ↔ T-V2-03 / 04；R-002 投放快照与关闭不中断 ↔ T-V2-07 / 10；R-009 M-09～M-12 ↔ T-V2-02#3 / T-V2-12#3。
+  - (c) **plan §7 ↔ tasks**：§7.2 写入者表（含新增 `PlaceholderPage.vue` 行 plan:305）↔ tasks §4（:383）互补一致；§7.3 H-1～H-6（plan:337–342）↔ tasks 1.2（:317–324）逐条同文（含 F-04 写 action、F-05 公开设置方式、F-06 整集合替换）；§7.4 `aria-current` page / location 全局唯一（plan:371）↔ T-V2-01（:418）并与 T-V2-09#1（详情 = location）/ #4（`/jobs` = page）互洽；§7.5（plan:395–402）↔ T-V2-05 / 06；§7.6 ↔ T-V2-07；§7.7（plan:434–441）↔ T-V2-03 / 04；§7.11 ↔ 矩阵（矩阵为超集，差异只在 `typecheck`，见 R2-C03 O-1）；§7.13 S0 / S1-ctx / S1-track / S1-intake / S2（plan:536–540）↔ 各任务 blocked_by（T-V2-04 / 07 经依赖继承，见 O-3）。
+  - (d) **旧 v1 任务未改写**：T-01～T-15 正文、勾选状态与 45 条「AC 覆盖」表与 `a8ab444` 逐字相同（从「## 约定」到 v2 段之前区间 diff 为空）；页首只追加 7 行记录、未改旧句。与 v2 冲突的 T-08 上下文 / #1 / #2 进度 / #5、T-13#1、T-15#1 / #2、T-06 / T-07、`main.ts` 在 tasks §2（:338–357）逐项显式覆盖，R1 阶段说明列出的五处全部命中；契约 / `jobs/**` / `main.ts` 归互动方（tasks:353、:397）。
+  - (e) **Analyze**：R2 报告（`analyze-v2-r2.md`，固定 `6bda6c9`）的「F-01～F-07 全部关闭、无新增 F」经本轮独立逐项核对成立（R2-C02）；`6bda6c9..949a232` 只有状态记账。本轮未发现新的 spec / plan / tasks 冲突。
+- [x] **V-02 任务粒度与验证命令满足 tasks.md 模板要求（固定 `949a232`）。** 依据：12 个任务，工时 2 / 2 / 2 / 2 / 2 / 2 / 2 / 1 / 2 / 2 / 1.5 / 1.5 = **22.0 h**，每项 ∈ [0.5, 2]；依赖 01←∅、02←01、03←02、04←03、05←02、06←05、07←02 + 04、08←06 + 07、09←08、10←09、11←10、12←11——全部指向更小编号，**无前向、无环**，关键路径 18 h（tasks:801–802 自述与核验一致）。每任务含上下文 / 修改范围 / 依赖 / 预计 / 完成标准 / 验证命令（`templates/tasks.md` 要素齐备）；完成标准条数 = 验证命令条数（4/4、4/4、3/3、3/3、4/4、4/4、4/4、2/2、4/4、3/3、9/9、3/3），**每条完成标准都引用 AC 编号**，命令按 AC 前缀 `-t` / `-g` 选取或为静态守卫 / 全量命令（不带 AC 名的命令全部是 `check` / `typecheck` / `tokens` / `test` / 人工截图，与所引 AC 类型吻合）。**文件唯一写入者**：tasks §4 每文件单写者；多任务共享文件显式串行——`shell.spec` 01→02→09、`AgentDrawer.vue` 04→07、`JobTrack.vue` + `job-track.spec` 05→06、`integration-v2.spec` 09→10、`AppShell.vue` 01（条件）→07；T-V2-11 修复限于 §4 壳文件；`contracts/** / events.ts / jobs/** / main.ts / package.json / lock` 明示不改（:397）。**blocked_by**：12/12 任务带状态行且全部 blocked，S1 / S2 显式 `blocked_by: H-x`（切片级：H-2·标签 / H-2·列表 / H-3·路由切片 / 页面切片），指向 tasks 1.2 登记行而非移动工作树；头部登记位 v1 Handoff SHA / 实施分支 / 集成验证分支 / 集成人 / A 复核 SHA（:299–304）已设且为「未取得」，并禁止用 `fdaa7d8` / `0ffa15e` / `b19427a` 代替；集成子项（AC-002-8 / 003-7 / 005-8）无占位任务「完成」。
+- [x] **R2-C01 首轮建议 V2-S01～S09 落地核验。** S01：tasks 1.2 四项登记 + 登记规则 1–2（:326–328），README:33 含三点交接细化与 F-04 / 05 / 06 补充 ✓。S02：plan:338 H-2③ 最低期望（待人工确认 / 冲突在集合内、终结态不在，枚举由生产方登记 CONTRACT.md）+ T-V2-05#1 用 fixture id 断言、不重写判定 ✓。S03：plan:399 两种静态空态、不加 `reason`；T-V2-06 ✓。S04：plan:396 不加 `hasRoute`、不改 path 跳转，H-3「路由定义与 `main.ts` 注册」切片前置（plan:338 H-3 列、:538）；T-V2-05 / 06 blocked_by 含 H-3·路由切片，切片集成前卡片不可点、不演示 ✓。S05：plan:497 + T-V2-09#3 显式等待原 `long` run 唯一终态与运行中指示消失后再全局发送（核 `0ffa15e`：`long.ts`:14 在 12000 ms 发 `run.completed`；`AgentDock.vue`:51 `agent.running` 时禁发）✓。S06：plan:434 + T-V2-03 修改范围 / 标准 1：`useSessionStore()` 只在 `send` 函数体内调用、不加抽象（核 `0ffa15e` `agent/store.ts` 顶层只有 `useBadgesStore()`，加法可行）✓。S07：plan:395「复用」、未交接 blocked、不用 `JobStatusLabel` 直出；H-2·标签含 `JobStatusBadge`（tasks:318）；T-V2-05 blocked_by ✓。S08：`nav.ts` 归属注释 + M-09「格物致知（learning，Phase 2C）」+ `AC-002-2 v2-nav` 断言 owner 文案含 `learning`；用户可见占位文案仍沿用 `0ffa15e` 模板「内容随 `learning` feature 交付」——AC-002-2 只要求「注明归属」，`learning` 与 docs/plan.md §5 `backend/learning/`、路由 `/learning`（D-018）同名可追溯，**A 接受为落地**，不要求改页面功能 ✓。S09：见 I-01b(a) ✓。
+- [x] **R2-C02 Analyze F-01～F-07 修正语义闭环（独立复核，不预设批准）。**
+  - **F-01 `PlaceholderPage.vue` 派生边界（A 独立判定：同源派生，可接受）**。事实（`0ffa15e`）：`git grep app.research` 只命中 `Rail.vue`:70 / :75 与 `PlaceholderPage.vue`:9；`PlaceholderPage.vue`:8–10 的 `title` computed 依赖 `app.research`，删除 `stores/app.ts` 的 `research` 导出后不改必红；`8bd1b31` 互动方所有权（其 plan:16）不含 `src/pages`，该文件是 v1 壳文件（v1 T-08 范围）。判定理由：spec §4 Q-029 清单是「v2 壳接线」清单，不是对 v1 壳文件的禁改令；本改动是 AC-002-2「不再单列专题研究」的必然派生、纯减法（只删 research 标题分支，标题直接取 `route.meta.title`），不改占位文案 / `data-placeholder-owner` / daily 日期（T-V2-02 :454）；单写者 T-V2-02（tasks:383，plan:305）；验证 `typecheck`（T-V2-02#4，矩阵 AC-002-7 / AC-009-1 行同步）；顺序上 T-V2-01 先删 Rail 的消费、`research` 导出仍在，T-V2-02 再同时删导出与分支，任一提交点类型不红。接受条件与 I-01 对 `stores/app.ts` 相同（Tasks 显式列入范围 + 验证命令），已满足。附带的无用导入清理缺口见 V2-S10（不阻断）。
+  - **F-02 `shell.spec` 八项 / research 深链物理用例迁移**：T-V2-01 修改范围（tasks:419–423）与 `0ffa15e:frontend/e2e/shell.spec.ts` 物理用例一一对应——:4–13 八项 `menu` 表（含 `/research`）→ 九项；:16 菜单用例与 :41 直达 / 刷新用例迁移、计数 8→9（:19 `toHaveCount(8)`）；:54「daily 与 research 深链」只留 daily；:168 旧 `AC-002-3` 用例与 :2 `research.json` 导入删除。标准 1（:428）写明不残留并要求全前缀全绿，命令 1 改为 `-g "AC-002-2"` 全前缀（:432）；`agent.spec.ts`:21「all eight routes」由 T-V2-01 改九项并加 `v2-nav` ✓。plan:482、tasks:344 同步 ✓。
+  - **F-03 S0 `/jobs` 占位子断言到 T-V2-09 集成态的串行迁移**：`shell.spec` 写入链 01→02→09（tasks:384）；T-V2-01#1 标「仅作 S0 证据」；T-V2-09 上下文（:612）、修改范围、标准 4 与命令 4（:626–631）承接迁移并在集成验证分支上全前缀回归；plan:482「S0 与 S2 的断言迁移」同步。本轮逐条核对 T-V2-03～08 的全部验证命令：无一是全前缀 `AC-002-2` 或全量 `test`，窗口期内不会误用（窗口本身的处理见 O-2）✓。
+  - **F-04 H-2 共享列表 + 写 action**：plan:338 H-2⑤「随 H-2·列表交接至少交付一个可调用、会改变作业摘要的生产方写 action」+ store 归属 / 公开导出 / 刷新定向测试，排除 inbox 与 H-5 action；tasks:319 同文、T-V2-05 blocked_by（:515）与 #2（:531）只调用登记的那个 action；plan:491 同步。核 `8bd1b31` 互动方 plan:200：`createJob` 新建作业为 `collecting/collect`，会进入「进行中」集合，示例可行 ✓。
+  - **F-05 H-4 条件路由前置**：plan:340 H-4 交接登记须写明公开设置方式、只经路由守卫设置时 S1-ctx 条件依赖 H-3 路由切片、壳不加测试 setter；plan:537、tasks:320 / :322 / :469 / :481 同步；依赖方向仍为生产方 → 壳，无环 ✓。
+  - **F-06 H-6 可替换集合**：plan:342「`jobFixtures` 可以替换整个作业样例集合」（新增一项 = 原集合加该项替换）；tasks:324 / T-V2-06 blocked_by（:542）/ 修改范围（:553）：替换能力未交付则整体 blocked，壳不代写；plan:493 同步。核 `0ffa15e` `mock/index.ts`:80–81 `readFixture` 的覆盖即整项替换，与 v1 语义一致；与 AC-002-3「新增一项」（T-V2-09#2）不冲突 ✓。
+  - **F-07 闸门 2 证据**：tasks:402 改为三项人工证据（A 复核产物已提交 SHA / I-01b 与 V-02 明确通过记录或 A 补设的正式复选框 / checklist-v2 当前有效），明文禁止以 `git grep "^- \[ \]"` 无输出代替；1.1:304 登记位已设。本节即 (b) 的明确通过记录与正式复选框；(a) 由集成人在提交本文件后登记 ✓。
+- [x] **R2-C03 Analyze R2 观察项 O-1～O-3 处理（只按实际影响判断）。**
+  - **O-1（plan §7.11 未写 `typecheck`，落在 §7.2:305）——可接受**。`typecheck` 不是 AC-002-7 / AC-009-1 的验收手段，而是派生修改的安全网；§7.2 已登记、tasks 矩阵（:727、AC-009-1 行）与 T-V2-02#4 为超集；AC-009-1 的全量 `pnpm -C frontend test` 本身包含 `typecheck`。不要求回改 plan。
+  - **O-2（H-3 集成后至 T-V2-09 完成前，`shell.spec` `/jobs` 子断言在集成验证分支上预期红）——可接受，附一条记录要求**。窗口有界且已登记（tasks:612 明文不以全前缀 / 全量为证据）；窗口内可能执行的 T-V2-03～08 命令都不触及该子断言；`shell.spec` 在该窗口的唯一合法写者就是 T-V2-09，不为此新增写者或提前任务（提前会打破 §4 单写者链）。实际影响只是一条已知的 S0 子断言，不是回归；要求窗口内提交与 Converge 记录标注「已知红」（V2-S11）。
+  - **O-3（T-V2-04 / T-V2-07 经 T-V2-03 隐含继承 H-3 条件依赖）——清晰度足够**。T-V2-04 依赖 T-V2-03、T-V2-07 依赖 T-V2-04（tasks:496 / :569 / §9 表），加 §3「blocked_by 没有全部解除的任务不得开始」与依赖顺序，条件依赖必然传递；T-V2-07 已显式写「继承 H-1 和 H-2·标签」。补一句即可（V2-S12，编辑性）。
+- [x] **R2-C04 内部设计通过与外部开工阻塞分离。** tasks 1.1 的 v1 Handoff SHA / 实施分支 / 集成验证分支 / 集成人 / A 复核 SHA 与 1.2 的 8 个交接单元（固定 commit / 有效 Checklist SHA / 测试摘要 / 集成 SHA）全部「未取得 / 未交付」；12/12 任务 blocked；Analyze E-01～E-12 均未解除；tasks §5 闸门 1、3 未过。本轮通过**只**解除闸门 2 的「A 定向复核」子项（待本文件提交 SHA 登记进 tasks 1.1:304），不解除闸门 1 / 3，不授权跳过 v1 Handoff 或任何 H-x 交接；本轮也**未**因外部未 Handoff 判设计未通过，更未把任何 H-x 当作已实现。README:24 状态行表述与此一致。
+
+## R2 阻断项（V2-B）
+
+无。
+
+## R2 建议（V2-S10～S12；不阻断、不计入判定；建议在 Implement 前由 Tasks 作者按变更规则落实，或由实施者按「最小派生修改」精神执行）
+
+| # | 位置 | 建议 |
+|---|---|---|
+| V2-S10 | tasks T-V2-01 修改范围 `Rail.vue`（:418）；T-V2-02 修改范围 `stores/app.ts`「只做三处修改」与 `PlaceholderPage.vue`（:445–454）；T-V2-02 命令 4 | 派生删除会留下无用导入 / 常量：`0ffa15e` `Rail.vue`:3 / :9 的 `useAppStore` / `app` 只服务 research 子列表；`stores/app.ts`:4 的 `ResearchItem` 类型导入；`PlaceholderPage.vue`:4 / :7 的 `useAppStore` / `app`。`tsconfig.json` 未开 `noUnusedLocals`，`typecheck` 不红；但 `eslint.config.js` 用 `tseslint.configs.recommended`（`no-unused-vars` 为 error），`pnpm -C frontend lint` 会红。T-V2-01 / 02 的验证命令不含 `lint`，首次跑 `lint` 的是 T-V2-07#4，而 T-V2-07 不是这三个文件的写入者（§4）。**最小修正**：T-V2-01 / 02 修改范围各加一句「连带删除因此失效的导入与局部变量」，T-V2-02 命令 4 改为 `pnpm -C frontend typecheck && pnpm -C frontend lint`（T-V2-01 可加同一命令）。不改设计、不改 AC、不改 spec；属 Tasks 文字精度，非阻断。 |
+| V2-S11 | tasks T-V2-09 上下文（:612）；review.md | O-2 窗口（H-3 集成后至 T-V2-09 完成前）内，集成验证分支上 `shell.spec` 的 `/jobs` 占位子断言已知红。建议该窗口内每次提交信息与 Converge / review.md 记一句「已知红：`shell.spec` `/jobs` 占位子断言，待 T-V2-09 迁移」，避免被当成回归或被用作证据。 |
+| V2-S12 | tasks T-V2-04（:496）、T-V2-07（:569）blocked_by | 编辑性：补「经 T-V2-03 继承 H-3·路由切片条件依赖」，与 T-V2-07 现有「继承 H-1 和 H-2·标签」写法一致。 |
+
+## R2 结构核验证据（只读 git + 内存脚本；未写文件、未安装依赖、未运行测试）
+
+```text
+HEAD = 949a2329be9874aeaf7c5a189d49d1ee11ad97e5（branch review/frontend-workbench-v2-tasks，git status --porcelain 为空）
+LOG  949a232 ← 6bda6c9 ← b364971 ← a8ab444 ← d2bf5a7 ← fec3556
+DIFF a8ab444..b364971  plan 14/14（8 hunk 全在 §7）、tasks 518/0（页首 +7、末尾 +v2 段）、README 2/2
+DIFF b364971..6bda6c9  plan 10/8、tasks 42/27、analyze-v2 +125（新增）、README 2/2
+DIFF 6bda6c9..949a232  README 1/1、analyze-v2 +8、analyze-v2-r2 +82（新增）、plan 页首 2/1、tasks 9/4（页首 / 1.1 / 闸门 4，纯记账）
+QUIET a8ab444..949a232  spec.md / checklist.md / checklist-v2.md / docs / AGENTS.md / frontend 零改动；spec == fec3556；checklist.md == d2bf5a7
+V1_BODY  tasks「## 约定」→ v2 段前区间 与 a8ab444 逐字相同；plan §1～§6（「## 1. 技术方案」→「## 7.」前）与 a8ab444 逐字相同
+TASKS  12 任务；标准/命令条数 4/4 4/4 3/3 3/3 4/4 4/4 4/4 2/2 4/4 3/3 9/9 3/3；AC 并集 52（missing=[] extra=[]）；矩阵 52 行唯一；T-V2-xx#n bad refs=[]；依赖无前向无环；工时 22.0 h；12/12 状态行 = blocked
+V1_0ffa15e  PlaceholderPage.vue:8–10 title 依赖 app.research；app.research 消费者 = Rail.vue:70/75 + PlaceholderPage.vue:9；stores/app.ts 4 步进度 + 「正在加载资讯、数据源与研究列表…」+ ResearchItem 导入:4；shell.spec.ts :2 research.json 导入 / :4–13 八项 menu / :16 菜单用例 / :19 toHaveCount(8) / :41 直达用例 / :54 daily+research 深链 / :121 四步文案断言 / :168 旧 AC-002-3；agent.spec.ts:21 eight routes；router.ts 由 navItems 生成具名路由 + /research/:id? 特例；mock/index.ts:80–81 readFixture 覆盖 = 整项替换；__FAI_TEST__ 只暴露 charts；AgentDock.vue:51 running 禁发；long.ts:14 12000 ms run.completed；agent/store.ts 顶层仅 useBadgesStore；tsconfig 无 noUnusedLocals；eslint = tseslint recommended
+EXT_8bd1b31  plan:16 所有权不含 src/pages；:55 jobs 复用 agent/store.ts；:61 jobsStore 仅当前作业视图缓存；:200 createJob → collecting/collect
+未运行：pnpm / vitest / playwright / 应用；未读取外部 worktree
+```
+
+## R2 结论与下一步
+
+1. **通过（Tasks / Analyze 质量）**：V2-B 0；I-01b、V-02 正式勾选；首轮 V2-S01～S09 全部落地（S08 以可追溯 owner 接受）；Analyze F-01～F-07 修正语义闭环，`PlaceholderPage.vue` 派生修改经 A 独立判定可接受；O-1～O-3 按实际影响接受，不新增机制。
+2. **新增建议 V2-S10～S12**：S10 建议在 Implement 前由 Tasks 作者补入（属文字精度，若按 AGENTS §2 第 8 步处理，仅需更新 tasks 并重做定向 Analyze，不触发 spec 变更）；S11 / S12 可在实施记录中落实。
+3. **仍不授权 Implement**：tasks §5 闸门 1（v1 Handoff SHA 登记且在 main 上）、闸门 3（各 H-x 四项登记齐全并集成）全部未过；闸门 2 的 (a) 待集成人把本文件提交后的 SHA 登记进 tasks 1.1:304。外部前置齐备前，Converge 只能报「未收敛（外部阻塞）」。
+4. 若后续对 plan §7 / tasks v2 段做实质（非编辑性）修改，回到本文件由同一模型新开独立会话再做定向复核；审核员切换只在调用失败时按 AGENTS §6 回退。
+5. 本轮只写本文件；未修改 spec / plan / tasks / analyze / 旧 checklist / docs / README / 代码，未 commit。本节勾选是设计 / 任务质量证据，不是实现验收证据。
