@@ -1,6 +1,6 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **当前状态（2026-10-28，T-19 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“确认”——**T-19 证据补采 Gate 2 已批准**，A-M08-P3-1 接受为非阻断备注（§18）；已合并主线 `90187f7` 并 Handoff（§19，PR 链接见 §19.4）。A-H01-P3-1 已补采、待 Walter 复核 M-08；M-01 ~ M-08 仍待 Walter 人工复核（8 项未勾）；H-02 留待 v2、未修复。
+> **当前状态（2026-10-28，T-19 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“确认”——**T-19 证据补采 Gate 2 已批准**，A-M08-P3-1 接受为非阻断备注（§18）；已合并主线 `90187f7` 并 Handoff（§19，PR：[iswalterwu/Futures-AI#10](https://github.com/iswalterwu/Futures-AI/pull/10)）。A-H01-P3-1 已补采、待 Walter 复核 M-08；M-01 ~ M-08 仍待 Walter 人工复核（8 项未勾）；H-02 留待 v2、未修复。
 
 > **（Review 时点指针）当前状态（2026-10-28，T-19 独立 Review）**：独立 A（claude-fable-5-1 via anthropic）对 `167b337` 定向 Review **通过**（0 P1 / 0 P2 / 1 P3，A-M08-P3-1 待 Walter 裁定），原件 [review-m08.md](review-m08.md)、记录 §17；**本轮 Gate 2 待 Walter 明确批准**，未 Handoff；A-H01-P3-1 已补采、待 Walter 复核 M-08，未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
 
@@ -591,4 +591,5 @@ Handoff 核对：`frontend/` 树 `03fda1de…` 与 A 审查目标 `869cb71` 相�
 
 ### 19.4 PR 与合并
 
-- PR：待创建后补链接。
+- PR：[iswalterwu/Futures-AI#10](https://github.com/iswalterwu/Futures-AI/pull/10)（`docs/frontend-workbench-m08-evidence` → `main`，普通 merge commit；仓库没有配置 CI 检查）。
+- merge 提交号在 merge 后才产生，记在 PR 页面与 Handoff 结果文件上，不再为此另提交一次。
