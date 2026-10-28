@@ -1,5 +1,13 @@
 # Feature: frontend-workbench 实施计划（plan.md）
 
+> **S0 状态归档（2026-10-29；这是当前状态，下方各行都是历史时点）**：由 `claude-opus-5-5 via anthropic` 记录，协调器新派的会话；只做状态归档，不是正式 Handoff，也不改 §7 设计。
+> - S0（T-V2-01 → T-V2-02）已完成：Astra（`openai/gpt-6-astra via openai`）提交 T01 `0aebf66`、T02 `5d53f45`。
+> - Converge 固定审 `5d53f45`：S0 没有差距（`converge-v2-s0.md`）。
+> - A 的 S0 限定代码审查固定审 `fab08a6`：通过，但只限 S0，0 P1 / 0 P2 / 1 P3（产物 `6acfd30`，`review-v2-s0.md`）。它和 A R4 设计 Checklist（`e596244`）是两个不同阶段。
+> - T-V2-03～12 仍被 H-x 阻塞，完整 v2 为“未收敛（外部阻塞）”。
+> - P3-1 只登记为后续候选（tasks §1.3），未修复，也未获风险接受。
+> - 没有进行最终 Review、Gate 2 或 Handoff。当前交接见根目录 `HANDOFF.md`。
+
 > **A R4 当前登记（协调集成）**：独立 A = `claude-fable-5-1 via anthropic` 已固定审 `34ee7954d8aa26609c937dd6fcc7cc029baa2539` 并通过（0 阻断），原样审核产物 `e596244fba308875152b0ce1a9c1752d6e85b6ae` 已登记于 tasks §1.1，V2-S16 已完成。本次只集成 A 原件与状态，不改 §7 设计。G-02 用户选择与 R9 分析已满足；实施树同步登记且逐项核对后，限定按 T-V2-01 → T-V2-02 实施 S0。S1/S2 仍等 H-x 四项交接。本行不代表任何实现 / 测试 / Converge / Gate 2 完成。
 
 > **R9 当前登记（协调集成）**：G-02 人工选择已闭环。独立只读 Analyze R9 固定审 `ee3e348459124aead80d99c4f3b9438d24450a54`，确认 R8 F-01 / F-02 全部关闭、无新增 P1/P2/P3（原文 `analyze-v2-r9.md`）。本次报告与状态提交不改 §7 实质设计；仍待 A R4 定向复核，S1/S2 另缺 H-x。下方“待复跑”是各自报告前时点，以本行 / tasks §1.1 当前登记为准。
