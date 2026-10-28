@@ -322,7 +322,7 @@
 
 - **上下文**：review.md §10、plan §7。用户回复“继续”，协调会话按其建议仅授权 H-01 最小样式修复。根因：`SampleChart.vue` 图注“近 <span class="num">60</span> 日收盘 · 样例”的数字命中全局 `span.num { display: block }`，标签被切成三行。只为既有 AC-001-4、AC-006-3 与 M-08 做实现样式纠偏；不改 spec / 令牌 / 契约 / 主题 / 全局数值样式 / 其他组件，不需要新 ADR 或 Gate 1。旧 e2e 只断言文字（文字本来正确），新回归必须测浏览器计算样式与 Range 几何。
 - **修改范围**：生产代码只改 `frontend/src/modules/market-board/SampleChart.vue`（`<style scoped>` 增 `figcaption .num { display: inline; }` 或等价的单条局部规则）；浏览器回归只改 `frontend/e2e/theme.spec.ts`；新建 `specs/frontend-workbench/assets/h01-fix-20261028/`（4 张 PNG + `README.md`）；`tasks.md` 只更新本任务的状态与实施证据。不改 `frontend/src/shared/`、`frontend/src/design/`、`frontend/contracts/`、spec / checklist / manual-acceptance、`assets/handoff/` 的 60 张旧图。
-- **依赖**：T-04（`num.css`）、T-12（`SampleChart.vue`、`e2e/theme.spec.ts`）　**预计**：1 h　**状态**：已授权待修复（未实施；修复的 Gate 2 未批准）
+- **依赖**：T-04（`num.css`）、T-12（`SampleChart.vue`、`e2e/theme.spec.ts`）　**预计**：1 h　**状态**：已实施、自动化通过（2026-10-28）；尚未 Converge / 独立 Review / 本次修复 Gate 2。
 - **执行**：Implement 按 AGENTS §6（首选 `openai/gpt-6-astra`，回退 `deepseek/deepseek-flash`），在本分支 `fix/frontend-workbench-visual` 上做，基线 `43b6d79`；提交信息以 `T-18` 开头。
 - **完成标准**：
   1. 回归先红：只加 plan §7.3 的 e2e（`T.window.width` / `T.window.min_width` × `T.window.height` 两档，各一个测试，标题以 `AC-001-4 AC-006-3 H-01` 开头，先截图后断言），在基线 `SampleChart.vue` 上两档都在“图注文字与数字同一行”的 Range 几何断言失败；记录失败摘要，复制两张修复前截图（AC-001-4、AC-006-3）。
@@ -336,6 +336,13 @@
   3. `pnpm -C frontend test && pnpm -C frontend build && git diff --check`
   4. `git diff --name-only 43b6d79 -- frontend`（只列两文件）`&& git diff --exit-code 43b6d79 -- frontend/src/shared frontend/src/design frontend/contracts specs/frontend-workbench/spec.md specs/frontend-workbench/checklist.md`
   5. `git ls-files specs/frontend-workbench/assets/h01-fix-20261028`（4 张 PNG + README）`&& git diff --exit-code 43b6d79 -- specs/frontend-workbench/assets/handoff specs/frontend-workbench/manual-acceptance.md`
+- **实施证据（2026-10-28）**：Implement = **openai/gpt-6-astra via openai**（环境 `PI_PROVIDER` / `PI_MODEL` 核实，首选，无回退）；基线 `43b6d79681a49562f41751368b2ae00c24062f56`，分支 `fix/frontend-workbench-visual`。前置 Checklist 实核 70 checked / 0 unchecked，Analyze 允许 T-18 实施。
+  - 生产改动仅 `SampleChart.vue` scoped `figcaption .num { display: inline; }`；回归仅 `e2e/theme.spec.ts`。新增两档真实浏览器测试：文本节点 Range 每段单矩形、竖向共同交集与水平顺序，计算 display / mono / tabular / 右对齐，单位同行且不重叠、页面与图注无横滚；图注以外全部 `span.num` 仍 block，集合含盘面、关注列表与焦点带。
+  - `pnpm -C frontend test:e2e -g "H-01"`：旧生产代码 **2 failed / exit 1**，两档均失败于“caption text and number share one line”；仅加局部规则后 **2 passed / exit 0**。
+  - `pnpm -C frontend test:e2e -g "AC-006-3|AC-006-4|AC-001-4"`：**6 passed / exit 0**；`pnpm -C frontend test`：六项守卫 / typecheck / lint 通过，**14 文件 559 单元与组件 + 68 E2E passed / exit 0**（本轮实跑，新增 2 E2E）；`pnpm -C frontend build`：**exit 0**，828 模块，JS 780.57 kB，仅 chunk 大小提示；`git diff --check`：**exit 0**。
+  - 日志与各自 exit：`C:/Users/iswal/AppData/Local/Temp/fw-h01-resume.fw1YK3/h01-{red,green,related,tests,build,diff-check}.{log,exit}`；红跑 Playwright 产物另存该目录 `h01-red-results/`，不入库。
+  - 截图：`assets/h01-fix-20261028/{before,after}-{1440,960}x900.png`，均为真实 Chrome 156.0.8078.49 / Playwright 1.64.1 的 mock normal **图注特写**；按本轮指示先滚动图注到可视区域，再截图（不截图被 H-02 裁切的整图）。这是 AI 执行采集，**本轮未做看图结论或人工验收**，协调会话后续原生视觉复核；元数据见同目录 README。
+  - 边界核对：`frontend/` 相对基线只改上述两个文件；shared / design / contracts、冻结 spec / Checklist、manual-acceptance 与旧 60 张截图均零差异。H-02、11 项旧 P3 未修复，M-01 ~ M-08 未勾选。测试服务由 Playwright 自启停，4173 已释放，未启动独立服务或其他 agent。
 - **实施后流程（不属本任务）**：Converge 追加记录 → 独立 A Review（新会话、与实施不同模型）→ Walter Gate 2。M-08 人工勾选仍由 Walter 复核。
 
 ## AC 覆盖
