@@ -1,0 +1,95 @@
+@import './generated/tokens.css';
+@import './glass.css';
+@import '../shared/num.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  min-height: 100%;
+  background: linear-gradient(var(--fai-bg-angle), var(--fai-bg-top), var(--fai-bg-middle) var(--fai-bg-middle-stop), var(--fai-bg-bottom));
+  background-attachment: fixed;
+  color: var(--fai-text-primary);
+  font-family: var(--fai-font-sans);
+  font-size: var(--fai-type-body);
+  font-weight: var(--fai-weight-regular);
+  line-height: var(--fai-type-body-lh);
+}
+
+body {
+  margin: 0;
+}
+
+#app {
+  min-height: var(--fai-layout-viewport-height);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  color: inherit;
+  font: inherit;
+  font-family: var(--fai-font-sans);
+}
+
+button {
+  font-size: var(--fai-type-btn);
+}
+
+h1,
+.page-title {
+  font-family: var(--fai-font-serif);
+  font-size: var(--fai-type-h1);
+  font-weight: var(--fai-weight-strong);
+}
+
+.wordmark {
+  font-family: var(--fai-font-serif);
+  font-size: var(--fai-type-wordmark);
+  font-weight: var(--fai-weight-strong);
+}
+
+.fai-module > header > .title {
+  font-family: var(--fai-font-sans);
+  font-size: var(--fai-type-card-t);
+  font-weight: var(--fai-weight-emphasis);
+}
+
+.en {
+  color: var(--fai-text-secondary);
+  font-family: var(--fai-font-sans);
+  font-size: var(--fai-type-en-sub);
+  font-weight: var(--fai-weight-regular);
+  letter-spacing: var(--fai-tracking-en-sub);
+  text-transform: uppercase;
+}
+
+code,
+pre,
+kbd,
+samp,
+.unit,
+.ticker {
+  font-family: var(--fai-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: var(--fai-type-unit);
+}
+
+.ticker {
+  font-size: var(--fai-type-ticker);
+}

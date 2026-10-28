@@ -1,0 +1,18 @@
+{
+  "brief": {
+    "date": "2026-10-28",
+    "conclusions": [
+      "样例：原油与燃料油合约走高，LPG 合约小幅回落。",
+      "样例：库存下降、炼厂开工率回升，关注供需指标后续变化。",
+      "本页全部为合成演示数据，不构成交易建议。"
+    ],
+    "figures": [
+      { "label": "原油 SC2612", "value": 512.6, "unit": "元/桶", "decimals": 1, "freq": "1d", "delta": 1.5, "deltaKind": "pct", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00", "seriesId": "mock.sc2612.close" },
+      { "label": "LPG PG2612", "value": 4320, "unit": "元/吨", "decimals": 0, "freq": "1d", "delta": -0.46, "deltaKind": "pct", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00", "seriesId": "mock.pg2612.close" },
+      { "label": "燃料油 FU2701", "value": 3018, "unit": "元/吨", "decimals": 0, "freq": "1d", "delta": 0.6, "deltaKind": "pct", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00", "seriesId": "mock.fu2701.close" },
+      { "label": "商业库存", "value": 2460, "unit": "万吨", "decimals": 0, "freq": "1w", "delta": -35, "deltaKind": "abs", "semantic": "analysis", "asOf": "2026-10-28T09:00:00+08:00", "seriesId": "mock.oil.inventory" },
+      { "label": "炼厂开工率", "value": 76.8, "unit": "%", "decimals": 1, "freq": "1w", "delta": 0.8, "deltaKind": "abs", "semantic": "analysis", "asOf": "2026-10-28T09:00:00+08:00", "seriesId": "mock.refinery.utilization" },
+      { "label": "在途运量", "value": 820, "unit": "万吨", "decimals": 0, "freq": "1d", "delta": 0, "deltaKind": "abs", "semantic": "analysis", "asOf": "2026-10-28T09:00:00+08:00", "seriesId": "mock.oil.onwater" }
+    ]
+  }
+}

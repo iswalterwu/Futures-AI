@@ -1,0 +1,81 @@
+{
+  "base": "http://127.0.0.1:4191",
+  "startedAt": "2026-10-28T12:38:50.901Z",
+  "shots": [
+    {
+      "file": "m04-board-grid.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "行情盘面网格（滚动到位后局部）：正常数值与 休 / 待 / – 三态格"
+    },
+    {
+      "file": "m04-library-dialog-bottom.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "模块库滚动到底：关注列表、数据发布日历两项"
+    },
+    {
+      "file": "m08-chart-960-scrolled.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 960,
+        "height": 900
+      },
+      "item": "M-08",
+      "scene": "960 窄窗样例折线（滚动到位后局部）"
+    },
+    {
+      "file": "m08-chart-960-scrolled-tooltip.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 960,
+        "height": 900
+      },
+      "item": "M-08",
+      "scene": "960 窄窗悬停浮窗（靠右侧，检查裁切）"
+    },
+    {
+      "file": "m06-960-watchlist.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 960,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "960 单列下关注列表卡头与数值"
+    }
+  ],
+  "observations": [
+    {
+      "id": "M-04-board",
+      "text": "盘面网格文本（辅助核对）",
+      "data": [
+        [
+          "原油 SC2612（样例）",
+          "512.6元/桶",
+          "待"
+        ],
+        [
+          "LPG PG2612（样例）",
+          "4,320元/吨",
+          "–"
+        ],
+        [
+          "燃料油 FU2701（样例）",
+          "3,018元/吨",
+          "休"
+        ]
+      ]
+    }
+  ],
+  "chrome": "156.0.8078.49",
+  "finishedAt": "2026-10-28T12:38:56.657Z"
+}

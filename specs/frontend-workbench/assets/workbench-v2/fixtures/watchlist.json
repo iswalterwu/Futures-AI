@@ -1,0 +1,53 @@
+{
+  "rows": [
+    {
+      "id": "SC2612", "name": "原油 SC2612（样例）",
+      "price": { "label": "最新价", "value": 512.6, "unit": "元/桶", "decimals": 1, "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00", "seriesId": "mock.sc2612.close" },
+      "change": { "label": "涨跌", "value": 7.6, "unit": "元/桶", "decimals": 1, "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00" },
+      "changePct": { "label": "涨跌幅", "value": 1.5, "unit": "%", "decimals": 2, "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00" },
+      "spark": {
+        "points": [
+          { "ts": "2026-10-22T15:00:00+08:00", "value": 498.2 },
+          { "ts": "2026-10-23T15:00:00+08:00", "value": 501.4 },
+          { "ts": "2026-10-26T15:00:00+08:00", "value": 503.8 },
+          { "ts": "2026-10-27T15:00:00+08:00", "value": 505 },
+          { "ts": "2026-10-28T15:00:00+08:00", "value": 512.6 }
+        ],
+        "unit": "元/桶", "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00", "seriesId": "mock.sc2612.close"
+      }
+    },
+    {
+      "id": "PG2612", "name": "LPG PG2612（样例）",
+      "price": { "label": "最新价", "value": 4320, "unit": "元/吨", "decimals": 0, "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00", "seriesId": "mock.pg2612.close" },
+      "change": { "label": "涨跌", "value": -20, "unit": "元/吨", "decimals": 0, "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00" },
+      "changePct": { "label": "涨跌幅", "value": -0.46, "unit": "%", "decimals": 2, "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00" },
+      "spark": {
+        "points": [
+          { "ts": "2026-10-22T15:00:00+08:00", "value": 4380 },
+          { "ts": "2026-10-23T15:00:00+08:00", "value": 4362 },
+          { "ts": "2026-10-26T15:00:00+08:00", "value": 4356 },
+          { "ts": "2026-10-27T15:00:00+08:00", "value": 4340 },
+          { "ts": "2026-10-28T15:00:00+08:00", "value": 4320 }
+        ],
+        "unit": "元/吨", "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00", "seriesId": "mock.pg2612.close"
+      }
+    },
+    {
+      "id": "FU2701", "name": "燃料油 FU2701（样例）",
+      "price": { "label": "最新价", "value": 3018, "unit": "元/吨", "decimals": 0, "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00", "seriesId": "mock.fu2701.close" },
+      "change": { "label": "涨跌", "value": 18, "unit": "元/吨", "decimals": 0, "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00" },
+      "changePct": { "label": "涨跌幅", "value": 0.6, "unit": "%", "decimals": 2, "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00" },
+      "spark": {
+        "points": [
+          { "ts": "2026-10-22T15:00:00+08:00", "value": 2970 },
+          { "ts": "2026-10-23T15:00:00+08:00", "value": 2982 },
+          { "ts": "2026-10-26T15:00:00+08:00", "value": 2994 },
+          { "ts": "2026-10-27T15:00:00+08:00", "value": 3000 },
+          { "ts": "2026-10-28T15:00:00+08:00", "value": 3018 }
+        ],
+        "unit": "元/吨", "freq": "1d", "semantic": "market", "asOf": "2026-10-28T15:00:00+08:00", "seriesId": "mock.fu2701.close"
+      }
+    }
+  ],
+  "asOf": "2026-10-28T15:00:00+08:00"
+}

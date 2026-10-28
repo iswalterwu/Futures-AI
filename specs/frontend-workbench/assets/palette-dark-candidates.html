@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Futures-AI 配色对照：白底原色 / 黑底 A 等亮 · B 递暗（Q-003）</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 13px/1.5 "Segoe UI", -apple-system, "PingFang SC", "Microsoft YaHei", Arial, sans-serif; background: #e4e3df; color: #16191d; }
+  body[data-mode="dark"] { background: #0f1012; color: #e8e6e0; }
+  .pagebar { padding: 18px 28px 14px; }
+  h1 { font: 700 20px Georgia, "Times New Roman", "Songti SC", SimSun, serif; margin: 0; }
+  .en { font: 400 10.5px "Segoe UI", Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; opacity: .6; margin-left: 6px; }
+  .meta { margin: 6px 0 0; opacity: .8; max-width: 1180px; }
+  .controls { margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .controls button { font: inherit; padding: 3px 12px; border: 1px solid currentColor; background: transparent; color: inherit; border-radius: 2px; cursor: pointer; opacity: .55; }
+  .controls button.on { opacity: 1; font-weight: 600; }
+  .controls label { margin-left: 14px; }
+  .panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-mode="light"] .panels, body[data-mode="dark"] .panels { grid-template-columns: minmax(0, 1fr); }
+  body[data-mode="light"] .theme-dark, body[data-mode="dark"] .theme-light { display: none; }
+  .panel { padding: 22px 26px 40px; min-width: 0; }
+  .theme-light { background: #f6f5f1; color: #16191d; }
+  .theme-dark { background: linear-gradient(180deg, #1b1c1f 0%, #121315 55%, #0f1012 100%); color: #e8e6e0; }
+  .panel h2 { font: 700 17px Georgia, "Songti SC", SimSun, serif; margin: 0 0 2px; }
+  .panel .sub { font-size: 12px; margin: 0 0 14px; }
+  .theme-light .sub, .theme-light .muted { color: #4d545c; }
+  .theme-dark .sub, .theme-dark .muted { color: #9a9892; }
+  .cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  body[data-mode="light"] .cards, body[data-mode="dark"] .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .card.wide { grid-column: 1 / -1; }
+  .card { border-radius: 2px; padding: 10px 14px 12px; min-width: 0; }
+  .theme-light .card { background: #ffffff; border: 1px solid #e5e2da; }
+  .theme-dark .card { background: rgba(255, 255, 255, .045); border: 1px solid rgba(255, 255, 255, .09); backdrop-filter: blur(18px); }
+  .card h3 { font-size: 12.5px; font-weight: 600; margin: 0 0 6px; }
+  .card h3 .muted { font-weight: 400; font-size: 11px; margin-left: 6px; }
+  .chart { width: 100%; height: auto; display: block; }
+  .tk { font: 11px "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: 11px; }
+  .lg { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .lg i { display: inline-block; width: 18px; height: 10px; }
+  .lg i.ln { height: 0; width: 24px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th { text-align: left; font-weight: 600; font-size: 10.5px; letter-spacing: .06em; padding: 5px 6px; }
+  td { padding: 5px 6px; vertical-align: middle; }
+  .theme-light th { color: #878d95; border-bottom: 1px solid #d3cfc5; }
+  .theme-light td { border-bottom: 1px solid #efede7; }
+  .theme-dark th { color: #8f8d87; border-bottom: 1px solid rgba(255, 255, 255, .12); }
+  .theme-dark td { border-bottom: 1px solid rgba(255, 255, 255, .06); }
+  .sw { display: inline-block; width: 46px; height: 18px; vertical-align: middle; border-radius: 1px; }
+  .mono, .num { font-family: Consolas, "SF Mono", Menlo, "Courier New", monospace; font-variant-numeric: tabular-nums; }
+  .num { text-align: right; white-space: nowrap; }
+  .low { font-weight: 700; }
+  .sem div { margin: 4px 0; }
+  .badge { display: inline-block; font-size: 10px; padding: 1px 7px; border: 1px solid; border-radius: 999px; margin-right: 6px; }
+  .err { background: #fee; color: #900; padding: 8px 12px; margin: 0; }
+  .compare-wrap { padding: 2px 28px 22px; }
+  .compare-wrap h2 { font: 700 17px Georgia, "Songti SC", SimSun, serif; margin: 4px 0 2px; }
+  .compare-wrap .lead { margin: 0 0 12px; max-width: 1180px; opacity: .85; }
+  .compare { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .compare > .col { padding: 14px 16px 6px; min-width: 0; }
+  .compare h3.colh { font: 700 14px Georgia, "Songti SC", SimSun, serif; margin: 0 0 8px; }
+  .compare .card { margin-bottom: 12px; }
+  .ctab td { padding: 3px 6px; }
+  .note { font-size: 11.5px; margin: 8px 0 0; padding: 6px 8px; border-left: 2px solid #C69633; }
+  .theme-dark .note { background: rgba(198, 150, 51, .08); color: #e8e6e0; }
+</style>
+</head>
+<body data-mode="both">
+<header class="pagebar">
+  <h1>配色对照：白底原色 / 黑底候选（A 等亮 · B 递暗） <span class="en">palette · light vs dark · Q-003</span></h1>
+  <p class="meta">左：FTEngine 10-02 定版原色，画在纸底白卡上——你熟悉的样子，也是将来导出 / 打印的纸底版。右：工作台暗色界面用的候选色，画在暗色玻璃卡上。两边数据完全相同；逐图对照每种颜色的"身份"是否一致、黑底上有没有过亮或过暗的颜色。</p>
+  <p class="meta"><b>Q-003 已裁定（2026-10-27）：采用黑底 A 等亮</b>（含中性色调整：其他 #54534B、区间带 α .16）；B 递暗保留作对照记录，未采用。</p>
+  <div class="controls">
+    <button data-mode="both" class="on">并排</button>
+    <button data-mode="light">只看白底</button>
+    <button data-mode="dark">只看黑底</button>
+    <label><input type="checkbox" id="thick"> 线宽 ×2（只为看清颜色；实际线宽按规范）</label>
+  </div>
+</header>
+<section class="compare-wrap" id="compare"></section>
+<main class="panels">
+  <section class="panel theme-light" id="p-light"></section>
+  <section class="panel theme-dark" id="p-dark"></section>
+</main>
+<script>
+window.onerror = function (msg, src, line) {
+  document.body.insertAdjacentHTML('afterbegin', '<pre class="err">' + msg + ' (line ' + line + ')</pre>');
+};
+
+// ---- palettes ------------------------------------------------------------
+// light = FTEngine design/Graphs/Palette/PALETTE_CORE (2026-10-02)；dark = plan.md §2.1 候选（D-011 定值三个）
+const ROWS = [
+  ['ink', '墨', '最新年 / 主序列 / 主文字'],
+  ['rulv', '茹藘', '上一年 · 负 · 类目 2 · 中国 · 涨'],
+  ['shaxi', '沙饧', '前 2 年 · 类目 3 · 中东'],
+  ['cangai', '苍艾', '前 3 年 · 类目 5 · 非洲'],
+  ['tushou', '吐绶蓝', '前 4 年 · 类目 4 · 西北欧 · 状态 ok'],
+  ['piaobi', '缥碧', '前 5 年 · 前苏联 · 跌'],
+  ['biluo', '碧落', '最老年 · 类目 6 · 拉美'],
+  ['qingque', '青雀头黛', '正 · 类目 1 · 北美'],
+  ['qielan', '窃蓝', '地中海 · 分档'],
+  ['tuohe', '驼褐', '印度'],
+  ['mingyue', '明月珰', '其他 / 残差 · 亚太其他'],
+  ['shuangdi', '霜地', '五年区间带（白底 α .3 / 黑底 α .16）'],
+  ['shaoyi', '绍衣', '五年均值 / 参照线'],
+  ['qizi', '齐紫', '模型 / 推演线'],
+  ['uired', '点睛红', '当前项竖条 · 编号 · 状态 bad'],
+  ['amber', '琥珀', '非实绩 / 待更新 · 状态 warn'],
+  ['link', '链接蓝', '链接']
+];
+
+const THEMES = {
+  light: {
+    title: '白底 · 原色', en: 'light · PALETTE_CORE',
+    sub: 'FTEngine 10-02 定版（墨 + 黛驼）。图在白卡上，对比度按白卡 #FFFFFF 计。涨跌 / 状态色为对应映射，仅作参照（亮色主题随导出 feature 定）。',
+    surface: '#FFFFFF', t1: '#16191D', t2: '#4D545C', t3: '#878D95',
+    axis: 'rgba(0,0,0,.28)', grid: 'rgba(0,0,0,.07)', tick: '#6B7178', sep: '#FFFFFF',
+    bandAlpha: 0.3, bandChipAlpha: 0.6,
+    c: { ink: '#16191D', rulv: '#A35F65', shaxi: '#BFA670', cangai: '#5A4B3B', tushou: '#4182A4', piaobi: '#80A492', biluo: '#AED0EE',
+         qingque: '#354E6B', qielan: '#88ABDA', tuohe: '#7C5B3E', mingyue: '#D4D3CA', shuangdi: '#C7C6B6', shaoyi: '#A8A19C', qizi: '#6C216D',
+         uired: '#C00000', amber: '#B8860B', link: '#0F4C81' }
+  },
+  dark: {
+    title: '黑底 · 暗色（A 等亮，已确认）', en: 'dark · confirmed',
+    sub: '工作台界面用。D-011 已定：主序列 #E8E6E0、涨（茹藘）#C98A8F、跌（缥碧）#8FB8A4；其余经 Q-003 确认（2026-10-27）。中性色按“在黑底上同样退后”调整：其他（明月珰）取暗灰、区间带透明度 .16。图在暗色玻璃卡上，对比度按卡面 #1D1E20 计。',
+    surface: '#1D1E20', t1: '#E8E6E0', t2: '#9A9892', t3: '#8F8D87',
+    axis: 'rgba(255,255,255,.28)', grid: 'rgba(255,255,255,.08)', tick: '#8F8D87', sep: '#1D1E20',
+    bandAlpha: 0.16, bandChipAlpha: 0.32,
+    c: { ink: '#E8E6E0', rulv: '#C98A8F', shaxi: '#BFA670', cangai: '#97826C', tushou: '#6CA7C7', piaobi: '#8FB8A4', biluo: '#B0D0EB',
+         qingque: '#87A1BF', qielan: '#8BABD6', tuohe: '#B08968', mingyue: '#54534B', shuangdi: '#C7C6B6', shaoyi: '#A8A19C', qizi: '#C478C3',
+         uired: '#DF5C4D', amber: '#C69633', link: '#6A9DD1' }
+  }
+};
+
+// ---- color math (WCAG relative luminance) --------------------------------
+function hexRgb(h) { h = h.replace('#', ''); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+function lumin(rgb) {
+  const f = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]);
+}
+function contrast(a, b) { const x = lumin(a), y = lumin(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+function mix(fg, bg, a) { return fg.map((v, i) => Math.round(a * v + (1 - a) * bg[i])); }
+function hexA(hex, a) { const [r, g, b] = hexRgb(hex); return `rgba(${r},${g},${b},${a})`; }
+
+// ---- sample data (seeded, identical for both panels) ---------------------
+function rng(seed) {
+  return function () {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+const R = rng(20261027);
+const N = 26;
+const YEARS = [2026, 2025, 2024, 2023, 2022, 2021, 2020];
+const WIDTHS = [2.6, 1.8, 1.4, 1.2, 1.2, 1.1, 1.4];
+const yearVals = YEARS.map((yr, i) => Array.from({ length: N }, (_, k) => 100 + 16 * Math.sin(k / N * 2 * Math.PI - 1.1) + (3 - i) * 3.2 + (R() - 0.5) * 9));
+yearVals[0] = yearVals[0].slice(0, 19);
+const band5 = { lo: [], hi: [], mean: [] };
+for (let k = 0; k < N; k++) {
+  const v = yearVals.slice(1, 6).map(a => a[k]);
+  band5.lo.push(Math.min(...v)); band5.hi.push(Math.max(...v)); band5.mean.push(v.reduce((s, x) => s + x, 0) / v.length);
+}
+const lastLatest = yearVals[0][yearVals[0].length - 1];
+const model = Array.from({ length: N - 18 }, (_, j) => lastLatest + j * 0.9 + Math.sin(j / 2) * 2);
+const catVals = [26, 18, 13, 10, 8, 6, 5].map(base => Array.from({ length: 8 }, () => base * (0.75 + R() * 0.5)));
+const signed = Array.from({ length: 16 }, (_, i) => Math.round((Math.sin(i / 2.3) * 9 + (R() - 0.5) * 8) * 10) / 10);
+const REGION_KEYS = ['NA', 'LATAM', 'NWE', 'MED', 'FSU', 'ME', 'AFR', 'IN', 'CN', 'APX'];
+const REGION_ZH = { NA: '北美', LATAM: '拉美', NWE: '西北欧', MED: '地中海', FSU: '前苏联', ME: '中东', AFR: '非洲', IN: '印度', CN: '中国', APX: '亚太其他' };
+const regionRows = ['2024', '2025', '2026E'].map(label => ({ label, parts: REGION_KEYS.map(k => ({ k, v: 4 + R() * 14 })) }));
+const MONTHS = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'];
+const R2 = rng(7); // separate stream: keeps the panel charts' data unchanged
+const TN = 12;
+const termCurves = [0, 1, 2, 3, 4].map(i => Array.from({ length: TN }, (_, k) => 612 - k * (5.5 - i * 0.6) - i * 9 + (R2() - 0.5) * 3));
+
+// ---- year ramps: white original / dark A (equal-light) / dark B (receding) ----
+const RAMPS = {
+  light: { label: '白底 · 原色', theme: 'light', colors: ['#16191D', '#A35F65', '#BFA670', '#5A4B3B', '#4182A4', '#80A492', '#AED0EE'] },
+  darkA: { label: '黑底 A · 等亮（采用）', theme: 'dark', colors: ['#E8E6E0', '#C98A8F', '#BFA670', '#97826C', '#6CA7C7', '#8FB8A4', '#B0D0EB'] },
+  darkB: { label: '黑底 B · 递暗（未采用）', theme: 'dark', colors: ['#E8E6E0', '#C98A8F', '#A98B49', '#8D8175', '#2F84AD', '#557F6B', '#516C84'] }
+};
+const RAMP_NAMES = ['墨', '茹藘', '沙饧', '苍艾', '吐绶蓝', '缥碧', '碧落'];
+const TERM_LABELS = ['Today', '1W 前', '1M 前', '1Q 前', '1Y 前'];
+
+// ---- svg charts -----------------------------------------------------------
+let THICK = 1;
+function frame(t, w, h, m, lo, hi, ticks) {
+  const y = v => (h - m.b) - (v - lo) * (h - m.b - m.t) / (hi - lo);
+  let g = '';
+  for (let k = 0; k <= ticks; k++) {
+    const v = lo + (hi - lo) * k / ticks, yy = y(v);
+    g += `<line x1="${m.l}" x2="${w - m.r}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}" stroke="${t.grid}"/>`;
+    g += `<text x="${m.l - 6}" y="${(yy + 4).toFixed(1)}" text-anchor="end" fill="${t.tick}" class="tk">${v.toFixed(0)}</text>`;
+  }
+  return { y, g };
+}
+function lineChart(t, { lines, band, xTicks, w = 640, h = 240, n = N }) {
+  const m = { l: 36, r: 12, t: 10, b: 24 };
+  const vals = lines.flatMap(s => s.values);
+  if (band) vals.push(...band.lo, ...band.hi);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+  const { y, g: grid } = frame(t, w, h, m, lo, hi, 4);
+  const x = i => m.l + i * (w - m.l - m.r) / (n - 1);
+  let g = grid + `<line x1="${m.l}" x2="${w - m.r}" y1="${h - m.b}" y2="${h - m.b}" stroke="${t.axis}"/>`;
+  if (band) {
+    const top = band.hi.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+    const bot = band.lo.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).reverse();
+    g += `<polygon points="${top.concat(bot).join(' ')}" fill="${band.color}" fill-opacity="${band.alpha}"/>`;
+  }
+  for (const s of [...lines].reverse()) {
+    const pts = s.values.map((v, i) => `${x(i + (s.offset || 0)).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    g += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${(s.width * THICK).toFixed(2)}"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''} stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+    if (s.marker) g += s.values.map((v, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="${(s.marker * (THICK > 1 ? 1.4 : 1)).toFixed(1)}" fill="${s.color}"/>`).join('');
+  }
+  for (const [i, label] of xTicks) g += `<text x="${x(i).toFixed(1)}" y="${h - 7}" text-anchor="middle" fill="${t.tick}" class="tk">${label}</text>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+function stackBar(t, { cats, w = 640, h = 220 }) {
+  const m = { l: 36, r: 12, t: 10, b: 24 };
+  const n = cats[0].values.length;
+  const totals = Array.from({ length: n }, (_, i) => cats.reduce((a, c) => a + c.values[i], 0));
+  const { y, g: grid } = frame(t, w, h, m, 0, Math.max(...totals) * 1.08, 4);
+  const slot = (w - m.l - m.r) / n, bw = slot * 0.62;
+  let g = grid;
+  for (let i = 0; i < n; i++) {
+    let acc = 0;
+    const x0 = m.l + i * slot + (slot - bw) / 2;
+    for (const c of cats) {
+      const y0 = y(acc), y1 = y(acc + c.values[i]);
+      g += `<rect x="${x0.toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${(y0 - y1).toFixed(1)}" fill="${c.color}" stroke="${t.sep}" stroke-width="0.6"/>`;
+      acc += c.values[i];
+    }
+    g += `<text x="${(x0 + bw / 2).toFixed(1)}" y="${h - 7}" text-anchor="middle" fill="${t.tick}" class="tk">${MONTHS[i]}</text>`;
+  }
+  g += `<line x1="${m.l}" x2="${w - m.r}" y1="${h - m.b}" y2="${h - m.b}" stroke="${t.axis}"/>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+function signedBar(t, { values, pos, neg, w = 640, h = 190 }) {
+  const m = { l: 36, r: 12, t: 10, b: 12 };
+  const lim = Math.max(...values.map(Math.abs)) * 1.15;
+  const { y, g: grid } = frame(t, w, h, m, -lim, lim, 4);
+  const slot = (w - m.l - m.r) / values.length, bw = slot * 0.6;
+  let g = grid;
+  values.forEach((v, i) => {
+    const x0 = m.l + i * slot + (slot - bw) / 2, y0 = y(0), y1 = y(v);
+    g += `<rect x="${x0.toFixed(1)}" y="${Math.min(y0, y1).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.abs(y0 - y1).toFixed(1)}" fill="${v >= 0 ? pos : neg}"/>`;
+  });
+  g += `<line x1="${m.l}" x2="${w - m.r}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}" stroke="${t.axis}"/>`;
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+function hbar100(t, { rows, colorOf, w = 640, h = 112 }) {
+  const m = { l: 52, r: 12, t: 6, b: 6 };
+  const rh = (h - m.t - m.b) / rows.length, bh = rh * 0.62;
+  let g = '';
+  rows.forEach((r, ri) => {
+    const total = r.parts.reduce((a, p) => a + p.v, 0);
+    const y0 = m.t + ri * rh + (rh - bh) / 2;
+    let acc = 0;
+    g += `<text x="${m.l - 8}" y="${(y0 + bh / 2 + 4).toFixed(1)}" text-anchor="end" fill="${t.tick}" class="tk">${r.label}</text>`;
+    for (const p of r.parts) {
+      const x0 = m.l + acc / total * (w - m.l - m.r), wd = p.v / total * (w - m.l - m.r);
+      g += `<rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${wd.toFixed(1)}" height="${bh.toFixed(1)}" fill="${colorOf(p.k)}" stroke="${t.sep}" stroke-width="0.6"/>`;
+      acc += p.v;
+    }
+  });
+  return `<svg class="chart" viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+const chip = (color, label) => `<span class="lg"><i style="background:${color}"></i>${label}</span>`;
+const lineChip = (color, label, width, dash) => `<span class="lg"><i class="ln" style="border-top:${Math.max(2, width * THICK).toFixed(1)}px ${dash ? 'dashed' : 'solid'} ${color}"></i>${label}</span>`;
+
+// ---- panels ---------------------------------------------------------------
+function renderPanel(key) {
+  const t = THEMES[key], c = t.c, surf = hexRgb(t.surface);
+  const series = ['ink', 'rulv', 'shaxi', 'cangai', 'tushou', 'piaobi', 'biluo'].map(k => c[k]);
+  const xTicks = [[0, 'Jan'], [6, 'Apr'], [13, 'Jul'], [19, 'Oct'], [25, 'Dec']];
+  const regionColor = { NA: c.qingque, LATAM: c.biluo, NWE: c.tushou, MED: c.qielan, FSU: c.piaobi, ME: c.shaxi, AFR: c.cangai, IN: c.tuohe, CN: c.rulv, APX: c.mingyue };
+  const catColors = [c.qingque, c.rulv, c.shaxi, c.tushou, c.cangai, c.biluo, c.mingyue];
+  const catNames = ['类目 1', '类目 2', '类目 3', '类目 4', '类目 5', '类目 6', '其他'];
+
+  let h = `<h2>${t.title} <span class="en">${t.en}</span></h2><p class="sub">${t.sub}</p><div class="cards">`;
+  h += `<div class="card"><h3>年份线（季节图，七年）<span class="muted">墨 → 茹藘 → 沙饧 → 苍艾 → 吐绶蓝 → 缥碧 → 碧落</span></h3>`
+    + lineChart(t, { lines: YEARS.map((yr, i) => ({ values: yearVals[i], color: series[i], width: WIDTHS[i] })), xTicks })
+    + `<div class="legend">${YEARS.map((yr, i) => lineChip(series[i], yr, WIDTHS[i])).join('')}</div>`
+    + (key === 'dark' ? (() => {
+        const L = THEMES.light.c, W = hexRgb(THEMES.light.surface), cw = k => contrast(hexRgb(L[k]), W).toFixed(1), cd = k => contrast(hexRgb(c[k]), surf).toFixed(1);
+        return `<p class="note">注意：白底上，茹藘（上一年）比沙饧、缥碧、碧落三条旧年份更醒目（${cw('rulv')} 对 ${cw('shaxi')} / ${cw('piaobi')} / ${cw('biluo')}）；黑底 A 上这三条反而都比茹藘亮（${cd('shaxi')} / ${cd('piaobi')} / ${cd('biluo')} 对 ${cd('rulv')}），上一年不再突出。递暗版 B 见页首对照。</p>`;
+      })() : '')
+    + `</div>`;
+  h += `<div class="card"><h3>季节图常用形态<span class="muted">最新年 · 上一年 · 五年区间带 · 五年均值 · 推演</span></h3>`
+    + lineChart(t, {
+        lines: [
+          { values: yearVals[0], color: c.ink, width: 2.6 },
+          { values: yearVals[1], color: c.rulv, width: 1.8 },
+          { values: band5.mean, color: c.shaoyi, width: 1.0, dash: '2 3' },
+          { values: model, color: c.qizi, width: 1.6, dash: '6 4', offset: 18 }
+        ],
+        band: { lo: band5.lo, hi: band5.hi, color: c.shuangdi, alpha: t.bandAlpha }, xTicks
+      })
+    + `<div class="legend">${lineChip(c.ink, '2026', 2.6)}${lineChip(c.rulv, '2025', 1.8)}${chip(hexA(c.shuangdi, t.bandChipAlpha), '2021–25 区间')}${lineChip(c.shaoyi, '2021–25 均值', 1, true)}${lineChip(c.qizi, '推演', 1.6, true)}</div></div>`;
+  h += `<div class="card"><h3>类目堆叠柱<span class="muted">按排名取色：类目 1 青雀头黛 · 类目 2 茹藘 … · 其他 明月珰</span></h3>`
+    + stackBar(t, { cats: catVals.map((v, i) => ({ values: v, color: catColors[i] })) })
+    + `<div class="legend">${catNames.map((n, i) => chip(catColors[i], n)).join('')}</div></div>`;
+  h += `<div class="card"><h3>正负柱<span class="muted">正 青雀头黛 · 负 茹藘</span></h3>`
+    + signedBar(t, { values: signed, pos: c.qingque, neg: c.rulv }) + `</div>`;
+  h += `<div class="card"><h3>十大区（占比）</h3>`
+    + hbar100(t, { rows: regionRows, colorOf: k => regionColor[k] })
+    + `<div class="legend">${REGION_KEYS.map(k => chip(regionColor[k], REGION_ZH[k])).join('')}</div></div>`;
+  h += `<div class="card sem"><h3>界面语义</h3>`
+    + `<div>行情（红涨绿跌，只涂字色）：<span class="num" style="color:${c.rulv}">SC2412 612.40 +1.25%</span> · <span class="num" style="color:${c.piaobi}">FU2501 3,012 −0.84%</span> · <span class="num" style="color:${t.t2}">LU2501 4,105 0.00%</span></div>`
+    + `<div>分析（红 = 负 / 减）：<span class="num" style="color:${c.qingque}">库存 Δ +1,240 kb</span> · <span class="num" style="color:${c.rulv}">净出口 Δ −310 kb/d</span></div>`
+    + `<div><span class="badge" style="color:${c.tushou};border-color:${c.tushou}">● ok</span><span class="badge" style="color:${c.amber};border-color:${c.amber}">● warn</span><span class="badge" style="color:${t.t2};border-color:${c.uired}"><span style="color:${c.uired}">●</span> bad</span><span class="badge" style="color:${t.t3};border-color:${t.t3};border-style:dashed">sample</span>`
+    + ` 当前项 <span style="display:inline-block;width:3px;height:14px;background:${c.uired};vertical-align:middle"></span> · 待更新 <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.amber};vertical-align:middle"></span> · <a style="color:${c.link}">链接样例</a></div>`
+    + `<div style="color:${t.t1}">主文字 ${t.t1}</div><div style="color:${t.t2}">次级文字 ${t.t2}</div><div style="color:${t.t3}">辅助文字 ${t.t3}</div></div>`;
+  h += `<div class="card wide"><h3>色表<span class="muted">对比度按图所在卡面 ${t.surface} 计；线条 / 色块 ≥ 3:1 可辨（WCAG 非文字），文字需 ≥ 4.5:1；低于 3 的加粗</span></h3>`
+    + `<table><tr><th>色名</th><th>用途</th><th>色块</th><th>色值</th><th class="num">对比度</th></tr>`;
+  for (const [k, name, roles] of ROWS) {
+    const hex = c[k];
+    const isBand = k === 'shuangdi';
+    const rgb = isBand ? mix(hexRgb(hex), surf, t.bandAlpha) : hexRgb(hex);
+    const cr = contrast(rgb, surf);
+    h += `<tr><td>${name}</td><td class="muted">${roles}</td><td><span class="sw" style="background:${isBand ? hexA(hex, t.bandAlpha) : hex}"></span></td>`
+      + `<td class="mono">${hex}${isBand ? `（α ${t.bandAlpha} 叠加后）` : ''}</td><td class="num${cr < 3 ? ' low' : ''}">${cr.toFixed(1)}</td></tr>`;
+  }
+  h += `</table></div></div>`;
+  document.getElementById('p-' + key).innerHTML = h;
+}
+function renderCompare() {
+  let h = `<h2>递暗版对照 <span class="en">year ramp · A vs B</span></h2>`
+    + `<p class="lead">B 只改有先后的序列线（年份线、期限结构快照、有主次的多序列）；类目、大区、正负、季节图常用形态在 A / B 下完全一样，所以下面两大块面板只按 A 画。`
+    + `B 的规则：最新年、上一年保持 D-011 定值；之后每早一年对比度降一档（5.1 → 4.4 → 4.0 → 3.7 → 3.0），都低于上一年、不低于线条 3:1；色度最多提到原色 1.2 倍，守住黛驼的克制。`
+    + `代价：七条线两两最小色差 8.1（A 为 8.5）；碧落从浅天蓝变成暗灰蓝；年份线上的缥碧与“跌”色（D-011 定值 #8FB8A4）不再同值。</p><div class="compare">`;
+  for (const key of ['light', 'darkA', 'darkB']) {
+    const r = RAMPS[key], t = THEMES[r.theme], surf = hexRgb(t.surface), cs = r.colors;
+    h += `<div class="col theme-${r.theme}"><h3 class="colh">${r.label}</h3>`;
+    h += `<div class="card"><h3>年份线（七年）</h3>`
+      + lineChart(t, { lines: YEARS.map((yr, i) => ({ values: yearVals[i], color: cs[i], width: WIDTHS[i] })), xTicks: [[0, 'Jan'], [13, 'Jul'], [25, 'Dec']], w: 460, h: 230 })
+      + `<div class="legend">${YEARS.map((yr, i) => lineChip(cs[i], yr, WIDTHS[i])).join('')}</div></div>`;
+    h += `<div class="card"><h3>期限结构快照</h3>`
+      + lineChart(t, { lines: termCurves.map((v, i) => ({ values: v, color: cs[i], width: i === 0 ? 2.4 : 1.5, dash: i === 4 ? '2 3' : '', marker: i === 0 ? 2.5 : 0 })), xTicks: [[0, 'M1'], [5, 'M6'], [11, 'M12']], w: 460, h: 200, n: TN })
+      + `<div class="legend">${TERM_LABELS.map((l, i) => lineChip(cs[i], l, i === 0 ? 2.4 : 1.5, i === 4)).join('')}</div></div>`;
+    h += `<div class="card"><table class="ctab"><tr><th>rank</th><th>色名</th><th>色块</th><th>色值</th><th class="num">对比度</th></tr>`;
+    cs.forEach((hex, i) => {
+      const cr = contrast(hexRgb(hex), surf);
+      h += `<tr><td>${i}</td><td>${RAMP_NAMES[i]}</td><td><span class="sw" style="background:${hex}"></span></td><td class="mono">${hex}${r.theme === 'dark' && i < 2 ? '（D-011）' : ''}</td><td class="num${cr < 3 ? ' low' : ''}">${cr.toFixed(1)}</td></tr>`;
+    });
+    h += `</table></div></div>`;
+  }
+  document.getElementById('compare').innerHTML = h + `</div>`;
+}
+function renderAll() { renderCompare(); renderPanel('light'); renderPanel('dark'); }
+
+function setMode(mode) {
+  document.body.dataset.mode = mode;
+  document.querySelectorAll('.controls button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+}
+document.querySelectorAll('.controls button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+document.getElementById('thick').addEventListener('change', e => { THICK = e.target.checked ? 2 : 1; renderAll(); });
+const qs = new URLSearchParams(location.search);
+if (qs.get('thick') === '1') { THICK = 2; document.getElementById('thick').checked = true; }
+renderAll();
+if (qs.get('mode')) setMode(qs.get('mode'));
+</script>
+</body>
+</html>

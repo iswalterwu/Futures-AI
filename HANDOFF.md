@@ -1,13 +1,15 @@
-# HANDOFF — agent 工作流重塑（文档已本地提交，Review 通过 / Gate 2 待确认）
+# HANDOFF — agent 工作流重塑（Review 通过、Gate 2 已确认；合入 main 集成中，待独立复核 / 提交 / PR）
 
-> 文档同步（Plan / Converge）= openai/gpt-6.1-sol via openai；前作者 anthropic/claude-opus-5-5 正式调用超时后接续，真实路由见 `docs/plan.md` §9。
+> 文档同步（Plan / Converge，历史）= openai/gpt-6.1-sol via openai；前作者 anthropic/claude-opus-5-5 正式调用超时后接续。
+> Handoff 文档集成 = anthropic/claude-opus-5-5 via anthropic（bridge 本窗口额度耗尽、不重复探活；同模型 API 最小探活成功），接续 `4aaf019`、合入 `origin/main` `44845c8`；真实路由见 `docs/plan.md` §9，集成记录见本文 §9。
+> **当前状态**：Gate 2 已由 Walter “继续”确认；merge 冲突已在工作树整合，**尚未独立集成复核 / 提交 / 开 PR / 合并**。以下 §1–§7 中“未 push / merge”“Gate 2 待确认”等为 Gate 2 前暂停阶段的历史记录。
 
 - 本轮：恢复会话同步记录（沿用 2026-10-28 任务背景，不另推断批准时间）
 - 工作树：`D:/2030/Futures-AI-docs-agent`（分支 `docs/agent-workflow-reshape`，文档已本地提交，**未 push / merge**）
 - 分支来源基线：`docs/interaction-v2` @ `4ebb76b`（第二轮 docs 分支，本分支叠在它之上；跨分支集成本轮未做）
 - 本轮接续基线：`88ff28b`；协调者停止前作者超时进程树后，回退作者核查并接续其 AGENTS / designUI / architecture 三份 partial。
 - 文档受审提交：`f20fdfb`；审核工作树 `D:/2030/Futures-AI-docs-reshape-review`（detached 于该提交，干净只读）。最新提交记录用 `git log -2 --oneline` 查看，受审提交之后只补审核 / 验证记录。
-- 本轮未启动产品服务，未修改 provider / 全局配置；作者不提交，协调者创建本地受审快照并另记审核结果。**未 push / merge，Gate 2 待 Walter 确认**。
+- 本轮未启动产品服务，未修改 provider / 全局配置；作者不提交，协调者创建本地受审快照并另记审核结果。**未 push / merge，Gate 2 待 Walter 确认**（历史，已由 §9 接替）。
 
 ## 1. 任务目标与当前进度
 
@@ -32,7 +34,7 @@
 | `specs/README.md` 跨 feature 待同步表 | ✅ 加 D-024 冷启动、D-022/023 settings 后续版、D-020 新块与 D-022 日报入口 / 命名待办；不改变冻结 spec / AC 或替其他树批准 Gate |
 | `docs/interaction.md` 本轮小修 | ✅ 区分用户显式定稿与 agent call 自动登记（不等于用户认可），澄清新分析作业确认；修正指标方向为 Brier ↓ / 命中率 ↑ |
 | `docs/plan.md` 本轮补记 | ✅ §9 记录四组全部接受及实际路由 / 超时回退，§3 区分 D-016 原始三层与 D-020 当前四层口径 |
-| 一致性复查 / commit / PR | ✅ 作者自查与协调者复跑完成（§2）、本地受审提交 `f20fdfb`、独立 A 审核通过（§8）；❌ Gate 2 待确认，跨分支集成与 PR / 合并未做，不 push / merge |
+| 一致性复查 / commit / PR | ✅ 作者自查与协调者复跑完成（§2）、本地受审提交 `f20fdfb`、独立 A 审核通过（§8）；✅ Gate 2 已由“继续”确认（§9）；⏳ 合入 main 冲突已在工作树整合，独立集成复核 / 提交 / PR / 合并未做 |
 
 ## 2. 已完成：改动文件、基线与真实验证
 
@@ -62,8 +64,8 @@
 协调者已完成本地受审提交与独立审核，剩余事项如下：
 
 1. **独立 Review 已完成**：A = `claude-fable-5-1 via anthropic`，新会话、独立 detached 工作树只读检查固定提交 `f20fdfb`（包含已跟踪候选池）；结论通过，无 P1/P2，九个 P3 见 §8。作者自查与 A 结论分开记录。
-2. **Gate 2 待 Walter 确认**：本轮仅创建本地受审快照与审核记录提交，不 push / merge，不把原设计批准或本地 commit 当作评审后批准。P3 当前只登记，不擅自确定涉及自主度、call 生命周期、冷启动生效等产品行为。
-3. **后续跨分支集成**：Walter 已接受由协调者负责，先 `docs/interaction-v2` 再本分支；本轮未查询或修改其他工作树，也未开 PR / 解决冲突。AGENTS §2.1 / §6 最终统一成一份规范，不丢既定纪律；语义冲突解决后回 Analyze / Converge 复核。
+2. **Gate 2（历史：当时待确认；现已由“继续”确认，见 §9）**：本轮仅创建本地受审快照与审核记录提交，不 push / merge，不把原设计批准或本地 commit 当作评审后批准。P3 当前只登记，不擅自确定涉及自主度、call 生命周期、冷启动生效等产品行为。
+3. **后续跨分支集成**（历史描述；现状见 §9：`docs/interaction-v2` 已经 PR #6 合入 main，本分支正合入 `44845c8`）：Walter 已接受由协调者负责，先 `docs/interaction-v2` 再本分支；本轮未查询或修改其他工作树，也未开 PR / 解决冲突。AGENTS §2.1 / §6 最终统一成一份规范，不丢既定纪律；语义冲突解决后回 Analyze / Converge 复核。
 4. **feature 承接**：按 `specs/README.md` 待办进入各自 Clarify / Gate 流程。settings 默认档、日报菜单是否改名等仍由相应 spec 确认，不把本次文档设计批准冒充 feature Gate。
 5. **P3 后续线索**：九项均已登记到 §8；其中 `docs/plan.md` §6 “五层”实列四层是基线既存问题，本轮不改层次设计。其余进入对应后续 feature Clarify / 任务，不追加当前冻结 AC。
 
@@ -87,11 +89,13 @@ Walter 本轮回复 **“以上按建议全部接受”**。保留原四组问�
    - D-024：历史产出入**派生区（作者 = 人、不计独立证据）**；历史立场**不生成 call**；首启访谈可跳过 / 重做，bootstrap proposed 经透明页确认、不自动 active。
 2. **原问题：五份 ADR 是否合并？结论：保留 D-020～D-024 五份独立 ADR，不合并。**
 3. **原问题：Phase 2D 是否接受或并入 2B/3？结论：保留 Phase 2D（多主体与求解）。**
-4. **原问题：PR 顺序与 AGENTS.md 路由冲突由谁解？结论：协调者后续集成，先 interaction-v2 再本分支，最终一份规范、不丢纪律；本轮不处理冲突、不 push / merge。**
+4. **原问题：PR 顺序与 AGENTS.md 路由冲突由谁解？结论：协调者后续集成，先 interaction-v2 再本分支，最终一份规范、不丢纪律；本轮不处理冲突、不 push / merge。**（“本轮不 push / merge”为当时暂停阶段限制，已由 §9 的“继续”授权接替。）
 
 ## 7. 下次恢复后的第一句话
 
-“第三轮文档补齐已本地提交 `f20fdfb`，独立 A 审核通过（0 个 P1/P2、9 个 P3），结果见 HANDOFF §8；原四组设计建议已批准，不再重复提问。当前只补审核记录，未 push / merge；下一步请确认评审结论（Gate 2），随后再按已批准顺序做跨分支集成。”
+“第三轮文档 `f20fdfb` 经独立 A 审核通过（0 个 P1/P2、9 个 P3，见 §8），Gate 2 已由 Walter ‘继续’确认，九项 P3 为后续事项。本分支正合入 main `44845c8`，`docs/plan.md` / `docs/designUI.md` 冲突已在工作树整合（§9）；下一步由协调者做独立 Analyze / Converge 集成复核，再提交 merge、开 PR 并合并到 main。”
+
+（历史第一句话，Gate 2 前：“第三轮文档补齐已本地提交 `f20fdfb`，独立 A 审核通过（0 个 P1/P2、9 个 P3），结果见 HANDOFF §8；原四组设计建议已批准，不再重复提问。当前只补审核记录，未 push / merge；下一步请确认评审结论（Gate 2），随后再按已批准顺序做跨分支集成。”）
 
 ## 8. 独立 Review 结果与后续线索
 
@@ -116,3 +120,27 @@ Walter 本轮回复 **“以上按建议全部接受”**。保留原四组问�
 | A-P3-9 | P3（既存） | `docs/plan.md` §6 “五层”实列四层，`4ebb76b` 已存在 | 后续措辞修正，不改层次设计 |
 
 其他仍待 spec 确认：自主度档位名与默认档、每日 / 每台预算、常驻职责集与议程排序、状态枚举、满意度护栏阈值、校准入口；候选池不是实施入口。本轮不新建 feature spec 目录，不勾 checklist，不代替任何 feature Gate。
+
+## 9. Gate 2 确认与 Handoff 集成（进行中）
+
+- **Gate 2**：协调者向 Walter 说明“当前停 Gate 2 等确认，尚未推进 PR / 集成”后，Walter 回复原话 **“继续”**（承接评审汇报）。据此确认 A 对 `f20fdfb` 的评审结论；§8 九项 P3 接受为后续事项，清单不变、未修复、不擅自决定其产品行为；不冒充其他 feature Gate。此前“不 push / merge”为暂停阶段限制，已被本次授权接替，当前允许提交 / PR / push / merge（由协调者执行）。
+- **前置 PR**：`docs/interaction-v2` 已经 PR #6 于 2026-10-28 合入 main（head `4ebb76b`，merge `3bf6476`），不重复开 PR。
+- **主线与基线**：`origin/main` = `44845c8`（PR #7 frontend-workbench v1 + PR #8 H-01）；本分支 HEAD `4aaf019`，`git merge --no-commit --no-ff origin/main` 进行中（MERGE_HEAD `44845c8`）。main 引入文件由 Git 自动合并 / 暂存，本作者未改。
+- **AGENTS.md**：main 为 `4ebb76b` 版 §6，仅一份路由、无 §2.1 并存，自动合并无冲突，无需解冲突；desktop-shell 尚在其他分支，未来合入须保留单一路由与既定纪律，本轮不改。
+- **集成作者**：`anthropic/claude-opus-5-5`（bridge 本窗口额度耗尽不重复探活；同模型 API 最小探活成功；不派生 agent、不改 provider / 全局配置）；只写 `docs/plan.md`、`docs/designUI.md`、`HANDOFF.md`。
+
+冲突逐处选择（并列保留已批准内容，不整文件取 ours / theirs）：
+
+| 位置 | 选择 | 理由 |
+|---|---|---|
+| `docs/plan.md` §3 D-015 | 取 main 正式行 | frontend-workbench v1 已完成重编号并合入；退回“预留”会抹掉完成事实 |
+| `docs/plan.md` §3 D-016 | 取本分支“原始三层（现由 D-020 扩为四层）” | main 行为旧口径；本分支口径已经 A 审核 |
+| `docs/plan.md` 编号说明之后 | main 完成记录 + 本分支第三轮 / 候选池句并存 | 两者是不同事实，互不替代 |
+| `docs/designUI.md` §3.10 | 本分支“变更”行（含 D-022 Phase 2B 目标）+ main“已交付地基（frontend-workbench v1）”整条 | 后者承载现行 8 项菜单与未来 9 项菜单的区分；D-022 仍为 Phase 2B 目标，不追加 v1 AC |
+| `docs/designUI.md` §6 | main 全部 UI 资产链接与采用边界 + 本分支 D-020～D-023 新增组件行 | 本分支令牌 / 桌面适配两行与基线相同，由 main 加链接版取代，无内容丢失 |
+
+自动合并区核查：`designUI.md` §2.1 玻璃边子范围注、§2.2 D-015 作用域正式内容、§2.3 配色链接、§8 移植链接均为 main 版；`specs/README.md` 保留 main frontend-workbench done 行与本分支跨 feature 待同步表。
+
+集成观察（未决，不修改、不做产品选择）：D-022 的 Phase 2B 目标把焦点带改为晨间议程头部，main v1 焦点带按 D-015 分“行情 | 指标”两段；两者届时如何共存由 frontend-workbench v2 / 常驻研究台相关 spec 的 Clarify 决定。
+
+**未完成**：独立 Analyze / Converge 集成复核、提交 merge、开 PR、合并到 main，结果由协调者后补。A 的结论只覆盖 `f20fdfb`，未审本次 merge。

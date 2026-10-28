@@ -1,0 +1,862 @@
+{
+  "base": "http://127.0.0.1:4191",
+  "startedAt": "2026-10-28T12:33:35.702Z",
+  "shots": [
+    {
+      "file": "m01-1440-workbench.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-01",
+      "scene": "基准工作台整页"
+    },
+    {
+      "file": "m01-1440-library-open.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-01 / M-04",
+      "scene": "模块库展开（抽屉层）"
+    },
+    {
+      "file": "m01-1440-drawer-half.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-01 / M-05",
+      "scene": "对话抽屉半高（success 回放完成）",
+      "agentScript": "success"
+    },
+    {
+      "file": "m01-1440-closed-again.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-01",
+      "scene": "收起抽屉后回到工作台"
+    },
+    {
+      "file": "m02-rail-brand.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-02",
+      "scene": "品牌字标与侧栏导航（局部）"
+    },
+    {
+      "file": "m02-focus-kpi.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-02 / M-03",
+      "scene": "焦点带 KPI 与双语段标（局部）"
+    },
+    {
+      "file": "m02-watchlist-table.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-02 / M-04",
+      "scene": "模块壳双语标题与关注列表数值（局部）"
+    },
+    {
+      "file": "m02-page-title-placeholder.png",
+      "url": "/knowledge",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-02",
+      "scene": "页标题（知识库占位页）"
+    },
+    {
+      "file": "m03-focus-normal.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-03",
+      "scene": "正常两段与结论"
+    },
+    {
+      "file": "m03-after-layout-change.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-03",
+      "scene": "移除库存/供需指标并上移关注列表后，焦点带仍在顶部"
+    },
+    {
+      "file": "m03-daily-entry.png",
+      "url": "/daily/2026-10-28",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-03",
+      "scene": "点击焦点带进入日报占位页（携带日期）"
+    },
+    {
+      "file": "m03-focus-empty.png",
+      "url": "/workbench?scenario=empty",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-03",
+      "scene": "无日报空态（scenario=empty）"
+    },
+    {
+      "file": "m04-market-board.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "行情价格：样例折线 + 盘面网格（含 休 / 待 / – 三态格）"
+    },
+    {
+      "file": "m04-watchlist.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "关注列表：合约价格、红涨绿跌字色、迷你折线"
+    },
+    {
+      "file": "m04-release-calendar.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "数据发布日历：日程升序与新鲜度"
+    },
+    {
+      "file": "m04-placeholder-supply-demand.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "壳 + 示例占位（库存/供需指标）"
+    },
+    {
+      "file": "m04-placeholder-positions.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "壳 + 示例占位（当前头寸，不含真实头寸）"
+    },
+    {
+      "file": "m04-library-dialog.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "模块库七项与在工作台状态（局部）"
+    },
+    {
+      "file": "m04-slow.png",
+      "url": "/workbench?scenario=slow",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "三态：加载态（slow，延迟 1500ms 内截取）",
+      "mockScenario": "slow"
+    },
+    {
+      "file": "m04-empty.png",
+      "url": "/workbench?scenario=empty",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "三态：空态",
+      "mockScenario": "empty"
+    },
+    {
+      "file": "m04-error.png",
+      "url": "/workbench?scenario=error",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "三态：错误态",
+      "mockScenario": "error"
+    },
+    {
+      "file": "m04-error-detail.png",
+      "url": "/workbench?scenario=error",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-04",
+      "scene": "错误态诊断与复制入口（局部）",
+      "mockScenario": "error"
+    },
+    {
+      "file": "m05-success-half.png",
+      "url": "/workbench?agentScript=success",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "success：半高抽屉、步骤与完成终态",
+      "agentScript": "success"
+    },
+    {
+      "file": "m05-success-steps-expanded.png",
+      "url": "/workbench?agentScript=success",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "success：展开前三步详情（思考 / 工具调用 / 工具结果）",
+      "agentScript": "success"
+    },
+    {
+      "file": "m05-success-tall.png",
+      "url": "/workbench?agentScript=success",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "success：加高抽屉",
+      "agentScript": "success"
+    },
+    {
+      "file": "m05-failure.png",
+      "url": "/workbench?agentScript=failure",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "failure：过程、非终态错误与终态（详情展开，加高）",
+      "agentScript": "failure"
+    },
+    {
+      "file": "m05-retry.png",
+      "url": "/workbench?agentScript=retry",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "retry：过程、非终态错误与终态（详情展开，加高）",
+      "agentScript": "retry"
+    },
+    {
+      "file": "m05-long-running-badge.png",
+      "url": "/workbench?agentScript=long",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "long：抽屉收起、运行中指示与模块“运行中”角标",
+      "agentScript": "long"
+    },
+    {
+      "file": "m05-long-completed.png",
+      "url": "/workbench",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "long：切页、收起后重新展开，同一运行完成",
+      "agentScript": "long"
+    },
+    {
+      "file": "m05-long-done-badge.png",
+      "url": "/workbench",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "long：模块“已完成”角标"
+    },
+    {
+      "file": "m05-long-badge-cleared.png",
+      "url": "/workbench",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "点击模块后角标清除"
+    },
+    {
+      "file": "m05-hint-highlight.png",
+      "url": "/workbench",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-05",
+      "scene": "从价格页点击建议跳转 → 工作台并高亮行情价格"
+    },
+    {
+      "file": "m06-1440.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 1440×900"
+    },
+    {
+      "file": "m06-1501.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1501,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 1501×900"
+    },
+    {
+      "file": "m06-1499.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1499,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 1499×900"
+    },
+    {
+      "file": "m06-1401.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1401,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 1401×900"
+    },
+    {
+      "file": "m06-1399.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1399,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 1399×900"
+    },
+    {
+      "file": "m06-1241.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1241,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 1241×900"
+    },
+    {
+      "file": "m06-1239.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1239,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 1239×900"
+    },
+    {
+      "file": "m06-981.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 981,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 981×900"
+    },
+    {
+      "file": "m06-979.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 979,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 979×900"
+    },
+    {
+      "file": "m06-960.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 960,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "视口 960×900"
+    },
+    {
+      "file": "m06-1440-restored.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "从 960 放回基准 1440×900"
+    },
+    {
+      "file": "m06-960-library.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 960,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "960 窄窗模块库"
+    },
+    {
+      "file": "m06-960-drawer.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 960,
+        "height": 900
+      },
+      "item": "M-06",
+      "scene": "960 窄窗对话抽屉（半高）",
+      "agentScript": "success"
+    },
+    {
+      "file": "m07-ticker-t0.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-07",
+      "scene": "资讯与数据源状态（t0）"
+    },
+    {
+      "file": "m07-ticker-t3s.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-07",
+      "scene": "资讯滚动（t0+3s）"
+    },
+    {
+      "file": "m07-ticker-hover-paused.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-07",
+      "scene": "悬停资讯区暂停"
+    },
+    {
+      "file": "m07-ticker-reduced.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-07",
+      "scene": "prefers-reduced-motion: reduce 静止",
+      "reducedMotion": "reduce"
+    },
+    {
+      "file": "m07-ticker-reduced-scrolled.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-07",
+      "scene": "减少动态时资讯区横向滚动 400px",
+      "reducedMotion": "reduce"
+    },
+    {
+      "file": "m07-ticker-empty.png",
+      "url": "/workbench?scenario=empty",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-07",
+      "scene": "空态（scenario=empty）",
+      "mockScenario": "empty"
+    },
+    {
+      "file": "m08-chart-1440.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-08",
+      "scene": "基准 1440 样例折线（画布边缘、坐标轴）"
+    },
+    {
+      "file": "m08-chart-1440-tooltip.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "item": "M-08",
+      "scene": "基准 1440 悬停浮窗"
+    },
+    {
+      "file": "m08-chart-960.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 960,
+        "height": 900
+      },
+      "item": "M-08",
+      "scene": "960 窄窗样例折线"
+    },
+    {
+      "file": "m08-chart-960-tooltip.png",
+      "url": "/workbench?scenario=normal",
+      "viewport": {
+        "width": 960,
+        "height": 900
+      },
+      "item": "M-08",
+      "scene": "960 窄窗悬停浮窗（靠右侧，检查裁切）"
+    }
+  ],
+  "observations": [
+    {
+      "id": "M-02-fonts",
+      "text": "知识库页标题与正文计算字体族（辅助核对，非视觉结论）",
+      "data": {
+        "h1": "Georgia, \"Times New Roman\", \"Source Serif Pro\", \"Songti SC\", SimSun, serif",
+        "body": "\"Segoe UI\", -apple-system, \"PingFang SC\", \"Microsoft YaHei\", Arial, sans-serif"
+      }
+    },
+    {
+      "id": "M-03-layout",
+      "text": "布局变更后的 fai.layout（焦点带不在其中）",
+      "data": {
+        "layout": "[\"market-board\",\"logistics-onwater\",\"positions\",\"watchlist\",\"doc-catalog\",\"release-calendar\"]"
+      }
+    },
+    {
+      "id": "M-03-daily-link",
+      "text": "点击焦点带后的地址",
+      "data": {
+        "url": "/daily/2026-10-28"
+      }
+    },
+    {
+      "id": "M-05-drawer-persist",
+      "text": "加高后刷新：抽屉档位",
+      "data": {
+        "drawer": "tall",
+        "stored": "tall"
+      }
+    },
+    {
+      "id": "M-05-drawer-closed",
+      "text": "收起后刷新：抽屉可见性与存储",
+      "data": {
+        "visible": false,
+        "stored": "closed"
+      }
+    },
+    {
+      "id": "M-05-failure",
+      "text": "failure 回放终态与步骤类型",
+      "data": {
+        "terminal": [
+          "run.failed"
+        ],
+        "steps": [
+          "思考摘要",
+          "工具调用",
+          "工具结果",
+          "步骤错误"
+        ]
+      }
+    },
+    {
+      "id": "M-05-retry",
+      "text": "retry 回放终态与步骤类型",
+      "data": {
+        "terminal": [
+          "run.completed"
+        ],
+        "steps": [
+          "工具调用",
+          "工具结果",
+          "步骤错误",
+          "工具调用",
+          "工具结果",
+          "文本输出",
+          "建议跳转"
+        ]
+      }
+    },
+    {
+      "id": "M-05-long",
+      "text": "long 回放后台连续性：开始→切到价格页→返回并展开→终态",
+      "data": {
+        "runIdStart": "mock-run-bf1d1475-4451-478b-bc34-1fc09fd9dec1",
+        "t0": {
+          "steps": 2,
+          "badge": "running",
+          "indicator": 1
+        },
+        "tPrices": {
+          "url": "/prices",
+          "steps": 4,
+          "indicator": 1
+        },
+        "tEnd": {
+          "runs": 1,
+          "runId": "mock-run-bf1d1475-4451-478b-bc34-1fc09fd9dec1",
+          "ids": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ],
+          "unique": 7,
+          "indicator": 0
+        },
+        "badgeDone": "done",
+        "badgeAfterView": "none"
+      }
+    },
+    {
+      "id": "M-05-hint",
+      "text": "引导跳转后的地址与高亮",
+      "data": {
+        "url": "/workbench",
+        "drawer": false
+      }
+    },
+    {
+      "id": "M-06-m06-1440.png",
+      "text": "1440px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "false",
+        "gridCols": 3,
+        "focusCards": 6,
+        "scrollWidth": 1440,
+        "clientWidth": 1440
+      }
+    },
+    {
+      "id": "M-06-m06-1501.png",
+      "text": "1501px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "false",
+        "gridCols": 4,
+        "focusCards": 6,
+        "scrollWidth": 1501,
+        "clientWidth": 1501
+      }
+    },
+    {
+      "id": "M-06-m06-1499.png",
+      "text": "1499px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "false",
+        "gridCols": 3,
+        "focusCards": 6,
+        "scrollWidth": 1499,
+        "clientWidth": 1499
+      }
+    },
+    {
+      "id": "M-06-m06-1401.png",
+      "text": "1401px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "false",
+        "gridCols": 3,
+        "focusCards": 6,
+        "scrollWidth": 1401,
+        "clientWidth": 1401
+      }
+    },
+    {
+      "id": "M-06-m06-1399.png",
+      "text": "1399px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "false",
+        "gridCols": 2,
+        "focusCards": 6,
+        "scrollWidth": 1399,
+        "clientWidth": 1399
+      }
+    },
+    {
+      "id": "M-06-m06-1241.png",
+      "text": "1241px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "false",
+        "gridCols": 2,
+        "focusCards": 6,
+        "scrollWidth": 1241,
+        "clientWidth": 1241
+      }
+    },
+    {
+      "id": "M-06-m06-1239.png",
+      "text": "1239px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "false",
+        "gridCols": 2,
+        "focusCards": 4,
+        "scrollWidth": 1239,
+        "clientWidth": 1239
+      }
+    },
+    {
+      "id": "M-06-m06-981.png",
+      "text": "981px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "false",
+        "gridCols": 2,
+        "focusCards": 4,
+        "scrollWidth": 981,
+        "clientWidth": 981
+      }
+    },
+    {
+      "id": "M-06-m06-979.png",
+      "text": "979px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "true",
+        "gridCols": 1,
+        "focusCards": 4,
+        "scrollWidth": 979,
+        "clientWidth": 979
+      }
+    },
+    {
+      "id": "M-06-m06-960.png",
+      "text": "960px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "true",
+        "gridCols": 1,
+        "focusCards": 4,
+        "scrollWidth": 960,
+        "clientWidth": 960
+      }
+    },
+    {
+      "id": "M-06-m06-1440-restored.png",
+      "text": "1440px 结构测量（辅助核对）",
+      "data": {
+        "rail": "flex",
+        "viewportCollapsed": "false",
+        "gridCols": 3,
+        "focusCards": 6,
+        "scrollWidth": 1440,
+        "clientWidth": 1440
+      }
+    },
+    {
+      "id": "M-07-motion",
+      "text": "资讯轨道平移量（px）：滚动 / 悬停 / 聚焦",
+      "data": {
+        "t0": -8.11765,
+        "t3s": -66.1681,
+        "hover": [
+          -68.3571,
+          -68.3571
+        ],
+        "focus": [
+          -68.3571,
+          -68.3571
+        ]
+      }
+    },
+    {
+      "id": "M-07-reduced",
+      "text": "减少动态：动画名、资讯区横向滚动与页面横向溢出",
+      "data": {
+        "before": {
+          "scrollLeft": 0,
+          "scrollWidth": 1011,
+          "clientWidth": 806,
+          "anim": "none"
+        },
+        "scrollLeftAfter": 205,
+        "page": {
+          "scrollWidth": 1440,
+          "clientWidth": 1440
+        }
+      }
+    },
+    {
+      "id": "M-08-theme",
+      "text": "样例图主题背景与首序列色（辅助核对）",
+      "data": {
+        "backgroundColor": "transparent",
+        "color0": "#E8E6E0"
+      }
+    }
+  ],
+  "chrome": "156.0.8078.49",
+  "finishedAt": "2026-10-28T12:34:57.817Z"
+}
