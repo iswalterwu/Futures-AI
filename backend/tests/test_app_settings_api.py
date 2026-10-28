@@ -9,7 +9,7 @@ from starlette.testclient import TestClient
 from app.main import create_app
 from data import creds
 from settings import onboarding
-from settings.profile import Profile, save as save_profile
+from settings.profile import Profile, load as load_profile, save as save_profile
 
 TOKEN = "tok-" + "settings-api"
 HEADERS = {"Authorization": f"Bearer {TOKEN}"}
@@ -99,11 +99,114 @@ class TestProfileWrite:
             body = c.get("/settings/profile", headers=HEADERS).json()
         assert body["profile"]["email"] == ""
 
+    def test_masked_email_rejected_422_without_writing(self, tmp_path):
+        save_profile(tmp_path, Profile(first_name="Original", email="fixture@example.test"))
+        before = (tmp_path / "profile" / "profile.bin").read_bytes()
+        with client(tmp_path) as c:
+            response = c.put("/settings/profile", json={
+                "email": "fi***@example.test", "first_name": "Must not save",
+            }, headers=HEADERS)
+            assert response.status_code == 422
+            assert response.json() == {"detail": "遮蔽显示值不可回写"}
+        assert (tmp_path / "profile" / "profile.bin").read_bytes() == before
+        assert load_profile(tmp_path).email == "fixture@example.test"
+        assert load_profile(tmp_path).first_name == "Original"
+
+    def test_partial_update_preserves_email_and_empty_clears(self, tmp_path):
+        save_profile(tmp_path, Profile(email="fixture@example.test"))
+        with client(tmp_path) as c:
+            response = c.put("/settings/profile", json={"first_name": "Changed"}, headers=HEADERS)
+            assert response.status_code == 200
+            assert response.json()["profile"]["email"] == "fi***@example.test"
+            assert load_profile(tmp_path).email == "fixture@example.test"
+            response = c.put("/settings/profile", json={"email": ""}, headers=HEADERS)
+            assert response.status_code == 200
+            assert load_profile(tmp_path).email == ""
+            assert load_profile(tmp_path).first_name == "Changed"
+
     def test_sectors_endpoint_matches_official_list(self, tmp_path):
         """AC-005-3：组织类型清单由后端下发（11 项，含 Library）。"""
         with client(tmp_path) as c:
             sectors = c.get("/settings/sectors", headers=HEADERS).json()["sectors"]
         assert len(sectors) == 11 and any(x["key"] == "library" for x in sectors)
+
+
+class TestRegistrationGuide:
+    def test_complete_profile_matches_core_labels(self, tmp_path):
+        save_profile(tmp_path, Profile(first_name="Fixture", last_name="Trader",
+                     email="fixture@example.test", sector="research", reason_for_use="Energy research"))
+        before = (tmp_path / "profile" / "profile.bin").read_bytes()
+        with client(tmp_path) as c:
+            response = c.get("/settings/registration-guide", headers=HEADERS)
+            assert response.status_code == 200
+            assert response.json() == {
+                "missing": [], "hint": "",
+                "prefill": [
+                    {"label": "First Name", "value": "Fixture"},
+                    {"label": "Last Name", "value": "Trader"},
+                    {"label": "Email", "value": "fixture@example.test"},
+                    {"label": "Category that best describes you/your organization", "value": "Research/Consulting"},
+                    {"label": "Reason for use（可选）", "value": "Energy research"},
+                ],
+                "submit": {
+                    "url": "https://www.eia.gov/opendata/register.php",
+                    "notes": [
+                        "打开上面的地址，按「逐项指引」填写；条款与勾选由你本人确认",
+                        "提交后 key 会发送到你在表单里填写的邮箱（注意查收垃圾邮件）",
+                        "本程序不会代替你提交表单，也不会读取你的邮箱",
+                    ],
+                },
+            }
+            assert c.get("/settings/profile", headers=HEADERS).json()["profile"]["email"] == "fi***@example.test"
+        assert (tmp_path / "profile" / "profile.bin").read_bytes() == before
+        assert not (tmp_path / "profile" / "state.json").exists()
+
+    def test_missing_profile_lists_core_missing(self, tmp_path):
+        save_profile(tmp_path, Profile(first_name="Fixture"))
+        with client(tmp_path) as c:
+            response = c.get("/settings/registration-guide", headers=HEADERS)
+            assert response.status_code == 200
+            body = response.json()
+            assert body["missing"] == ["last_name", "email", "sector"]
+            assert body["hint"] == "先补齐档案中的缺项，再继续注册（档案可在 profile set 中修改）"
+            assert body["prefill"] == [
+                {"label": "First Name", "value": "Fixture"},
+                {"label": "Last Name", "value": ""},
+                {"label": "Email", "value": ""},
+                {"label": "Category that best describes you/your organization", "value": ""},
+                {"label": "Reason for use（可选）", "value": ""},
+            ]
+
+    def test_requires_token(self, tmp_path):
+        with client(tmp_path) as c:
+            assert c.get("/settings/registration-guide").status_code == 401
+            assert c.get("/settings/registration-guide", headers={"Authorization": "Bearer wrong"}).status_code == 401
+
+    def test_no_key_in_response_and_no_email_in_logs(self, tmp_path, caplog, capsys):
+        import logging
+
+        email = "plant.user@example.test"
+        secret = "FAIPLANT-KEY-registration-guide"
+        save_profile(tmp_path, Profile(first_name="Fixture", last_name="Trader", email=email, sector="research"))
+        creds.put(tmp_path / "creds", "eia_api_key", secret)
+        with caplog.at_level(logging.DEBUG):
+            with client(tmp_path) as c:
+                response = c.get("/settings/registration-guide", headers=HEADERS)
+                assert response.status_code == 200
+                assert email in response.text
+                assert secret not in response.text
+        captured = capsys.readouterr()
+        assert "registration-guide" in caplog.text  # 捕获器正对照：确实记录了该请求
+        assert email not in caplog.text + captured.out + captured.err
+        assert secret not in caplog.text + captured.out + captured.err
+
+    def test_corrupt_profile_is_422_not_empty_guide(self, tmp_path):
+        save_profile(tmp_path, Profile(first_name="Fixture"))
+        (tmp_path / "profile" / "profile.bin").write_bytes(b"invalid encrypted fixture")
+        with client(tmp_path) as c:
+            response = c.get("/settings/registration-guide", headers=HEADERS)
+            assert response.status_code == 422
+            assert response.json() == {"detail": "ProfileError"}
 
 
 class TestClearKey:

@@ -14,11 +14,12 @@ BACKEND = Path(__file__).resolve().parent.parent
 TOKEN = "tok-" + "lifecycle"
 
 
-def _start(root: Path, port_file: Path) -> subprocess.Popen:
+def _start(root: Path, port_file: Path, *extra: str) -> subprocess.Popen:
     env = {**os.environ, "PYTHONPATH": str(BACKEND), "PYTHONIOENCODING": "utf-8"}
     return subprocess.Popen(
-        [sys.executable, "-m", "app", "--root", str(root), "--port-file", str(port_file), "--token", TOKEN],
-        cwd=str(BACKEND), env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        [sys.executable, "-m", "app", "--root", str(root), "--port-file", str(port_file), "--token", TOKEN, *extra],
+        cwd=str(BACKEND), env=env, stdin=subprocess.PIPE,
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
     )
 
 
@@ -29,7 +30,8 @@ def _wait_ready(proc: subprocess.Popen, port_file: Path, timeout: float = 60.0) 
             info = json.loads(port_file.read_text(encoding="utf-8"))
             try:
                 with urllib.request.urlopen(f"http://127.0.0.1:{info['port']}/health", timeout=2) as r:
-                    if json.loads(r.read())["data_ready"]:
+                    body = json.loads(r.read())
+                    if r.status == 200 and body.get("status") == "ok" and body.get("data_ready") is True:
                         return info
             except OSError:
                 pass
@@ -45,7 +47,45 @@ def _post_shutdown(port: int) -> None:
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=10) as resp:
-        assert resp.status in (200, 202)
+        assert resp.status == 200
+
+
+class TestStdinEof:
+    def test_stdin_eof_releases_lock_and_port(self, tmp_path):
+        endpoint = tmp_path / "host.json"
+        proc = _start(tmp_path, endpoint, "--exit-on-stdin-eof")
+        try:
+            info = _wait_ready(proc, endpoint)
+            assert (tmp_path / "data" / ".lock").exists()
+            proc.stdin.close()
+            assert proc.wait(5) == 0
+            assert not (tmp_path / "data" / ".lock").exists()
+            with socket.socket() as sock:
+                sock.bind(("127.0.0.1", info["port"]))
+        finally:
+            proc.stdin.close()
+            if proc.poll() is None:
+                proc.kill()
+            proc.wait(15)
+
+    def test_without_flag_stdin_eof_ignored(self, tmp_path):
+        endpoint = tmp_path / "host.json"
+        proc = _start(tmp_path, endpoint)
+        try:
+            info = _wait_ready(proc, endpoint)
+            proc.stdin.close()
+            time.sleep(0.5)
+            assert proc.poll() is None
+            assert (tmp_path / "data" / ".lock").exists()
+            with urllib.request.urlopen(f"http://127.0.0.1:{info['port']}/health", timeout=2) as response:
+                assert response.status == 200
+            _post_shutdown(info["port"])
+            assert proc.wait(5) == 0
+        finally:
+            proc.stdin.close()
+            if proc.poll() is None:
+                proc.kill()
+            proc.wait(15)
 
 
 class TestGracefulShutdown:

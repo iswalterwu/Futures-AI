@@ -1,0 +1,21 @@
+Checklist written; direct count 41 checked / 0 unchecked, no whitespace errors, no other repository file touched.
+
+## Final report
+
+**Reviewer**: A = `anthropic/claude-fable-5-1` via **anthropic** (official API; bridge seven_day window exhausted, not re-probed per AGENTS §6.5). New independent session; distinct from Plan/Tasks/Analyze author (`claude-opus-5-5`), coordinator (`gpt-6.1-sol`) and planned Implement (`gpt-6-astra`).
+
+**Inputs verified**: baseline `8ba1b6a` + uncommitted overlay. `git diff 8ba1b6a -- backend shell packaging docs .gitignore` is empty; `spec.md` differs only in the Gate 1 header line (10 R / 38 AC intact).
+
+**Result: Checklist 通过（全部 41/41）** — `specs/desktop-shell/checklist.md` updated, preserving the initial-round findings (F-01~F-10) with per-item closure status and evidence, plus a dated round-2 record.
+
+**What I independently confirmed (not taken from "fixed" claims)**:
+- F-01: `git check-ignore -v` — every planned `shell/src/**`, `shell/test/**`, `shell/installer/`, `shell/tools/`, `packaging/`, new pytest files are trackable; only generated `shell/dist/staging/` is ignored. No `.gitignore` change.
+- F-02: `csp` now asserts real effect (loopback fixture hits = 0, no execution) on two independent layers with positive controls; no interception-count assertion.
+- F-03~F-07, `FAI_TEST_EVENTS` single protocol, `fai-update` partition for the HTTPS feed, `log\` naming vs architecture line 35 — all consistent across plan/tasks/manual.
+- Tasks (scripted): 41 tasks, all 0.5–2h (60.5h); 38/38 AC and WO-01/02/04–13 in completion criteria (WO-03 intentionally reuses data-layer tests); every criterion cites an AC; criteria↔verification counts match; no forward deps; all 37 scenarios have creation tasks; no retired commands/`shell/lib`/control-token residue.
+- Coordinator items: T-05c (`bootstrap.test.js`, T-05e explicitly not a prerequisite), T-07d (`prefs-ui`), T-10a/b/c staging bootstrap, T-05e AC citations — all fixed in the final files.
+- AC-005-3: source confirms the gap existed (`renderPrefill` self-assembled from masked profile; no host route); plan §3.1.4 contract matches core `prepare()/guide_fields()/registration_hint()` shapes; T-03c + T-06d + rewritten M-14 give real prepare/missing-field coverage. No P2.
+
+**Remaining findings**: no P1/P2. Four P3 noted (N-01 507 UI rendering not automated — already an accepted, recorded gap; N-02 "12 项" = 11 sectors + 1 placeholder option, wording only; N-03 suggest an evidence-privacy sentence in the manual template, outside my write scope; N-04 T-10c wall-clock risk from first electron-builder download). None blocks Implement.
+
+**Boundaries unchanged**: this is not implementation completion, Converge, Review, or Gate 2. T-01~T-06 remain stage evidence pending re-verification; T-01b~T-10d and all correction code are unimplemented and all "待新增" commands do not exist/have not run. External/manual evidence (clean machine, benchmark machine, real job engine, real frontend, release feed, real EIA key, system toast) is not obtained. No §5.1 approval granted or invented. Plan/Tasks/Analyze document prerequisites are satisfied for `openai/gpt-6-astra` to begin Implement after re-reading all checklist boxes. Repository write ownership exercised: `checklist.md` only.
