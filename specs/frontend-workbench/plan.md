@@ -5,7 +5,8 @@
 >
 > **v2 Plan 追加（2026-10-28）**：新增 §7「v2 实施设计（v2.1 冻结需求）」。需求依据是 spec v2.1：Walter 已于 2026-10-28 批准 Gate 1，范围包括 Q-023～Q-031，52 条 AC 已冻结。§1～§6 原文保留，作为 v1 历史基线；v1 的 45 条 AC 设计没有废弃。§1～§6 与 §7 冲突时以 §7 为准，覆盖范围见 §7.1。本轮只更新本文件（页首记录与 §7）和 `specs/README.md` 本 feature 一行；没有修改 spec、tasks、checklist、产品 ADR 或代码。§7 中的新增令牌、文件和测试都只是计划，本轮不写入，也不授权实施。
 > **v2 Plan 模型记录**：Plan = `claude-opus-5-5` via `anthropic`。`claude-bridge/claude-opus-5-5` 的最小真实调用因额度或限流失败；按规则只换通道、不换模型，当前限额窗口内不再重试 bridge。协调与落盘 = `openai/gpt-6.1-sol`，只负责读取和串行集成，不是审核员 A。任务 = frontend-workbench v2 Plan §7 文本收敛。基线 = `spec/frontend-workbench-v2` @ `fec355650f614ef42138f409afc748206e941ba1`。失败类别 = 通道额度或限流；本记录已脱敏，不含密钥、token 或原始鉴权报错。
-> **v2 审核状态**：§7 需要审核员 A 新开独立会话审核，并生成 v2 Checklist。A 首选 `claude-fable-5-1`：先测 bridge，不通再走 anthropic；模型回退按 AGENTS §6。现有 `checklist.md` 只证明 v1，不能授权 v2。§1～§6 未变部分能否复用，也要由 A 确认。本 Plan 的自检不是审核结论；文中对外部 feature checklist 的只读核对，也不是本 feature 的审核。
+> **v2 审核状态（Plan 时记录）**：§7 需要审核员 A 新开独立会话审核，并生成 v2 Checklist。A 首选 `claude-fable-5-1`：先测 bridge，不通再走 anthropic；模型回退按 AGENTS §6。现有 `checklist.md` 只证明 v1，不能授权 v2。§1～§6 未变部分能否复用，也要由 A 确认。本 Plan 的自检不是审核结论；文中对外部 feature checklist 的只读核对，也不是本 feature 的审核。
+> **后续阶段记录—v2 Checklist R1（2026-10-28）**：A = `claude-fable-5-1` via `anthropic`，独立会话 / worktree；`claude-bridge` 最小真实探活因额度或限流不可用，同模型官方通道探活成功，未换模型。任务 = v2 Checklist 首轮，固定审查基线 `d2bf5a77902694e62747d49647194637a1d6b75b`，实际 diff = `fec3556..d2bf5a7`。**通过：0 项阻断、9 条建议（V2-S01～S09），允许进入 Tasks，不授权 Implement。** 当前有效 v2 清单为同目录 `checklist-v2.md`（审核员原样产物）；旧 `checklist.md` 不修改、不授权 v2。后续仍需 Tasks / Analyze 与 A 定向复核，实施前置以该清单和 §7.3 / §7.13 为准。
 
 ## 1. 技术方案
 
