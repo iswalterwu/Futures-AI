@@ -86,3 +86,8 @@ H-02 未修复、留待 v2；11 项旧 P3 未扩改。该修复尚未 Converge�
 - Converge = claude-opus-5-5 via anthropic。PNG sha256 实测 = JSON；JSON `scriptSha256` = 临时脚本当前 hash；来源 HEAD / frontend 树与基线 `44845c8` 一致。
 - 原生视觉读 `after-1440x900-full.png`（**AI 观察，不是 Walter 人工验收**）：整个 figure，图注“近 60 日收盘 · 样例”单行、“元/桶”在右；折线、y 轴 480 ~ 515 与 x 轴 08-06 ~ 10-23 完整，无裁切、无白底。
 - 当前阶段：T-19 证据补采范围已收敛（[converge §10](../../converge.md)）；待独立 A Review 与本轮 Gate 2；M-08 人工复核待 Walter。
+
+## T-19 独立 Review 追记（2026-10-28；以上原文不改写）
+
+- 独立 A（claude-fable-5-1 via anthropic）Review **通过**；A 用原脚本副本独立复采，PNG 与本目录 `after-1440x900-full.png` 逐字节相同，JSON 仅执行者 / HEAD / 工作树 / 脚本 hash / 时间等预期差异。原件 [review-m08.md](../../review-m08.md)。
+- A-M08-P3-1：JSON 中 `checks.*` 等为断言守卫后的常量（数据真实），待 Walter 裁定。本轮 Gate 2 未批准；M-08 人工复核待 Walter。

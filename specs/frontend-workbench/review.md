@@ -1,6 +1,8 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **当前状态（2026-10-28，M-08 整图证据补采）**：T-19 已补采修复后 1440 整图（`bf04f69`），Converge 判定 T-19 证据补采范围已收敛（§16、[converge.md §10](converge.md)）；**待独立 A Review，本轮 Gate 2 未发生**；A-H01-P3-1 未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
+> **当前状态（2026-10-28，T-19 独立 Review）**：独立 A（claude-fable-5-1 via anthropic）对 `167b337` 定向 Review **通过**（0 P1 / 0 P2 / 1 P3，A-M08-P3-1 待 Walter 裁定），原件 [review-m08.md](review-m08.md)、记录 §17；**本轮 Gate 2 待 Walter 明确批准**，未 Handoff；A-H01-P3-1 已补采、待 Walter 复核 M-08，未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
+
+> **（Converge 时点指针）当前状态（2026-10-28，M-08 整图证据补采）**：T-19 已补采修复后 1440 整图（`bf04f69`），Converge 判定 T-19 证据补采范围已收敛（§16、[converge.md §10](converge.md)）；**待独立 A Review，本轮 Gate 2 未发生**；A-H01-P3-1 未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
 
 > **（规划时点指针）当前状态（2026-10-28，M-08 整图证据补采 in-progress）**：H-01 已经 PR #8 合并（§13 ~ §14，历史已批准）；本轮 T-19 只补采修复后 1440 整图（A-H01-P3-1），已规划、未采集（§15）；本轮 Gate 2 未发生。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
 
@@ -525,3 +527,26 @@ Handoff 核对：`frontend/` 树 `03fda1de…` 与 A 审查目标 `869cb71` 相�
 - 证据：[after-1440x900-full.png](assets/h01-fix-20261028/after-1440x900-full.png)（sha256 `15c08282…a678`）、[capture-full-1440.json](assets/h01-fix-20261028/capture-full-1440.json)；来源 HEAD / 代码基线 `44845c8`，`frontend` 树 `03fda1de…`，与基线零差异。
 - AI 看图（Converge，不是人工验收）：整个 figure，图注单行、曲线与双轴完整、无裁切、无白底。
 - 待办：独立 A Review → Walter 本轮 Gate 2；Walter 人工复核 M-01 ~ M-08（含 M-08，8 项未勾）；H-02 留待 v2；旧 11 项 P3 未扩改。
+
+## 17. T-19 独立 Review 记录（2026-10-28，追加）
+
+> §0 ~ §16 为历史，不改写（§16 中“A 未开始”为 Converge 时点记录）。本节由集成人（claude-opus-5-5 via anthropic，非 A）落盘；A 原件逐字归档于 [review-m08.md](review-m08.md)（与临时 `review-m08-result.md` sha256 `aa9e1ed6…6ed6` 一致），结论以原件为准。
+
+- **固定目标**：`167b337f516c5e55a9c24355eddf0c36fdbad2b8`（基线 `44845c8`；diff 10 文件全部在 `specs/`；`frontend` 树 `03fda1de…` = 基线 = H-01 审查代码树）。
+- **审核员**：A = **claude-fable-5-1 via anthropic**，全新会话，与 Implement（openai/gpt-6-astra）不同；bridge 本窗口 account 额度耗尽、不重复探活。会话 exit 0，审前审后工作树干净、HEAD 不变，自启 Vite / 浏览器已退出，4173 / 4191 无监听。
+- **结论：通过**（P1 = 0，P2 = 0，P3 = 1）。T-19 四条完成标准**满足**，A-H01-P3-1 的证据缺口已补齐（修复后 1440 整图）。
+- **A-M08-P3-1**（原件 P3-1，证据链可读性）：JSON 中 `provenance.frontendDiffExit`、`frontendUntrackedFiles` 与 `checks.*` 是断言守卫后写出的字面常量，不是计算结果；数据真实（独立复采一致），仅只读 JSON 无法区分。本轮无须返工、不新增实施任务；若临时脚本将来沉淀为通用工具再考虑计算值化。A 原件写“可接受为后续”是审核员建议，**是否接受待 Walter 裁定**，集成人不代接受；不混入旧 11 项 P3 或 A-H01-P3-1。
+
+| 类别 | 内容 | 结果 |
+|---|---|---|
+| A 亲看 | 原生视觉读新整图，并对照修复前 `m08-chart-1440.png` 与图注特写 | 整个 figure、图注单行、轴与折线完整、无裁切 / 白底（AI 观察，非人工验收） |
+| A 亲跑 | `test:e2e -g "AC-006-3\|AC-006-4\|AC-001-4"` | **6 passed / exit 0** |
+| A 亲跑 | `test:unit -t "AC-009-2"` | **9 passed / 550 skipped / exit 0**（skipped 不计通过） |
+| A 独立复采 | 原脚本副本（仅 `assetDir` 改为临时子目录） | exit 0；PNG 与入库**逐字节相同**（`15c08282…a678`）；JSON 仅 executor / sourceHead / workingTreeStatus / scriptSha256 / capturedAt 预期差异 |
+| A 亲核 | 边界 `--exit-code`、`git diff --check`、manual 0 / 8、checklist 70 / 0、脚本 hash = JSON | 全部通过 |
+| A 只查日志 | Implement 采集首跑 exit 1（截图前断言口径）、成功采集、定向 e2e 6 / 单元 9、boundary | 一致 |
+| 旧证据 | H-01 全量 559 + 68、build | 非本轮重跑 |
+
+集成核对：审后实现与证据未变（`git diff --quiet 167b337..HEAD -- frontend design backend docs AGENTS.md spec checklist manual-acceptance 新 PNG / JSON` → exit 0）；`review-h01.md`、旧 60 图与 4 张图注特写未变；manual 0 checked / 8 unchecked。
+
+**待办**：Walter 本轮 Gate 2（含是否接受 A-M08-P3-1）；Walter 人工复核 M-01 ~ M-08；H-02 留待 v2；旧 11 项 P3 未扩改。用户“继续”只授权补采，不是对本 Review 的提前批准。
