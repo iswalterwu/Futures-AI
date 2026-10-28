@@ -320,3 +320,48 @@ D-015 的其余同步（ADR 标题、活文档引用、`design/` 7 个文件）�
 
 - PR：[iswalterwu/Futures-AI#7](https://github.com/iswalterwu/Futures-AI/pull/7)（`feat/frontend-workbench` → `main`，普通 merge commit；创建时 mergeable = CLEAN，仓库没有配置 CI 检查）。
 - merge 提交号在 merge 后才产生，记在 Handoff 结果文件和 PR 页面上，不再为此另提交一次。
+
+## 10. 恢复：H-01 最小修复的 Plan / Tasks / Analyze（2026-10-28，追加）
+
+> §0 ~ §9 为历史原件，不改写。本节只记录暂停后的恢复处置与本轮规划产物；**本轮没有修改生产代码、没有运行测试或采集截图、没有提交 / push / PR / merge。**
+> **执行者**：Plan / Tasks / Analyze = claude-opus-5-5 **via anthropic**。本会话是本阶段唯一写入者，协调会话不同时写。
+> **通道（脱敏）**：本新会话对 `claude-bridge/claude-opus-5-5` 做了一次最小真实探活，失败（quota exceeded / seven_day / monthly spend limit）；按 AGENTS §6 规则 2 / 5 改走 Anthropic API 通道，最小探活 READY。同一模型，只换通道；当前限额窗口内不再重试 bridge；未改全局 provider / 配置。
+> **分支与基线**：`fix/frontend-workbench-visual`，基线 `43b6d79681a49562f41751368b2ae00c24062f56`（PR #7 在 main 的 merge commit）；开始时工作区干净。暂停归档 `wip/frontend-workbench-pause-20261028@022f038` 的 HANDOFF.md 只用 `git show` 只读参考，没有合入本分支。
+
+### 10.1 用户原话与上下文
+
+- 恢复暂停任务时，协调会话先只读检查，然后询问处置。上一条回复原话：「建议 H-01 做最小样式修复，H-02 随 v2 导航统一处理。请确认是否采用，或指定其他处置；此前接受的 11 项 P3 不包含 H-01/H-02。」
+- 用户随后回复：「继续」。
+- 协调会话把这句回复理解为采用上述建议并据此派工：仅 H-01 做最小修复；H-02 留待 v2；M-01 ~ M-08 继续等 Walter 人工复核，不代勾。
+- **边界**：这句回复不是逐项签字，不是对本次修复的 Gate 2 批准，不是 v2 实施授权，也不是对 M-01 ~ M-08 的人工验收；不扩大 Gate 2 已接受的 11 项 P3 的范围（H-01 / H-02 本来就不在其中）。
+
+### 10.2 范围与处置状态
+
+| 项 | 状态 |
+|---|---|
+| H-01 | **已授权待修复**：tasks.md 追加 T-18（1 h），范围限 `SampleChart.vue` 与 `e2e/theme.spec.ts`，加新目录截图证据；未实施 |
+| H-02 | **留待 v2、未修复**；没有写入 v2 规格，没有转交，也没有完成；v2 需要在自己的流程（Clarify / Gate 1）里承接 |
+| 11 项已接受 P3 | 不变，未修复，不顺手扩改（含 R2-01：tasks 头部旧计数保留为历史） |
+| M-01 ~ M-08 | 仍待 Walter 人工复核；manual-acceptance.md 8 个勾选框未动 |
+| Checklist | 70 已勾 / 0 未勾，核对后保留，未改 |
+| 冻结 spec | 零改动；不需要重过 Gate 1，不需要新 ADR |
+
+### 10.3 根因核实与修复方案（摘要，详见 plan §7）
+
+- `figcaption` 为 flex，标签外层 `<span>` 作为 flex 项被块化；内层数字命中全局 `span.num { display: block }`（`frontend/src/shared/num.css`），标签被切成“近 / 60 / 日收盘 · 样例”三个匿名块行，`text-align: right` 再把 60 推到右侧。
+- 修复：`SampleChart.vue` 的 `<style scoped>` 增 `figcaption .num { display: inline; }`。特异度（0,2,1）高于（0,1,1），只作用于本组件；等宽、tabular、nowrap 与计算值 `text-align` 不变。仓库已有同口径先例 `PlaceholderPage.vue` 的 `.placeholder-page .num`。
+- 验证：e2e 在 `T.window.width` / `T.window.min_width` × `T.window.height` 两档读取真实浏览器计算样式与 Range 几何（文字与数字各一个矩形、竖向区间相交、顺序正确；等宽 / tabular；单位同行不重叠；无横向溢出；图注以外的 `span.num` 仍为块级）。先在旧实现跑红，再修复跑绿；截图先拍后断言，修复前后各两张复制到 `assets/h01-fix-20261028/`，不覆盖 `assets/handoff/` 的 60 张。
+
+### 10.4 派工 / 模型记录
+
+| 角色 | 任务 | 基线 | provider / model | 状态 / 失败类别 |
+|---|---|---|---|---|
+| Plan / Tasks / Analyze | plan §7、T-18、analyze 追加节、本节、状态表 | `43b6d79` | anthropic / claude-opus-5-5 | 完成（本轮）；bridge：额度耗尽 |
+| Implement | T-18 | `43b6d79` | 首选 openai/gpt-6-astra，回退 deepseek/deepseek-flash | 未开始；由协调会话另行派工 |
+| Converge | 实施后对照 spec / plan / tasks 追加记录 | T-18 提交 | claude-opus-5-5（先 bridge 后 anthropic） | 未开始 |
+| 审核员 A | 定向 Review T-18 真实 diff | T-18 提交 | claude-fable-5-1（先 bridge 后 anthropic），回退按 §6 | 未开始；须新会话，与实施模型不同 |
+
+### 10.5 Gate 状态与下一步
+
+- **本次修复的 Gate 2：未批准。** 需要在 Implement → Converge → 独立 A Review 之后，由 Walter 确认。
+- 下一步：① 协调会话按 §6 派 Implement 执行 T-18（先红后绿、全量测试、构建、截图证据）；② Converge 追加记录；③ 独立 A 定向 Review；④ Walter Gate 2；⑤ 再按流程 PR / merge。M-01 ~ M-08 的人工复核与 H-02 的 v2 承接各自独立进行。

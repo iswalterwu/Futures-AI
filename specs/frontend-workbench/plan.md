@@ -3,6 +3,7 @@
 > Plan 阶段产物。需求在 spec.md（2026-10-27 Gate 1 批准冻结，45 条 AC），本文只写实现机制与验收落点。
 > **2026-10-28 精简版**：按 AGENTS.md §5 工程准则重写——去掉为"将来可能需要"而建的东西（评审用中间件、守卫自检样例、跨字段校验、抽象层、逐锚盘点），保留能直接验证 spec 的部分。spec 未改动。
 > **2026-10-28 Review 整改**：按 R1-01 补全变化量独立精度（§2.1 / §2.7），新增 T-16 / T-17；回写 T-01 实际 TypeScript 版本。修复冻结的数值展示需求，不新增用户行为、不修改 spec 或 Checklist。其余 P3 的后续归属见 tasks.md，未获 Gate 2 风险接受。
+> **2026-10-28 恢复（H-01，追加 §7）**：Plan = claude-opus-5-5 via anthropic（claude-bridge 本会话最小探活失败：额度耗尽；Anthropic 探活 READY）。只为既有 AC-001-4 / AC-006-3 / M-08 做图注内联数字的局部样式纠偏，登记 T-18；spec、令牌、契约、主题、全局数值样式均不改；以上历史正文不改写。
 
 ## 1. 技术方案
 
@@ -240,3 +241,57 @@ send({sessionId?, message}) / subscribe(cb)
 | 生成物漂移 | `pnpm check --only generated` 在 `pnpm test` 首位，覆盖 `design/generated`、首帧块与 `contracts/*` |
 
 **回滚**：删除 `frontend/`、`design/`、`specs/frontend-workbench/`；去掉 `.gitignore` 追加行与 `specs/README.md` 本 feature 行；`docs/designUI.md` 只回退本 feature 改的引用指针（用 `git checkout <起点> -- docs/designUI.md`，回退前确认该文件无其他改动）；`docs/decisions/20261027-updown-scope.md` 不删除（ADR 历史），在 `docs/plan.md` §3 标 superseded 并另写后继 ADR。
+
+## 7. H-01 局部修复与验证机制（2026-10-28 恢复，追加）
+
+> Plan = claude-opus-5-5 via anthropic；分支 `fix/frontend-workbench-visual`，基线 `43b6d79`（PR #7 在 main 的 merge commit）。授权范围见 review.md §10：仅 H-01 最小样式修复；H-02 留待 v2、本节不涉及。
+
+### 7.1 根因（已按真实源码核实）
+
+- `frontend/src/modules/market-board/SampleChart.vue` 模板：`figcaption` 为 `display:flex`（`justify-content: space-between`），子项为标签 `<span>近 <span class="num">60</span> 日收盘 · 样例</span>` 与 `span.unit`。
+- 标签外层 `<span>` 是 flex 项，被块化为块容器；内层数字命中全局 `frontend/src/shared/num.css` 的 `span.num { display: block }`，把标签的行内格式化上下文切成三个匿名块行：“近” / “60” / “日收盘 · 样例”；`.num` 的 `text-align: right` 再把 60 推到右侧。这就是 M-08 截图 `assets/handoff/m08-chart-1440.png` 的三行图注。
+- 旧 e2e（`AC-006-3 … 60-day …`）只断言 `textContent` 含“近 60 日收盘 · 样例”，文字本来就对，所以没有发现版式问题。
+
+### 7.2 修复（最小机制）
+
+- 只在 `SampleChart.vue` 的 `<style scoped>` 增加一条：`figcaption .num { display: inline; }`。scoped 编译为 `figcaption .num[data-v-…]`，特异度（0,2,1）高于全局 `span.num`（0,1,1），只作用于本组件模板内的图注数字。
+- 保留：`.num` 的 `font-family: mono`、`tabular-nums`、`white-space: nowrap` 与计算值 `text-align: right` 都不变（`text-align` 对行内元素无视觉效果，但计算值仍为 `right`，既有 `tokens.spec` 的 AC-001-4 断言不受影响）。模板、数据绑定、`aria-label` 不改。
+- 先例：`PlaceholderPage.vue` 已用局部 `.placeholder-page .num { display: inline-block }` 处理正文中的行内数字，本修复与其同一口径；不新增令牌、不登记新组件。
+- 不采用：改全局 `num.css`（会把盘面 / 关注列表 / KPI 变化量等 `span.num` 全部改成行内，影响表格与卡内右对齐）；去掉 `num` 类（失去等宽 / tabular，违背 AC-001-4）；换标签绕开选择器（改语义与模板，不如一条显式规则清楚）。
+- 需求解释：R-001 / AC-001-4 的“表格与卡内数值右对齐”针对数值格 / 数值列；嵌在一句图注里的计数是行内文字，不是待竖向比对的数列。修复不改 AC 文字、不改其自动判据，因此不是需求变更，不需要回流 Clarify / 重过 Gate 1，也不需要新 ADR。
+
+### 7.3 验证机制（真实浏览器计算样式 + Range 几何）
+
+位置：`frontend/e2e/theme.spec.ts`。按两档视口各生成一个独立测试（互不阻断，红跑时两档都能出图）：`{ width: T.window.width, height: T.window.height }` 与 `{ width: T.window.min_width, height: T.window.height }`；只用令牌值，不新增视口魔数。标题以 `AC-001-4 AC-006-3 H-01` 开头，用 `-g "H-01"` 选取。
+
+每档步骤：
+
+1. `setViewportSize` → 复用 `openSample(page)`（默认内置 mock `scenario=normal`）→ 对 `[data-chart-id="market-board"]` 执行 `scrollIntoViewIfNeeded()`（960 下模块区需滚动，见 H-02）。
+2. **先截图后断言**：`figure` 元素截图写到 `testInfo.outputPath('sample-chart-<width>x<height>.png')`（`test-results/` 已被 `.gitignore` 忽略）。这样旧实现跑红时也能留下修复前图像。
+3. 在页面内读取几何与计算样式（`page.evaluate` / `locator.evaluate`）：
+   - **同一行**：对标签 `<span>` 的每个非空白子节点（“近”文本、数字元素、“日收盘 · 样例”文本）用 `Range.selectNodeContents` 取 `getClientRects()`；断言每段恰 1 个矩形（未折行），全部矩形竖向区间有公共交集（`max(top) < min(bottom)`），水平顺序为 近 < 数字 < 日收盘。不用顶边相等判定，避免等宽 / 无衬线字体内容区高度不同造成误判。旧实现三段分居三行，竖向区间无交集，必然失败。
+   - **等宽 / tabular**：数字元素计算 `fontFamily` 首项 = `T.font.mono` 首项，`fontVariantNumeric` 含 `tabular-nums`。
+   - **单位可读**：`.unit` 文本 = fixture `series.unit`、宽高 > 0、矩形水平落在 `figcaption` 内、与标签竖向区间相交（同一行）且 `标签.right ≤ 单位.left`（不重叠）。
+   - **无横滚**：`document.documentElement.scrollWidth ≤ clientWidth`，`figcaption.scrollWidth ≤ clientWidth`。
+   - **全局数值样式未变**：工作台上所有不在 `.sample-chart figcaption` 内的 `span.num` 计算 `display` 仍为 `block`、等宽首项与 tabular 不变；集合非空，且至少各含行情盘面、关注列表、焦点带中的一个。
+4. 静态边界由 `git diff` 核对：`frontend/` 相对基线只改 `SampleChart.vue` 与 `e2e/theme.spec.ts`；`src/shared`、`src/design`、`contracts/`、spec / checklist / manual-acceptance / `assets/handoff/` 零改动。
+
+**红 → 绿顺序**：先只加测试，在基线 `SampleChart.vue` 上跑 `-g "H-01"`，两档都应在“同一行”断言失败（记录失败摘要，复制两张修复前截图）；再加 7.2 的一条规则，重跑转绿（复制两张修复后截图）；最后跑全量 `pnpm -C frontend test`、`build`、`git diff --check`。780 kB chunk 提示不处理。
+
+**截图证据**：复制到新目录 `specs/frontend-workbench/assets/h01-fix-20261028/`：`before-1440x900.png`、`before-960x900.png`、`after-1440x900.png`、`after-960x900.png` + `README.md`（基线 / 修复提交、视口来自 `T.window`、Chrome 与 Playwright 版本、数据 = 内置 mock normal、执行者模型、视觉判断由 AI 完成而非 Walter）。不覆盖、不改 `assets/handoff/` 的 60 张旧图；`manual-acceptance.md` 的 8 个人工勾选不改。
+
+### 7.4 验收对应（追加，不改 §5）
+
+| AC / 清单 | T-18 落点 |
+|---|---|
+| AC-001-4 | 图注数字仍等宽 + tabular；其他 `span.num` 仍为块级，全局数值样式未改（e2e H-01） |
+| AC-006-3 | 样例图图注在基准 / 最小宽度下与数字同行、单位可读；既有主题对拍用例仍通过 |
+| AC-002-6（仅无横向溢出条款） | 两档视口页面与图注无横向溢出；不涉及 H-02 的窄窗导航高度 |
+| AC-009-1 | `pnpm -C frontend test` 全绿、`build` 通过 |
+| M-08 / AC-009-2 | 新目录修复前后截图（AI 视觉）；人工勾选仍待 Walter |
+
+### 7.5 风险与不做
+
+- 不做：H-02、v2 导航、其他 11 项已接受 P3（含 R2-01 头部计数）、拆包优化、令牌 / 契约 / 主题 / 全局样式 / 其他组件改动。
+- v2 规格分支会改同一组 `specs/frontend-workbench/*.md`；本修复只追加章节，合并冲突由集成人串行解决，不改别的 worktree。
+- 960×900 下样例图需滚动可见（H-02 现状）；几何断言不依赖可见性，截图前显式滚动到位。

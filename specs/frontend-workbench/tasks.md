@@ -3,6 +3,7 @@
 > Tasks 阶段产物；每项 0.5–2 小时。**状态：已生效（Checklist 第四轮基线 `2c2fbc8`，70/70）；T-01 ~ T-17 已实施，独立 A 第二轮 Review 通过；Gate 2 已批准（Walter 2026-10-28 回复“确认”：接受 11 项 P3 为后续任务，未修复）；进入 Handoff。**
 > 依据：`spec.md`（Gate 1 批准冻结，45 条 AC）+ `plan.md`（精简版）。
 > 按 AGENTS.md §5 去掉了守卫样例自检（AC-001-2 明文要求的 `colors` 最小样例除外）、逐锚盘点、跨字段校验与单次使用的抽象层；15 个任务，约 25.5 小时。
+> **2026-10-28 恢复（H-01）**：Tasks = claude-opus-5-5 via anthropic（claude-bridge 探活额度耗尽）。追加 T-18（H-01 图注内联数字最小样式修复，1 h），状态**已授权待修复、未实施**；H-02 留待 v2、未修复；11 项已接受 P3 不扩改；以上头部历史计数保留不改（R2-01 仍为已接受的后续项）。
 
 ## 约定
 
@@ -312,8 +313,30 @@
 | R1-11 | 已接受为后续（用户 2026-10-28 确认），未修复、未改卡片分配 | 日报 / 焦点带后续 spec 明确按段分配，再按 Gate 1 变更规则实施 | AC-002-6、AC-003-5；单一语义排序与紧凑断点测试 |
 | R2-01 | 第二轮 P3；已接受为后续（用户 2026-10-28 确认），未修复 | 后续编辑性修订：限定头部“15 项 / 25.5 h”为原实施计数，或只保留末尾合计，避免与当前 17 项 / 28 h 混淆 | AC-009-1 的任务证据；核对 tasks 头尾计数 |
 | R2-02 | 第二轮 P3；已接受为后续（用户 2026-10-28 确认），未修复、未加强 | 后续 e2e 强度改进：精度回归注入六个数字，明确宽窗六卡 / 窄窗四卡，或收窄标题承诺；现有精度断言有效 | AC-003-1、AC-002-6；`pnpm -C frontend test:e2e -g "AC-003-1"` |
-| H-01 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置** | 样例图图注“近 60 日收盘 · 样例”断成三行：图注内数字用了 `span.num`，被全局 `span.num { display: block }` 渲染为独立块；后续由 Implement 修正图注内联数字的样式，不改令牌与 spec | AC-001-4、AC-006-3、M-08；证据 `assets/handoff/m08-chart-1440.png`；修复后重采 M-08 截图 + `pnpm -C frontend test` |
-| H-02 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置** | 小于 980 的顶部横向导航中，专题研究子项纵向堆叠，导航区约 205 px；960 ~ 979×900 下模块区可视高度约 215 px，样例图不能一屏完整显示（可滚动、无重叠、无横向溢出）。与 UI_LAYOUT `#rail` 已采用的“塌成顶栏横向滚动”不一致；后续按该规定收紧窄窗导航（是否保留子项及其形态先请 Walter 裁定；v2 规格同样涉及导航，需协调） | AC-002-6、R-002、M-06；证据 `assets/handoff/m06-979.png`、`m06-960.png`；修复后补断点 e2e 对导航高度的断言并重采 M-06 |
+| H-01 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置**。→ 2026-10-28 恢复：用户回复“继续”，协调会话按其“H-01 做最小样式修复”的建议执行；**已授权待修复**，见 T-18（未实施；不属 11 项 P3，修复的 Gate 2 未批准） | 样例图图注“近 60 日收盘 · 样例”断成三行：图注内数字用了 `span.num`，被全局 `span.num { display: block }` 渲染为独立块；后续由 Implement 修正图注内联数字的样式，不改令牌与 spec | AC-001-4、AC-006-3、M-08；证据 `assets/handoff/m08-chart-1440.png`；修复后重采 M-08 截图 + `pnpm -C frontend test` |
+| H-02 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置**。→ 2026-10-28 恢复：按同一建议“随 v2 导航统一处理”，**留待 v2、v1 未修复**；尚未写入 v2 规格，未转交、未完成，v2 仍需在其自身流程（Clarify / Gate 1）中承接 | 小于 980 的顶部横向导航中，专题研究子项纵向堆叠，导航区约 205 px；960 ~ 979×900 下模块区可视高度约 215 px，样例图不能一屏完整显示（可滚动、无重叠、无横向溢出）。与 UI_LAYOUT `#rail` 已采用的“塌成顶栏横向滚动”不一致；后续按该规定收紧窄窗导航（是否保留子项及其形态先请 Walter 裁定；v2 规格同样涉及导航，需协调） | AC-002-6、R-002、M-06；证据 `assets/handoff/m06-979.png`、`m06-960.png`；修复后补断点 e2e 对导航高度的断言并重采 M-06 |
+
+## H-01 修复任务（2026-10-28 恢复，追加；不变更冻结 spec）
+
+### T-18 H-01 样例图图注内联数字
+
+- **上下文**：review.md §10、plan §7。用户回复“继续”，协调会话按其建议仅授权 H-01 最小样式修复。根因：`SampleChart.vue` 图注“近 <span class="num">60</span> 日收盘 · 样例”的数字命中全局 `span.num { display: block }`，标签被切成三行。只为既有 AC-001-4、AC-006-3 与 M-08 做实现样式纠偏；不改 spec / 令牌 / 契约 / 主题 / 全局数值样式 / 其他组件，不需要新 ADR 或 Gate 1。旧 e2e 只断言文字（文字本来正确），新回归必须测浏览器计算样式与 Range 几何。
+- **修改范围**：生产代码只改 `frontend/src/modules/market-board/SampleChart.vue`（`<style scoped>` 增 `figcaption .num { display: inline; }` 或等价的单条局部规则）；浏览器回归只改 `frontend/e2e/theme.spec.ts`；新建 `specs/frontend-workbench/assets/h01-fix-20261028/`（4 张 PNG + `README.md`）；`tasks.md` 只更新本任务的状态与实施证据。不改 `frontend/src/shared/`、`frontend/src/design/`、`frontend/contracts/`、spec / checklist / manual-acceptance、`assets/handoff/` 的 60 张旧图。
+- **依赖**：T-04（`num.css`）、T-12（`SampleChart.vue`、`e2e/theme.spec.ts`）　**预计**：1 h　**状态**：已授权待修复（未实施；修复的 Gate 2 未批准）
+- **执行**：Implement 按 AGENTS §6（首选 `openai/gpt-6-astra`，回退 `deepseek/deepseek-flash`），在本分支 `fix/frontend-workbench-visual` 上做，基线 `43b6d79`；提交信息以 `T-18` 开头。
+- **完成标准**：
+  1. 回归先红：只加 plan §7.3 的 e2e（`T.window.width` / `T.window.min_width` × `T.window.height` 两档，各一个测试，标题以 `AC-001-4 AC-006-3 H-01` 开头，先截图后断言），在基线 `SampleChart.vue` 上两档都在“图注文字与数字同一行”的 Range 几何断言失败；记录失败摘要，复制两张修复前截图（AC-001-4、AC-006-3）。
+  2. 最小修复后转绿：两档视口下图注“近 / 数字 / 日收盘 · 样例”各一个矩形、竖向区间有交集、水平顺序正确；数字计算字体首项为 `T.font.mono` 首项且含 `tabular-nums`；单位文本正确、宽高 > 0、在图注内且与标签同行不重叠（AC-001-4、AC-006-3）；页面与图注无横向溢出（AC-002-6 的无横向溢出条款，不涉及 H-02 导航高度）；图注以外的 `span.num`（至少含盘面、关注列表、焦点带）计算 `display` 仍为 `block`、等宽与 tabular 不变（AC-001-4）；既有 AC-006-3 / AC-006-4 / AC-001-4 浏览器用例仍通过。
+  3. 全量自动化与构建全绿，无空白错误；不为 780 kB chunk 提示做拆包（AC-009-1）。
+  4. 改动边界：`frontend/` 相对基线只改上述两个文件；全局数值样式、令牌、生成物、契约、冻结 spec、Checklist 与人工清单零改动（AC-001-4 全局部分；AC-009-2 人工证据不被覆盖）。
+  5. 截图证据：`assets/h01-fix-20261028/` 含 `before-1440x900.png`、`before-960x900.png`、`after-1440x900.png`、`after-960x900.png`（宽窄均已滚动到位，仅内置 mock normal）与 `README.md`（基线与修复提交、视口来自 `T.window`、Chrome / Playwright 版本、数据、执行者模型；视觉判断由 AI 完成，不是 Walter 人工验收）；`assets/handoff/` 60 张旧图与 manual-acceptance.md 8 个未勾选框不变（M-08、AC-009-2）。
+- **验证命令**：
+  1. 修复前（基线 `SampleChart.vue` + 新测试）：`pnpm -C frontend test:e2e -g "H-01"` → 预期 exit 1，两档失败于同一行断言；随后把 `frontend/test-results/**/sample-chart-*.png` 复制为 `before-*`
+  2. 修复后：`pnpm -C frontend test:e2e -g "H-01" && pnpm -C frontend test:e2e -g "AC-006-3|AC-006-4|AC-001-4"` → exit 0；随后复制 `after-*`
+  3. `pnpm -C frontend test && pnpm -C frontend build && git diff --check`
+  4. `git diff --name-only 43b6d79 -- frontend`（只列两文件）`&& git diff --exit-code 43b6d79 -- frontend/src/shared frontend/src/design frontend/contracts specs/frontend-workbench/spec.md specs/frontend-workbench/checklist.md`
+  5. `git ls-files specs/frontend-workbench/assets/h01-fix-20261028`（4 张 PNG + README）`&& git diff --exit-code 43b6d79 -- specs/frontend-workbench/assets/handoff specs/frontend-workbench/manual-acceptance.md`
+- **实施后流程（不属本任务）**：Converge 追加记录 → 独立 A Review（新会话、与实施不同模型）→ Walter Gate 2。M-08 人工勾选仍由 Walter 复核。
 
 ## AC 覆盖
 
@@ -322,11 +345,11 @@
 | AC-001-1 | T-02、T-14 |
 | AC-001-2、AC-001-6 | T-03 |
 | AC-001-3 | T-03；人工 M-01（T-15） |
-| AC-001-4 | T-04、T-14、T-16 |
+| AC-001-4 | T-04、T-14、T-16、T-18（H-01 图注，待实施） |
 | AC-001-5 | T-03、T-04、T-11、T-14 |
 | AC-002-1、AC-002-7 | T-08 |
 | AC-002-2 ~ AC-002-5 | T-08 |
-| AC-002-6 | T-14 |
+| AC-002-6 | T-14；T-18（仅无横向溢出回归，待实施；不涉及 H-02） |
 | AC-003-1 ~ AC-003-4、AC-003-6 | T-10；T-16 补强 AC-003-1 / AC-003-4；AC-003-5 另有人工 M-03（T-15） |
 | AC-004-1、AC-004-2 | T-09 |
 | AC-004-3 | T-09、T-11 |
@@ -335,7 +358,7 @@
 | AC-004-6 | T-03 |
 | AC-005-1 ~ AC-005-5、AC-005-7 | T-13 |
 | AC-005-6 | T-06、T-07 |
-| AC-006-1 ~ AC-006-3 | T-12；AC-006-4 另有人工 M-08（T-15） |
+| AC-006-1 ~ AC-006-3 | T-12；AC-006-4 另有人工 M-08（T-15）；T-18 回归 AC-006-3 图注版式（待实施） |
 | AC-007-1 | T-03 |
 | AC-007-2 | T-07、T-14 |
 | AC-007-3 | T-06、T-07、T-16、T-17（验收证据） |
@@ -343,9 +366,11 @@
 | AC-008-1 | T-05、T-15 |
 | AC-008-2 | T-02、T-05 |
 | AC-008-3 | T-05 |
-| AC-009-1 | T-01、T-15、T-17 |
+| AC-009-1 | T-01、T-15、T-17；T-18（全量回归，待实施） |
 | AC-009-2 | T-15、T-17 |
 
 原始实施合计 15 个任务，预计约 25.5 小时。T-08 与 T-13 各承担 5–6 个 AC，若实施时超过 2 h，按 AGENTS §2 第 6 步拆成两项（各自更新矩阵与依赖），不改变本清单的覆盖。
 
 Review 后新增 T-16 / T-17 共 2.5 小时，合计 17 项 / 28 小时；不新增 AC。Handoff 新发现 H-01 / H-02 只登记为后续候选，不是已批准的实施任务，不计工时；本阶段不改生产代码。T-16 补强 AC-001-4 / AC-003-1 / AC-003-4 / AC-004-5 / AC-007-3 / AC-007-4，T-17 补齐 AC-009-1 / AC-009-2 的收敛证据；P3 台账不是已获批准的实施任务，不计入上述工时。
+
+2026-10-28 恢复追加 T-18（H-01，1 小时，已授权待修复、未实施），合计 18 项 / 29 小时；不新增 AC，不改冻结 spec。H-02 留待 v2、未修复，不计工时；11 项已接受 P3 不在 T-18 范围内。
