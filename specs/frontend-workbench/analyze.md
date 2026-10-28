@@ -128,3 +128,12 @@ HISTORY        plan.md / review.md 相对基线只有新增行；tasks.md 只改
 | Checklist / 人工 | Checklist 70 checked / 0 unchecked（未改）；manual 0 checked / 8 unchecked（未改） |
 
 **结论：无 spec / plan / tasks 冲突、缺口或歧义，T-19 可进入 Implement。** 首次分析未发现需回修项，未重复运行。本结论不代表已采集、已收敛或 Review 通过。
+
+## Handoff 合并主线后的只读复查（T-19，2026-10-28）
+
+- 执行者：Handoff = claude-opus-5-5 via anthropic；只读，不改 spec / Checklist / manual。
+- 起因：`origin/main` 由 `44845c8` 前移到 `90187f7`（PR #9 docs/agent-workflow-reshape，13 份 Markdown：AGENTS 新增 D-020 ~ D-024 原则行与 candidates 指针、HANDOFF.md、docs/agent/candidates、architecture、designUI、interaction、plan、5 份 ADR、specs/README 新增跨 feature 待办）。本分支 `merge --no-ff origin/main` → `1a625e7`，无冲突（自动合并）。
+- 复查：AGENTS §2 工作流与 §6 模型路由未变；main 新文档是后续目标——designUI §3.2 写明 Phase 2B 焦点带目标“不给已冻结或在审的 spec 追加义务”，§3.10 保留“v1 已交付地基、不在 v1 代码上回改”；未给冻结 spec 45 条 AC 追加义务，T-19 仍是 v1 AC-009-2 / M-08 的证据补全，不偏离。根 `HANDOFF.md` 为 docs 任务历史交接，原样保留。
+- 边界：`git diff --quiet 167b337..HEAD -- frontend design backend specs/frontend-workbench/{spec,checklist,manual-acceptance,review-h01}.md specs/frontend-workbench/assets/handoff` 及新 PNG / JSON 与 4 张图注特写 → exit 0；`git diff origin/main..HEAD -- AGENTS.md HANDOFF.md docs frontend design backend` 为空；`specs/README.md` 相对 main 仅本 feature 一行不同，D-020 ~ D-024 跨 feature 待办 4 行与说明行完整。
+
+**结论：无新增冲突、缺口或歧义；不需新增任务。**

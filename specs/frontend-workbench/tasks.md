@@ -350,7 +350,7 @@
 
 | 发现 | 当前处理 | 内容 / 建议 | 验收引用 |
 |---|---|---|---|
-| A-H01-P3-1（原件编号 P3-1） | ~~未补采，待 Walter 决定修 / 接受为后续~~（Review 时点）→ **已接受为后续（Walter 2026-10-28 Gate 2 回复“好的”），未补采**；与原 11 项已接受 P3 分开计。→ 2026-10-28 用户“继续”后执行 T-19：**已补采，待 Walter 人工复核 M-08**；新整图与程序生成元数据见 `assets/h01-fix-20261028/after-1440x900-full.png` / `capture-full-1440.json`（未关闭，尚待本轮 Converge / 独立 Review / Gate 2）。→ Converge：T-19 证据补采范围已收敛（converge §10）；**仍未关闭，待独立 A Review / 本轮 Gate 2 / Walter 复核 M-08**。→ 独立 A Review 通过（`167b337`，[review-m08.md](review-m08.md)）；仍为**已补采，待 Walter 复核 M-08**，待本轮 Gate 2，未关闭 | `assets/handoff/m08-chart-1440.png` 仍为修复前原件，1440 不受 H-02 影响；建议 Walter 复核 M-08 前补采修复后 1440×900 整图到新目录（不覆盖旧图），或在 Gate 2 材料中明确当前看图路径为 `assets/h01-fix-20261028/after-1440x900.png` / `after-960x900.png`（图注特写）。来源：[review-h01.md §3](review-h01.md) | AC-009-2、M-08 |
+| A-H01-P3-1（原件编号 P3-1） | ~~未补采，待 Walter 决定修 / 接受为后续~~（Review 时点）→ **已接受为后续（Walter 2026-10-28 Gate 2 回复“好的”），未补采**；与原 11 项已接受 P3 分开计。→ 2026-10-28 用户“继续”后执行 T-19：**已补采，待 Walter 人工复核 M-08**；新整图与程序生成元数据见 `assets/h01-fix-20261028/after-1440x900-full.png` / `capture-full-1440.json`（未关闭，尚待本轮 Converge / 独立 Review / Gate 2）。→ Converge：T-19 证据补采范围已收敛（converge §10）；**仍未关闭，待独立 A Review / 本轮 Gate 2 / Walter 复核 M-08**。→ 独立 A Review 通过（`167b337`，[review-m08.md](review-m08.md)）；仍为**已补采，待 Walter 复核 M-08**，待本轮 Gate 2，未关闭。→ 本轮 Gate 2 已批准（Walter 2026-10-28“确认”，review §18），T-19 Handoff（review §19）；仍**已补采，待 Walter 复核 M-08**，未关闭 | `assets/handoff/m08-chart-1440.png` 仍为修复前原件，1440 不受 H-02 影响；建议 Walter 复核 M-08 前补采修复后 1440×900 整图到新目录（不覆盖旧图），或在 Gate 2 材料中明确当前看图路径为 `assets/h01-fix-20261028/after-1440x900.png` / `after-960x900.png`（图注特写）。来源：[review-h01.md §3](review-h01.md) | AC-009-2、M-08 |
 
 ## M-08 整图证据补采任务（2026-10-28，追加；不变更冻结 spec，不改功能）
 
@@ -358,7 +358,7 @@
 
 - **上下文**：plan §8、review §15。A-H01-P3-1：`assets/handoff/m08-chart-1440.png` 仍为修复前整图，`assets/h01-fix-20261028/` 只有图注特写。本任务只补一张修复后 1440 整图与可复核元数据，为 Walter 复核 M-08 提供入口；不改功能、不改 AC、不代签。
 - **修改范围**：新增 `specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900-full.png` 与 `capture-full-1440.json`（均由采集脚本真实生成，不手改）；同目录 `README.md` 末尾追加入口与溯源；`manual-acceptance.md` 仅在 M-08 的“截图证据”行追加新链接、在 AI 观察后追加本轮 AI 采集补充记录（保留旧观察与旧链接，不改任何 `[ ]` / `[x]`）；`tasks.md` 只更新本任务状态与实施证据。采集脚本 `%TEMP%/fw-m08-evidence.nY5thg/capture-full.mjs` 不入库。不改 `frontend/`、`design/`、`docs/`、spec、Checklist、`review-h01.md`、其他 M 项、旧 60 张图与 4 张图注特写，不涉及 H-02 / v2。
-- **依赖**：T-18（已合并 `44845c8`）　**预计**：0.5 h　**状态**：已补采、定向验证通过；待 Walter 人工复核 M-08，尚未本轮 Converge / 独立 Review / Gate 2（2026-10-28）。→ Converge 已收敛（T-19 证据补采范围，converge §10；claude-opus-5-5 via anthropic）；尚未独立 Review / 本轮 Gate 2。→ 独立 A Review 通过（[review-m08.md](review-m08.md)，0 P1 / 0 P2 / 1 P3）；待 Walter 本轮 Gate 2。
+- **依赖**：T-18（已合并 `44845c8`）　**预计**：0.5 h　**状态**：已补采、定向验证通过；待 Walter 人工复核 M-08，尚未本轮 Converge / 独立 Review / Gate 2（2026-10-28）。→ Converge 已收敛（T-19 证据补采范围，converge §10；claude-opus-5-5 via anthropic）；尚未独立 Review / 本轮 Gate 2。→ 独立 A Review 通过（[review-m08.md](review-m08.md)，0 P1 / 0 P2 / 1 P3）；待 Walter 本轮 Gate 2。→ **Gate 2 已批准**（Walter 2026-10-28“确认”）；已合并主线 `90187f7` 并 Handoff（review §19）。
 - **执行**：Implement 按 AGENTS §6（首选 `openai/gpt-6-astra`，回退 `deepseek/deepseek-flash`），分支 `docs/frontend-workbench-m08-evidence`，基线 `44845c8`；提交信息以 `T-19` 开头。
 - **完成标准**：
   1. 脚本在 1440×900、本机 Chrome、内置 mock normal 下对整个 `[data-chart-id="market-board"]` figure 截图；截图前脚本自身断言 plan §8.2 五项（就绪、figure 完全在 viewport 与 `.modules-container` 可视矩形内、图注与 SVG 折线 / 轴文字完整、图注一行、背景 transparent 且序列 id = fixture），任一失败不出图、exit ≠ 0；成功 exit 0 并生成 PNG 与 plan §8.3 全部字段的 JSON（JSON 中 SHA256 与文件实际一致）（AC-009-2、M-08）。
@@ -383,7 +383,7 @@
 
 | 发现 | 当前处理 | 内容 | 验收引用 |
 |---|---|---|---|
-| A-M08-P3-1（原件编号 P3-1） | **待 Walter 裁定 / 风险接受**；本轮无须返工，不新增任务 | `capture-full-1440.json` 的 `frontendDiffExit`、`frontendUntrackedFiles`、`checks.*` 为断言守卫后的字面常量，数据真实且独立复采一致，仅证据链可读性；若临时脚本沉淀为通用工具再改为计算值。来源 [review-m08.md §5](review-m08.md) | AC-009-2、M-08 |
+| A-M08-P3-1（原件编号 P3-1） | ~~待 Walter 裁定 / 风险接受~~（Review 时点）→ **已接受为非阻断备注（Walter 2026-10-28 Gate 2“确认”）**；本轮不返工，不新增任务 | `capture-full-1440.json` 的 `frontendDiffExit`、`frontendUntrackedFiles`、`checks.*` 为断言守卫后的字面常量，数据真实且独立复采一致，仅证据链可读性；若临时脚本沉淀为通用工具再改为计算值。来源 [review-m08.md §5](review-m08.md) | AC-009-2、M-08 |
 
 ## AC 覆盖
 
@@ -414,7 +414,7 @@
 | AC-008-2 | T-02、T-05 |
 | AC-008-3 | T-05 |
 | AC-009-1 | T-01、T-15、T-17；T-18（全量回归 559 + 68 / build 通过，`771f2af`） |
-| AC-009-2 | T-15、T-17；T-19（M-08 修复后 1440 整图证据：已补采 `bf04f69`、定向验证通过、Converge 已收敛；独立 A 通过 [review-m08.md](review-m08.md)，待 Gate 2） |
+| AC-009-2 | T-15、T-17；T-19（M-08 修复后 1440 整图证据：已补采 `bf04f69`、定向验证通过、Converge 已收敛；独立 A 通过 [review-m08.md](review-m08.md)，Gate 2 已批准、Handoff） |
 
 原始实施合计 15 个任务，预计约 25.5 小时。T-08 与 T-13 各承担 5–6 个 AC，若实施时超过 2 h，按 AGENTS §2 第 6 步拆成两项（各自更新矩阵与依赖），不改变本清单的覆盖。
 

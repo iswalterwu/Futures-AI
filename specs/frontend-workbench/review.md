@@ -1,6 +1,8 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **当前状态（2026-10-28，T-19 独立 Review）**：独立 A（claude-fable-5-1 via anthropic）对 `167b337` 定向 Review **通过**（0 P1 / 0 P2 / 1 P3，A-M08-P3-1 待 Walter 裁定），原件 [review-m08.md](review-m08.md)、记录 §17；**本轮 Gate 2 待 Walter 明确批准**，未 Handoff；A-H01-P3-1 已补采、待 Walter 复核 M-08，未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
+> **当前状态（2026-10-28，T-19 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“确认”——**T-19 证据补采 Gate 2 已批准**，A-M08-P3-1 接受为非阻断备注（§18）；已合并主线 `90187f7` 并 Handoff（§19，PR 链接见 §19.4）。A-H01-P3-1 已补采、待 Walter 复核 M-08；M-01 ~ M-08 仍待 Walter 人工复核（8 项未勾）；H-02 留待 v2、未修复。
+
+> **（Review 时点指针）当前状态（2026-10-28，T-19 独立 Review）**：独立 A（claude-fable-5-1 via anthropic）对 `167b337` 定向 Review **通过**（0 P1 / 0 P2 / 1 P3，A-M08-P3-1 待 Walter 裁定），原件 [review-m08.md](review-m08.md)、记录 §17；**本轮 Gate 2 待 Walter 明确批准**，未 Handoff；A-H01-P3-1 已补采、待 Walter 复核 M-08，未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
 
 > **（Converge 时点指针）当前状态（2026-10-28，M-08 整图证据补采）**：T-19 已补采修复后 1440 整图（`bf04f69`），Converge 判定 T-19 证据补采范围已收敛（§16、[converge.md §10](converge.md)）；**待独立 A Review，本轮 Gate 2 未发生**；A-H01-P3-1 未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
 
@@ -550,3 +552,43 @@ Handoff 核对：`frontend/` 树 `03fda1de…` 与 A 审查目标 `869cb71` 相�
 集成核对：审后实现与证据未变（`git diff --quiet 167b337..HEAD -- frontend design backend docs AGENTS.md spec checklist manual-acceptance 新 PNG / JSON` → exit 0）；`review-h01.md`、旧 60 图与 4 张图注特写未变；manual 0 checked / 8 unchecked。
 
 **待办**：Walter 本轮 Gate 2（含是否接受 A-M08-P3-1）；Walter 人工复核 M-01 ~ M-08；H-02 留待 v2；旧 11 项 P3 未扩改。用户“继续”只授权补采，不是对本 Review 的提前批准。
+
+## 18. T-19 本轮 Gate 2 用户确认记录（2026-10-28，追加）
+
+> §0 ~ §17 为历史，不改写。
+
+- **协调会话的完整 Gate 2 问题**：「Gate 2：是否确认本次补采证据，并接受上述非阻断备注，随后提交 PR 合入 `main`？」
+- **Walter 原话**：「确认」（2026-10-28）。
+- **批准范围**：T-19 修复后 1440 整图、生成元数据与入口，及独立 A 通过结论（[review-m08.md](review-m08.md)）；**A-M08-P3-1 接受为非阻断备注**（JSON 部分字段为断言守卫后常量，数据真实；本轮不返工，仅在脚本将来通用化时考虑计算值化），不新增实施任务；进入 PR / 合并。
+- **不包含**：M-01 ~ M-08 人工签字（8 项仍不勾）；A-H01-P3-1 人工关闭（保持“已补采，待 Walter 复核 M-08”）；旧 11 项 P3；H-02 / v2。
+
+## 19. T-19 Handoff 记录（2026-10-28，追加）
+
+> **执行者**：Handoff = claude-opus-5-5 via anthropic（bridge 本窗口额度耗尽，不重试）。只做记录、合并主线与发布；未改代码 / 测试 / 截图 / 元数据，未重跑测试。
+
+### 19.1 完成项
+
+- 新证据：[after-1440x900-full.png](assets/h01-fix-20261028/after-1440x900-full.png)（sha256 `15c08282…a678`）与程序生成的 [capture-full-1440.json](assets/h01-fix-20261028/capture-full-1440.json)；来源 provenance 保持采集时的 `44845c8` / `frontend` 树 `03fda1de…`（不改写为合并后的提交）。入口：证据 [README](assets/h01-fix-20261028/README.md)、manual M-08 两行链接 / 采集说明。
+- 流程：Plan / Tasks / Analyze（`3c9d714`）→ Implement（`bf04f69`）→ Converge（`167b337`）→ 独立 A 通过（`88d3975` 归档原件）→ Gate 2 已批准（§18）→ 合并主线（`1a625e7`）→ 本 Handoff。
+
+### 19.2 验收证据摘要（引用既有实测，Handoff 未重跑）
+
+| 来源 | 内容 | 结果 |
+|---|---|---|
+| Implement | 采集脚本 | 首跑 exit 1（截图前断言口径，未出图）→ exit 0 |
+| Implement | 定向 e2e `AC-006-3\|AC-006-4\|AC-001-4`；`test:unit -t "AC-009-2"` | 6 passed；9 passed / 550 skipped（skipped 不计通过） |
+| 独立 A 亲跑 | 同上两组 | 6 passed；9 passed / 550 skipped，均 exit 0 |
+| 独立 A 复采 | 原脚本副本 | exit 0，PNG 与入库逐字节相同 |
+| Converge | 结论 | T-19 证据补采范围已收敛（converge §10） |
+| 旧证据 | H-01 全量 559 + 68 / build | 非本轮重跑；本仓库无 CI |
+
+### 19.3 未完成项、风险
+
+1. **M-01 ~ M-08**：仍待 Walter 人工复核（0 checked / 8 unchecked）；A-H01-P3-1 已补采，待复核 M-08。
+2. **A-M08-P3-1**：已接受为非阻断备注，未改脚本。
+3. **H-02**：留待 v2（独立负责会话），未修复；旧 11 项 P3 未修复、未扩改。
+4. 主线 PR #9 的 D-020 ~ D-024 是后续目标，不追加 v1 冻结 AC。
+
+### 19.4 PR 与合并
+
+- PR：待创建后补链接。

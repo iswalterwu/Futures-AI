@@ -210,3 +210,9 @@ Walter 2026-10-28 对本轮 Gate 2 回复“好的”：本次 H-01 修复与 A 
 > §10.1 ~ §10.3 为 Converge 时点记录，不改写。
 
 独立 A（claude-fable-5-1 via anthropic）对 `167b337` 定向 Review **通过**（0 P1 / 0 P2 / 1 P3：A-M08-P3-1 证据链可读性，待 Walter 裁定）。A 亲跑定向 e2e 6 passed、AC-009-2 单元 9 passed / 550 skipped，独立复采 PNG 与入库逐字节相同。原件 [review-m08.md](review-m08.md)，记录 [review.md §17](review.md)。**本轮 Gate 2 待 Walter**；§10.3 的限定不变。
+
+### 10.5 Gate 2 / 合并主线 / Handoff 更新（2026-10-28，追加）
+
+- Walter 2026-10-28 对本轮 Gate 2 回复“确认”（review §18）：T-19 证据与 A 通过结论获批，A-M08-P3-1 接受为非阻断备注、本轮不返工。
+- 合并 `origin/main@90187f7`（`1a625e7`，纯文档、无冲突）后复查：`git diff --quiet 167b337..HEAD -- frontend design backend specs/frontend-workbench/{spec,checklist,manual-acceptance,review-h01}.md specs/frontend-workbench/assets/handoff` 及新 PNG / JSON 与 4 张图注特写 → exit 0；`git diff origin/main..HEAD -- AGENTS.md HANDOFF.md docs frontend design backend` 为空；`specs/README.md` 相对 main 仅本 feature 一行不同，D-020 ~ D-024 跨 feature 待办 4 行与说明行完整。§10.3 收敛结论不变（T-19 证据补采范围），未重跑测试。
+- Handoff 见 [review.md §19](review.md)。仍不表示 M-01 ~ M-08 人工验收通过；H-02 未修复。

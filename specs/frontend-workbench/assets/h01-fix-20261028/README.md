@@ -91,3 +91,7 @@ H-02 未修复、留待 v2；11 项旧 P3 未扩改。该修复尚未 Converge�
 
 - 独立 A（claude-fable-5-1 via anthropic）Review **通过**；A 用原脚本副本独立复采，PNG 与本目录 `after-1440x900-full.png` 逐字节相同，JSON 仅执行者 / HEAD / 工作树 / 脚本 hash / 时间等预期差异。原件 [review-m08.md](../../review-m08.md)。
 - A-M08-P3-1：JSON 中 `checks.*` 等为断言守卫后的常量（数据真实），待 Walter 裁定。本轮 Gate 2 未批准；M-08 人工复核待 Walter。
+
+## T-19 Gate 2 / Handoff 追记（2026-10-28；以上原文不改写）
+
+- Walter 2026-10-28 对本轮 Gate 2 回复“确认”：本证据获批，A-M08-P3-1 接受为非阻断备注（本轮不改脚本 / JSON）。provenance 仍为采集时的 `44845c8`，不随合并改写。这不是 M-08 人工签字；8 项人工框仍未勾。Handoff 见 [review.md §19](../../review.md)。
