@@ -148,5 +148,8 @@ specs/<feature>/          # 每个功能性 feature 一个独立规格目录（�
 1. **回退触发** = 没有用量（额度耗尽 / 限流持续）或出现错误（鉴权失败、launcher 异常、同一请求连续失败）；不因"觉得慢"回退。回退后该阶段余下工作可留在回退模型上，下一阶段重新从首选开始。
 2. **Claude 接入通道**：所有 Claude 模型先测 `claude-bridge` 链路（`--model claude-bridge/<model>`），不成功才走官方 API key 链路（`--model anthropic/<model>`）。换通道不是换模型，不改变阶段 / 审核员身份；通道都不通才按上表回退到下一个模型。
 3. **审核员独立性**：A 必须是新开会话、与实施隔离、与实施模型不同；回退后仍须满足（表中 A 的任一候选都不与 Implement 候选重合）。
-4. **记录**：每个阶段产物头部记实际模型与通道及切换原因（如 `Plan = claude-opus-5-5 via claude-bridge`、`A = claude-opus-5-5 via anthropic（fable 额度耗尽）`）。
-5. 本节只管本仓库的开发工作流；产品运行时的角色与模型三档是另一回事（D-019，`architecture.md` §5.5）。
+4. **记录**：每个阶段产物头部记实际模型与通道及切换原因（如 `Plan = claude-opus-5-5 via claude-bridge`、`A = claude-opus-5-5 via anthropic（fable 额度耗尽）`）；派工 / 回退在 `specs/<feature>/review.md`（前期可用 `plan.md`）简记角色、任务、基线提交、实际 provider/model、失败类别；只记脱敏摘要，不记 API key、token 或完整鉴权报错。
+5. **探活与不重试**：首次使用某 Claude 模型前先做一次最小真实调用测 bridge 链路（模型在列表中可见不等于可调用）；已明确限额耗尽的通道在当前限额窗口内不反复重试，新会话或窗口重置后再测。不得擅自改用户的 provider、路由、API key 或全局 pi 配置。
+6. **只有调用失败才回退**：测试变红、Analyze 发现差距、Review 判未通过都是正常任务结果，不是换模型找"通过"的理由。所有候选都不可用 → 标 blocked 并报告，不跳过审核、不伪称完成。回退不取消 Gate 1 / Gate 2、checklist 前置条件与 §5 工程准则。
+7. **会话与工作树**：每个并行写入的 agent 用独立 git worktree / 分支，明确文件所有权、任务范围、AC、验证命令与基线提交；不共享可写目录、不同时改同一文件、不在别的 feature 分支上提交 / reset / 强推；共享文件由指定集成人串行合并；审核会话只读审查固定提交与真实 diff，除勾选 checklist 外不替实施者改代码。
+8. 本节只管本仓库的开发工作流；产品运行时的角色与模型三档是另一回事（D-019，`architecture.md` §5.5）。
