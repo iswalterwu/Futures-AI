@@ -166,6 +166,913 @@
     }
   },
   "$defs": {
+    "SourceNote": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "description": "来源用途，必填且非空。"
+        },
+        "reliability": {
+          "type": "string",
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            "unknown"
+          ],
+          "description": "来源可靠性：高 / 中 / 低 / 未知。"
+        },
+        "publishedAt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TradingDate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "材料发布日期 YYYY-MM-DD，未知时 null；不是交付物定稿时间。"
+        },
+        "validUntil": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TradingDate"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "材料有效期 YYYY-MM-DD，未知时 null。"
+        },
+        "scopeNote": {
+          "description": "口径备注；未提供时 null。",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "purpose",
+        "reliability",
+        "publishedAt",
+        "validUntil",
+        "scopeNote"
+      ],
+      "additionalProperties": false,
+      "description": "投放来源语境，不改变序列身份。"
+    },
+    "IntakeFileMeta": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "文件名；扩展名白名单 pdf / docx / xlsx / md / csv，大小写不敏感。"
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "文件字节数，只记录元数据。"
+        },
+        "type": {
+          "type": "string",
+          "description": "浏览器报告的 MIME 类型，可为空；文件白名单按扩展名校验。"
+        },
+        "lastModified": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "文件最后修改时间，Unix 毫秒。"
+        }
+      },
+      "required": [
+        "name",
+        "size",
+        "type",
+        "lastModified"
+      ],
+      "additionalProperties": false,
+      "description": "文件元数据，不包含 File 对象、正文或字节。"
+    },
+    "IntakeInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jobId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "目标作业；null 表示进入待归属池。"
+            },
+            "sourceNote": {
+              "$ref": "#/$defs/SourceNote"
+            },
+            "inputKind": {
+              "type": "string",
+              "const": "file"
+            },
+            "fileMeta": {
+              "$ref": "#/$defs/IntakeFileMeta"
+            }
+          },
+          "required": [
+            "jobId",
+            "sourceNote",
+            "inputKind",
+            "fileMeta"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jobId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "目标作业；null 表示进入待归属池。"
+            },
+            "sourceNote": {
+              "$ref": "#/$defs/SourceNote"
+            },
+            "inputKind": {
+              "type": "string",
+              "const": "url"
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1,
+              "description": "URL 字符串；仅保存，不发起抓取。"
+            }
+          },
+          "required": [
+            "jobId",
+            "sourceNote",
+            "inputKind",
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jobId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "目标作业；null 表示进入待归属池。"
+            },
+            "sourceNote": {
+              "$ref": "#/$defs/SourceNote"
+            },
+            "inputKind": {
+              "type": "string",
+              "const": "text"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "description": "粘贴正文，只存在于提交参数与内存草稿，不进入 Upload 或持久化。"
+            }
+          },
+          "required": [
+            "jobId",
+            "sourceNote",
+            "inputKind",
+            "text"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "三种投放输入，必须选择一种；只校验元数据，不解析原文。"
+    },
+    "FieldMapping": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sourceField": {
+            "type": "string",
+            "minLength": 1,
+            "description": "抽取的源字段 / 列名。"
+          },
+          "targetField": {
+            "type": "string",
+            "minLength": 1,
+            "description": "映射后的目标字段。"
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1,
+            "description": "映射字段单位，修正时一同提交。"
+          }
+        },
+        "required": [
+          "sourceField",
+          "targetField",
+          "unit"
+        ],
+        "additionalProperties": false
+      },
+      "description": "字段映射列表；空列表表示没有结构化字段。"
+    },
+    "ExtractionPreview": {
+      "type": "object",
+      "properties": {
+        "detectedType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "mock 识别类型，不代表真实解析结果。"
+        },
+        "fields": {
+          "$ref": "#/$defs/FieldMapping"
+        },
+        "unit": {
+          "description": "预览整体单位；无结构化数值时 null。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timeRange": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "$ref": "#/$defs/TradingDate"
+                },
+                "end": {
+                  "$ref": "#/$defs/TradingDate"
+                }
+              },
+              "required": [
+                "start",
+                "end"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "识别的日期范围；未知时 null。"
+        }
+      },
+      "required": [
+        "detectedType",
+        "fields",
+        "unit",
+        "timeRange"
+      ],
+      "additionalProperties": false,
+      "description": "合成抽取预览；确认前仍为待验证。"
+    },
+    "Upload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jobId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "目标作业；null 表示进入待归属池。"
+            },
+            "sourceNote": {
+              "$ref": "#/$defs/SourceNote"
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "投放唯一标识。"
+            },
+            "status": {
+              "$ref": "#/$defs/UploadStatus"
+            },
+            "mapping": {
+              "$ref": "#/$defs/FieldMapping"
+            },
+            "createdAt": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "removed": {
+              "type": "boolean",
+              "description": "仅从当前视图移除，历史锚保留。"
+            },
+            "quarantineReason": {
+              "description": "隔离样例的模拟判定原因。",
+              "type": "string",
+              "minLength": 1
+            },
+            "inputKind": {
+              "type": "string",
+              "const": "file"
+            },
+            "fileMeta": {
+              "$ref": "#/$defs/IntakeFileMeta"
+            }
+          },
+          "required": [
+            "jobId",
+            "sourceNote",
+            "id",
+            "status",
+            "mapping",
+            "createdAt",
+            "removed",
+            "inputKind",
+            "fileMeta"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jobId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "目标作业；null 表示进入待归属池。"
+            },
+            "sourceNote": {
+              "$ref": "#/$defs/SourceNote"
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "投放唯一标识。"
+            },
+            "status": {
+              "$ref": "#/$defs/UploadStatus"
+            },
+            "mapping": {
+              "$ref": "#/$defs/FieldMapping"
+            },
+            "createdAt": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "removed": {
+              "type": "boolean",
+              "description": "仅从当前视图移除，历史锚保留。"
+            },
+            "quarantineReason": {
+              "description": "隔离样例的模拟判定原因。",
+              "type": "string",
+              "minLength": 1
+            },
+            "inputKind": {
+              "type": "string",
+              "const": "url"
+            },
+            "url": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "jobId",
+            "sourceNote",
+            "id",
+            "status",
+            "mapping",
+            "createdAt",
+            "removed",
+            "inputKind",
+            "url"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jobId": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "目标作业；null 表示进入待归属池。"
+            },
+            "sourceNote": {
+              "$ref": "#/$defs/SourceNote"
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "投放唯一标识。"
+            },
+            "status": {
+              "$ref": "#/$defs/UploadStatus"
+            },
+            "mapping": {
+              "$ref": "#/$defs/FieldMapping"
+            },
+            "createdAt": {
+              "$ref": "#/$defs/Timestamp"
+            },
+            "removed": {
+              "type": "boolean",
+              "description": "仅从当前视图移除，历史锚保留。"
+            },
+            "quarantineReason": {
+              "description": "隔离样例的模拟判定原因。",
+              "type": "string",
+              "minLength": 1
+            },
+            "inputKind": {
+              "type": "string",
+              "const": "text"
+            }
+          },
+          "required": [
+            "jobId",
+            "sourceNote",
+            "id",
+            "status",
+            "mapping",
+            "createdAt",
+            "removed",
+            "inputKind"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "投放持久化记录；只含元数据 / 来源语境 / 映射 / 状态，拒绝粘贴正文与完整提交参数。"
+    },
+    "DataSourceRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "数据源锚。"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "来源名称。"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "additionalProperties": false,
+      "description": "处理台数据源引用，不复制源数据。"
+    },
+    "SeriesRef": {
+      "type": "object",
+      "properties": {
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "整条序列的数值单位。"
+        },
+        "freq": {
+          "type": "string",
+          "minLength": 1,
+          "description": "整条序列的数据频率，例如 1d。"
+        },
+        "semantic": {
+          "$ref": "#/$defs/Semantic"
+        },
+        "asOf": {
+          "description": "整条序列的数据截至时间，ISO 8601 带偏移。",
+          "$ref": "#/$defs/Timestamp"
+        },
+        "seriesId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "整条序列的规范 ID，用于溯源。"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "序列显示名称。"
+        },
+        "sourceId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "所属 DataSourceRef.id。"
+        }
+      },
+      "required": [
+        "unit",
+        "freq",
+        "semantic",
+        "asOf",
+        "seriesId",
+        "label",
+        "sourceId"
+      ],
+      "additionalProperties": false,
+      "description": "处理台序列引用及元数据，不含观测点。"
+    },
+    "RecipeStep": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "步骤标识。"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "加工步骤说明。"
+        },
+        "input": {
+          "type": "string",
+          "minLength": 1,
+          "description": "单链输入锚：源序列 / 表或上一项的 output。"
+        },
+        "output": {
+          "type": "string",
+          "minLength": 1,
+          "description": "本步骤输出锚，供下一步输入引用。"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "input",
+        "output"
+      ],
+      "additionalProperties": false,
+      "description": "按列表顺序呈现的单链配方步骤；只读，不提供 DAG 编辑。"
+    },
+    "LineageAnchor": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "observation"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "ref",
+            "label"
+          ],
+          "additionalProperties": false,
+          "description": "观测锚：ref 定位观测（如 seriesId@ts）。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "tableRow"
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "ref",
+            "label"
+          ],
+          "additionalProperties": false,
+          "description": "表行锚：ref 定位表行（如 tableId#row）。"
+        }
+      ],
+      "description": "派生值根来源定位；只引用、不复制原文。"
+    },
+    "DerivedValue": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "description": "派生值，null 表示缺数，不等于零。",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "派生值单位。"
+        },
+        "lineage": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LineageAnchor"
+          },
+          "description": "至少一个观测或表行来源锚。"
+        }
+      },
+      "required": [
+        "value",
+        "unit",
+        "lineage"
+      ],
+      "additionalProperties": false,
+      "description": "可回溯来源的派生值。"
+    },
+    "ParamSet": {
+      "type": "object",
+      "properties": {
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "输出单位。"
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "时区。"
+        },
+        "calendar": {
+          "type": "string",
+          "minLength": 1,
+          "description": "日历口径。"
+        },
+        "resample": {
+          "type": "string",
+          "minLength": 1,
+          "description": "重采样口径。"
+        },
+        "aggregation": {
+          "type": "string",
+          "minLength": 1,
+          "description": "聚合方式。"
+        }
+      },
+      "required": [
+        "unit",
+        "timezone",
+        "calendar",
+        "resample",
+        "aggregation"
+      ],
+      "additionalProperties": false,
+      "description": "加工参数；v1 保存口径字符串，不执行真实数据处理。"
+    },
+    "ParamChange": {
+      "type": "object",
+      "properties": {
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "输出单位。"
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1,
+          "description": "时区。"
+        },
+        "calendar": {
+          "type": "string",
+          "minLength": 1,
+          "description": "日历口径。"
+        },
+        "resample": {
+          "type": "string",
+          "minLength": 1,
+          "description": "重采样口径。"
+        },
+        "aggregation": {
+          "type": "string",
+          "minLength": 1,
+          "description": "聚合方式。"
+        }
+      },
+      "additionalProperties": false,
+      "description": "参数补丁：至少一项 unit / timezone / calendar / resample / aggregation，不接受其他参数。"
+    },
+    "ReconciliationDiff": {
+      "type": "object",
+      "properties": {
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "显示单位；无量纲值也须明确填写单位。"
+        },
+        "freq": {
+          "type": "string",
+          "minLength": 1,
+          "description": "数据频率，例如 1d、1w、1mo。"
+        },
+        "semantic": {
+          "$ref": "#/$defs/Semantic"
+        },
+        "asOf": {
+          "description": "该数值的数据截至时间，ISO 8601 带偏移。",
+          "$ref": "#/$defs/Timestamp"
+        },
+        "seriesId": {
+          "description": "可选的规范序列 ID，用于溯源。",
+          "type": "string",
+          "minLength": 1
+        },
+        "sources": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/DataSourceRef"
+            },
+            {
+              "$ref": "#/$defs/DataSourceRef"
+            }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "左右两个来源，顺序对应行中的 leftValue / rightValue。"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ts": {
+                "$ref": "#/$defs/Timestamp"
+              },
+              "leftValue": {
+                "description": "左来源原值。",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "rightValue": {
+                "description": "右来源原值。",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "difference": {
+                "description": "契约给出的差值，null 表示不可比较。",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "differs": {
+                "type": "boolean",
+                "description": "契约给出的差异标记，UI 不重新计算。"
+              }
+            },
+            "required": [
+              "ts",
+              "leftValue",
+              "rightValue",
+              "difference",
+              "differs"
+            ],
+            "additionalProperties": false
+          },
+          "description": "对账差异行；空行集表示无差异。"
+        }
+      },
+      "required": [
+        "unit",
+        "freq",
+        "semantic",
+        "asOf",
+        "sources",
+        "rows"
+      ],
+      "additionalProperties": false,
+      "description": "同序列两来源的对账，单位 / 频率 / 语义 / asOf / seriesId 复用 Figure 元数据。"
+    },
+    "EvidenceAnchor": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "assertion",
+            "series",
+            "source"
+          ],
+          "description": "证据锚类型：断言 / 序列 / 来源。"
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "目标引用，供来源跳转使用。"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "证据显示名称。"
+        }
+      },
+      "required": [
+        "kind",
+        "ref",
+        "label"
+      ],
+      "additionalProperties": false,
+      "description": "结论证据链锚，不计算独立证据权重。"
+    },
+    "Conclusion": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "结论正文，删除 / 否决后仍保留。"
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "origin": {
+          "$ref": "#/$defs/Origin"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvidenceAnchor"
+          },
+          "description": "证据链，显示数量直接取数组长度；允许空链，不另存数字字段。"
+        },
+        "deleted": {
+          "description": "删除 tombstone；旧内容与旧版本保留。",
+          "type": "boolean"
+        },
+        "vetoed": {
+          "description": "否决 tombstone；旧内容与旧版本保留。",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "status",
+        "source",
+        "origin",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "description": "分析结论卡及其证据链、状态和来源。"
+    },
     "StageSummary": {
       "type": "object",
       "properties": {

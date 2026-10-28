@@ -128,6 +128,248 @@
 类型中的枚举与常量直接来自 schema；必填不等于非空，null、空列表与零的语义见字段说明。
 完整格式、范围与长度约束见 `schema.json`；AgentRun 的唯一终态、同次运行与 stepId 单调约束还须遵守通用约定，不能只依赖 JSON Schema。
 
+### `SourceNote`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 投放来源语境，不改变序列身份。 |
+| `$.purpose` | 是 | `string` | 来源用途，必填且非空。 |
+| `$.reliability` | 是 | `"high" &#124; "medium" &#124; "low" &#124; "unknown"` | 来源可靠性：高 / 中 / 低 / 未知。 |
+| `$.publishedAt` | 是 | `TradingDate &#124; null` | 材料发布日期 YYYY-MM-DD，未知时 null；不是交付物定稿时间。 |
+| `$.publishedAt.anyOf[0]` | 是 | `TradingDate` | 交易日，YYYY-MM-DD。 |
+| `$.publishedAt.anyOf[1]` | 是 | `null` |  |
+| `$.validUntil` | 是 | `TradingDate &#124; null` | 材料有效期 YYYY-MM-DD，未知时 null。 |
+| `$.validUntil.anyOf[0]` | 是 | `TradingDate` | 交易日，YYYY-MM-DD。 |
+| `$.validUntil.anyOf[1]` | 是 | `null` |  |
+| `$.scopeNote` | 是 | `string &#124; null` | 口径备注；未提供时 null。 |
+
+### `IntakeFileMeta`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 文件元数据，不包含 File 对象、正文或字节。 |
+| `$.name` | 是 | `string` | 文件名；扩展名白名单 pdf / docx / xlsx / md / csv，大小写不敏感。 |
+| `$.size` | 是 | `integer` | 文件字节数，只记录元数据。 |
+| `$.type` | 是 | `string` | 浏览器报告的 MIME 类型，可为空；文件白名单按扩展名校验。 |
+| `$.lastModified` | 是 | `integer` | 文件最后修改时间，Unix 毫秒。 |
+
+### `IntakeInput`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object &#124; object &#124; object` | 三种投放输入，必须选择一种；只校验元数据，不解析原文。 |
+| `$.oneOf[0]` | 是 | `object` |  |
+| `$.oneOf[0].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
+| `$.oneOf[0].jobId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[0].jobId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[0].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
+| `$.oneOf[0].inputKind` | 是 | `"file"` |  |
+| `$.oneOf[0].fileMeta` | 是 | `IntakeFileMeta` | 文件元数据，不包含 File 对象、正文或字节。 |
+| `$.oneOf[1]` | 是 | `object` |  |
+| `$.oneOf[1].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
+| `$.oneOf[1].jobId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[1].jobId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[1].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
+| `$.oneOf[1].inputKind` | 是 | `"url"` |  |
+| `$.oneOf[1].url` | 是 | `string` | URL 字符串；仅保存，不发起抓取。 |
+| `$.oneOf[2]` | 是 | `object` |  |
+| `$.oneOf[2].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
+| `$.oneOf[2].jobId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[2].jobId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[2].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
+| `$.oneOf[2].inputKind` | 是 | `"text"` |  |
+| `$.oneOf[2].text` | 是 | `string` | 粘贴正文，只存在于提交参数与内存草稿，不进入 Upload 或持久化。 |
+
+### `FieldMapping`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object[]` | 字段映射列表；空列表表示没有结构化字段。 |
+| `$[]` | 是 | `object` |  |
+| `$[].sourceField` | 是 | `string` | 抽取的源字段 / 列名。 |
+| `$[].targetField` | 是 | `string` | 映射后的目标字段。 |
+| `$[].unit` | 是 | `string` | 映射字段单位，修正时一同提交。 |
+
+### `ExtractionPreview`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 合成抽取预览；确认前仍为待验证。 |
+| `$.detectedType` | 是 | `string` | mock 识别类型，不代表真实解析结果。 |
+| `$.fields` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
+| `$.unit` | 是 | `string &#124; null` | 预览整体单位；无结构化数值时 null。 |
+| `$.timeRange` | 是 | `object &#124; null` | 识别的日期范围；未知时 null。 |
+| `$.timeRange.anyOf[0]` | 是 | `object` |  |
+| `$.timeRange.anyOf[0].start` | 是 | `TradingDate` | 交易日，YYYY-MM-DD。 |
+| `$.timeRange.anyOf[0].end` | 是 | `TradingDate` | 交易日，YYYY-MM-DD。 |
+| `$.timeRange.anyOf[1]` | 是 | `null` |  |
+
+### `Upload`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object &#124; object &#124; object` | 投放持久化记录；只含元数据 / 来源语境 / 映射 / 状态，拒绝粘贴正文与完整提交参数。 |
+| `$.oneOf[0]` | 是 | `object` |  |
+| `$.oneOf[0].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
+| `$.oneOf[0].jobId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[0].jobId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[0].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
+| `$.oneOf[0].id` | 是 | `string` | 投放唯一标识。 |
+| `$.oneOf[0].status` | 是 | `UploadStatus` | 抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。 |
+| `$.oneOf[0].mapping` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
+| `$.oneOf[0].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[0].removed` | 是 | `boolean` | 仅从当前视图移除，历史锚保留。 |
+| `$.oneOf[0].quarantineReason` | 否 | `string` | 隔离样例的模拟判定原因。 |
+| `$.oneOf[0].inputKind` | 是 | `"file"` |  |
+| `$.oneOf[0].fileMeta` | 是 | `IntakeFileMeta` | 文件元数据，不包含 File 对象、正文或字节。 |
+| `$.oneOf[1]` | 是 | `object` |  |
+| `$.oneOf[1].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
+| `$.oneOf[1].jobId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[1].jobId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[1].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
+| `$.oneOf[1].id` | 是 | `string` | 投放唯一标识。 |
+| `$.oneOf[1].status` | 是 | `UploadStatus` | 抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。 |
+| `$.oneOf[1].mapping` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
+| `$.oneOf[1].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[1].removed` | 是 | `boolean` | 仅从当前视图移除，历史锚保留。 |
+| `$.oneOf[1].quarantineReason` | 否 | `string` | 隔离样例的模拟判定原因。 |
+| `$.oneOf[1].inputKind` | 是 | `"url"` |  |
+| `$.oneOf[1].url` | 是 | `string` |  |
+| `$.oneOf[2]` | 是 | `object` |  |
+| `$.oneOf[2].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
+| `$.oneOf[2].jobId.anyOf[0]` | 是 | `string` |  |
+| `$.oneOf[2].jobId.anyOf[1]` | 是 | `null` |  |
+| `$.oneOf[2].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
+| `$.oneOf[2].id` | 是 | `string` | 投放唯一标识。 |
+| `$.oneOf[2].status` | 是 | `UploadStatus` | 抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。 |
+| `$.oneOf[2].mapping` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
+| `$.oneOf[2].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.oneOf[2].removed` | 是 | `boolean` | 仅从当前视图移除，历史锚保留。 |
+| `$.oneOf[2].quarantineReason` | 否 | `string` | 隔离样例的模拟判定原因。 |
+| `$.oneOf[2].inputKind` | 是 | `"text"` |  |
+
+### `DataSourceRef`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 处理台数据源引用，不复制源数据。 |
+| `$.id` | 是 | `string` | 数据源锚。 |
+| `$.name` | 是 | `string` | 来源名称。 |
+
+### `SeriesRef`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 处理台序列引用及元数据，不含观测点。 |
+| `$.unit` | 是 | `string` | 整条序列的数值单位。 |
+| `$.freq` | 是 | `string` | 整条序列的数据频率，例如 1d。 |
+| `$.semantic` | 是 | `Semantic` | market 为行情涨跌；analysis 为分析增减（红表示负）。 |
+| `$.asOf` | 是 | `Timestamp` | 整条序列的数据截至时间，ISO 8601 带偏移。 |
+| `$.seriesId` | 是 | `string` | 整条序列的规范 ID，用于溯源。 |
+| `$.label` | 是 | `string` | 序列显示名称。 |
+| `$.sourceId` | 是 | `string` | 所属 DataSourceRef.id。 |
+
+### `RecipeStep`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 按列表顺序呈现的单链配方步骤；只读，不提供 DAG 编辑。 |
+| `$.id` | 是 | `string` | 步骤标识。 |
+| `$.label` | 是 | `string` | 加工步骤说明。 |
+| `$.input` | 是 | `string` | 单链输入锚：源序列 / 表或上一项的 output。 |
+| `$.output` | 是 | `string` | 本步骤输出锚，供下一步输入引用。 |
+
+### `LineageAnchor`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object &#124; object` | 派生值根来源定位；只引用、不复制原文。 |
+| `$.oneOf[0]` | 是 | `object` | 观测锚：ref 定位观测（如 seriesId@ts）。 |
+| `$.oneOf[0].kind` | 是 | `"observation"` |  |
+| `$.oneOf[0].ref` | 是 | `string` |  |
+| `$.oneOf[0].label` | 是 | `string` |  |
+| `$.oneOf[1]` | 是 | `object` | 表行锚：ref 定位表行（如 tableId#row）。 |
+| `$.oneOf[1].kind` | 是 | `"tableRow"` |  |
+| `$.oneOf[1].ref` | 是 | `string` |  |
+| `$.oneOf[1].label` | 是 | `string` |  |
+
+### `DerivedValue`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 可回溯来源的派生值。 |
+| `$.value` | 是 | `number &#124; null` | 派生值，null 表示缺数，不等于零。 |
+| `$.unit` | 是 | `string` | 派生值单位。 |
+| `$.lineage` | 是 | `LineageAnchor[]` | 至少一个观测或表行来源锚。 |
+| `$.lineage[]` | 是 | `LineageAnchor` | 派生值根来源定位；只引用、不复制原文。 |
+
+### `ParamSet`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 加工参数；v1 保存口径字符串，不执行真实数据处理。 |
+| `$.unit` | 是 | `string` | 输出单位。 |
+| `$.timezone` | 是 | `string` | 时区。 |
+| `$.calendar` | 是 | `string` | 日历口径。 |
+| `$.resample` | 是 | `string` | 重采样口径。 |
+| `$.aggregation` | 是 | `string` | 聚合方式。 |
+
+### `ParamChange`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 参数补丁：至少一项 unit / timezone / calendar / resample / aggregation，不接受其他参数。 |
+| `$.unit` | 否 | `string` | 输出单位。 |
+| `$.timezone` | 否 | `string` | 时区。 |
+| `$.calendar` | 否 | `string` | 日历口径。 |
+| `$.resample` | 否 | `string` | 重采样口径。 |
+| `$.aggregation` | 否 | `string` | 聚合方式。 |
+
+### `ReconciliationDiff`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 同序列两来源的对账，单位 / 频率 / 语义 / asOf / seriesId 复用 Figure 元数据。 |
+| `$.unit` | 是 | `string` | 显示单位；无量纲值也须明确填写单位。 |
+| `$.freq` | 是 | `string` | 数据频率，例如 1d、1w、1mo。 |
+| `$.semantic` | 是 | `Semantic` | market 为行情涨跌；analysis 为分析增减（红表示负）。 |
+| `$.asOf` | 是 | `Timestamp` | 该数值的数据截至时间，ISO 8601 带偏移。 |
+| `$.seriesId` | 否 | `string` | 可选的规范序列 ID，用于溯源。 |
+| `$.sources` | 是 | `[DataSourceRef, DataSourceRef]` | 左右两个来源，顺序对应行中的 leftValue / rightValue。 |
+| `$.sources[0]` | 是 | `DataSourceRef` | 处理台数据源引用，不复制源数据。 |
+| `$.sources[1]` | 是 | `DataSourceRef` | 处理台数据源引用，不复制源数据。 |
+| `$.rows` | 是 | `object[]` | 对账差异行；空行集表示无差异。 |
+| `$.rows[]` | 是 | `object` |  |
+| `$.rows[].ts` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.rows[].leftValue` | 是 | `number &#124; null` | 左来源原值。 |
+| `$.rows[].rightValue` | 是 | `number &#124; null` | 右来源原值。 |
+| `$.rows[].difference` | 是 | `number &#124; null` | 契约给出的差值，null 表示不可比较。 |
+| `$.rows[].differs` | 是 | `boolean` | 契约给出的差异标记，UI 不重新计算。 |
+
+### `EvidenceAnchor`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 结论证据链锚，不计算独立证据权重。 |
+| `$.kind` | 是 | `"assertion" &#124; "series" &#124; "source"` | 证据锚类型：断言 / 序列 / 来源。 |
+| `$.ref` | 是 | `string` | 目标引用，供来源跳转使用。 |
+| `$.label` | 是 | `string` | 证据显示名称。 |
+
+### `Conclusion`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 分析结论卡及其证据链、状态和来源。 |
+| `$.id` | 是 | `string` |  |
+| `$.text` | 是 | `string` | 结论正文，删除 / 否决后仍保留。 |
+| `$.status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.evidence` | 是 | `EvidenceAnchor[]` | 证据链，显示数量直接取数组长度；允许空链，不另存数字字段。 |
+| `$.evidence[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
+| `$.deleted` | 否 | `boolean` | 删除 tombstone；旧内容与旧版本保留。 |
+| `$.vetoed` | 否 | `boolean` | 否决 tombstone；旧内容与旧版本保留。 |
+
 ### `StageSummary`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |

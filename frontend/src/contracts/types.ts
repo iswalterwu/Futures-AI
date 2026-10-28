@@ -276,7 +276,125 @@ function hasJobReason(job: { status: JobStatus; reason: string | null }) {
   return !['failed', 'cancelled'].includes(job.status) || (job.reason !== null && job.reason.trim().length > 0)
 }
 
+export const SourceNoteSchema = z.strictObject({
+  purpose: z.string().trim().min(1).describe('来源用途，必填且非空。'),
+  reliability: z.enum(['high', 'medium', 'low', 'unknown']).describe('来源可靠性：高 / 中 / 低 / 未知。'),
+  publishedAt: TradingDateSchema.nullable().describe('材料发布日期 YYYY-MM-DD，未知时 null；不是交付物定稿时间。'),
+  validUntil: TradingDateSchema.nullable().describe('材料有效期 YYYY-MM-DD，未知时 null。'),
+  scopeNote: z.string().nullable().describe('口径备注；未提供时 null。'),
+}).describe('投放来源语境，不改变序列身份。')
+export const INTAKE_FILE_EXTENSIONS = ['pdf', 'docx', 'xlsx', 'md', 'csv'] as const
+export const IntakeFileMetaSchema = z.strictObject({
+  name: z.string().min(1).refine(name => INTAKE_FILE_EXTENSIONS.some(ext => name.toLowerCase().endsWith(`.${ext}`)),
+    '只接受 pdf / docx / xlsx / md / csv 文件').describe('文件名；扩展名白名单 pdf / docx / xlsx / md / csv，大小写不敏感。'),
+  size: z.int().nonnegative().describe('文件字节数，只记录元数据。'),
+  type: z.string().describe('浏览器报告的 MIME 类型，可为空；文件白名单按扩展名校验。'),
+  lastModified: z.int().nonnegative().describe('文件最后修改时间，Unix 毫秒。'),
+}).describe('文件元数据，不包含 File 对象、正文或字节。')
+const intakeFields = {
+  jobId: z.string().min(1).nullable().describe('目标作业；null 表示进入待归属池。'),
+  sourceNote: SourceNoteSchema,
+}
+export const IntakeInputSchema = z.discriminatedUnion('inputKind', [
+  z.strictObject({ ...intakeFields, inputKind: z.literal('file'), fileMeta: IntakeFileMetaSchema }),
+  z.strictObject({ ...intakeFields, inputKind: z.literal('url'), url: z.string().trim().min(1).describe('URL 字符串；仅保存，不发起抓取。') }),
+  z.strictObject({ ...intakeFields, inputKind: z.literal('text'), text: z.string().trim().min(1).describe('粘贴正文，只存在于提交参数与内存草稿，不进入 Upload 或持久化。') }),
+]).describe('三种投放输入，必须选择一种；只校验元数据，不解析原文。')
+export const FieldMappingSchema = z.array(z.strictObject({
+  sourceField: z.string().min(1).describe('抽取的源字段 / 列名。'),
+  targetField: z.string().min(1).describe('映射后的目标字段。'),
+  unit: z.string().min(1).describe('映射字段单位，修正时一同提交。'),
+})).describe('字段映射列表；空列表表示没有结构化字段。')
+export const ExtractionPreviewSchema = z.strictObject({
+  detectedType: z.string().min(1).describe('mock 识别类型，不代表真实解析结果。'),
+  fields: FieldMappingSchema,
+  unit: z.string().nullable().describe('预览整体单位；无结构化数值时 null。'),
+  timeRange: z.strictObject({ start: TradingDateSchema, end: TradingDateSchema }).nullable().describe('识别的日期范围；未知时 null。'),
+}).describe('合成抽取预览；确认前仍为待验证。')
+const uploadFields = {
+  ...intakeFields,
+  id: z.string().min(1).describe('投放唯一标识。'),
+  status: UploadStatusSchema,
+  mapping: FieldMappingSchema,
+  createdAt: TimestampSchema,
+  removed: z.boolean().describe('仅从当前视图移除，历史锚保留。'),
+  quarantineReason: z.string().min(1).optional().describe('隔离样例的模拟判定原因。'),
+}
+export const UploadSchema = z.discriminatedUnion('inputKind', [
+  z.strictObject({ ...uploadFields, inputKind: z.literal('file'), fileMeta: IntakeFileMetaSchema }),
+  z.strictObject({ ...uploadFields, inputKind: z.literal('url'), url: z.string().min(1) }),
+  z.strictObject({ ...uploadFields, inputKind: z.literal('text') }),
+]).describe('投放持久化记录；只含元数据 / 来源语境 / 映射 / 状态，拒绝粘贴正文与完整提交参数。')
+export const DataSourceRefSchema = z.strictObject({
+  id: z.string().min(1).describe('数据源锚。'), name: z.string().min(1).describe('来源名称。'),
+}).describe('处理台数据源引用，不复制源数据。')
+export const SeriesRefSchema = SparkSeriesSchema.omit({ points: true }).extend({
+  label: z.string().min(1).describe('序列显示名称。'),
+  sourceId: z.string().min(1).describe('所属 DataSourceRef.id。'),
+}).describe('处理台序列引用及元数据，不含观测点。')
+export const RecipeStepSchema = z.strictObject({
+  id: z.string().min(1).describe('步骤标识。'),
+  label: z.string().min(1).describe('加工步骤说明。'),
+  input: z.string().min(1).describe('单链输入锚：源序列 / 表或上一项的 output。'),
+  output: z.string().min(1).describe('本步骤输出锚，供下一步输入引用。'),
+}).describe('按列表顺序呈现的单链配方步骤；只读，不提供 DAG 编辑。')
+export const LineageAnchorSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('observation'), ref: z.string().min(1), label: z.string().min(1) }).describe('观测锚：ref 定位观测（如 seriesId@ts）。'),
+  z.strictObject({ kind: z.literal('tableRow'), ref: z.string().min(1), label: z.string().min(1) }).describe('表行锚：ref 定位表行（如 tableId#row）。'),
+]).describe('派生值根来源定位；只引用、不复制原文。')
+export const DerivedValueSchema = z.strictObject({
+  value: z.number().nullable().describe('派生值，null 表示缺数，不等于零。'),
+  unit: z.string().min(1).describe('派生值单位。'),
+  lineage: z.array(LineageAnchorSchema).min(1).describe('至少一个观测或表行来源锚。'),
+}).describe('可回溯来源的派生值。')
+export const ParamSetSchema = z.strictObject({
+  unit: z.string().min(1).describe('输出单位。'), timezone: z.string().min(1).describe('时区。'),
+  calendar: z.string().min(1).describe('日历口径。'), resample: z.string().min(1).describe('重采样口径。'),
+  aggregation: z.string().min(1).describe('聚合方式。'),
+}).describe('加工参数；v1 保存口径字符串，不执行真实数据处理。')
+export const ParamChangeSchema = ParamSetSchema.partial().refine(changes => Object.values(changes).some(value => value !== undefined),
+  '至少修改一项参数').describe('参数补丁：至少一项 unit / timezone / calendar / resample / aggregation，不接受其他参数。')
+export const ReconciliationDiffSchema = z.strictObject({
+  ...FigureSchema.pick({ unit: true, freq: true, semantic: true, asOf: true, seriesId: true }).shape,
+  sources: z.tuple([DataSourceRefSchema, DataSourceRefSchema]).describe('左右两个来源，顺序对应行中的 leftValue / rightValue。'),
+  rows: z.array(z.strictObject({
+    ts: TimestampSchema,
+    leftValue: z.number().nullable().describe('左来源原值。'),
+    rightValue: z.number().nullable().describe('右来源原值。'),
+    difference: z.number().nullable().describe('契约给出的差值，null 表示不可比较。'),
+    differs: z.boolean().describe('契约给出的差异标记，UI 不重新计算。'),
+  })).describe('对账差异行；空行集表示无差异。'),
+}).describe('同序列两来源的对账，单位 / 频率 / 语义 / asOf / seriesId 复用 Figure 元数据。')
+export const EvidenceAnchorSchema = z.strictObject({
+  kind: z.enum(['assertion', 'series', 'source']).describe('证据锚类型：断言 / 序列 / 来源。'),
+  ref: z.string().min(1).describe('目标引用，供来源跳转使用。'),
+  label: z.string().min(1).describe('证据显示名称。'),
+}).describe('结论证据链锚，不计算独立证据权重。')
+export const ConclusionSchema = z.strictObject({
+  id: z.string().min(1), text: z.string().min(1).describe('结论正文，删除 / 否决后仍保留。'),
+  status: ArtifactStatusSchema, source: SourceSchema, origin: OriginSchema,
+  evidence: z.array(EvidenceAnchorSchema).describe('证据链，显示数量直接取数组长度；允许空链，不另存数字字段。'),
+  deleted: z.boolean().optional().describe('删除 tombstone；旧内容与旧版本保留。'),
+  vetoed: z.boolean().optional().describe('否决 tombstone；旧内容与旧版本保留。'),
+}).describe('分析结论卡及其证据链、状态和来源。')
+
 export const contractSchemas = {
+  SourceNote: SourceNoteSchema,
+  IntakeFileMeta: IntakeFileMetaSchema,
+  IntakeInput: IntakeInputSchema,
+  FieldMapping: FieldMappingSchema,
+  ExtractionPreview: ExtractionPreviewSchema,
+  Upload: UploadSchema,
+  DataSourceRef: DataSourceRefSchema,
+  SeriesRef: SeriesRefSchema,
+  RecipeStep: RecipeStepSchema,
+  LineageAnchor: LineageAnchorSchema,
+  DerivedValue: DerivedValueSchema,
+  ParamSet: ParamSetSchema,
+  ParamChange: ParamChangeSchema,
+  ReconciliationDiff: ReconciliationDiffSchema,
+  EvidenceAnchor: EvidenceAnchorSchema,
+  Conclusion: ConclusionSchema,
   StageSummary: StageSummarySchema,
   Job: JobSchema,
   JobListItem: JobListItemSchema,
@@ -369,3 +487,19 @@ export type Job = z.infer<typeof JobSchema>
 export type JobListItem = z.infer<typeof JobListItemSchema>
 export type JobContext = z.infer<typeof JobContextSchema>
 export type InboxItem = z.infer<typeof InboxItemSchema>
+export type SourceNote = z.infer<typeof SourceNoteSchema>
+export type IntakeFileMeta = z.infer<typeof IntakeFileMetaSchema>
+export type IntakeInput = z.infer<typeof IntakeInputSchema>
+export type FieldMapping = z.infer<typeof FieldMappingSchema>
+export type ExtractionPreview = z.infer<typeof ExtractionPreviewSchema>
+export type Upload = z.infer<typeof UploadSchema>
+export type DataSourceRef = z.infer<typeof DataSourceRefSchema>
+export type SeriesRef = z.infer<typeof SeriesRefSchema>
+export type RecipeStep = z.infer<typeof RecipeStepSchema>
+export type LineageAnchor = z.infer<typeof LineageAnchorSchema>
+export type DerivedValue = z.infer<typeof DerivedValueSchema>
+export type ParamSet = z.infer<typeof ParamSetSchema>
+export type ParamChange = z.infer<typeof ParamChangeSchema>
+export type ReconciliationDiff = z.infer<typeof ReconciliationDiffSchema>
+export type EvidenceAnchor = z.infer<typeof EvidenceAnchorSchema>
+export type Conclusion = z.infer<typeof ConclusionSchema>
