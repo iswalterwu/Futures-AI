@@ -231,7 +231,7 @@
 ### T-15 一条命令、人工验收清单与文档指针
 
 - **上下文**：plan §2.8（`pnpm test` 串联）、spec R-009、docs/plan.md §5（目录 README）。
-- **修改范围**：`frontend/package.json` 的 `test` 脚本、`specs/frontend-workbench/manual-acceptance.md`（M-01 ~ M-08）、`frontend/README.md`、`docs/designUI.md`（§2.3 / §6 / §8 指向已移植条目）、`tests/unit/manual-acceptance.spec.ts`
+- **修改范围**：`frontend/package.json` 的 `test` 脚本、`specs/frontend-workbench/manual-acceptance.md`（M-01 ~ M-08）、`frontend/README.md`、`docs/designUI.md`（§2.3 / §6 / §8 指向已移植条目）、`tests/unit/manual-acceptance.spec.ts`、`tests/unit/design-registry.spec.ts`（docs 指针断言）
 - **依赖**：T-01 ~ T-14　**预计**：1 h
 - **完成标准**：
   1. `pnpm test` 一条命令全绿（AC-009-1）

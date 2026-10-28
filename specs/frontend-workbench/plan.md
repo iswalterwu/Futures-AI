@@ -13,7 +13,7 @@
 
   ```
   frontend/
-  ├── package.json  pnpm-lock.yaml  vite.config.ts  tsconfig.json  vitest.config.ts  playwright.config.ts  eslint.config.js  .prettierrc  .gitattributes
+  ├── package.json  pnpm-lock.yaml  vite.config.ts  tsconfig.json  vitest.config.ts  playwright.config.ts  eslint.config.js  .gitattributes
   ├── index.html                    # 静态加载骨架；首帧样式由 tokens-build 写入标记块
   ├── contracts/{CONTRACT.md,schema.json}          # 生成物，入库
   ├── scripts/{tokens-build.mjs,contract-build.mjs,check.mjs}
@@ -215,7 +215,7 @@ send({sessionId?, message}) / subscribe(cb)
 | AC-005-7 | e2e：三态切换 + reload 保持；运行中指示出现 / 终态消失 |
 | AC-006-1 / -2 | unit：主题不含退役色；序列 / 类目色对卡面 ≥ 3、文字用色 ≥ 4.5（中性退后色豁免登记） |
 | AC-006-3 / -4 | e2e：`getOption().color` 与令牌一致、`backgroundColor` 透明；M-08 |
-| AC-007-1 | `check.network` |
+| AC-007-1 | `check:network` |
 | AC-007-2 | unit：五种场景；e2e：normal / empty / error / slow |
 | AC-007-3 | `check:generated`（重生成并比对）+ unit：CONTRACT.md 覆盖全部方法、错误形态与字段描述 |
 | AC-007-4 | unit：fixtures 全部过 schema；Figure 缺元数据、`BoardCell` ok 缺 figure、`SparkSeries` 缺元数据 → 失败 |

@@ -1,345 +1,173 @@
-# Feature: frontend-workbench 质量检查清单（双审共识合并版）
+# Feature: frontend-workbench 质量检查清单（checklist.md）
 
-> Checklist 阶段产物；通过只表示需求 / 设计质量达标，不表示实现完成或测试已经运行。
-> **审核员 A = claude-bridge/claude-fable-5-1；审核员 B = openai/gpt-6.1-sol，原审均为与实施隔离的独立会话。**
-> **共识规则：两审对同一检查范围一致通过才勾选；任一方未通过、有条件、存在分歧，或另一方未单独评价，均保持未勾选。未评价不等于反对，也不等于通过。**
-> 原件 A：`specs/frontend-workbench/checklist.claude-fable-5-1.md`。
-> 原件 B：`specs/frontend-workbench/checklist.gpt-6.1-sol.md`。
-> **本文件由审核员 B 合并并完成共识勾选，实施者未参与勾选；未修改两份原件，也未替任何审核员补签独有项。**
-> 基线：`feat/frontend-workbench`，HEAD `35865dc6f8da77ef29ad2ab41727553044464038`；两份原审日期均为 2026-10-27。
+> Checklist 阶段产物，由审核员生成并勾选。仅当审核员认为某项检查标准得到满足时才标记为通过；
+> 通过只代表需求 / 设计质量达标，不代表实施完成。实施者不勾选本文件。
+>
+> **审核员**：A = claude-fable-5-1 **via anthropic**（`--model anthropic/claude-fable-5-1`）。
+> 切换原因：`claude-bridge` 周额度不可用，按用户指示改走 Anthropic API 通道；同一 Claude 模型，只换接入路径，审核员身份不变。四轮均经此通道。
+> **单审**（AGENTS.md §2 第 5 步，2026-10-28 版）：本文件结论即审核结论，不再要求第二名审核员、不做共识投票。
+> 本文件**取代**双审时代的共识清单（旧版及 8 份逐轮中间文件历史留存于 git，见 `git show df0b1ec --stat`）。
+>
+> **审核历程**（spec.md 全程为 `1b5659d` Gate 1 重新批准的冻结版，45 条 AC，未动）：
+> - **第一轮**（基线 `df0b1ec`，精简版 plan 235 行 / tasks 15 项 25.5 h）：全文审查——AGENTS.md（§2 单审、§5 七条准则）、docs 三件套、全部 ADR（含 D-013 勘误段）、spec / plan / tasks、`git show df0b1ec` 全文 diff、`D:\FTEngine\design\` 源资产。结论：不通过，8 项阻断（B-01 ~ B-08）+ 14 条建议（S-01 ~ S-14）。
+> - **第二轮定向复核**（基线 `50c26dd`）：B-01 / B-02 / B-03 / B-08(a) 闭环；B-04 / B-05 未动、B-06 / B-07 / B-08(b) 残留（事后查明该批 plan 修改在实施侧同一次编辑调用中整体回滚）。结论：不通过（剩余 5 项）。
+> - **第三轮定向复核**（基线 `666b671`，补回 plan §2.7 / §2.8 / §6）：B-04 / B-05 / B-06 闭环；B-07 / B-08(b) 的 plan 侧落实，残留 5 行文本（tasks:45 / :53 / :205，plan:210 / :214）。结论：不通过（剩余 5 行）。
+> - **第四轮定向复核（2026-10-28，基线 = HEAD `2c2fbc8`，plan 2 +/2 −、tasks 4 +/4 −）**：逐处核第三轮点名的 5 处 + 确认其余 B 项未回退 + 结构核验。**结论：通过。**
+>
+> **口径**：只在确认满足时勾选；未勾选项写原因与位置（文件 + 行号）。阻断项编号 **B-xx**，建议项 **S-xx**（不阻断、不计入判定）。复核判定二元：原关闭要求仍有遗漏即"未闭环"。
+> 只读审核：未安装依赖、未运行项目测试、未修改其他文件、未 commit；结构核验用一次内存脚本（见文末）。
 
-**结论：未通过，不得进入 Implement。共 86 项，共识通过 33 项、未通过 53 项；未通过分为阻断实施 31 项、建议 / 待补审 22 项。**
-
-合并口径：
-
-- 下文无目录前缀的 `spec.md`、`plan.md`、`tasks.md`、`assets/…` 均位于 `specs/frontend-workbench/`；A 的 § / C / F / 附录编号和 B 的 N / I / V / C / F 编号均指各自原件，不混用同号问题。
-- 同义项合并；聚合项中的不同风险拆出保留；41 条 AC 的验证映射逐条合并。单项通过不覆盖其他位置尚未通过的规范一致性或守卫健壮性检查。
-- A 附录 A 的 ✓ / △ / ✗ 与 B 的逐 AC 条目是 AC 合并依据；**不能忽略 A 正文直接关联的阻断条件**，例如 AC-004-4 虽在 A 附录标 ✓，正文 F-11 仍指出其 error 路径不可达，故该项保留未通过。
-- “来源 A / B / A+B”表示检查点的原审来源；独有项保留另一方“未单独评价”的事实。对于双方明确肯定的较窄事实（如任务形式、固定卡面配色），不扩大成对任务全部依赖或所有真实表面的通过。
-- “建议”表示整改优先级 / 补审性质，不是可静默跳过的勾选项；按 AGENTS.md §2，清单尚有未勾选项时不能实施。建议须经复核闭环；若决定移出本 feature，须有相应范围裁定与双审更新，涉及需求变更时重过 Gate 1。
+**结论（第四轮）：通过，tasks.md 自此生效（基线 `2c2fbc8`）。** 8 项阻断（B-01 ~ B-08）全部闭环，70 项检查全部勾选；14 条建议采纳 12 条（S-04 / S-07 未采纳，理由可接受），另有 4 条非阻断的顺手项（S-08 残留、S-15、S-16、S-17）留给实施期。Gate 2 前需 Walter 知悉的事项见文末。
 
 ## 需求完整性
 
-- [x] **N-01 每条编号需求至少有一条验收规则。**【来源 A+B】A §1 第 1 项、B N-01 均通过：spec.md R-001～R-009 共 41 条 AC，plan.md §5 / tasks.md 覆盖矩阵有名义落点。
-
-- [ ] **N-02 所有 what 均有验收闭环。**【来源 A+B；阻断实施】
-  - **A**：§1 / F-17 未通过，指出焦点带不可移除、默认布局顺序、模块说明 / 尺寸、两档抽屉 / 运行指示、加载通知等缺明确 AC，另有启动重试超出 AC 的归属问题。
-  - **B**：N-02 未通过，补充模块库定义的契约访问、分页 / 时间参数和收起抽屉期间运行连续性缺闭环。
-  - **位置**：spec.md R-002～R-005 / R-007 / R-008；plan.md §2.2～§2.5 / §2.7 / §5；tasks.md T-09 / T-11 / T-13 / T-16 / T-22 / T-24；细项见 I-08、C-13 / C-24 / C-25 / C-28。
-
-- [ ] **N-03 无未澄清歧义。**【来源 A+B；阻断实施】
-  - **A**：§1 / F-18 / 附录 C 未通过，提出默认顺序、1240 归属、模块库已启用项、焦点带双语义、新令牌登记五处歧义；Q-016～Q-020 只是 A 的建议编号，尚非已裁定记录。
-  - **B**：N-03 未通过，另指出 KPI 字体优先级和已移除模块的跳转规则不唯一。
-  - **位置**：spec.md R-001～R-005 / R-008 / §5；plan.md §2.1～§2.5；具体见 AC-001-4 / AC-002-6 / AC-004-1 / AC-005-5 / AC-008-2、I-08、C-03。
-
-- [x] **N-04 产品目标与非目标边界清晰。**【来源 A+B】A §1 第 4 项、B N-04 均通过：spec.md §2 / §4 明确 mock 工作台地基，不交付真实后端、Electron、14 种图表模板、各 domain 页面、亮色导出或拖拽。
+- [x] **N-01 每条编号需求至少有一条可验证的验收规则。** spec R-001 ~ R-009 共 45 条 AC（6 / 7 / 6 / 6 / 7 / 4 / 4 / 3 / 2），编号连续、每条写明验证形态（自动 / 组件 / 端到端 / 人工）。
+- [x] **N-02 无未澄清歧义。** spec §5 Q-001 ~ Q-022 全部有裁定与融入位置；Q-006 ~ Q-014 为可推断项并已写入对应需求；spec 冻结（`1b5659d`）后无新增问题。
+- [x] **N-03 目标与非目标边界清晰。** spec §2：交付设计系统 / 外壳 / 工作台 / 模块 / 对话抽屉 / 图表主题 / 契约与 mock / 资产移植 / 守卫；明确排除真实后端、Electron、14 种图表、各 domain 页内容、亮色主题、拖拽、多语言 / 移动端 / 无障碍。
+- [x] **N-04 spec 每条 what 在 plan 均有设计落点。** 逐条核对 R-001 ~ R-009 无缺失：R-007 "错误形态"落 plan §2.7（plan:147：统一 `{error: {code, message, retryable}}`、code 集合、写入 CONTRACT.md、模块错误态与 `run.failed` 复用，B-06）；R-005 事件字段（plan:121，S-01）、页面目标跳转（plan:120，S-02）、R-004 样例态区分（plan:112，S-03）均已补齐。
 
 ## 一致性
 
-- [ ] **I-01 spec / plan / tasks 无冲突。**【来源 A+B；阻断实施】
-  - **A**：§2 / F-1～F-9 未通过，列出断点、默认顺序、模块库、文件边界、来源范围、守卫依赖、豁免、AC 归属和目录清单问题。
-  - **B**：I-01 未通过，另指出启动重定向 / 深链、契约与任务验证闭环问题；缺 Analyze 产物本身不是当前 Checklist 阶段的缺陷。
-  - **位置**：spec.md R-002 / R-004 / R-007 / R-008 / §4；plan.md §1～§2.9 / §4～§6；tasks.md T-04 / T-05 / T-07 / T-10～T-13 / T-16 / T-19 / T-20 / T-22 / T-24 / T-27；须修订后再运行 Analyze。
-
-- [ ] **I-02 与 docs / ADR 全面一致。**【来源 A+B；阻断实施】
-  - **A**：§2 / F-10 未通过，认为焦点带混合红涨 / 红负超出 D-011 的“以模块为界”，需 docs 先行并由 Walter 确认解释或变更。
-  - **B**：I-02 未通过，指出全站绿色只表示跌与分析色板身份冲突，以及令牌来源范围弱于登记纪律；B 对组件语义映射的肯定不能替代对 A 的 docs 扩展问题的裁定。
-  - **位置**：docs/designUI.md §2.2 / §2.3 / §8，docs/decisions/20261026-ui-visual-system.md 结论 6；spec.md R-001 / R-003 / R-006 / AC-008-2；plan.md §2.1 / §2.3；细项见 C-03 / C-21。
-
-- [x] **I-03 核心技术栈与架构隔离符合已定决策。**【来源 A+B】A §2“其余核对无冲突”、B I-03 均肯定 Vue / Vite / TS / Pinia、ECharts、浏览器 mock 与不新增 backend / Electron 实现（plan.md §1 / §2，D-002 / D-004 / D-008）；此项不包含 I-02 的色语义争议。
-
-- [ ] **I-04 共享文件边界、状态维护与回滚完整一致。**【来源 A+B；阻断实施】
-  - **A**：F-4 未通过，spec.md §4 漏 docs/designUI.md；C-6 又称回滚清楚，不能据此抹去其边界问题。
-  - **B**：I-04 / F-18 未通过，补充 tasks 边界漏 specs/README.md、plan 回滚漏共享文档恢复。
-  - **位置**：spec.md R-008 / §4；plan.md §1 / §2.9 / §6；tasks.md 约定 / T-27；specs/README.md 状态表；A 的回滚肯定与 B 的反对按分歧处理。
-
-- [ ] **I-05 data-layer 错误码与 seriesId 语义已完整核对。**【来源 A；建议 / 待补审】
-  - **A**：§2 此项通过，六码集合与 specs/data-layer/plan.md §2.2 一致，Figure.seriesId 对齐序列身份，关注合约行的具体字段另有建议。
-  - **B**：I-03 只肯定架构隔离，未对这项精确契约核对单独给出通过；AC-007-4 的元数据缺口仍未通过。
-  - **位置**：plan.md §2.7；docs/architecture.md §3.2 / §6；D-012 结论 1；C-10。不能把 A 的通过直接复制为共识。
-
-- [x] **I-06 Q-003 采用表、样张及固定卡面的数值一致。**【来源 A+B】A §2 配色核对、B C-03 / AC-008-3 均通过：plan.md §2.1 与 assets/palette-dark-candidates.html 的 17 项采用值、A 等亮裁定、中性色调整一致；#1D1E20 上对比度可复算。本项不覆盖真实渐变的最不利对比度或跨色差算法比较（C-19 / C-20）。
-
-- [ ] **I-07 全部 FTEngine 采用 / 不采用锚点已双审核实。**【来源 A；建议 / 待补审】
-  - **A**：§2“FTEngine 条目锚点可追溯”通过，报告核对八份 UI 条目的锚与原值。
-  - **B**：AC-008-1 肯定移植交付设计，但原审仅另核对部分源条目，未对 A 所列全部锚点单独签认；不等于否定锚点存在。
-  - **位置**：plan.md §2.9；D:/FTEngine/design/UI/ 下八份源条目及 Graphs/Palette/PALETTE_CORE.md；移植分类完整性另见 C-05。
-
-- [ ] **I-08 默认模块顺序有唯一权威及验收断言。**【来源 A；阻断实施】
-  - **A**：F-2 / 附录 C 未通过，认为 spec.md R-004 / docs 的列举顺序与 plan 注册顺序冲突，并缺默认顺序 AC。
-  - **B**：AC-004-2 通过仅指重排后的持久化，未认定 spec 的列举顺序必然是默认顺序，也未单独通过该初始顺序争议。
-  - **位置**：docs/designUI.md §3；spec.md R-004 / AC-004-1；plan.md §2.4 registry / layout；tasks.md T-16；由 Walter 明示顺序或列表非顺序含义后统一。
+- [x] **I-01 spec / plan / tasks 之间无冲突。** 第一轮 B-01 / B-02 / B-03、第二轮 B-04 / B-05 / B-06 已闭环；第三轮点名的两组残留在 `2c2fbc8` 全部消除：① 回放脚本四份——plan §2.5（plan:123）↔ plan §5 AC-005-2 行（plan:210 "success / failure / retry 回放"）、AC-005-6 行（plan:214 "四份脚本"）↔ T-07.3（tasks:105）↔ T-13.3（tasks:205 "回放 success / failure / retry"）一致，全文 `retry / abort` = 0、`五份` = 0；② 样例口径——plan §2.8（plan:162 "除 AC-001-2 明定的最小样例外不写样例自检"）↔ tasks 头部（tasks:5 "去掉了守卫样例自检（AC-001-2 明文要求的 `colors` 最小样例除外）"）↔ T-03 上下文（tasks:45 "仅 `colors` 按 AC-001-2 先跑最小样例"）↔ T-03 完成标准 2（tasks:50）一致，tasks 全文 `不写样例自检` = 0。余 plan:218 `check.network` 笔误（S-15，编辑性，不构成语义冲突）。
+- [x] **I-02 与 docs/ 决策与 ADR 无冲突。** 核对项：D-004 / D-008（ECharts、Vue 3 + Vite + TS + Pinia）✓；D-011 结论 1–8（首页 = 工作台 + 焦点带、八项菜单、底部抽屉 + 时间线、角标、暗色玻璃面 3–6% / 边 7–14%、模块库 + 固定栅格）✓；D-013 三个登记位置 = plan §2.1 `updown.css` 允许引入名单（market-board / watchlist / FocusBand）✓；designUI §2.1 玻璃三值（.035 / .045 / .82 面，.07 / .09 / .12 边，18 / 28px 模糊）均在登记范围内 ✓；§2.2 状态色不用绿 ✓；§2.3 退役五色 = PALETTE_CORE `palette-retired` 块 ✓；§3 默认模块顺序 ✓；§4.2 主题经 ECharts registerTheme ✓；docs/plan.md §5 `frontend/` 目录与目录 README ✓；architecture §2 前端职责 ✓；D-013 勘误段已改"三个位置"（`50c26dd`，S-11）。
+- [x] **I-03 精简提交（df0b1ec）删除项逐项核对——是否删掉了 spec 要求的内容。** 守卫自检样例（11 守卫 → 六条 grep）：§5.6 允许，AC-001-2 单独要求的样例已按方案 (1) 为 `colors` 保留（plan:156、tasks:46 / :50 / :53）；`source_anchors.json` 逐锚盘点与双向核：spec R-008 只要求"未采用的规定标注原因"，删除合规；pi 原始事件归约层 + 六份样本：Q-014 只要求"对照、保证可映射"，plan §2.5 保留映射表与归约规则即可；Toast / StorageAdapter：§5.3 合规（Q-007 "经存储接口隔离"为推断性实现措辞，spec 正文与 AC 未要求接口，三个 localStorage 键在 plan §3 集中登记已满足"后续迁移"意图，记录于 C-05）；SparkSeries 跨字段 refine：§5.2 合规，SparkSeries 自身四项元数据仍必填（AC-007-4 不受影响）；对比度只按单层卡面：焦点带与模块区为网格独立行、结构上不叠层，合规；layering 守卫与几何 e2e：被结构设计取代，合规；ac-coverage 守卫：测试标题以 AC 开头 + 矩阵即可在 Converge 时机械核对，合规；网络守卫 ESLint → grep：AC-007-1 字面要求"静态扫描：允许名单只含契约实现层"，grep 满足；唯一被误删的 spec 要求（错误形态）已于 `666b671` 补回 plan §2.7。
+- [x] **I-04 文件边界、共享文件与回滚一致。** spec §4（Q-022）= plan §1 = tasks 约定"文件边界"行（tasks:12，S-12）= T-01 `.gitignore` 追加四行 / T-15 `docs/designUI.md` 指针；不碰 `backend/`；plan §6 回滚按文件块、D-013 不删除只标 superseded + 后继 ADR，与 `docs/decisions/README.md` 规则相容。
 
 ## 可测试性
 
-- [ ] **V-01 每条 AC 都有足够的自动 / 人工验证。**【来源 A+B；阻断实施】
-  - **A**：§3 未通过，虽有 41 条映射，仍有 error / 首帧机制不可达以及断点 / 来源范围的条件。
-  - **B**：V-01 未通过，运行时令牌、静态扫描、路由和元数据等映射不足。
-  - **位置**：spec.md §3 各 AC；plan.md §5；tasks.md 覆盖矩阵；具体以以下逐 AC 结果为准，不能以“表格有一行”视为验收充分。
+- [x] **V-01 每条验收规则可映射到自动测试或人工验收步骤。** 45 条全部确认，逐条见下表。
+- [x] **V-02 任务模板字段齐备、粒度在区间内、验证命令与完成标准一一对应。** 15 项均含上下文 / 修改范围 / 依赖 / 预计 / 完成标准 / 验证命令；每项 1.0–2.0 h；每条完成标准引用 AC 编号；完成标准条数 = 验证命令条数（四轮脚本逐任务比对均无差）。第三轮指出的唯一机制错位（T-03 验证 2 为 vitest 而完成标准 2 说由 `colors` 检查自身先核样例）已改为 `pnpm -C frontend check --only colors`（tasks:53），与完成标准 2（tasks:50）及 plan:156 机制一致。工时偏紧的处理方式已写入 tasks 末行（S-10）。
+- [x] **V-03 任务依赖无前向、无环，工时合计一致。** 四轮脚本：15 任务、依赖边全部指向更小编号、无缺失引用、DFS 无环；逐项求和 25.5 h = 末行"约 25.5 小时"。
+- [x] **V-04 验证命令所指测试文件均有归属任务。** `tests/unit/design-registry.spec.ts` → T-05（tasks:72）、`tests/component/topbar.spec.ts` → T-08（tasks:116）（B-03）；T-03 验证 2 不再指向无归属的 vitest 测试（`2c2fbc8`，tasks:53）。其余验证命令所用文件均在对应任务修改范围内。非阻断：T-15 验证 3 要改 T-05 拥有的 `design-registry.spec.ts`，T-15 范围未列（S-16）。
 
-- [ ] **V-02 任务依赖、AC 引用与逐条验证命令闭环。**【来源 A+B；阻断实施】
-  - **A**：§3 / F-6 / F-8 未通过，T-10 / T-19 / T-20 调用的守卫缺 T-07 依赖，T-13 / T-22 有完成标准超出引用 AC。
-  - **B**：V-02 / F-17 未通过，T-04 缺 T-03 前置、T-11 的 AC-005-6 doc 单测无文件归属、long / failure 脚本选择入口未定。
-  - **位置**：tasks.md T-04 / T-07 / T-10 / T-11 / T-13 / T-19 / T-20 / T-22 / T-24；plan.md §2.5 / §2.7；C-28。需保证筛选未命中或守卫不存在时非零失败。
+### 逐 AC 验证映射（45 条）
 
-- [x] **V-03 任务形式粒度与模板字段齐备。**【来源 A+B】A §3 对形式部分、B C-08 均确认：27 项具上下文 / 范围 / 依赖 / 引 AC 的完成标准 / 对应命令，0.5～2 h，合计 41 h；此窄项不抵销 V-02 的实际依赖和归属缺陷。
+- [x] **AC-001-1** plan §5 + T-02.1（生成物逐字比对、`@media` 阈值 ∈ 令牌）+ T-14.2（浏览器内逐令牌读计算样式对拍）；`pnpm test` 以 `check`（含 generated）开头（plan:162）。
+- [x] **AC-001-2** T-03 `check:colors`（plan:156：登记处 `tokens.json` / `generated/*` 豁免、具名色只在样式声明值位置识别、先跑 `scripts/check-samples/colors/{positive,negative}.css` 阳性全部命中 / 阴性不中）+ T-03.2（tasks:50）+ 验证 `check --only colors`（tasks:53）。
+- [x] **AC-001-3** T-03 `check:glass`（`backdrop-filter` 只在 glass.css、`.glass-*` 仅三类）+ 人工 M-01（T-15）。
+- [x] **AC-001-4** T-04.1 `format.spec`（en dash / 正号 / 取整后判零 / 无负零 / pct）+ T-04.2 `typography.spec`（类）+ T-14.2 浏览器计算字体族。
+- [x] **AC-001-5** T-03 `check:updown`（plan:158 三条：涨跌令牌只在 `updown.css`；`updown.css` 内引用涨跌令牌的声明只能是 `color:`；只被 `market-board/`、`watchlist/`、`FocusBand.vue` 引入）+ T-04.3 + T-11.1 / T-11.5（`check --only updown`）+ T-14.3（`.sem-market` 只在登记容器且背景非涨跌色）。
+- [x] **AC-001-6** T-03 `check:colors`（退役五值不在令牌 / 生成物 / 源码；五值与 PALETTE_CORE `palette-retired` 一致）。
+- [x] **AC-002-1** T-08.2 e2e：首帧静态骨架可见 → 工作台；首帧样式来自 T-02 生成块；T-08 范围含 `index.html`（静态骨架标记）。
+- [x] **AC-002-2** T-08.1 e2e：八项顺序、`aria-current`、占位页归属文案、直接打开非工作台地址并刷新仍停留。
+- [x] **AC-002-3** T-08.5 e2e：`window.__FAI_MOCK__` 注入研究项 → 菜单多一项。
+- [x] **AC-002-4** T-08.4 组件：ticker 条目、状态点 fresh / stale 令牌类；`tests/component/topbar.spec.ts` 在 T-08 范围。
+- [x] **AC-002-5** T-08.3 e2e：折叠 → reload 仍折叠（`fai.rail`）。
+- [x] **AC-002-6** T-14.1 e2e：960 / 979 / 981 / 1239 / 1241 / 1399 / 1401 / 1499 / 1501 / 1440×900 十个视口，断言侧栏形态、栅格列数、焦点带卡数、无横向溢出；断点 980 / 1240 / 1400 / 1500 与 FTEngine UI_LAYOUT 登记值一致（已核源文件）。
+- [x] **AC-002-7** T-08.2 e2e：加载页进度 / 通知文案；`boot-error` 场景首次失败显示原因 → 重试 → 进入工作台。
+- [x] **AC-003-1** T-10.1 组件：结论条目、数字、方向类。
+- [x] **AC-003-2** T-10.3 e2e：点击 → `/daily/<date>`。
+- [x] **AC-003-3** T-10.3 组件：`brief = null` → 空态文案 = 契约 `reason`。
+- [x] **AC-003-4** T-10.2 组件：market 用涨跌类、analysis 用"红 = 负"类。
+- [x] **AC-003-5** T-10.2 组件：market 只在行情段、analysis 只在指标段、涨跌类只在行情段 + 人工 M-03（T-15；矩阵已标注）。
+- [x] **AC-003-6** T-10.4 e2e：模块库无焦点带、无移除钮，增删模块后仍在。
+- [x] **AC-004-1** T-09.3 e2e：默认七个且 = 目录顺序；模块库七项带状态与 `description`；`grid-column` 取 `min(defaultSpan, 列数)`。
+- [x] **AC-004-2** T-09.4 e2e：上移 / 下移 / 移除 / 添加（末尾）→ reload 保持（`fai.layout`）。
+- [x] **AC-004-3** T-09.1 组件逐模块 DOM 契约（`data-badge="ok|warn|bad|sample"`、`data-ai="none|running|done"`、样例态虚线边 + 文字"样例"）+ T-09.5 e2e 页面遍历 + T-11.4 四个壳模块占位。
+- [x] **AC-004-4** T-09.2 组件：三态 + 诊断复制；T-14.4 e2e：`error` 场景模块错误态可达、诊断可复制，验证 `-g "AC-004-4"`。
+- [x] **AC-004-5** T-11.1 盘面四态格 / 等宽右对齐 / 红涨绿跌、T-11.2 关注列表对齐 / 千分位 / 只涂字色 / Spark 输入为 SparkSeries、T-11.3 日程升序 + 人工 M-04（T-15）。
+- [x] **AC-004-6** T-03 `check:grid`（`grid-template-columns` 不得裸 `1fr`，零豁免；plan §2.2 shell 用 `minmax(0,1fr)`）。
+- [x] **AC-005-1** T-13.1 e2e：八路由输入栏可见、提交 → 抽屉展开显示用户消息。
+- [x] **AC-005-2** T-13.3 组件：回放 success / failure / retry，步骤可展开、`step.error` 呈现、唯一终态行（tasks:205；plan:210 同口径，`2c2fbc8` 已去掉已删除的 abort 脚本）。spec 只要求完成 / 失败两种终态，映射成立。
+- [x] **AC-005-3** T-13.4 e2e：`long` 脚本下切页与收抽屉两种情形，同一 run、步骤增加、无重复（应用级订阅，plan §2.5）。
+- [x] **AC-005-4** T-13.5 e2e：`data-ai` running → done → 点击模块后 none。
+- [x] **AC-005-5** T-13.5 e2e：在布局 → 导航 + 高亮；已移除 → 时间线内联提示 + "添加回工作台"、布局不变、从非工作台路由发起也完成加回 → 导航 → 等挂载 → 滚动 → 高亮；不存在 → 提示且不跳转；页面目标 → `router.push(path)`（plan 行为）。
+- [x] **AC-005-6** T-06.2（十种事件 schema 可校验、终态唯一断言，字段表见 plan:121）+ T-07.3（四份脚本各恰好一个终态，tasks:105）+ T-07.4（CONTRACT.md 含全部事件类型）；plan §5 AC-005-6 行已改"四份脚本"（plan:214）。
+- [x] **AC-005-7** T-13.2 e2e：closed / half / tall 切换 + reload 保持（`fai.drawer`）；运行中指示出现、终态消失。
+- [x] **AC-006-1** T-12.1 unit：主题对象与令牌一致、不含退役色。
+- [x] **AC-006-2** T-12.2 unit：对最不利单层卡面 `#252629` 序列 / 类目色 ≥ 3、文字用色 ≥ 4.5、中性退后色豁免登记；plan §2.1 的对比度值经 WCAG 相对亮度公式逐一复算一致（C-01）。
+- [x] **AC-006-3** T-12.3 e2e：经 `window.__FAI_TEST__.charts`（仅 mock 模式）读 `getOption().color` 与令牌一致。
+- [x] **AC-006-4** T-12.3 e2e：`backgroundColor` 透明 + 人工 M-08（T-15；矩阵已标注）。
+- [x] **AC-007-1** T-03 `check:network`（`fetch(` / XHR / WebSocket / EventSource / axios 只在 `src/contracts/real/`），与 AC 字面"允许名单只含契约实现层"一致（plan:218 `check.network` 为笔误，S-15）。
+- [x] **AC-007-2** T-07.2 unit 五种场景（含 error 下 bootstrap 与目录成功）+ T-14.4 e2e normal / empty / error / slow。
+- [x] **AC-007-3** T-06.3（`DataClient` 10 个方法 + `AgentClient` `send` / `subscribe` 每方法有语义条目、每字段有描述）+ T-07.4（CONTRACT.md 覆盖方法、错误形态与事件）+ `check:generated` 重生成 `contracts/{CONTRACT.md,schema.json}` 逐字比对（plan:155；T-07 验证 4 `contract && check --only generated`）。
+- [x] **AC-007-4** T-06.1（Figure / BoardCell / SparkSeries 三形态，缺元数据与 `ok` 缺 figure 反例被拒）+ T-07.1（fixtures 全部过 schema，关注列表为合约价格）。
+- [x] **AC-008-1** T-05.1（原 id、`source / source_verified / migrated / adaptation`、`## 暗色适配` 段）+ T-15.3（designUI 引用指向真实条目）。
+- [x] **AC-008-2** T-05.3 "tokens.json 每个 `source` 可解析到本任务条目锚或 designUI 节号"，验证 `-t "AC-008-2 sources"`（tasks:81）；矩阵 AC-008-2 → T-02、T-05（tasks:271）；T-02 验证 2 注明"由 T-05 验证"（tasks:41）。
+- [x] **AC-008-3** T-05.2 / plan §5："14 个 palette-core 原色（按不同 hex 计）"（tasks:76、plan:222），与 plan §2.1 表及 PALETTE_CORE 一致。
+- [x] **AC-009-1** T-01（依赖 / 构建 / 冒烟打底）+ T-15.1 `pnpm test` 一条命令（`check` + `typecheck` + `lint` + `test:unit` + `test:e2e`，plan:162）退出码 0。
+- [x] **AC-009-2** T-15.2 `manual-acceptance.md` M-01 ~ M-08 各写"看什么"，八项含义已列全（tasks:238）+ Handoff 截图。
 
-### 逐 AC 验证映射（41 项）
+## 工程准则（AGENTS §5）专项核查
 
-以下每项均为来源 A+B；A 的意见引用其附录 A 对应行，B 的意见引用其同号 AC 条目，额外正文意见明确列出。
-
-- [ ] **AC-001-1 运行时令牌对拍。**【来源 A+B；阻断实施】
-  - **A**：✓，接受 tokens-sync generated / media；**B**：未通过，生成物 diff 不能证明 CSS 已加载、未被覆盖及运行时值一致（F-06）。
-  - **位置**：spec.md R-001 / AC-001-1；plan.md §2.1 / §2.8 / §5；tasks.md T-05 / T-18。
-- [ ] **AC-001-2 零未登记颜色字面量。**【来源 A+B；阻断实施】
-  - **A**：△，F-12 / C-3e 指出 index.html 遗漏，并建议界定 scripts / e2e 范围；**B**：未通过，另有命名色等语法绕过（F-07）。
-  - **位置**：plan.md §1 index.html / §2.8 color-literals；tasks.md T-01 / T-06；生成块允许名单不能放宽为手写字面量豁免。
-- [x] **AC-001-3 三种登记玻璃层级及整页视觉检查。**【来源 A+B】A ✓、B 通过；plan.md §2.1 / §2.8、tasks.md T-07 / T-26 的三类 / 定义位置 / 规则数与 M-01 有明确设计；内联样式等扫描扩展建议另留 C-07。
-- [ ] **AC-001-4 字族与数值规则。**【来源 A+B；阻断实施】
-  - **A**：✓，接受格式化与字族类测试，计算样式由 M-02 补；**B**：未通过，KPI serif 与一切数值 mono、模块大标题与卡头层级无唯一优先级（F-02）。
-  - **位置**：spec.md R-001；plan.md §2.1 / §2.4 / §5；tasks.md T-08。
-- [ ] **AC-001-5 涨跌色仅登记行情位置、仅字色。**【来源 A+B；阻断实施】
-  - **A**：附录 ✓，但 C-3a / C-4 未通过，建议定义处豁免与 fixture market 白名单；**B**：未通过，全局 CSS 导入约束不能限制实际使用位置，也不能阻止涂底（F-08）。
-  - **位置**：spec.md R-001 / AC-001-5；plan.md §2.1 / §2.7 / §2.8 / §5；tasks.md T-07 / T-08 / T-10 / T-17 / T-19 / T-20；保留 A 的 fixture / CONTRACT.md 允许语义方法建议。
-- [ ] **AC-001-6 全部生产源码无退役色。**【来源 A+B；阻断实施】
-  - **A**：✓，五色清单与原色板一致；**B**：未通过，前端 index.html 不在列明的源码扫描范围（F-07）。
-  - **位置**：plan.md §2.8；tasks.md T-01 / T-06 / T-21；历史样张与测试反例应与生产源码区别处理。
-- [ ] **AC-002-1 加载页到工作台、无空白帧。**【来源 A+B；阻断实施】
-  - **A**：△，首帧背景令牌来源未定，F-12 要求机制补齐；**B**：通过，认可静态 / 同构骨架与截帧方案。
-  - **位置**：plan.md §2.2 / §4 / §5；tasks.md T-01 / T-05 / T-13；须同时满足 AC-001-2，且写明“背景 + 骨架存在”的截帧判据。
-- [ ] **AC-002-2 菜单、占位页与深链刷新保持。**【来源 A+B；阻断实施】
-  - **A**：✓；**B**：未通过，bootstrap 无条件跳 /workbench 覆盖当前合法地址（F-03）。
-  - **位置**：spec.md R-002；plan.md §2.2 / §4 流程 1；tasks.md T-12 / T-13。
-- [x] **AC-002-3 动态研究子项。**【来源 A+B】A ✓、B 通过；plan.md §2.7 / §5、tasks.md T-10 / T-14 的 fixture 注入 N→N+1 可确定验证。
-- [x] **AC-002-4 ticker 与数据源状态。**【来源 A+B】A ✓、B 通过；plan.md §2.2 / §5、tasks.md T-14 对 fixture 与 fresh / stale 令牌类有组件测试。
-- [x] **AC-002-5 侧栏状态持久化。**【来源 A+B】A ✓、B 通过；plan.md §2.2 / §3、tasks.md T-12 明确折叠→刷新和 StorageAdapter。
-- [ ] **AC-002-6 窄窗口断点。**【来源 A+B；阻断实施】
-  - **A**：△，F-1 指出 1240 只改焦点带卡数；**B**：未通过，同样指出模块栅格 / 焦点带栅格责任不唯一（F-05）。
-  - **位置**：spec.md R-002 / R-004 / Q-004；plan.md §2.1 / §2.3 / §2.4 / §5；tasks.md T-18。
-- [x] **AC-003-1 焦点带摘要渲染。**【来源 A+B】A ✓、B 通过；plan.md §2.3 / §5、tasks.md T-17 有结论、数字与方向的 fixture 测试。
-- [x] **AC-003-2 日报跳转携带日期。**【来源 A+B】A ✓、B 通过；plan.md §2.3 / §5、tasks.md T-17 验证 `/daily/<date>`。
-- [x] **AC-003-3 无日报原因空态。**【来源 A+B】A ✓、B 通过；plan.md §2.7 / §5、tasks.md T-17 可通过 getDailyBriefStatus 取原因；A 建议合并返回体，B 接受现有二次调用，不将可选重构升级为新验收要求。
-- [x] **AC-003-4 声明语义的组件映射可验证。**【来源 A+B】A ✓（明示可测性与 docs 冲突分开）、B 通过；plan.md §2.3 / §5、tasks.md T-17 有 market / analysis 分支；本项不授权改变 D-011，C-03 仍阻断。
-- [ ] **AC-004-1 默认七模块与模块库可见性。**【来源 A+B；阻断实施】
-  - **A**：✗，全启用时“仅未启用项”库为空，另有默认顺序争议（F-2 / F-3）；**B**：未通过，同样指出库为空（F-04）。
-  - **位置**：spec.md R-004 / AC-004-1；plan.md §2.4；tasks.md T-16；默认顺序另见 I-08。
-- [x] **AC-004-2 重排与增删后的布局持久化。**【来源 A+B】A ✓、B 通过；plan.md §2.4 / §5、tasks.md T-16 覆盖上 / 下移、移除、末尾添加与刷新；不代表 I-08 的初始顺序已定。
-- [x] **AC-004-3 模块壳结构自动检查。**【来源 A+B】A ✓、B 通过；plan.md §2.4 / §5、tasks.md T-15 / T-16 / T-20 覆盖组件与页面逐模块检查；检查分类建议另见 C-12。
-- [ ] **AC-004-4 三态与复制诊断的完整可达验证。**【来源 A+B；阻断实施】
-  - **A**：附录 ✓，但正文 F-11 明指 scenario=error 先在 bootstrap 失败、到不了该验证路径；**B**：通过组件级独立注入，认为全局场景问题应由 AC-007-2 阻断。
-  - **位置**：plan.md §2.2 / §2.4 / §2.7 / §5；tasks.md T-10 / T-13 / T-15 / T-25；保留此范围分歧，不只取 A 表格 ✓。
-- [x] **AC-004-5 三代表模块的 mock 形态。**【来源 A+B】A ✓、B 通过；plan.md §2.4 / §5、tasks.md T-19 / T-20 / T-26 覆盖盘面三态、关注合约表 / Spark / 涨跌字色、日程及 M-04；不替代 AC-001-5 的范围验证。
-- [x] **AC-004-6 模块栅格无裸 1fr。**【来源 A+B】A ✓、B 通过；plan.md §2.4 / §2.8、tasks.md T-07 有守卫与 minmax；shell 冗余豁免建议独立保留在 C-27。
-- [x] **AC-005-1 全局输入栏与提交展开。**【来源 A+B】A ✓、B 通过；plan.md §2.5 / §5、tasks.md T-22 有八路由、用户消息验证；两档高度的 AC 归属另见 C-28。
-- [x] **AC-005-2 mock 时间线展开与终态显示。**【来源 A+B】A ✓、B 通过；plan.md §2.5 / §5、tasks.md T-23 有 success / failure、步骤详情与终态组件测试；不等于 pi 重试映射正确（C-23）。
-- [x] **AC-005-3 跨页后台连续性。**【来源 A+B】A ✓、B 通过；plan.md §2.5 / §5、tasks.md T-24 指定应用级订阅与跨页步骤增长 / 无重复；收抽屉场景另见 C-24，脚本选择入口另见 V-02。
-- [x] **AC-005-4 运行 / 完成 / 查看清除角标。**【来源 A+B】A ✓、B 通过；plan.md §2.5 / §5、tasks.md T-24 验证 data-ai；A 建议把“查看=点击”的口径写入 AC，B 已接受计划中的用户点击成功路径。
-- [ ] **AC-005-5 导航并高亮目标模块。**【来源 A+B；阻断实施】
-  - **A**：✓，接受入口→路由→data-highlight；**B**：未通过，已移除模块不会被 router.push + highlight 自动恢复（F-15）。
-  - **位置**：spec.md R-004 / R-005；plan.md §2.4 / §2.5；tasks.md T-24。
-- [x] **AC-005-6 事件类型、文档与三回放脚本。**【来源 A+B】A ✓、B 通过；plan.md §2.5 / §2.7 / §5、tasks.md T-09 / T-10 / T-11 有九类 schema、脚本 parse 与 contract-doc；额外 doc 单测所有权和脚本选择仍须按 V-02 补齐。
-- [x] **AC-006-1 主题令牌对拍与主题退役色。**【来源 A+B】A ✓、B 通过；plan.md §2.6 / §2.8、tasks.md T-05 / T-06 / T-21 有生成物 / 主题集合检查；全源码遗漏另在 AC-001-6。
-- [x] **AC-006-2 登记卡面上七序列色对比度。**【来源 A+B】A ✓、B 通过；plan.md §2.1 / §2.6、tasks.md T-21 明确算法与 ≥3:1；不扩大为对所有真实表面文字色 ≥4.5:1 的通过（C-19）。
-- [x] **AC-006-3 注册主题样例图颜色验证。**【来源 A+B】A ✓、B 通过；plan.md §2.6 / §5、tasks.md T-21 有 fai-dark / getOption().color 对拍；实例读取途径建议另留 C-14。
-- [x] **AC-006-4 透明背景。**【来源 A+B】A ✓、B 通过；plan.md §2.6 / §5、tasks.md T-21 / T-26 有透明选项断言与 M-08。
-- [ ] **AC-007-1 零界面直接网络调用。**【来源 A+B；阻断实施】
-  - **A**：✓，接受 network-scope；**B**：未通过，`const request = fetch; request(url)` 或第三方客户端可绕过列明文本模式（F-09）。
-  - **位置**：plan.md §2.7 / §2.8；tasks.md T-07 / T-10。
-- [ ] **AC-007-2 四 mock 场景可配置并用于 E2E。**【来源 A+B；阻断实施】
-  - **A**：✗，F-11 指出 error 覆盖 bootstrap；**B**：未通过，同一问题（F-10）。
-  - **位置**：plan.md §2.2 / §2.7 / §5；tasks.md T-10 / T-13 / T-25。
-- [x] **AC-007-3 契约文档字段与类型对拍。**【来源 A+B】A ✓、B 通过；plan.md §2.7 / §2.8、tasks.md T-11 有 zod 生成、diff 与守卫样例；字段对拍不补足分页 / 时间 / 百分数语义（C-13）。
-- [ ] **AC-007-4 业务数值元数据全覆盖。**【来源 A+B；阻断实施】
-  - **A**：✓，接受 fixtures parse 和 Figure 反例，另建议补 WatchlistTable；**B**：未通过，MarketBoard.cells 的 value / state 未说明 Figure 或元数据继承，和“统一 Figure”不一致（F-11）。
-  - **位置**：plan.md §2.4 / §2.7；tasks.md T-09 / T-10 / T-19；spec.md R-007 / AC-007-4。
-- [x] **AC-008-1 移植文件的基本登记与适配结构。**【来源 A+B】A ✓、B 通过；plan.md §2.9、tasks.md T-02 / T-03 / T-04 / T-27 定义 id / 来源 / 日期 / 适配段；采用 / 不采用的全锚覆盖另见 C-05。
-- [ ] **AC-008-2 令牌来源符合 AC 允许范围。**【来源 A+B；阻断实施】
-  - **A**：△，spec:R-00x 超出条目 / designUI 范围（F-5）；**B**：未通过，同条款不能证明具体数值来源（F-13）。
-  - **位置**：spec.md R-008 / AC-008-2 / §4；plan.md §2.1 / §2.8；tasks.md T-05。
-- [x] **AC-008-3 暗色配色逐原色登记。**【来源 A+B】A ✓、B 通过；plan.md §2.1 / §2.9、tasks.md T-02 / T-04 明确适配表与 palette 守卫；跨算法比较另见 C-20。
-- [x] **AC-009-1 一条命令组织自动检查。**【来源 A+B】A ✓、B 通过；plan.md §2.8、tasks.md T-01 / T-26 明确 pnpm test 聚合及退出码；当前仅审核组织设计，未宣称测试已绿。
-- [x] **AC-009-2 人工清单、看什么及截图责任。**【来源 A+B】合并 A §3 人工验收项与附录 ✓、B 同号通过：plan.md §5、tasks.md T-26 的 M-01～M-08 和 Handoff 截图责任完整，未把未到实施期的截图缺失判作当前缺陷。
+- [x] **P-1 不为猜测场景加复杂度、不悄悄扩大范围（§5.1）。** 精简版已去掉的推测性项（ESLint 级网络守卫、layering 守卫、几何 e2e、ac-coverage、pi 归约层、守卫自检）核对无误；保留项逐一有 AC 或 Clarify 依据：`boot-error`（AC-002-7）、error 下 bootstrap 成功（AC-004-4 可达）、`__FAI_MOCK__` 注入（AC-002-3）、`__FAI_TEST__` 钩子（AC-006-3）、`step.error` + `retry` 脚本（Q-014：pi 自动重试须有非终态映射）、`grid-column: span min()`（窄窗口不溢出）。第一轮唯一的范围扩大——中止功能——已按方案 (2) 收回且全文一致（plan:117 Dock 无中止钮、plan:122 "`run.aborted` 只作为事件类型存在…v1 不做中止交互"、plan:123 / :210 / :214 与 tasks:105 / :205 均为四份脚本、plan:140 无 `abort()`）；"目录有、注册表无"分支亦删（S-09）。
+- [x] **P-2 外部数据只在入口层校验（§5.2）。** plan §2.7 明示"mock / real 实现对自己返回的数据做一次 parse，内部组件直接消费已确定类型的值"；SparkSeries 跨字段 refine 已删；`layoutStore` hydrate 丢弃目录外 id 属 localStorage 边界校验；BoardCell `ok ⇔ figure ≠ null` 是边界 schema 约束。措辞提醒 S-07 未采纳（不阻断）。
+- [x] **P-3 不提前抽只用一次的抽象（§5.3）。** StorageAdapter、Toast 已删；`DataTable` / `BoardGrid` / `Spark` / `Kpi` 虽 v1 各只一处使用，但各对应 FTEngine 具名设计概念（table_data / board / spark_rng / KPI 例外）且有独立测试，符合"代表一个能起清楚名字的概念"；`ModuleSummary` 四模块共用、`PlaceholderPage` 七路由共用；无消费者的 `AgentClient.getHistory` 已删（plan:140、tasks:91，B-08(a)）。
+- [x] **P-4 主函数只写正常流程（§5.4）。** plan §4 四条关键流程均为主路径 + 一处失败分支（启动）；§2.5 引导跳转四种情形为需求分支而非细节混杂。真正落实在代码层，Review 阶段核 `bootstrap()` / `send()` 流程函数。
+- [x] **P-5 自动生成文件不手改（§5.5）。** 三类生成物（`src/design/generated/*`、`index.html` 首帧块、`contracts/{CONTRACT.md,schema.json}`）均由 `check:generated` 重生成逐字比对（plan:155），`pnpm test` 以 `check` 开头（plan:162），§6 "生成物漂移"行覆盖三者（plan:234），§2.7 明示 contracts "生成物入库、不手改"（plan:146）——B-04 闭环。实施提醒 S-17：T-03 时 `contract-build.mjs` 与 `contracts/*` 尚不存在，`generated` 对 contracts 的比对须在生成器缺失时跳过。
+- [x] **P-6 测试测真实实现、少用 mock（§5.6）。** 六条 check 直接扫真实仓库；AC-001-2 的最小样例只核 `colors` 规则本身（spec 明文要求，方案 (1)，plan:162 / tasks:5 / :45 口径一致），其他五项检查不写自检；组件 / e2e 测真实组件，数据经契约 mock 实现在系统边界注入（spec R-007 要求的形态）；不 vi.mock 内部模块；`format.spec` 测真实 `fmtValue` / `fmtDelta`；对比度测试自带 WCAG 公式作 oracle（应用内无该逻辑，不构成抄逻辑）；`__FAI_TEST__` 钩子只在 mock 模式。
+- [x] **P-7 按仓库现有流程、不引入未在用工具（§5.7）。** 仓库无前端代码，工具链由 D-008 与 spec R-009 决定：pnpm / Vitest / Playwright（复用本机 Chrome）/ zod（AC-007-4 + R-007 文档生成）/ ESLint 均有需求依据；Prettier 已去除（plan:10，换行交 `.gitattributes`；目录树 plan:16 残留一处 `.prettierrc`，S-08 备注）；工作流（spec-driven、每任务一提交、`pnpm test` 一条命令）与 data-layer 一致。
 
 ## 其他自定义项
 
-- [ ] **C-01 Q-015 修订版已重新过 Gate 1，基线状态一致。**【来源 A+B；阻断实施】
-  - **A**：C-1 / F-9 未通过，当前草案同步可审，但仍须 Walter 批准；**B**：C-01 / F-01 未通过，plan / tasks 的冻结版表述可能误导。
-  - **位置**：spec.md 头部 / §5 Q-015；plan.md / tasks.md 头部；specs/README.md 状态表；AGENTS.md §2。
-- [x] **C-02 Q-015 主要行为文字贯穿三件套与状态表。**【来源 A+B】A C-2 / 附录 B、B C-02 均通过：spec.md R-001 / R-004 / 两条修订 AC / Q-015，plan.md §2.1 / §2.3 / §2.4 / §2.8 / §5，tasks.md T-07 / T-08 / T-10 / T-17 / T-19 / T-20 与 specs/README.md 均采用合约价格 / market / 红涨绿跌；此项不包含批准、docs 边界与守卫有效性。
-- [ ] **C-03 焦点带双语义符合 D-011 边界并有 docs 裁定。**【来源 A；阻断实施】
-  - **A**：F-10 / 附录 C 未通过，建议行情 / 分析分组、designUI 补说明及短 ADR 或 Walter 明示解释；**B**：I-03 / AC-003-4 肯定架构与组件语义映射，但未对该 docs 解释 / 新 ADR 需要单独通过，不能视为 A 的风险已被否定。
-  - **位置**：docs/designUI.md §2.2；D-011 结论 6；spec.md R-001 / R-003 / Q-013；plan.md §2.3；M-03。裁定前不擅改历史 ADR，也不把 A 的建议当作已批准需求。
-- [ ] **C-04 updown 守卫区分令牌定义与引用。**【来源 A；建议 / 待补审】
-  - **A**：C-3a 未通过，tokens / generated 的合法定义处须豁免；**B**：未对这一具体豁免策略单独评价，C-07 的机制肯定不等于允许名单已齐全。
-  - **位置**：plan.md §2.1 / §2.8；tasks.md T-05 / T-07；仅豁免定义，不豁免非法使用。
-- [ ] **C-05 adopted / not_adopted 覆盖所有原条目锚点。**【来源 A；建议 / 待补审】
-  - **A**：C-3b / F-13 未通过，要求两集合覆盖正文全部锚；列出 Foundations 的 shadow_overlays_only / square_corners、Components 的 legend / caret / zpill 等、Layout 的 internal_geometry / rail、Nav 的 nav_table / lpg_nav / exempt、Cards 的 card_family、Tables 的 gbal_edit 等漏项。
-  - **B**：AC-008-1 仅通过基本登记结构，未单独通过全锚分类完整性。
-  - **位置**：spec.md R-008；plan.md §2.8 design-registry:entries / §2.9；tasks.md T-02 / T-03 / T-04；漏项全集仍以 A C-3b 为追溯依据。
-- [ ] **C-06 source 的中文标题 / 节号锚解析规则明确。**【来源 A；建议 / 待补审】
-  - **A**：C-3c 未通过，建议明确 #2.1 节号解析方式；**B**：要求来源可解析，但未对该具体算法单独通过。
-  - **位置**：plan.md §2.1 source / §2.8 design-registry:sources；docs/designUI.md 标题；tasks.md T-02 / T-05。
-- [ ] **C-07 玻璃守卫覆盖内联样式与主题字符串。**【来源 A；建议 / 待补审】
-  - **A**：C-3d 未通过，指出 Vue 内联 style、theme JSON tooltip.extraCssText 的绕过风险；**B**：AC-001-3 通过三类和整页检查设计，未单独核实这些额外入口。
-  - **位置**：plan.md §2.8 glass-tiers / §2.6；tasks.md T-07 / T-21。
-- [ ] **C-08 字号令牌子集足以覆盖全部使用位置。**【来源 A；建议 / 待补审】
-  - **A**：C-5a 未通过，en_sub、card_sub / card_r、board_td / board_stub、mini_td、unit、btn 等未在 type.* 子集中列全，建议完整 main_scale 或精确子集；**B**：未单独判定该使用清单完整性。
-  - **位置**：plan.md §2.1 type.* / §2.4 模块壳；tasks.md T-05 / T-15 / T-19 / T-20。
-- [ ] **C-09 三玻璃层的 surface / border / blur 一一映射。**【来源 A；建议 / 待补审】
-  - **A**：C-5b 未通过，三个白 alpha 与另列抽屉面未明确对应；**B**：通过基础三层机制，未单独通过这张参数映射表。
-  - **位置**：plan.md §2.1 color.glass；tasks.md T-05 / T-08；docs/designUI.md §2.1。
-- [ ] **C-10 关注合约行的具体 schema 与身份字段完整。**【来源 A；建议 / 待补审】
-  - **A**：C-5c 未通过，建议 contract / seriesId / last / change / changePct / spark 结构及含 contract 的序列身份；**B**：AC-004-5 通过形态，AC-007-4 要求业务数字元数据，但未单独通过这套具体行结构。
-  - **位置**：plan.md §2.4 watchlist / §2.7 WatchlistTable；tasks.md T-09 / T-10 / T-20；D-012 结论 1。该建议结构不是已批准的新字段要求。
-- [ ] **C-11 模块库浮层不新增第四玻璃层。**【来源 A；建议 / 待补审】
-  - **A**：C-5e 未通过，建议复用登记玻璃层（如 glass-drawer）；**B**：通过三层基础约束，未单独评价模块库具体挂载方案。
-  - **位置**：plan.md §2.1 / §2.4 ModuleLibrary；tasks.md T-08 / T-16。
-- [ ] **C-12 模块壳自动检查的分类与文字一致。**【来源 A；建议 / 待补审】
-  - **A**：C-5f 未通过，spec R-009 称静态守卫，plan 实际用组件 / E2E，应说明分类；**B**：AC-004-3 通过自动检查，未单独要求或通过分类文字一致性。
-  - **位置**：spec.md R-009；plan.md §2.8 / §5；tasks.md T-15 / T-16 / T-26。
-- [ ] **C-13 分页、时间及百分数口径有可校验的契约说明。**【来源 A+B；阻断实施】
-  - **A**：C-5g 建议明确无分页、from / to 闭开与时区；**B**：N-02 / F-12 未通过，另有 date / asOf 和 deltaKind=pct 的比例 / 百分数口径未定。
-  - **位置**：spec.md R-007；plan.md §2.7 client / Figure / contract-build；tasks.md T-09 / T-11；不能从字段 schema 自动推出这些语义。
-- [ ] **C-14 E2E 获取图实例的途径明确。**【来源 A；建议 / 待补审】
-  - **A**：C-5h 未通过，建议 mock 专用实例句柄；**B**：AC-006-3 通过注册主题与 getOption 测试设计，未单独通过句柄暴露机制。
-  - **位置**：plan.md §2.6 / §5；tasks.md T-21。只保留测试可访问性要求，不预先批准必须使用 window 全局变量。
-- [ ] **C-15 pi 对照引用锁定版本和可定位文档。**【来源 A；建议 / 待补审】
-  - **A**：C-5i 未通过，plan 中 docs/json.md 未写 pi 版本 / 外部路径；**B**：F-16 使用本机 pi 1.4.0 文档，但未单独通过 plan 的版本登记完整性。
-  - **位置**：plan.md §2.5 / §6；tasks.md T-09；引用可追溯性与终态算法正确性（C-23）分开。
-- [x] **C-16 mock 隐私、backend 隔离与忽略锚点保护。**【来源 A+B】合并 A C-6 的隐私部分与 B C-11：plan.md §3、tasks.md T-01 / T-10 均只用虚构样本、不写真实凭证 / 头寸 / 私文档、不改 backend、.gitignore 仅追加；不将 A 同项中的回滚肯定扩展到 I-04。保留 A 提醒：T-01 留意根 lib/ 忽略会吞 frontend 子目录，dist/ 追加冗余无害，*.spec 不匹配 .spec.ts。
-- [ ] **C-17 AC / 测试标题覆盖有机械核验。**【来源 A；建议 / 待补审】
-  - **A**：C-7 未通过，建议 ac-coverage 守卫抽 spec AC 并核 tests / e2e / guards 标记；**B**：N-01 仅肯定名义矩阵、C-07 仅肯定守卫自检机制，未单独判定新增守卫是否必需。
-  - **位置**：plan.md §2.8 / §5；tasks.md T-26 / 测试命名约定；可用等效机制，不擅自增加冻结 spec 的验收要求。
-- [ ] **C-18 spec 去技术化程度可接受。**【来源 A；建议 / 待补审】
-  - **A**：C-8 通过，认为 1fr / 浏览器持久化是可验规则且已冻结，不阻断；**B**：原件没有该独立评价，不能据缺席补签通过。
-  - **位置**：spec.md AC-004-6 / Q-007；不预设必须改写 spec，先补 B 复核；仅 Walter 要求改变需求表述时回流处理。
-- [ ] **C-19 文字对比度承诺覆盖真实玻璃渐变背景。**【来源 B；阻断实施】
-  - **A**：§2 配色项通过固定 #1D1E20 上的复算，未单独评价渐变顶部最不利表面；**B**：C-04 / F-19 未通过，白 .045 叠 #1B1C1F 得约 #252629，#DF5C4D 对比度约 4.161:1，低于 plan 的 4.5:1 文字承诺。
-  - **位置**：plan.md §2.1 / §2.6；assets/palette-dark-candidates.html 的背景 / 卡面；tasks.md T-21；固定卡面的 4.588:1 不能证明全表面达标。
-- [ ] **C-20 暗亮版色差比较使用同一指标。**【来源 B；建议 / 待补审】
-  - **A**：通过暗色最小 OKLab×100=8.5 的复算，未单独评价与 21.5 的跨指标比较；**B**：C-05 / F-20 未通过，来源 21.5 是 ΔE2000。
-  - **位置**：plan.md §2.1 色差段；D:/FTEngine/design/Graphs/Palette/PALETTE_CORE.md §二.1；未来 design/charts/PALETTE_DARK.md。
-- [ ] **C-21 “绿色全站只表示跌”不误伤分析色板身份。**【来源 B；建议 / 待补审】
-  - **A**：C-2 通过修订传播，未单独评价此绝对化语句；**B**：C-06 / F-21 未通过，缥碧还表达旧年份 / FSU，不能全站等同下跌。
-  - **位置**：plan.md §2.1 状态语义 / 色板；assets/palette-dark-candidates.html regionColor.FSU；docs/designUI.md §2.2 / §2.3。
-- [ ] **C-22 所有守卫先跑正反例自检、失败非零。**【来源 B；建议 / 待补审】
-  - **A**：原件认可多条具体守卫验证，但未独立对“所有守卫统一先自检”的窄机制给出通过；**B**：C-07 通过该机制，不声称当前样例集合已充分。
-  - **位置**：plan.md §2.8；tasks.md T-02 / T-06 / T-07 / T-11 / T-21；需补 A 明确复核，不预设源文件有错误。
-- [ ] **C-23 pi 错误 / 重试 / settled 只归约出唯一运行终态。**【来源 B；阻断实施】
-  - **A**：附录 AC-005-2 / AC-005-6 ✓ 仅肯定 mock 渲染与类型，未单独核实真实 pi 重试终态；**B**：C-09 / F-16 未通过，message_end.error→run.failed 与 settled(aborted=false)→run.completed 可能连续发矛盾终态。
-  - **位置**：spec.md Q-014；plan.md §2.5 对照表；tasks.md T-09 / T-10 / T-23；只需固定样本归约测试，不要求本 feature 接真实 pi。
-- [ ] **C-24 收起抽屉期间运行连续性有独立验证。**【来源 B；阻断实施】
-  - **A**：F-17 提到高度 / 指示缺 AC，附录 AC-005-3 ✓ 只覆盖切页，未单独通过收起期间的连续性；**B**：C-10 / F-22 未通过，切页测试不能替代收起→期间推进→重开。
-  - **位置**：spec.md R-005；plan.md §2.5 / §5；tasks.md T-22 / T-24。
-- [ ] **C-25 模块库定义字段完整且遵守统一数据契约。**【来源 A+B；阻断实施】
-  - **A**：C-5d 未通过，registry 缺说明字段；**B**：C-12 / F-14 未通过，R-007 明列模块库定义，但 DataClient 没有方法，本地组件工厂映射与数据定义未区分。
-  - **位置**：spec.md R-004 / R-007；plan.md §2.4 / §2.7；tasks.md T-09 / T-10 / T-15 / T-16。
-- [ ] **C-26 环境与依赖验证责任明确。**【来源 B；建议 / 待补审】
-  - **A**：认可任务形式与 AC-009-1 聚合测试，未单独通过 Node / 包兼容性及 T-01 冒烟责任安排这一窄项；**B**：C-13 通过“先冒烟 / 锁版本 / 回写计划”的设计，未声称已安装成功。
-  - **位置**：plan.md §1 / §6；tasks.md T-01；先补 A 复核，合并会话不安装依赖。
-- [ ] **C-27 bare-1fr 没有不必要的 shell 豁免。**【来源 A；建议 / 待补审】
-  - **A**：F-7 建议删除，shell 已是 minmax；**B**：AC-004-6 通过有出处的 shell 例外，未要求删除，故不能把优化建议视为共识已满足。
-  - **位置**：plan.md §2.2 / §2.8；tasks.md T-07。
-- [ ] **C-28 AC 与计划补充行为的归属不混写。**【来源 A；阻断实施】
-  - **A**：F-8 / F-17 未通过，T-13 启动失败重试、T-22 两档高度 / 收起超出所引 AC，应补 AC 或明确标为计划行为；**B**：AC-002-1 / AC-005-1 接受这些计划中的验证，未单独判定 AC 归属满足规范。
-  - **位置**：spec.md AC-002-1 / AC-005-1 / R-005；plan.md §2.2 / §2.5 / §5；tasks.md T-13 / T-22；不能直接通过改 tasks 偷加需求。
-- [ ] **C-29 计划目录树与任务文件所有权一致。**【来源 A；建议 / 待补审】
-  - **A**：F-9 指出 Num / Kpi / ErrorState / Loading 在 tasks 新增但目录树未列，Chip 列在 plan 却无创建任务；**B**：未对这一目录清单细项单独评价。
-  - **位置**：plan.md §1 shared/components；tasks.md T-08 / T-15 / T-20；版本头漂移已合并 C-01，不另重复计数。
-- [ ] **C-30 玻璃边范围的 docs 子范围关系明确。**【来源 A；建议 / 待补审】
-  - **A**：§2 docs 信息项指出 D-011 为 .07～.14、designUI 为 .07～.12，但现有取值两者都满足，建议可选对齐；**B**：未单独评价范围文字统一性。
-  - **位置**：docs/decisions/20261026-ui-visual-system.md 结论 5；docs/designUI.md §2.1；plan.md §2.1；不是当前色值越界，也不建议直接改历史 ADR。
+- [x] **C-01 Q-003 暗色配色表可复算。** 对 `#252629`（白 .045 叠 `#1B1C1F`，复算相符）用 WCAG 相对亮度重算 plan §2.1 表除霜地（α 叠加）外的 16 行（12.1 / 5.4 / 6.4 / 4.1 / 5.8 / 6.9 / 9.4 / 5.7 / 6.4 / 4.8 / 2.0 / 5.9 / 4.9 / 4.2 / 5.6 / 5.3）及文字次 5.2、弱 4.6，共 18 个值与表值一致；阈值分级（线条 ≥ 3、文字 ≥ 4.5、点睛红非文字 ≥ 3、中性退后不设限）自洽；Walter 2026-10-27 裁定 A 等亮已记入 plan，样张 `assets/palette-dark-candidates.html` 在库。
+- [x] **C-02 FTEngine 源资产存在且关键数值核实。** `D:\FTEngine\design\UI\{Foundations,Colors,Fonts,Layout,Components,Cards,Tables,Navigation}` 八份条目与 `Graphs\Palette\PALETTE_CORE.md` 存在；`palette-core` 不同原色 14 个、`palette-retired` 五值 = plan 退役清单；UI_LAYOUT `shell_collapse 980 / g4_2 1240 / g5_3 1400 / g3_2 1500`；UI_FONTS `type_scale.main` 45 键 = plan "main_scale 45 键全量"。
+- [x] **C-03 D-013 登记位置 ↔ plan 守卫名单 ↔ fixtures 语义来源一致。** 三个位置（行情价格模块、关注列表、焦点带行情段）= `updown.css` 允许引入 `market-board/`、`watchlist/`、`FocusBand.vue`；焦点带内按 `semantic` 分段、指标段红 = 负；状态色不用绿；分析图表缥碧保持色板身份。
+- [x] **C-04 mock 隐私与 backend 隔离。** plan §3：fixtures 不含真实头寸 / 凭证 / 私有文档；不写用户数据目录；不触碰 `backend/`；`.gitignore` 只追加四行（tasks:20 已列明，`dist/` 根文件已有；目录树不用 `lib/`，`*.spec` 不匹配 `.spec.ts`，无误伤）。
+- [x] **C-05 Q-007 "经存储接口隔离"与 §5.3 的关系已记录。** Q-007 属推断性实现措辞（spec 规定实现机制一律在 plan），R-002 / R-004 的 AC 只验持久化行为；AGENTS §5 与 §2 同等强制，plan §3 以"三个 `fai.*` 键集中登记、不做抽象层"落实，不构成需求变更、无需回流 Clarify。
+- [x] **C-06 Q-014 pi 可映射性保留。** plan §2.5 保留 pi 1.4.0 `docs/json.md` / `docs/rpc.md` 的对照表与 `agent_settled` 归约规则（文字级），`step.error.willRetry` 兼顾 `auto_retry_start` 与 `compaction_end.willRetry`，`run.aborted` 对应 `agent_settled.aborted`；本 feature 不接 pi、不实现归约代码，符合"对照、保证可映射"。
 
-### 原件覆盖与去重追溯
+## 阻断项（第一轮发现 → 逐轮复核 → 全部闭环）
 
-- **A 主项**：§1 四项→N-01～N-04；§2 五项→I-01 / I-02 / I-05 / I-06 / I-07（其中架构肯定抽出 I-03）；§3 三项→V-01 / V-02 / V-03、AC-009-2；附录 A 41 行→41 条同号 AC。
-- **A 自定义项**：C-1→本 C-01；C-2→本 C-02；C-3a～e→本 C-04～C-07、AC-001-2 / AC-001-6；C-4→AC-001-5；C-5a～i→本 C-08 / C-09 / C-10 / C-25 / C-11 / C-12 / C-13 / C-14 / C-15；C-6→本 C-16 / I-04；C-7→本 C-17；C-8→本 C-18。
-- **A 其他独有问题 / 信息**：F-2→I-08；F-6→V-02；F-7→C-27；F-8→C-28；F-9→C-29 / C-01；F-10→C-03；F-17 / F-18→N-02 / N-03；玻璃边范围信息→C-30。其余 F 项分别合入同号主题的 AC、I-04、AC-008-2 等，不丢弃原件的子项解释。
-- **B 主项**：N-01～N-04→本同号 N；I-01～I-04→本同号 I；V-01 / V-02→本同号 V；41 条 AC→本同号 AC（AC-004-4 因 A 正文阻断条件而未勾选）。
-- **B 自定义项**：C-01 / C-02→本 C-01 / C-02；C-03→I-06；C-04 / C-05 / C-06→本 C-19 / C-20 / C-21；C-07→本 C-22；C-08→V-03；C-09 / C-10→本 C-23 / C-24；C-11→本 C-16；C-12→本 C-25；C-13→本 C-26。B F-01～F-22 的理由随各 AC / 自定义项保留。
+| # | 类别 | 问题（第一轮） | 复核 #2（50c26dd） | 复核 #3（666b671） | 复核 #4（2c2fbc8）· 依据 |
+|---|---|---|---|---|---|
+| **B-01** | 一致性 | "16 个原色"与 §2.1 表 / PALETTE_CORE 的 14 个不同 hex 不符 | 闭环 | 闭环 | **闭环（未回退）**：plan:222、tasks:76 "14 个 palette-core 原色（按不同 hex 计）" |
+| **B-02** | 可测试性 | 矩阵归 T-11 / T-14，但两任务完成标准未引用 AC-001-5 / AC-004-4 | 闭环 | 闭环 | **闭环（未回退）**：tasks:171 / :175 / :181（T-11，`check --only updown`）、tasks:224 / :229（T-14，`-g "AC-004-4"`）；脚本矩阵 ↔ 完成标准 diffs=[] |
+| **B-03** | 可测试性 / 依赖 | AC-008-2 自动测试无承担任务；两个测试文件无归属 | 闭环 | 闭环 | **闭环（未回退）**：tasks:72 / :81 / :271 / :41（T-05 拥有 `design-registry.spec.ts`、验证 `AC-008-2 sources`、矩阵 T-02、T-05、T-02 验证 2 注明）；tasks:116（T-08 含 `index.html` 骨架与 `topbar.spec.ts`） |
+| **B-04** | §5.5 | `contracts/*` 为入库生成物却无重生成比对 | 未闭环 | 闭环 | **闭环（未回退）**：plan:155 `generated` 含 `contracts/{CONTRACT.md,schema.json}`、plan:234 §6、plan:146 §2.7、tasks:111 T-07 验证 4 |
+| **B-05** | 一致性 | (a) `colors` 未豁免登记处；(b) `updown` 缺"只写 `color`"第三条 | 未闭环 | 闭环 | **闭环（未回退）**：plan:156（豁免 `tokens.json` / `generated/*`、具名色只在样式声明值位置、先跑 `check-samples`）；plan:158（"只能是 `color:`"） |
+| **B-06** | 需求完整性 | spec R-007 "错误形态"无 plan 落点 | 未闭环 | 闭环 | **闭环（未回退）**：plan:147 错误形态 `{error: {code, message, retryable}}` + code 集合 + 写入 CONTRACT.md；tasks:106 T-07.4 |
+| **B-07** | spec ↔ plan 冲突 | 冻结 AC-001-2 要求阳性 / 阴性样例，plan 取消全部样例 | 方案 (1) 主体落实；残留 ①②③ | plan 侧闭环（①）；残留 ②③（tasks T-03） | **闭环**：② tasks:5 头部"去掉了守卫样例自检（AC-001-2 明文要求的 `colors` 最小样例除外）"，tasks:45 T-03 上下文"直接扫真实仓库；仅 `colors` 按 AC-001-2 先跑最小样例"；③ tasks:53 T-03 验证 2 改为 `pnpm -C frontend check --only colors`（该检查内部先核样例、再扫仓库），与完成标准 2（tasks:50）及 plan:156 机制一致，不再指向无归属的 vitest 测试；tasks 全文 `不写样例自检` = 0、`AC-001-2 samples` = 0 |
+| **B-08(a)** | §5.3 | `getHistory` 无消费者 | 闭环 | 闭环 | **闭环（未回退）**：plan:140 `send({sessionId?, message}) / subscribe(cb)`；tasks:91 "`AgentClient`（`send` / `subscribe`）" |
+| **B-08(b)** | §5.1 范围 | 中止功能不在 spec（事件、中止钮、`abort()`、abort 脚本） | 方案 (2) 主体落实；残留 2 处 | 残留 3 处（plan:210 / :214、tasks:205） | **闭环**：plan:210 AC-005-2 行"success / failure / retry 回放"；plan:214 AC-005-6 行"四份脚本"；tasks:205 T-13.3 "回放 success / failure / retry"；与 plan:123（四份脚本）、plan:122（`run.aborted` 只作事件类型，v1 不做中止交互）、plan:121（事件仍 10 种）、tasks:105（T-07.3 四份）全文一致；`retry / abort` = 0、`五份` = 0 |
 
-### 汇总与整改分组
+## 建议（不阻断、不计入判定）
 
-| 范围 | 项数 | 共识通过 | 未通过 |
-|---|---:|---:|---:|
-| 需求完整性 N | 4 | 2 | 2 |
-| 一致性 I | 8 | 2 | 6 |
-| 可测试性 V + 逐 AC | 44 | 27 | 17 |
-| 其他自定义项 C | 30 | 2 | 28 |
-| **合计** | **86** | **33** | **53** |
+| # | 位置 | 建议（第一轮） | 最终状态（2c2fbc8） |
+|---|---|---|---|
+| S-01 | plan §2.5 | 恢复逐事件字段清单 | **已采纳**（plan:121） |
+| S-02 | plan §2.5 | 补页面目标跳转 | **已采纳**（plan:120） |
+| S-03 | plan §2.4 | `data-badge` 值域与样例态做法 | **已采纳**（plan:112） |
+| S-04 | plan §2.7 / §2.1 | 各类型含哪些 Figure 字段；mock / real 切换配置；"文字用色"清单 | **未采纳**。理由可接受：T-06 zod 为唯一定义，AC-006-2 阈值已在 plan:56；信息级 |
+| S-05 | tasks T-01、T-08 | 列出 `.gitignore` 追加行；T-08 加 `index.html` | **已采纳**（tasks:20、:116） |
+| S-06 | 矩阵、T-15 | 人工项标注；M-01 ~ M-08 含义 | **已采纳**（tasks:257 / :265 / :238） |
+| S-07 | plan §4 流程 3 | "唯一终态"注明是契约保证 | **未采纳**（plan:181 原文）。信息级 |
+| S-08 | plan §1 | 不引 Prettier | **已采纳**（plan:10）；残留 plan:16 目录树仍列 `.prettierrc`（编辑性，实施期顺手删） |
+| S-09 | plan §2.4 | 删"不可用"分支 | **已采纳** |
+| S-10 | tasks T-08 / T-13 | 工时偏紧 | **已采纳**（tasks:276 末行拆分规则） |
+| S-11 | D-013 勘误段；specs/README.md | "四个"→"三个"；状态表同步 | **已采纳**（D-013:45；specs/README.md:23） |
+| S-12 | tasks 约定 | 文件边界句 | **已采纳**（tasks:12） |
+| S-13 | plan §2.8 `colors` | 具名色限定样式声明上下文 | **已采纳**（plan:156） |
+| S-14 | plan §2.8、T-03 / T-04 | `--only` CLI 形式；`tokens:check` 与 `check:generated` 重复 | **已采纳**（plan:162） |
+| S-15 | plan §5 AC-007-1 行 | （50c26dd 引入）`check.network` 应为 `check:network` | **未改**（plan:218）；编辑性，实施期顺手改 |
+| S-16 | tasks T-15 修改范围 | T-15 验证 3 要改 T-05 拥有的 `design-registry.spec.ts`，范围未列 | **未改**（tasks:234）；实施期加入范围即可 |
+| S-17 | plan §2.8 `generated` / tasks T-03 | T-03 时 `contract-build.mjs` 与 `contracts/*` 尚不存在（T-07 创建）；`generated` 对 contracts 的重生成比对须在生成器 / 目标缺失时跳过，否则 T-03 验证 1 在 T-07 前失败 | **未改**；实施 T-03 时按此处理，Converge 核 |
 
-逐 AC 的 41 项为 **26 项共识通过、15 项未通过**；与仅取 A 附录表 / B 条目交集的 27 / 14 相比，AC-004-4 额外保留了 A 正文 F-11 的阻断条件。以下每个未通过编号恰列一次；聚合项引用其细项，不表示新增重复整改任务。
+## 结构核验证据（只读内存脚本，未写文件、未安装依赖）
 
-#### 阻断实施（31 项）
+```text
+ROUND 4  基线 = HEAD 2c2fbc8（plan 2+/2−、tasks 4+/4−，只触及第三轮点名的 5 处）；spec.md 自 1b5659d 未动
+SPEC_AC   45（编号集合 = 完成标准集合 = 矩阵集合 = plan §5 集合，missing=[]）
+TASKS     15（T-01 ~ T-15）；依赖 forward=[] missing=[] cycle=False
+HOURS     逐项求和 25.5 = 末行 25.5；单项范围 [1.0, 2.0]
+CRITERIA≠MATRIX  diffs=[]；CRITERIA/VERIFY 15 任务条数全部相等
+PLAN_TASK_REFS   plan 只引用 T-01、T-08，均存在
+FIVE_SPOTS  tasks:5 头部括注 ✓ | tasks:45 T-03 上下文 ✓ | tasks:53 `check --only colors` ✓ | tasks:205 T-13.3 无 abort ✓ | plan:210 无 abort、plan:214 四份 ✓
+RESIDUAL_GREP    `retry / abort` = 0；`五份` = 0；tasks `不写样例自检` = 0；tasks `AC-001-2 samples` = 0
+NON_BLOCKING     plan:218 `check.network` = 1（S-15）；plan:16 `.prettierrc` = 1（S-08）
+NOT_REVERTED     B-01 ~ B-06、B-08(a) 的全部依据行号在 2c2fbc8 上逐一复核，均在
+ROUND 1–3 同项：TASK_DAG 四轮均通过；CONTRAST 18 值复算一致；SOURCE 八份条目 + 断点 + 45 键核实
+```
 
-每行一句列出修改处与裁定责任；“需 Walter”指需求 / docs 层面的裁定，不把可直接对齐现有规范的技术补丁都上推给用户。
+## 结论与下一步
 
-| 项 | 如何闭环、改在哪里、是否需要 Walter |
-|---|---|
-| N-02 | 在 spec.md R-002～R-005 / R-007 补齐所述行为的 AC / 验证归属并同步 plan.md §5 与对应任务；**需求补写纳入 Walter Gate 1 再批准**。 |
-| N-03 | 将两审指出的默认顺序、断点、焦点带边界、字体及移除目标等歧义登记 spec.md §5 并消除互斥解释；**无法由既有规范唯一推导的产品选择需 Walter 裁定**。 |
-| I-01 | 按下列细项修正 spec / plan / tasks 的冲突后重新 Analyze；**涉及需求改变的部分随 Gate 1 提交 Walter**。 |
-| I-02 | 在 docs/designUI.md §2.2 / §8 与 plan.md §2.1 / §2.3 对齐作用域与来源纪律；**D-011 的解释或扩展由 Walter 确认，决策变更按 ADR 流程**。 |
-| I-04 | 在 spec.md §4、plan.md §1 / §6、tasks.md 边界 / T-27 统一 docs/designUI.md 与 specs/README.md 的允许修改和恢复责任；**spec 边界修订需 Walter 再批准**。 |
-| I-08 | 在 spec.md R-004 / AC-004-1、plan.md §2.4、T-16 明示默认顺序并增加断言；**Walter 裁定列表是否表示默认顺序，必要时同步 docs/designUI.md §3**。 |
-| V-01 | 修正未通过 AC 的测试设计并更新 plan.md §5 / tasks.md 矩阵后双审复核；**不新增需求的测试补强无需另请 Walter**。 |
-| V-02 | 在 T-10 / T-19 / T-20 加 T-07 依赖、T-04 加 T-03，给 T-11 单测指定文件、给 T-24 指定回放入口并保证未命中失败；**纯任务闭环无需 Walter，AC 归属变化按 C-28**。 |
-| AC-001-1 | 在 plan.md §2.1 / §2.8 / §5 与 T-05 / T-18 补浏览器运行时逐令牌 / 主题取值及覆盖反例；**不放宽 AC 无需 Walter**。 |
-| AC-001-2 | 在 plan.md §2.8、T-01 / T-05 / T-06 纳入 index.html 和合法颜色语法、明确生成块允许名单及反例；**若放宽零字面量要求才需 Walter**。 |
-| AC-001-4 | 在 spec.md R-001、plan.md §2.1 / §2.4、T-08 统一 KPI 数值字体例外和模块标题层级及真实样式断言；**字体需求优先级需 Walter 确认并纳入再批准**。 |
-| AC-001-5 | 在 plan.md §2.1 / §2.7 / §2.8 和 T-07 / T-08 / T-10 / T-17 / T-19 / T-20 增实际位置、fixture 语义与仅 color 的验证；**技术防线无需 Walter，扩大行情位置白名单则需需求 / docs 裁定**。 |
-| AC-001-6 | 在 plan.md §2.8 和 T-06 将 index.html 等生产源码纳入退役色扫描并区分历史资产 / 反例；**保持禁用范围无需 Walter**。 |
-| AC-002-1 | 在 plan.md §2.2 与 T-01 / T-05 / T-13 明确首帧样式由令牌生成 / 注入并写明截帧判据，机制由实施计划选定而非强制采用 A 的某一插件；**若改变无空白验收要求需 Walter**。 |
-| AC-002-2 | 在 plan.md §2.2 / §4 与 T-12 / T-13 仅对无目标启动使用工作台重定向，并测试直接打开非首页再刷新；**对齐现有深链要求无需 Walter**。 |
-| AC-002-6 | 在 spec.md R-002 / Q-004、plan.md §2.1 / §2.3 / §2.4、T-18 分别登记模块栅格与焦点带的断点表；**1240 的需求归属需 Walter 在再批准中确认**。 |
-| AC-004-1 | 在 plan.md §2.4 / T-16 将模块库改为全七项带已启用状态并补默认可见断言，或回流改 AC；**仅对齐现有 AC 无需新裁定，改变库可见需求需 Walter**。 |
-| AC-004-4 | 在 plan.md §2.7、T-10 / T-15 / T-25 区分组件注入与启动后模块错误验证，使两审对 error 路径达成一致；**仅拆分故障注入阶段无需 Walter**。 |
-| AC-005-5 | 在 spec.md R-005、plan.md §2.4 / §2.5、T-24 定义已移除 / 无效目标的恢复、提示或不可达规则及测试；**影响布局与用户交互的选择需 Walter 裁定**。 |
-| AC-007-1 | 在 plan.md §2.7 / §2.8 与 T-07 / T-10 补网络入口 / import / 别名限制与绕过样例；**不放宽界面零网络调用无需 Walter**。 |
-| AC-007-2 | 在 plan.md §2.7 和 T-10 / T-13 / T-25 保证业务 error 场景 bootstrap 可成功，启动失败另行注入并测试重试；**纯 mock 机制修复无需 Walter，新增产品行为仍按 C-28**。 |
-| AC-007-4 | 在 plan.md §2.4 / §2.7 与 T-09 / T-10 / T-19 明确格值 Figure 或元数据继承并加逐元数据缺失反例；**遵守四项必填无需 Walter，豁免数值种类则需修改 spec 再批准**。 |
-| AC-008-2 | 在 plan.md §2.1 / §2.9 与 T-05 把新增值登记到有具体数值和理由的条目并引用其锚，或回流扩展来源范围；**遵循现有 AC 无需 Walter，扩展允许范围需 Walter**。 |
-| C-01 | 待上述需求 / docs 事项闭环后由 **Walter 明确重新批准 Q-015 修订版 spec**，再统一 spec / plan / tasks 头部与 specs/README.md 状态，不能用本次合并代替批准。 |
-| C-03 | 由 **Walter 确认 D-011 的焦点带双语义解释或扩展及是否分组**，同步 docs/designUI.md §2.2、spec.md R-001 / R-003 与 plan.md §2.3，若改决策新增 ADR 而不改历史文件。 |
-| C-13 | 在 plan.md §2.7、CONTRACT.md 生成语义源与 T-09 / T-11 写清分页、区间、时区、date / asOf 和百分数口径并测试；**可由既有数据语义唯一推导的不用问 Walter，否则产品口径及需求例外需其裁定**。 |
-| C-19 | 在 plan.md §2.1 / §2.6、T-21 约束真实卡面或验证最不利背景，使文字对比度承诺成立；**若要改 Q-003 确认色值或放宽阈值须 Walter 确认**。 |
-| C-23 | 在 plan.md §2.5 与 T-09 / T-10 / T-23 登记基于最终结果的唯一终态归约，并补错误后重试成功 / 最终失败 / 中止样本；**符合现有 Q-014 的技术修正无需 Walter**。 |
-| C-24 | 在 plan.md §5 与 T-22 / T-24 增收起期间推进、重开后同 run / 无重复 / 指示同步测试；**实现现有 R-005 无需 Walter，新增 AC 文本随 Gate 1 再批准**。 |
-| C-25 | 在 plan.md §2.4 / §2.7 与 T-09 / T-10 / T-15 / T-16 补模块说明等定义及 DataClient / mock，分离组件映射；**保持 R-007 全数据经契约无需 Walter，新增本地 registry 例外需 Walter**。 |
-| C-28 | 在 spec.md AC-002-1 / AC-005-1 与 T-13 / T-22 明示计划补充行为与 AC 的关系并同步 plan.md §5；**新增或改变验收 / 产品行为必须纳入 Walter 再批准，不能只改 tasks**。 |
-
-#### 建议 / 待补审（22 项）
-
-其中仅缺另一方签认的项目不预设需要修改需求或代码，先由缺席审核员补独立复核；本合并会话不伪造其通过结论。
-
-| 项 | 如何闭环、改在哪里、是否需要 Walter |
-|---|---|
-| I-05 | 请 B 独立复核 plan.md §2.7 与 specs/data-layer/plan.md §2.2 的错误码 / seriesId 对齐后给明确结论；**当前不要求改文件或 Walter 裁定**。 |
-| I-07 | 请 B 独立核实 plan.md §2.9 的全部八份源锚与原值并补结论；**锚存在性的事实核验无需 Walter**。 |
-| C-04 | 在 plan.md §2.8 / T-07 精确区分定义处与使用处的允许名单并补 A / B 复核；**不扩大引用位置无需 Walter**。 |
-| C-05 | 在 plan.md §2.8 / §2.9 与 T-02 / T-03 / T-04 补全采用 / 不采用分类及全锚覆盖检查；**改变已选规范的采用范围才需 Walter**。 |
-| C-06 | 在 plan.md §2.1 / §2.8 与 T-02 / T-05 登记中文标题或节号的确定性解析规则与反例；**解析机制无需 Walter**。 |
-| C-07 | 在 plan.md §2.8、T-07 / T-21 明确内联 Vue 样式和主题 CSS 字符串的扫描入口并补例；**维持三层规则无需 Walter**。 |
-| C-08 | 在 plan.md §2.1 与 T-05 列全实际用到的字号键或明确完整 main_scale 导入，避免未登记引用；**改变设计数值 / 采用范围时再请 Walter，机械补齐无需**。 |
-| C-09 | 在 plan.md §2.1 与 T-05 / T-08 给出三层 surface / border / blur 的映射表并复核；**若改变已定玻璃设计值需 Walter**。 |
-| C-10 | 在 plan.md §2.7 与 T-09 / T-10 / T-20 定义可表达合约身份与数值元数据的 WatchlistTable，按实际需要采纳 A 的候选结构；**引入超出 mock 展示的新功能或改变身份语义才需 Walter**。 |
-| C-11 | 在 plan.md §2.4 / T-16 指定模块库复用已有玻璃层并复核；**遵守现有三层无需 Walter，另加层则需需求 / docs 裁定**。 |
-| C-12 | 在 plan.md §2.8 / §5 与 T-26 解释模块壳检查属于组件 / E2E 的自动验证，若改 spec R-009 用词则随再批准；**不改变验收能力无需单独产品裁定**。 |
-| C-14 | 在 plan.md §2.6 与 T-21 明确仅测试 / mock 可用的图实例读取接口并复核；**测试机制无需 Walter，也不强制 window 全局方案**。 |
-| C-15 | 在 plan.md §2.5 / §6 登记 pi 对照文档对应的锁定版本、外部路径或可追溯来源；**文档可复现性补齐无需 Walter**。 |
-| C-17 | 在 plan.md §2.8 / T-26 明确 AC 覆盖的机械证据或说明等效机制，并请 B 复核是否需新增守卫；**若升级为新的需求验收条件则提交 Walter**。 |
-| C-18 | 请 B 对 spec.md AC-004-6 / Q-007 的去技术化程度补独立结论而非先改稿；**仅 Walter 要求改变需求表述时才走 Clarify / 再批准**。 |
-| C-20 | 在 plan.md §2.1 和未来 PALETTE_DARK 标注两指标不可直接比较或重算同一指标；**不改已定色值无需 Walter**。 |
-| C-21 | 在 plan.md §2.1 把绿色表述限定为行情方向 / 状态用途，保留分析序列及 FSU 色板身份；**若真要新增全站绿色禁令才需 Walter 与 ADR / docs 变更**。 |
-| C-22 | 请 A 对 plan.md §2.8 / T-02 等的“全部守卫先正反例自检且失败非零”机制补明确结论；**不预设文件有错，无需 Walter**。 |
-| C-26 | 请 A 对 plan.md §1 / §6、T-01 的版本锁定与冒烟责任补独立结论，未实施前不安装依赖；**责任复核无需 Walter**。 |
-| C-27 | 在 plan.md §2.8 / T-07 说明或删除已无必要的 shell 豁免，再请两审确认保留策略；**不改栅格行为无需 Walter**。 |
-| C-29 | 在 plan.md §1 与 T-08 / T-15 / T-20 对齐 Num / Kpi / ErrorState / Loading / Chip 的文件所有权；**清单补齐无需 Walter**。 |
-| C-30 | 在 docs/designUI.md §2.1 明示所选 .07～.12 属 D-011 .07～.14 的子范围或解释两者关系，勿直接改历史 ADR；**只有改变设计范围 / 上限时才需 Walter 裁定**。 |
-
-### 下一轮复核与文件边界
-
-1. 上表是整改建议与待裁定记录，不是在本次合并中批准新的产品需求、色值、ADR 或具体技术方案；尤其焦点带分组、WatchlistTable 候选字段、critical.css / Vite 注入、ac-coverage 守卫须按所选范围落实后再评。
-2. Walter 完成需要的需求 / docs 裁定和 Gate 1 再批准后，A / B 对修订基线分别独立复核；独有正向项须补另一位明确意见，分歧项须先解决而不是取平均或由实施者勾选。
-3. 全部清单项完成规定的共识闭环后，依流程执行 Analyze / Implement；Review、Gate 2 与 Handoff 证据不因本清单合并而跳过。
-4. 本次仅新建 `specs/frontend-workbench/checklist.md`，未修改原审、spec / plan / tasks、docs 或其他文件，未安装依赖、未运行项目测试、未 git commit；本文件的统计与勾选是规范质量合并证据，不是实现验收证据。
+1. **通过，tasks.md 自此生效（基线 `2c2fbc8`）。** 8 项阻断 B-01 ~ B-08 全部闭环，70 项检查全部勾选；spec 冻结内容（`1b5659d`，45 条 AC）全程未动，无需重过 Gate 1。按 AGENTS §2 进入 **Analyze → Implement**（Implement 前再读本文件复选框状态作前置条件；实施者不改本文件）。
+2. **实施期顺手项（不阻断）**：S-15（plan:218 `check.network` → `check:network`）、S-08 残留（plan:16 目录树 `.prettierrc`）、S-16（T-15 范围加 `tests/unit/design-registry.spec.ts`）、S-17（`generated` 对 contracts 在生成器缺失时跳过，T-03 实施时处理）；S-04 / S-07 为信息级，不要求采纳。Converge 时一并核。
+3. **Gate 2 前需 Walter 知悉的事项**（已在文档中如实记录，本阶段不阻断）：
+   ① **D-013 勘误记录**：编辑性更正（"新增位置须先修订本 ADR"→"新增后继 ADR、本 ADR 保持原样"），位置计数已改"三个"；ADR README 尚无"编辑性勘误"机制，本例为首例，建议后续在 README 补一句；
+   ② **中止交互未纳入 v1**（方案 (2)）：`run.aborted` 只保留为事件类型，供 agent-runtime 映射 pi `agent_settled.aborted`；无中止钮 / `abort()` / abort 回放脚本（plan §2.5、§2.7）；若日后需要用户中止，属新增需求，回流 Clarify；
+   ③ **AC-001-2 的 `colors` 最小样例**（方案 (1)）：只对 `colors` 检查保留 `scripts/check-samples/colors/{positive,negative}.css` 并在检查内部先核；其他五项检查不写自检（plan §2.8、T-03）；
+   ④ **Playwright 复用本机 Chrome**：`channel: chrome`，找不到时回退 `msedge`，再不行一次性 `playwright install chromium`（plan §6）；验收浏览器 = Chromium 内核，Electron 外壳归 desktop-shell（spec §4、Q-006）；
+   ⑤ **暗色序列色 ΔE2000 = 13.2 的取舍**：七色两两最小色差 13.2（亮色原版同口径 21.5），黑底压缩了可用明度区间；Walter 已裁定 A 等亮（Q-003），v1 接受并登记于 PALETTE_DARK，chart-templates 画出真实季节图后复核（plan §2.1、§6）；
+   ⑥ 另两项背景：Q-007 "经存储接口隔离"按 AGENTS §5.3 落实为三个 localStorage 键集中登记、不做抽象层（C-05）；Node 25（非 LTS）/ TS 7 / Vite 8 / Vitest 5 组合由 T-01 冒烟决定，vue-tsc 不兼容则锁 TS 5.9.x 并回写 plan §1（plan §6）。
+4. 本轮只更新本文件；未修改 spec / plan / tasks / docs，未安装依赖、未运行项目测试、未 commit。本文件的勾选是需求 / 设计质量证据，不是实现验收证据；Review 阶段仍按 spec + plan + tasks + git diff 评审。
