@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 from data.service import Service
 from settings import onboarding, sources
-from settings.profile import ProfileError, load as load_profile, mask_email, missing_for_registration
+from settings.profile import SECTORS, ProfileError, load as load_profile, mask_email, missing_for_registration
 
 VERSION = "0.1.0"
 
@@ -41,6 +41,21 @@ class _Settings(BaseModel):
 
 class _Onboard(BaseModel):
     skip: bool = False
+
+
+class _ProfilePatch(BaseModel):
+    """档案部分更新：只提交要改的字段（空串表示清空）。"""
+
+    first_name: str | None = None
+    last_name: str | None = None
+    email: str | None = None
+    sector: str | None = None
+    reason_for_use: str | None = None
+    display_name: str | None = None
+    notify: bool | None = None
+
+
+SECTORS_PAYLOAD = [{"key": k, "label": v} for k, v in SECTORS.items()]
 
 
 def create_app(root: Path, token: str) -> FastAPI:
@@ -90,6 +105,23 @@ def create_app(root: Path, token: str) -> FastAPI:
             "missing_for_registration": missing_for_registration(profile),
         }
 
+    @app.get("/settings/sectors", dependencies=[Depends(require_token)])
+    def get_sectors() -> dict:
+        return {"sectors": SECTORS_PAYLOAD}
+
+    @app.put("/settings/profile", dependencies=[Depends(require_token)])
+    def put_profile(body: _ProfilePatch) -> dict:
+        from settings.profile import update as update_profile
+
+        fields = {k: v for k, v in body.model_dump().items() if v is not None}
+        try:
+            profile = update_profile(Path(root), **fields)
+        except (ValueError, ProfileError) as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+        shown = profile.model_dump()
+        shown["email"] = mask_email(shown["email"])
+        return {"profile": shown, "missing_for_registration": missing_for_registration(profile)}
+
     @app.post("/settings/onboard", dependencies=[Depends(require_token)])
     def post_onboard(body: _Onboard) -> dict:
         onboarding.set_onboard_state(Path(root), completed=True, skipped=body.skip)
@@ -99,6 +131,10 @@ def create_app(root: Path, token: str) -> FastAPI:
     def get_sources() -> dict:
         host: Host = app.state.host
         return {"sources": sources.list_with_service(host.svc, Path(root))}
+
+    @app.delete("/settings/key", dependencies=[Depends(require_token)])
+    def delete_key() -> dict:
+        return {"cleared": onboarding.clear_key(Path(root))}
 
     @app.post("/settings/key", dependencies=[Depends(require_token)])
     def post_key(body: _Settings) -> dict:

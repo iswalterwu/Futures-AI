@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <!-- 渲染层拒绝远程内容（AC-009-2） -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src http://127.0.0.1:*"
+    />
+    <title>Futures-AI</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #141519; color: #e6e7ea; font: 14px/1.65 "Segoe UI", system-ui, sans-serif; }
+      header { display: flex; align-items: baseline; gap: 12px; padding: 18px 28px; border-bottom: 1px solid #24262b; }
+      header h1 { font-size: 16px; margin: 0; font-weight: 600; letter-spacing: .2px; }
+      header .muted { color: #7f838c; font-size: 12px; }
+      main { max-width: 880px; margin: 0 auto; padding: 28px; }
+      section { display: none; }
+      section.active { display: block; }
+      h2 { font-size: 15px; margin: 0 0 4px; font-weight: 600; }
+      p.hint { color: #a8abb3; margin: 4px 0 18px; font-size: 13px; }
+      .card { border: 1px solid #26282e; border-radius: 12px; background: #191b20; padding: 18px; margin-bottom: 16px; }
+      label { display: block; margin: 10px 0 4px; color: #b9bcc4; font-size: 13px; }
+      input, select { width: 100%; padding: 9px 10px; border-radius: 8px; border: 1px solid #2f323a; background: #121317; color: #e6e7ea; font: inherit; }
+      input:focus, select:focus { outline: 1px solid #4a4e58; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .actions { display: flex; gap: 10px; margin-top: 18px; }
+      button { padding: 9px 16px; border-radius: 8px; border: 1px solid #33363e; background: #202329; color: #e6e7ea; font: inherit; cursor: pointer; }
+      button.primary { background: #2b3a33; border-color: #3d5147; color: #dbe9e1; }
+      button.quiet { background: transparent; color: #a8abb3; }
+      button:disabled { opacity: .5; cursor: default; }
+      .status { margin-top: 14px; padding: 10px 12px; border-radius: 8px; font-size: 13px; border: 1px solid #2a2c31; background: #16181c; }
+      .ok { color: #8fb8a4; } .err { color: #c98a8f; } .muted { color: #868a93; }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #24262b; vertical-align: top; }
+      th { color: #8b8f98; font-weight: 500; }
+      code { background: #121317; padding: 1px 5px; border-radius: 4px; color: #cfd2d8; font-size: 12px; }
+      .badge { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11px; border: 1px solid #33363e; }
+      .badge.api { color: #9fc6ad; border-color: #3d5147; }
+      .badge.offline { color: #d4b98b; border-color: #52462f; }
+      .badge.blocked, .badge.error { color: #c98a8f; border-color: #5a3a3d; }
+      .badge.builtin, .badge.declaration_only { color: #9aa3b2; }
+      a { color: #9fb6d0; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Futures-AI</h1>
+      <span class="muted" id="meta">正在连接本地后端…</span>
+    </header>
+    <main>
+      <!-- 首次启动引导（AC-005-1/2） -->
+      <section id="view-onboard">
+        <h2>首次使用</h2>
+        <p class="hint">全部字段可留空、可稍后填写。开通需要凭证的数据源时才要求补齐姓名、邮箱与组织类型。</p>
+        <form id="onboard-form" class="card">
+          <div class="row">
+            <div><label>名（First Name）</label><input name="first_name" autocomplete="off" /></div>
+            <div><label>姓（Last Name）</label><input name="last_name" autocomplete="off" /></div>
+          </div>
+          <label>邮箱（Email）</label><input name="email" type="email" autocomplete="off" />
+          <label>组织类型</label><select name="sector" id="sector-select"><option value="">（未选择）</option></select>
+          <label>用途说明（可选）</label><input name="reason_for_use" autocomplete="off" />
+          <div class="actions">
+            <button class="primary" type="submit">保存并继续</button>
+            <button class="quiet" type="button" id="skip-onboard">跳过</button>
+          </div>
+          <div class="status" id="onboard-status" hidden></div>
+        </form>
+      </section>
+
+      <!-- 设置（AC-005-3/4） -->
+      <section id="view-settings">
+        <h2>用户档案</h2>
+        <p class="hint">档案仅存本机、不上传。邮箱在界面中遮蔽显示。</p>
+        <form id="profile-form" class="card">
+          <div class="row">
+            <div><label>名</label><input name="first_name" /></div>
+            <div><label>姓</label><input name="last_name" /></div>
+          </div>
+          <label>邮箱</label><input name="email" type="email" />
+          <label>组织类型</label><select name="sector" id="sector-select-2"><option value="">（未选择）</option></select>
+          <div class="actions"><button class="primary" type="submit">保存档案</button></div>
+          <div class="status" id="profile-status" hidden></div>
+        </form>
+
+        <h2>数据源开通（EIA）</h2>
+        <p class="hint">
+          用档案信息填写 EIA 注册表单，由你本人在浏览器提交；key 会发送到你的邮箱。程序不会代你提交表单，也不会读取你的邮箱。
+        </p>
+        <div class="card">
+          <div id="prefill" class="muted"></div>
+          <div class="actions">
+            <button type="button" id="open-register">在浏览器打开 EIA 注册页</button>
+            <button type="button" id="open-unregister" class="quiet" hidden>清除已保存的 key</button>
+          </div>
+          <label style="margin-top:14px">粘贴收到的 API key</label>
+          <input id="api-key" type="password" autocomplete="off" placeholder="输入时不回显" />
+          <div class="actions"><button class="primary" type="button" id="verify-key">验证并保存</button></div>
+          <div class="status" id="key-status" hidden></div>
+        </div>
+
+        <h2>数据源状态</h2>
+        <div class="card"><table id="sources-table"><tbody></tbody></table></div>
+      </section>
+    </main>
+    <script src="onboarding.js"></script>
+  </body>
+</html>

@@ -22,9 +22,9 @@ function check(name, ok, detail = '') {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? `  — ${detail}` : ''}`)
 }
 
-function runOnce(root, timeoutMs = 120000) {
+function runOnce(root, timeoutMs = 120000, args = ['--smoke']) {
   return new Promise((resolve) => {
-    const child = spawn(ELECTRON, ['.', '--smoke'], {
+    const child = spawn(ELECTRON, ['.', ...args], {
       cwd: SHELL_DIR,
       env: { ...process.env, FAI_DATA_ROOT: root, FAI_HEALTH_TIMEOUT_MS: '45000' },
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -61,6 +61,22 @@ async function main() {
     const info = JSON.parse(readyLine.slice(readyLine.indexOf('READY ') + 6))
     check('退出后端口释放（AC-003-1）', await portFree(info.port), `port=${info.port}`)
   }
+
+  // UI：内置引导/设置页（T-06，AC-005-1/2/4 的界面部分）
+  const uiRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'fai-shell-ui-')) + path.sep + 'FuturesAI'
+  const ui = await runOnce(uiRoot, 120000, ['--ui-smoke'])
+  const uiLine = ui.out.split('\n').find((l) => l.includes('UI_SMOKE '))
+  let uiResult = {}
+  try {
+    uiResult = uiLine ? JSON.parse(uiLine.slice(uiLine.indexOf('UI_SMOKE ') + 9)) : {}
+  } catch {
+    uiResult = {}
+  }
+  check('首启进入引导（AC-005-1）', uiResult.onboardVisible === true, JSON.stringify(uiResult.activeView))
+  // 1 个"（未选择）"占位 + 11 个官方选项
+  check('组织类型选项随后端下发（AC-005-3）', (uiResult.sectorOptions || 0) === 12, `options=${uiResult.sectorOptions}`)
+  check('key 输入为遮蔽类型（AC-005-4）', uiResult.keyInputType === 'password', String(uiResult.keyInputType))
+  check('页面有 CSP 且含设置视图（AC-009-2）', uiResult.hasCsp === true && uiResult.hasSettingsSection === true)
 
   // 单实例：启动一个常驻实例（不带 --smoke），再启动第二个应立刻退出
   const first = spawn(ELECTRON, ['.'], {

@@ -12,9 +12,33 @@ const path = require('node:path')
 const crypto = require('node:crypto')
 
 const SMOKE = process.argv.includes('--smoke')
+const UI_SMOKE = process.argv.includes('--ui-smoke')
 const HEALTH_TIMEOUT_MS = Number(process.env.FAI_HEALTH_TIMEOUT_MS || 30000)
 const MAX_RESTARTS = 3
 const SHUTDOWN_GRACE_MS = 5000
+
+// UI 冒烟的页面内断言（T-06：AC-005-1/2/4 的界面部分）
+const UI_ASSERTIONS = `(async () => {
+  const wait = async (fn, ms = 5000) => {
+    const end = Date.now() + ms
+    while (Date.now() < end) { if (fn()) return true; await new Promise(r => setTimeout(r, 100)) }
+    return false
+  }
+  await wait(() => document.querySelector('#sector-select').options.length > 1)
+  const active = document.querySelector('main section.active')
+  return {
+    activeView: active ? active.id : null,
+    onboardVisible: active ? active.id === 'view-onboard' : false,
+    sectorOptions: document.querySelectorAll('#sector-select option').length,
+    sectorOptions2: document.querySelectorAll('#sector-select-2 option').length,
+    keyInputType: document.querySelector('#api-key').type,
+    hasCsp: Boolean(document.querySelector('meta[http-equiv="Content-Security-Policy"]')),
+    meta: document.querySelector('#meta').textContent,
+    hasBridge: Boolean(window.futuresai),
+    backendInfo: window.futuresai ? window.futuresai.backend() : null,
+    hasSettingsSection: Boolean(document.querySelector('#view-settings')),
+  }
+})()`
 
 const state = {
   backend: null,
@@ -45,18 +69,20 @@ function dataRoot() {
 }
 
 function backendCommand() {
-  // 打包后：resources/backend/futuresai-backend(.exe)；开发期：回退到 backend 源码 + python
   const exeName = process.platform === 'win32' ? 'futuresai-backend.exe' : 'futuresai-backend'
-  const packaged = path.join(process.resourcesPath || '', 'backend', exeName)
-  if (fs.existsSync(packaged)) {
+  const backendDir = path.resolve(__dirname, '..', 'backend')
+
+  // 显式指定可执行文件（打包验证用）
+  if (process.env.FAI_BACKEND_EXE) {
+    const exe = process.env.FAI_BACKEND_EXE
+    return { cmd: exe, args: [], cwd: path.dirname(exe), env: {} }
+  }
+  // 打包后：随包的后端（resources/backend/）
+  if (app.isPackaged) {
+    const packaged = path.join(process.resourcesPath, 'backend', exeName)
     return { cmd: packaged, args: [], cwd: path.dirname(packaged), env: {} }
   }
-  const devExe = path.resolve(__dirname, '..', 'backend', 'dist', 'futuresai-backend', exeName)
-  if (fs.existsSync(devExe)) {
-    return { cmd: devExe, args: [], cwd: path.dirname(devExe), env: {} }
-  }
-  // 开发回退：用当前 Python 直接跑 backend/app
-  const backendDir = path.resolve(__dirname, '..', 'backend')
+  // 开发期：直接跑 Python 源码，避免每次改后端都重新打包
   return {
     cmd: process.env.FAI_PYTHON || 'python',
     args: ['-m', 'app'],
@@ -251,10 +277,23 @@ function createWindow() {
   })
 
   const frontendIndex = path.resolve(__dirname, '..', 'frontend', 'dist', 'index.html')
-  const bootstrap = path.join(__dirname, 'renderer', 'bootstrap.html')
-  const target = fs.existsSync(frontendIndex) ? frontendIndex : bootstrap
+  const builtinPage = path.join(__dirname, 'renderer', 'onboarding.html')
+  const target = fs.existsSync(frontendIndex) ? frontendIndex : builtinPage
   log(`loading ${target}`)
   win.loadFile(target)
+  if (UI_SMOKE) {
+    win.webContents.once('did-finish-load', async () => {
+      try {
+        const result = await win.webContents.executeJavaScript(UI_ASSERTIONS)
+        process.stdout.write(`UI_SMOKE ${JSON.stringify(result)}
+`)
+      } catch (e) {
+        process.stdout.write(`UI_SMOKE {"error":"${e}"}
+`)
+      }
+      gracefulQuit(0)
+    })
+  }
   win.on('closed', () => {
     state.window = null
   })

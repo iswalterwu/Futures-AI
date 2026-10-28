@@ -73,4 +73,6 @@
 | T-02 | 后端生命周期与优雅退出 | ✅ | `tests/test_app_lifecycle.py` 3 passed（退出后锁/端口释放、强杀自愈） |
 | T-03 | 设置端点（引导/档案/数据源/开通） | ✅ | `tests/test_app_settings_api.py` 6 passed |
 | T-04 | 打包后端可执行文件 + 冒烟 | ✅ | `tools/build_backend.py` 产物 + `tools/shell_check.py` 8/8 |
-| T-05~T-10 | Electron 外壳、内置引导页、托盘/通知、故障诊断、更新、安装包 | ⬜ | 待实施（需 npm/Electron 构建） |
+| T-05 | Electron 主进程（单实例/窗口/后端托管/就绪/重启/优雅退出/日志） | ✅ | `shell/check.js` 9/9（含就绪、退出清理、单实例） |
+| T-06 | 内置引导/设置页（引导、档案、EIA 开通、数据源状态） | ✅ | `shell/check.js` 9/9 + `tests/test_app_settings_api.py` 10 passed |
+| T-07~T-10 | 托盘/通知、故障诊断、更新、安装包 | ⬜ | 待实施 |

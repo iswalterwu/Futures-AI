@@ -78,3 +78,42 @@ class TestKeyWizard:
         assert body["ok"] is False and body["error"] == "invalid_key"
         assert not onboarding.has_key(tmp_path)
         assert secret not in str(body)
+
+
+class TestProfileWrite:
+    """PUT /settings/profile：部分更新、校验失败不落盘；AC-005-1/3。"""
+
+    def test_partial_update_and_masked_response(self, tmp_path):
+        with client(tmp_path) as c:
+            r = c.put("/settings/profile", json={"first_name": "Walter", "email": "w@example.com"}, headers=HEADERS)
+            assert r.status_code == 200
+            body = r.json()
+        assert body["profile"]["first_name"] == "Walter"
+        assert body["profile"]["email"] == "w***@example.com"
+        assert "sector" in body["missing_for_registration"]
+
+    def test_invalid_email_rejected_without_writing(self, tmp_path):
+        with client(tmp_path) as c:
+            r = c.put("/settings/profile", json={"email": "bad"}, headers=HEADERS)
+            assert r.status_code == 422
+            body = c.get("/settings/profile", headers=HEADERS).json()
+        assert body["profile"]["email"] == ""
+
+    def test_sectors_endpoint_matches_official_list(self, tmp_path):
+        """AC-005-3：组织类型清单由后端下发（11 项，含 Library）。"""
+        with client(tmp_path) as c:
+            sectors = c.get("/settings/sectors", headers=HEADERS).json()["sectors"]
+        assert len(sectors) == 11 and any(x["key"] == "library" for x in sectors)
+
+
+class TestClearKey:
+    """DELETE /settings/key：清除后回到免凭证路径（AC-005-3）。"""
+
+    def test_clear_returns_to_offline(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(onboarding, "_probe", lambda key: None)
+        with client(tmp_path) as c:
+            c.post("/settings/key", json={"key": "k-" + "clear-api-0001"}, headers=HEADERS)
+            assert c.delete("/settings/key", headers=HEADERS).json()["cleared"] is True
+            rows = {r["adapter_id"]: r for r in c.get("/settings/sources", headers=HEADERS).json()["sources"]}
+        assert rows["eia"]["path"] == "offline"
+        assert not onboarding.has_key(tmp_path)
