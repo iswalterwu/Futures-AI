@@ -1,7 +1,13 @@
-# 暂停交接 — frontend-workbench v2
+# 恢复交接 — frontend-workbench v2
+
+> **当前状态（2026-10-28，用户已明确恢复）**：已登记并合入 v1 正式 Handoff `43b6d79681a49562f41751368b2ae00c24062f56`，已落实 S10～S12；本轮没有新写 v2 实现，代码 / 权威 docs 与该 v1 SHA 一致。仍待合并后的独立只读 Analyze / A 定向复核、G-02 窄窗导航形态；S1/S2 另缺 H-x 实现交接，不能启动实施。
+> **工作树登记**：协调 / 串行集成 = 当前 `openai/gpt-6.1-sol` 会话；主规格树仍为 `D:/2030/Futures-AI-workbench-v2` / `spec/frontend-workbench-v2`。另已从 `43b6d79` 建立 `D:/2030/Futures-AI-workbench-v2-integration` / `integration/frontend-workbench-v2` 和 `D:/2030/Futures-AI-workbench-v2-implement` / `feat/frontend-workbench-v2-s0`，尚无 v2 实现提交。详见 tasks §1.1。建立工作树不等于放行。
+> **模型记录（脱敏）**：Plan/Tasks / v1 文档合并 = `claude-opus-5-5 via anthropic`，由协调器派出独立会话，不是用户直接切换模型；本次恢复已最小真实探活 Opus bridge，返回额度 / 限流类失败，同模型 anthropic 返回 OK。只换通道、未改配置。下方 R3/R4 的“用户以该通道启动”属作者措辞，本段给出实际派工事实。
+
+## 暂停时历史快照（以下“当前 / 未取得 / 不启动新任务”仅指暂停时刻，不覆盖上方恢复状态）
 
 > 2026-10-28，按 Walter「暂停交接，收到后不要开新任务」指令收尾。
-> **当前已暂停：不要自动进入 Implement，不要启动新审核、构建、下载或长任务。** 下列下一步仅供用户明确恢复后执行。
+> 暂停期间未进入 Implement，未启动新审核、构建、下载或长任务。以下为当时保存的恢复顺序与证据。
 
 > **恢复记录（2026-10-28，用户“按 HANDOFF.md 继续”）**：本文件以下内容是暂停时的历史快照。恢复后由 Plan/Tasks 作者（`claude-opus-5-5` via anthropic）在 worktree `D:/2030/Futures-AI-workbench-v2-resume`、分支 `docs/frontend-workbench-v2-resume` 继续。已做：登记 v1 Handoff SHA `43b6d79`（PR #7 merge commit，已在 main 上）；落实 V2-S10～S12；完成 R3 定向 Analyze（`specs/frontend-workbench/analyze-v2-r3.md`）。**仍未 Implement**；当前状态以 tasks.md 1.1 / §9 和 analyze-v2-r3.md 为准。
 
