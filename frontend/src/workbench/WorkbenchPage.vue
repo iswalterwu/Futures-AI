@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useLayoutStore } from '../stores/layout.ts'
+import FocusBand from './FocusBand.vue'
 import ModuleGrid from './ModuleGrid.vue'
 import ModuleLibrary from './ModuleLibrary.vue'
 
@@ -32,15 +33,7 @@ onMounted(() => layout.loadCatalog())
         模块库
       </button>
     </header>
-    <section
-      class="focus-placeholder glass-focus"
-      aria-labelledby="focus-placeholder-title"
-    >
-      <h2 id="focus-placeholder-title">
-        今日焦点 <span class="en">Daily focus</span>
-      </h2>
-      <p>日报摘要与关键数字将在此呈现。</p>
-    </section>
+    <FocusBand />
     <ModuleGrid />
     <ModuleLibrary
       v-if="libraryOpen"
@@ -83,20 +76,5 @@ onMounted(() => layout.loadCatalog())
 .library-toggle:hover:not(:disabled),
 .library-toggle:focus-visible {
   border-color: var(--fai-accent-link);
-}
-
-.focus-placeholder {
-  flex: none;
-  padding: var(--fai-space-section-gap);
-}
-
-.focus-placeholder h2 {
-  margin-bottom: var(--fai-space-grid-gap);
-  font-size: var(--fai-type-sec-title);
-  font-weight: var(--fai-weight-emphasis);
-}
-
-.focus-placeholder p {
-  color: var(--fai-text-secondary);
 }
 </style>
