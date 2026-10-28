@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <!-- 渲染层拒绝远程内容（AC-009-2） -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src http://127.0.0.1:*"
+    />
+    <title>Futures-AI</title>
+    <style>
+      :root { color-scheme: dark; }
+      body { margin: 0; background: #141519; color: #e6e7ea; font: 14px/1.6 "Segoe UI", system-ui, sans-serif; }
+      main { max-width: 720px; margin: 18vh auto; padding: 0 24px; }
+      h1 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+      p { color: #a8abb3; margin: 6px 0; }
+      #status { margin-top: 18px; padding: 12px 14px; border: 1px solid #2a2c31; border-radius: 10px; background: #1a1c21; }
+      .ok { color: #8fb8a4; }
+      .err { color: #c98a8f; }
+      code { color: #cfd2d8; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Futures-AI</h1>
+      <p>桌面外壳已启动。前端构建产物尚未就位，当前显示引导占位页。</p>
+      <div id="status">正在读取后端状态…</div>
+    </main>
+    <script src="bootstrap.js"></script>
+  </body>
+</html>

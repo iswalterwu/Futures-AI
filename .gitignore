@@ -235,3 +235,9 @@ __marimo__/
 backend/build/
 backend/dist/
 backend/*.egg-info/
+
+# 前端/外壳依赖与构建产物
+node_modules/
+shell/node_modules/
+shell/dist/
+frontend/dist/
