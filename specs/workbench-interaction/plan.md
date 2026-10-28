@@ -47,12 +47,12 @@
 | 采集台 | `stages/IntakeDrawer.vue`、`stages/IntakePanel.vue`、`stages/ExtractionPreview.vue`、`stages/MappingEditor.vue`、`stages/UnassignedPool.vue` | 三种投放、来源说明、预览修正、待归属池 |
 | 处理台 | `stages/ProcessWorkspace.vue`、`stages/RecipeSteps.vue`、`stages/ParamEditor.vue`、`stages/ReconciliationDiff.vue` | 配方只读、参数修正、对账 diff、溯源 |
 | 分析台 | `stages/AnalyzeWorkspace.vue`、`stages/ConclusionCard.vue`、`stages/EvidenceChain.vue`、`stages/InterventionComposer.vue`、`stages/RuleCandidatePanel.vue` | 结论卡、证据链、批注/追问/否决/深挖、非模态教规则 |
-| 交付台 | `stages/DeliverWorkspace.vue`、`stages/DeliverableBlock.vue`、`stages/BlockTextEditor.vue`、`stages/BlockChart.vue`、`stages/BlockTable.vue`、`stages/BlockCommentThread.vue`、`stages/RevisionHistory.vue`、`stages/DiffView.vue`、`stages/PublishDialog.vue`、`stages/RevisionRequestPanel.vue` | 6 类块、编辑/批注、版本/diff、非模态改稿指令、发布确认与未决项 |
+| 交付台 | `stages/DeliverWorkspace.vue`、`stages/DeliverableBlock.vue`、`stages/BlockTextEditor.vue`、`stages/BlockChart.vue`、`stages/BlockTable.vue`、`stages/BlockCommentThread.vue`、`stages/RevisionHistory.vue`、`stages/DiffView.vue`、`stages/FinalizeDialog.vue`、`stages/RevisionRequestPanel.vue` | 6 类块、编辑/批注、版本/diff、非模态改稿指令、定稿确认与未决项 |
 | 介入与不干扰 | `components/InterventionHistory.vue`、`components/PendingMergeChip.vue`、`components/InboxDrawer.vue` | 事件历史、待合并、角标/收件箱 |
 | 工具 | `diff.ts`、`persistence.ts` | 行级 diff（自实现）、localStorage 快照（带版本与损坏兜底） |
 | 契约 | `src/contracts/{types.ts,client.ts,methods.ts,mock/**}` | v2 方法与 mock 实现（stateful） |
 
-- 地基交付后复用 `agent/AgentDrawer.vue` 与 `agent/store.ts`，由 v2 壳方接作业上下文标签（作业 id/标题、阶段）与按作业过滤 selector；本 feature 的 `sessionStore` 提供当前上下文。普通编辑/批注/教规则/投放/改稿均为内联面板或非模态抽屉，无遮罩、无焦点锁；仅删除来源/结论、发布、取消、显式重跑用二次确认
+- 地基交付后复用 `agent/AgentDrawer.vue` 与 `agent/store.ts`，由 v2 壳方接作业上下文标签（作业 id/标题、阶段）与按作业过滤 selector；本 feature 的 `sessionStore` 提供当前上下文。普通编辑/批注/教规则/投放/改稿均为内联面板或非模态抽屉，无遮罩、无焦点锁；仅删除来源/结论、定稿、取消、显式重跑用二次确认
 
 ### 2.3 状态管理（Pinia）
 
@@ -64,7 +64,7 @@
 | `sessionStore` | 当前作业/阶段上下文（供抽屉、介入事件使用） | 内存 |
 
 - **契约 mock 层持有唯一可变状态**（`contracts/mock/job-state.ts`），读写均经契约方法；UI store 只做视图缓存。这样 `api` feature 落地时只需替换实现，不动组件
-- 本地持久化 key：`fai.jobs.v1`（作业、产物/版本、投放的允许子集、介入事件、交付物/发布快照、收件箱条目）；`fai.inbox.v1`（已读 id）。非 normal 场景使用 fixture + 会话内可变副本，**不读、不写、不清**这两个 key；切场景不会清空正常模式数据
+- 本地持久化 key：`fai.jobs.v1`（作业、产物/版本、投放的允许子集、介入事件、交付物/定稿快照、收件箱条目）；`fai.inbox.v1`（已读 id）。非 normal 场景使用 fixture + 会话内可变副本，**不读、不写、不清**这两个 key；切场景不会清空正常模式数据
 - 待处理项由 mock 契约状态层生成：阶段首次进入 `needs_human`、产物首次 `conflict`、人的 overlay 首次待合并、agent 改稿待接受/回退各生成一条 `InboxItem`（同一目标/原因不重复生成；修订号变化可产生新项）。阶段进度不由 UI 推导，计数亦由 `JobListItem.pendingCount` / 阶段 `pendingCount` 提供
 - `listInbox(jobId?)` 返回条目、已读/已解决状态及作业/阶段计数（只数未读且未解决项）；`markInboxRead(ids)` 将本次实际展示的 id 标已读，清除相应角标但保留条目和介入历史。打开前请求后一次标记，之后新来的条目仍未读；已读不等于已解决，冲突/待合并状态徽继续显示。阶段离开 H、冲突被裁定、overlay 合并、候选被接受/回退时由 mock 层把对应条目标 resolved，完成态不常驻角标。角标位置：列表卡、详情阶段轨道（本 feature），首页作业轨道（v2 消费同一计数）
 
@@ -80,14 +80,14 @@
 | `Job` / `JobListItem` | `id/title/type/subject/goal/createdBy(human或schedule)/status/currentStage/updatedAt/parentJobId(null可用)`；`reason:string|null`（failed/cancelled 必填原因）；`stages` 四阶段状态与计数、`pendingCount`；列表项为其摘要 |
 | 契约展示映射 | 导出 `JobStatusLabel`（九状态）、`StageLabel`（四阶段）、`StageStateLabel`（五状态）、`ArtifactStatusLabel` 与 `SourceLabel`；CONTRACT.md 登记同表，徽标只消费契约文案/图标，不另建状态映射 |
 | `Artifact` | `id/kind(dataset或recipe或analysis或deliverable)/status(draft或provisional或confirmed或conflict)/source(external或human或agent或mixed)/origin(source或derived)`；`revisions/latestMergedRev/overlayRev/pendingMerge/pendingRunId`，无 overlay/run 时为 null；人/agent 的分析产物带 derived 标记 |
-| `Intervention` | 十个必有字段：`id/jobId/stage/artifactId/baseRev/kind/payload/reason/outcome/createdAt`；作业级事件 artifactId/baseRev 可 null，reason 可 null；outcome=`recorded/pending/merged/rejected`，原动作不可改，检查点只更新 outcome。kind 13 种仍为 ingest/map_fix/recipe/framework/question/delete/rewrite/veto/approve/ask_why/pin_rule/rerun/publish |
-| `Upload` / `SourceNote` | `id/jobId(null可用)/inputKind(file或url或text)/fileMeta?/url?/sourceNote/status/mapping/createdAt/removed`；来源说明 `{purpose(非空),reliability(high/medium/low/unknown),publishedAt:null或日期,validUntil:null或日期,scopeNote:null或文本}`；status=`pending_validation/ingested/quarantined`，对应待验证/已入库/隔离 |
+| `Intervention` | 十个必有字段：`id/jobId/stage/artifactId/baseRev/kind/payload/reason/outcome/createdAt`；作业级事件 artifactId/baseRev 可 null，reason 可 null；outcome=`recorded/pending/merged/rejected`，原动作不可改，检查点只更新 outcome。kind 13 种仍为 ingest/map_fix/recipe/framework/question/delete/rewrite/veto/approve/ask_why/pin_rule/rerun/finalize |
+| `Upload` / `SourceNote` | `id/jobId(null可用)/inputKind(file或url或text)/fileMeta?/url?/sourceNote/status/mapping/createdAt/removed`；来源说明 `{purpose(非空),reliability(high/medium/low/unknown),finalizedAt:null或日期,validUntil:null或日期,scopeNote:null或文本}`；status=`pending_validation/ingested/quarantined`，对应待验证/已入库/隔离 |
 | `ExtractionPreview` / `FieldMapping` | `detectedType/fields/unit/timeRange`；mapping 的每项 `{sourceField,targetField,unit}`，单位修正一同提交。submit 后 pending_validation；confirm 默认 ingested，隔离样例由 fixture 的模拟判定给出并说明原因，不做真实闸门 |
 | `RecipeStep` / `ParamChange` / `ReconciliationDiff` | 配方步骤与输入/输出锚；参数 `{unit,timezone,calendar,resample,aggregation}`；对账行含两个来源、原值/差值（复用 Figure 元数据：unit/freq/semantic/asOf/seriesId）、是否不同（由契约提供），空差异由空行集表达 |
 | `Deliverable` / `Block` | 有序块；共同字段 id/status/source/origin/anchors/comments；按 type 区分 conclusion/text、note/text、quote/text与source锚、table/columns与rows与tableId、verification/question与结论块锚、chart/chartSpec与seriesData；v1 verification 只读文本，不建验证队列 |
 | `ChartSpec`（仅样例） | `{templateId:'line-sample',seriesBindings:{main:seriesId},overrides:{title?}}`，对应 designUI §5.1 的 template_id/series_bindings/overrides；绑定数据 `seriesData` 复用带单位/频率/semantic/asOf 的 `SparkSeries`。`BlockChart` 仅编译此固定样例为 ECharts option，使用地基 `fai-dark`，不接受任意 option 或实现模板库 |
 | `Revision` / `BlockComment` | revision `{id,artifactId,number,baseRev,author(human或agent),createdAt,summary,blocks,changeSummary}`，保存完整只读快照；comment `{id,threadId,parentId(null或根评论id),author,text,createdAt}`，线程根含 status=`open/resolved`；回复引用 threadId，解决操作改线程状态且产生新 revision，旧快照不变；批注不改块正文来源 |
-| `PublishSnapshot` | `{id,jobId,revisionId,publishedAt,blocks}`，取已合并 revision 的深拷贝；读 API 返回副本，不暴露内存中可变引用 |
+| `FinalSnapshot` | `{id,jobId,revisionId,finalizedAt,blocks}`，取已合并 revision 的深拷贝；读 API 返回副本，不暴露内存中可变引用 |
 | `InboxItem` | `{id,jobId,stage,artifactId,revisionId,interventionId,reason(needs_human/conflict/pending_merge/revision_review),createdAt,read,resolved}`，不适用的锚可 null；计数只数未读且未解决条目 |
 | `JobContext` | `{jobId, stage}`；`SendMessage.jobContext?` 与十类 AgentEvent 的公共可选字段，所有同 run 事件保留发送时上下文，不随页面改写 |
 
@@ -108,14 +108,14 @@ saveBlockText(jobId, blockId, text)                      createBlockComment(jobI
 replyBlockComment(jobId, threadId, text)                 resolveBlockComment(jobId, threadId)
 listRevisions(jobId)         getRevision(jobId, revisionId)
 requestRevision(jobId, blockIds, instruction)            resolveRevision(jobId, revisionId, action)
-publishDeliverable(jobId)    listInbox(jobId?)            markInboxRead(ids)
+finalizeDeliverable(jobId)    listInbox(jobId?)            markInboxRead(ids)
 resetMockData()
 ```
 
 - `listJobs` 按状态/类型与标题子串组合筛选，缺省 updatedAt 倒序，清空筛选恢复全列表；`getJob` 未知 id 返回 not_found。读取历史版本不改变当前版本。写回执包含已改变的作业/产物/版本/事件与 inbox 计数，UI 以回执或重新读取消费，不自行改业务状态
 - `AgentClient.send` 增加可选 `jobContext`；`AgentEvent` 公共可选 `jobContext`（不改变十类事件/唯一终态）。mock DataClient 与 AgentClient 共享 `job-state.ts`；AgentClient 先让该状态层处理事件，再通知 UI 订阅者。runId→作业/阶段/改稿请求的关联在 mock 层，页面卸载不移除它；UI 只刷新缓存
 - mock fixture 为 `jobs.json/job-detail.json/deliverable.json/interventions.json/uploads.json`；`MockOverrides` 增加 `jobFixtures`，**不新增 `jobScript`**。作业运行统一经既有 `send({jobContext})` 的 success/failure/retry/long 脚本驱动；不因读取页面自动启动、不新造检查点事件种类
-- 错误形态沿用 `{error:{code,message,retryable}}` 与既有 code；本 feature 的无效操作/只读写入/发布未决项均返回 validation_error，payload 含说明；未知锚返回 not_found。方法输入/输出/参数字义写进 `methods.ts` 与生成文档
+- 错误形态沿用 `{error:{code,message,retryable}}` 与既有 code；本 feature 的无效操作/只读写入/定稿未决项均返回 validation_error，payload 含说明；未知锚返回 not_found。方法输入/输出/参数字义写进 `methods.ts` 与生成文档
 
 #### 动作 → 契约方法 → 介入 kind（B-01）
 
@@ -138,8 +138,8 @@ resetMockData()
 | 标记暂定 | markProvisional | approve | action=mark_provisional, artifactId；生成新 revision，状态向下游透传 |
 | 阶段重跑 | rerunStage | rerun | action=rerun, stage, affectedStages |
 | 接受/回退 agent 版本 | resolveRevision | approve / rewrite | action=accept 或 revert, revisionId |
-| 发布前裁定冲突块 | submitIntervention | approve | action=resolve_conflict, blockId, humanRevId, agentRevId, choice='human'或'agent'；选中版本形成新 confirmed revision，不覆盖两版 |
-| 发布 | publishDeliverable | publish | action=publish, revisionId, snapshotId；一次确认只产生一条发布事件 |
+| 定稿前裁定冲突块 | submitIntervention | approve | action=resolve_conflict, blockId, humanRevId, agentRevId, choice='human'或'agent'；选中版本形成新 confirmed revision，不覆盖两版 |
+| 定稿 | finalizeDeliverable | finalize | action=finalize, revisionId, snapshotId；一次确认只产生一条定稿事件（D-018 §1：交付物 `draft → final`） |
 
 `mergePending` 只将原介入 outcome 从 pending 更新为 merged（并产合并 revision），不伪造人的 merge 动作；`markInboxRead` / `resetMockData` 是 mock/视图管理操作，不充当分析介入。
 
@@ -156,8 +156,8 @@ resetMockData()
 | boot-error | 首次 bootstrap 失败/重试成功；新读同 normal | 新写同 normal，仅内存 | 不读写清空 |
 | job-running | 下面 j-running / j-human 等专用样例 | 正常写入会话副本 | 不读写清空 |
 | job-pending-merge | j-merge 专用样例 | 正常写入；用户显式 send(long) → 人编辑 → 该 run 完成后合并 | 不读写清空 |
-| job-conflict | j-conflict 专用样例 | 可介入、继续用暂定快照；发布未决项拒绝 | 不读写清空 |
-| job-delivered | j-delivered 与发布快照 | 该作业的领域写方法拒绝 validation_error；已读/新建作业仍可用 | 不读写清空 |
+| job-conflict | j-conflict 专用样例 | 可介入、继续用暂定快照；定稿未决项拒绝 | 不读写清空 |
+| job-delivered | j-delivered 与定稿快照 | 该作业的领域写方法拒绝 validation_error；已读/新建作业仍可用 | 不读写清空 |
 
 `resetMockData` 仅为显式“重置样例数据”确认动作：normal 删除两个 key 并重建 fixture；其他场景只重建内存 fixture，不触碰两个 key。error 场景允许此恢复动作（但仍保持 error 业务行为），不绕过业务报错。
 
@@ -167,13 +167,13 @@ resetMockData()
 |---|---|---|---|
 | normal: j-collect | collecting / collect | R,N,N,N | dataset=draft，投放预览待验证 |
 | normal: j-process | processing / process | D,R,N,N | recipe=provisional；无 activeRunId 可测手动检查点 |
-| normal: j-deliver | delivering / deliver | D,D,D,R | 六类块、两个人/agent 历史版本；可改稿/发布 |
+| normal: j-deliver | delivering / deliver | D,D,D,R | 六类块、两个人/agent 历史版本；可改稿/定稿 |
 | normal: j-failed / j-cancelled | failed / analyze；cancelled / collect | D,D,C,N；N,N,N,N | 明确 reason；作业级重试只显示后续 feature 归属，不实现重试 |
 | job-running: j-running | analyzing / analyze | D,D,R,N | 分析稿=draft，无待确认 |
 | job-running: j-human | needs_human / process | D,H,R,N | recipe=provisional，下游分析仍运行；横幅定位 process |
 | job-pending-merge: j-merge | delivering / deliver | D,D,D,R | 初始无 overlay；e2e 用 ?agentScript=long，在作业改稿面板 requestRevision（选结论块）→send(jobContext)，等 run.started 后编辑另一备注块，再推进脚本时钟到 run.completed；期间不切换 runId |
-| job-conflict: j-conflict | needs_human / analyze | D,D,C,R | 分析结论/对应交付块=conflict，另有可用 provisional 快照；下游可查看/编辑；发布列出未决项 |
-| job-delivered: j-delivered | delivered / deliver | D,D,D,D | confirmed 块、snapshot、发布信息、只读 |
+| job-conflict: j-conflict | needs_human / analyze | D,D,C,R | 分析结论/对应交付块=conflict，另有可用 provisional 快照；下游可查看/编辑；定稿列出未决项 |
+| job-delivered: j-delivered | delivered / deliver | D,D,D,D | confirmed 块、snapshot、定稿信息、只读 |
 
 `job-pending-merge` 的终态由同一次 send 的 runId 驱动，failed/aborted 不合并、不清 overlay。单测/端到端用既有脚本和时钟推进真实 mock 定时器，不凭 UI 手工造终态。`requestRevision` / 实际执行的 `rerunStage` 也统一调用 mock AgentClient.send：前者记录 runId 与请求后在该 run 的权威 step.text 中准备候选版本、成功终态才生成 agent revision；后者依 §4 状态表处理。两者不增加事件种类；普通全局 send 无 jobContext 不改作业。
 
@@ -182,8 +182,8 @@ resetMockData()
 - **静态**：沿用 `pnpm check`（generated / colors / glass / updown / grid / network）；新增代码自动纳入；新增 schema/methods 注册后 `check --only generated` 必须通过。R-009 的状态/来源徽守卫以组件测试逐状态/逐块断言文字或图标/徽存在（AC-001-5/003-6/006-8），不假称既有脚本具备该扫描
 - **单元**：`diff.ts`（LCS、超长退化，期望用手写样例，不重写算法）、`persistence.ts`（解析失败/配额异常/超限）、契约 schema（fixtures 全部过 parse）、状态/来源契约映射、mock 状态机与 runId 归属、`pendingMerge` selector
 - **组件**：六个界面与徽标、三态、块渲染与编辑、版本/diff 视图
-- **端到端**（Playwright，默认 1440×900）：作业列表/创建/阶段切换/刷新保持；投放三方式与来源说明；处理参数修正；分析介入事件；交付编辑/版本/diff/改稿/发布；待合并 chip（`job-pending-merge` 脚本）；角标/收件箱；破坏性确认与非模态；窄窗口不回归（工作台基线由 frontend-workbench 覆盖）
-- **人工验收**：`specs/workbench-interaction/manual-acceptance.md`：M-01 作业状态/类型与非颜色区分；M-02 四阶段/待确认与不阻塞；M-03 投放/预览/来源说明；M-04 配方/溯源/对账；M-05 六块/暗色图表/徽；M-06 编辑/批注/非模态；M-07 版本/diff/接受回退；M-08 待合并/冲突/发布只读；M-09 角标/收件箱/上下文；M-10 最小960与基准1440×900布局及≤3玻璃。Handoff 逐项附截图，当前不声称已验收
+- **端到端**（Playwright，默认 1440×900）：作业列表/创建/阶段切换/刷新保持；投放三方式与来源说明；处理参数修正；分析介入事件；交付编辑/版本/diff/改稿/定稿；待合并 chip（`job-pending-merge` 脚本）；角标/收件箱；破坏性确认与非模态；窄窗口不回归（工作台基线由 frontend-workbench 覆盖）
+- **人工验收**：`specs/workbench-interaction/manual-acceptance.md`：M-01 作业状态/类型与非颜色区分；M-02 四阶段/待确认与不阻塞；M-03 投放/预览/来源说明；M-04 配方/溯源/对账；M-05 六块/暗色图表/徽；M-06 编辑/批注/非模态；M-07 版本/diff/接受回退；M-08 待合并/冲突/定稿只读；M-09 角标/收件箱/上下文；M-10 最小960与基准1440×900布局及≤3玻璃。Handoff 逐项附截图，当前不声称已验收
 - 命令：`pnpm check && pnpm typecheck && pnpm lint && pnpm test:unit && pnpm test:e2e`（沿用 `pnpm test`；实现时登记）
 
 ## 3. 数据与存储
@@ -201,9 +201,9 @@ resetMockData()
 2. **投放**：页面入口或 v2 顶栏打开同一 IntakeDrawer → 提交一种输入+来源说明 → pending_validation 预览 → 修正 mapping（含单位）→ confirmIntake → ingested/样例 quarantined；jobId 在 submit 时确定，无作业则待归属；assign 后出现在采集列表并补作业内 ingest 事件。removeUpload 二次确认，只移除当前关联且保留历史
 3. **阶段/重跑**：轨道直接读 stages。needs_human 横幅目标取按固定顺序第一个 H（冲突样例取第一个 C），可随时查看其他阶段；不在 UI 推导状态。rerunStage 二次确认后生成一条 kind=rerun 事件，按下表执行；failed/cancelled 的“作业级重试”仍只是注明归属的占位，不新增重试实现
 4. **介入**：由 §2.4 动作矩阵走唯一方法 → 新事件/版本与 inbox 回执 → 刷新介入历史、角标；普通批注/追问/改稿无模态。问答同时走既有 send 时，只由 submitIntervention 记录结构化动作，mock send 不重复追加同一动作
-5. **交付版本**：saveBlockText 立即生成作者=human 的新 revision，改变块来源=human；批注写入亦生成新 revision，但正文来源不变。requestRevision 记录 baseRev/blockIds 与指令，再 send(jobContext)；成功检查点先处理人的 overlay，再以最新已合并快照为底仅应用指定 blockIds 的 agent 改动，产作者=agent 的候选 revision、显示 diff，只有涉及的块来源=agent。若同一块在 baseRev 后被人改过，则保留人版/agent 版并标 conflict，不覆盖人版；不相交块的修改可合并。resolveRevision(action='accept') 将候选涉及的块确认成新 revision；action='revert' 仅把请求涉及的块恢复至该请求 baseRev 内容，其他块的后续人工改动保留，agent 候选/原版本都不删。冲突候选不能直接 accept；在 diff 旁走 submitIntervention(action=resolve_conflict) 明确选人版/agent 版，产新 confirmed revision，正文来源沿用选中版；此收口只在发布时要求，不阻塞其他阶段
-6. **发布**：二次确认面板先列出当前 conflict / pendingMerge / 未接受的 agent 候选。publishDeliverable 遇未决项返回 validation_error（说明目标块），不生成快照、不改作业状态；人处理或回退后再发布。成功时从 latestMergedRev 深拷贝 PublishSnapshot，作业 delivered。随后针对该作业的一切领域写方法（含投放归属、编辑、批注、介入、参数、暂定、合并、重跑、改稿、接受回退、取消、重复发布）均在契约入口拒绝 validation_error；读取/历史/diff/markInboxRead 仍可用，快照和历史不可变。cancelled 同样领域只读，取消后的晚到 run 事件只进时间线、不改已封存作业
-7. **旁路/检查点**：有 activeRunId 时，人编辑立即产 overlay revision 与 pending 事件，agent 始终使用 latestMergedRev，不读 overlay。仅匹配 pendingRunId 的 run.completed 才将 overlay 合并成新 revision、清 pendingMerge、原介入 outcome=merged；不同作业/run 的终态不能代合并。failed/aborted 保留 overlay/pending 并提示；冲突保留两版与 provisional 已合并快照供下游，发布门处理。无 activeRunId 的参数修正仍先返回 pendingMerge=true（满足 AC-004-2），处理台显示非模态“应用到检查点”；mergePending 在无运行时产生合并 revision、原事件 outcome=merged，运行中该按钮不执行（等待本 run 检查点）。普通非运行文本编辑则直接合并成新 revision
+5. **交付版本**：saveBlockText 立即生成作者=human 的新 revision，改变块来源=human；批注写入亦生成新 revision，但正文来源不变。requestRevision 记录 baseRev/blockIds 与指令，再 send(jobContext)；成功检查点先处理人的 overlay，再以最新已合并快照为底仅应用指定 blockIds 的 agent 改动，产作者=agent 的候选 revision、显示 diff，只有涉及的块来源=agent。若同一块在 baseRev 后被人改过，则保留人版/agent 版并标 conflict，不覆盖人版；不相交块的修改可合并。resolveRevision(action='accept') 将候选涉及的块确认成新 revision；action='revert' 仅把请求涉及的块恢复至该请求 baseRev 内容，其他块的后续人工改动保留，agent 候选/原版本都不删。冲突候选不能直接 accept；在 diff 旁走 submitIntervention(action=resolve_conflict) 明确选人版/agent 版，产新 confirmed revision，正文来源沿用选中版；此收口只在定稿时要求，不阻塞其他阶段
+6. **定稿**：二次确认面板先列出当前 conflict / pendingMerge / 未接受的 agent 候选。finalizeDeliverable 遇未决项返回 validation_error（说明目标块），不生成快照、不改作业状态；人处理或回退后再定稿。成功时从 latestMergedRev 深拷贝 FinalSnapshot，作业 delivered。随后针对该作业的一切领域写方法（含投放归属、编辑、批注、介入、参数、暂定、合并、重跑、改稿、接受回退、取消、重复定稿）均在契约入口拒绝 validation_error；读取/历史/diff/markInboxRead 仍可用，快照和历史不可变。cancelled 同样领域只读，取消后的晚到 run 事件只进时间线、不改已封存作业
+7. **旁路/检查点**：有 activeRunId 时，人编辑立即产 overlay revision 与 pending 事件，agent 始终使用 latestMergedRev，不读 overlay。仅匹配 pendingRunId 的 run.completed 才将 overlay 合并成新 revision、清 pendingMerge、原介入 outcome=merged；不同作业/run 的终态不能代合并。failed/aborted 保留 overlay/pending 并提示；冲突保留两版与 provisional 已合并快照供下游，定稿门处理。无 activeRunId 的参数修正仍先返回 pendingMerge=true（满足 AC-004-2），处理台显示非模态“应用到检查点”；mergePending 在无运行时产生合并 revision、原事件 outcome=merged，运行中该按钮不执行（等待本 run 检查点）。普通非运行文本编辑则直接合并成新 revision
 8. **场景切换**：按配置重建当前会话 fixture，非 normal 不触碰正常快照；唯一清空操作为 resetMockData（§3）。读取页面不启动 agent；job-pending-merge 的演示按 §2.4 显式 send(long) 驱动
 
 #### rerunStage 状态迁移（B-03）
@@ -211,9 +211,9 @@ resetMockData()
 | 时点 | 阶段状态 / job.status | 版本/介入 |
 |---|---|---|
 | 无 activeRunId 时确认重跑 s | 上游原样；s→running，下游→not_started；currentStage=s，status 按 collect/process/analyze/deliver 映射 collecting/processing/analyzing/delivering | 保留全部旧 revision；s 与下游各生成以旧已合并版为 base 的 draft 新 revision；记录一条 rerun 介入 |
-| 新 run 成功终态 | s 与下游按顺序模拟推进为 done，job.status=delivering、currentStage=deliver（不自动 delivered） | 对 s/下游追加 mock 产物 revision，合并该 run 的非冲突 overlay；事件 outcome=merged；发布仍需人确认 |
+| 新 run 成功终态 | s 与下游按顺序模拟推进为 done，job.status=delivering、currentStage=deliver（不自动 delivered） | 对 s/下游追加 mock 产物 revision，合并该 run 的非冲突 overlay；事件 outcome=merged；定稿仍需人确认 |
 | 新 run failed/aborted | failed 时 job.failed + reason、当前运行阶段→conflict，下游保持未完成；aborted 时保持阶段快照并说明中止 | 旧版本与 pending overlay 均保留，不误标合并 |
-| 已有 activeRunId 时请求重跑 | 请求先 pending，阶段/产物暂不改；当前 run 不 abort、不重启，终态后再按上述迁移启动新 run | 请求排队在 mock 状态层；completed 先处理检查点，再执行请求；失败/中止保留人的 overlay，新 run 分配后把其 pendingRunId 转交该后继 run（原 baseRev/介入 id 不变），再在后继检查点处理，发布前仍需清未决项 |
+| 已有 activeRunId 时请求重跑 | 请求先 pending，阶段/产物暂不改；当前 run 不 abort、不重启，终态后再按上述迁移启动新 run | 请求排队在 mock 状态层；completed 先处理检查点，再执行请求；失败/中止保留人的 overlay，新 run 分配后把其 pendingRunId 转交该后继 run（原 baseRev/介入 id 不变），再在后继检查点处理，定稿前仍需清未决项 |
 
 同一作业多个重跑请求按提交顺序串行执行（仅 mock 内存待执行记录，不引调度器）；运行结束时由 mock 层执行下一请求，UI 切页不影响。
 
@@ -254,11 +254,11 @@ resetMockData()
 | AC-006-4 | `RevisionHistory` 列表 + 历史只读 e2e |
 | AC-006-5 | `DiffView` 组件测试（块级差异与摘要） |
 | AC-006-6 | `requestRevision` + mock 回放 e2e；新 revision 来源=agent，接受/回退 |
-| AC-006-7 | 发布二次确认 → 快照 + delivered + 只读 e2e |
+| AC-006-7 | 定稿二次确认 → 快照 + delivered + 只读 e2e |
 | AC-006-8 | 块来源/状态徽组件测试 |
 | AC-007-1 | `InterventionHistory` 渲染 + 阶段/类型筛选组件测试 |
 | AC-007-2 | job-pending-merge：作业内改稿指令经 requestRevision→send(long/jobContext) → 编辑另一备注块 → 同 run completed 才合并；失败/他 run 不误清。可不依赖全局输入栏自动绑定上下文 |
-| AC-007-3 | e2e：编辑/批注/投放/教规则/改稿无模态；removeUpload/delete_conclusion/publish/cancel/rerun 二次确认后才调用契约 |
+| AC-007-3 | e2e：编辑/批注/投放/教规则/改稿无模态；removeUpload/delete_conclusion/finalize/cancel/rerun 二次确认后才调用契约 |
 | AC-007-4 | listInbox / markInboxRead + 列表卡/详情阶段轨道角标 e2e；首页作业轨道部分 blocked_by v2 |
 | AC-007-5 | `check --only glass`（继承；本 feature 不新增玻璃类） |
 | AC-008-1 | `contract-build` 生成比对 + 文档字段对拍单测 |
@@ -287,7 +287,7 @@ resetMockData()
 
 本 feature 的导航/工作台/全局入口依赖以下对 `frontend-workbench` 的增量变更；在其 v2 spec 获批前，本 feature 只交付"路由可直达 + 页面内入口"，对应 AC 标记 `blocked_by`：
 
-1. **导航**：`nav.ts` 8 项 → 9 项（"专题研究"升级为"作业"指向 `/jobs`，新增"学习"占位；专题研究作为作业类型保留）——影响该 feature R-002 / AC-002-2、AC-002-3
+1. **导航**：`nav.ts` 8 项 → 9 项（"专题研究"升级为"作业"指向 `/jobs`，新增"格物致知"占位（路由 `/learning`）；专题研究作为作业类型保留）——影响该 feature R-002 / AC-002-2、AC-002-3
 2. **工作台**：`WorkbenchPage.vue` 焦点带与模块区之间新增**作业轨道**固定件（非模块、不可移除；含待处理介入角标）——影响 R-003
 3. **全局入口**：`TopBar.vue` 增加"投放"按钮、`AppShell.vue` 挂载 `IntakeDrawer`——影响 R-002/R-003 的 shell 结构
 4. **对话上下文**：v2 方在 agent store/抽屉消费可选 jobContext、暴露 selector；类型/events/SendMessage 的新增字段统一由本 feature 写入共享契约，壳方不再重复修改。草稿位置 `D:/2030/Futures-AI-workbench-v2/specs/frontend-workbench/spec.md`（待 Gate 1），其文件责任需与 §1 一致
@@ -299,6 +299,6 @@ resetMockData()
 - **C 采集台**：抽屉 / 三种投放 / 来源说明 / 预览与映射 / 待归属池
 - **D 处理台**：配方 / 参数修正 / 对账 diff / 溯源 / 暂定
 - **E 分析台**：结论卡 / 证据链 / 介入动作 / 教规则 / 抽屉上下文
-- **F 交付台**：六类块 / 编辑与 revision / 批注 / 版本与 diff / 改稿回放 / 发布
+- **F 交付台**：六类块 / 编辑与 revision / 批注 / 版本与 diff / 改稿回放 / 定稿
 - **G 不干扰与收口**：待合并 / 角标收件箱 / 破坏性确认审计 / 静态守卫 / e2e 全量 / 人工清单
 - **H v2 集成验证**（blocked_by: frontend-workbench-v2；前置获批且壳方交付后）：验证导航 / 首页作业轨道 / 全局投放 / 抽屉上下文；不由本 feature 重复改壳接线
