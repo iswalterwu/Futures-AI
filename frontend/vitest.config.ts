@@ -4,6 +4,7 @@ import viteConfig from './vite.config.ts'
 export default mergeConfig(viteConfig, defineConfig({
   test: {
     environment: 'happy-dom',
+    setupFiles: ['tests/setup.ts'],
     include: ['tests/**/*.spec.ts'],
     clearMocks: true,
     restoreMocks: true,
