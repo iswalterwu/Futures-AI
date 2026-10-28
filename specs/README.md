@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| frontend-workbench | blocked（用户暂停交接；v2 Plan / Tasks / Analyze 质量复核已通过，实施外部前置未齐） | 无后端依赖；v1 Handoff 合入 main 的准确 SHA 和 H-1～H-6 / 页面切片的固定提交、有效已提交 Checklist SHA、测试摘要及集成 SHA 均未登记。分批交接见 plan §7.3 / tasks §1.2；暂停与恢复入口 HANDOFF.md | 2026-10-28 | 52 AC、12 任务 / 22 h；Analyze R2 审 6bda6c9，7 项 F 全关、无新增 F。A = claude-fable-5-1 via anthropic 随后独立审 949a232，Checklist R2 通过：0 阻断，I-01b / V-02 正式勾选；产物提交 f1f755b。新增非阻断 V2-S10～S12 留待恢复，未启动 Implement、未改代码、未 push；旧 v1 Checklist / 任务正文保留 |
+| frontend-workbench | blocked（已恢复；R3 Tasks 精度修订待 A 定向复核与 Walter 裁定窄窗导航形态，实施外部前置未齐） | 无后端依赖；v1 Handoff 已合入 main = 43b6d79（PR #7，R3 登记）。S0 还需：A 复核 R3、集成人 / 集成验证分支 / 实施 worktree 登记、把 43b6d79 合入 v2 规格分支（预演 4 处冲突）。S1 / S2 还需：H-1～H-6 / 页面切片的固定提交、有效已提交 Checklist SHA、测试摘要及集成 SHA，全部未登记；互动方 8af343f 尚未吸收下方“跨 feature 待同步事项”第一行 | 2026-10-28 | 52 AC、12 任务 / 22 h；R3 落实 V2-S10～S12、消解 T-V2-01 的 AppShell 条件写入，定向 Analyze 见 analyze-v2-r3.md。A R2（f1f755b，审 949a232）通过，但不覆盖 R3；未启动 Implement、未改代码、未 push |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。

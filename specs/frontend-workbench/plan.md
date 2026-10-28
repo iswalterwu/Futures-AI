@@ -8,6 +8,7 @@
 > **v2 审核状态（Plan 时记录）**：§7 需要审核员 A 新开独立会话审核，并生成 v2 Checklist。A 首选 `claude-fable-5-1`：先测 bridge，不通再走 anthropic；模型回退按 AGENTS §6。现有 `checklist.md` 只证明 v1，不能授权 v2。§1～§6 未变部分能否复用，也要由 A 确认。本 Plan 的自检不是审核结论；文中对外部 feature checklist 的只读核对，也不是本 feature 的审核。
 > **后续阶段记录—v2 Checklist R1（2026-10-28）**：A = `claude-fable-5-1` via `anthropic`，独立会话 / worktree；`claude-bridge` 最小真实探活因额度或限流不可用，同模型官方通道探活成功，未换模型。任务 = v2 Checklist 首轮，固定审查基线 `d2bf5a77902694e62747d49647194637a1d6b75b`，实际 diff = `fec3556..d2bf5a7`。**通过：0 项阻断、9 条建议（V2-S01～S09），允许进入 Tasks，不授权 Implement。** 当前有效 v2 清单为同目录 `checklist-v2.md`（审核员原样产物）；旧 `checklist.md` 不修改、不授权 v2。后续仍需 Tasks / Analyze 与 A 定向复核，实施前置以该清单和 §7.3 / §7.13 为准。
 > **当前阶段补记—暂停交接（2026-10-28）**：Analyze R2 审 `6bda6c9`，F-01～F-07 全部关闭、无新增 F；A = `claude-fable-5-1` via `anthropic` 随后以全新独立会话审 `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`，Checklist R2 通过（0 阻断、I-01b / V-02 正式勾选），原样产物已提交为 `f1f755bad8e4bab7577c415f4aea3d297c9d37a8`。bridge 本窗口额度不可用，沿用同模型官方通道，未因审核结果换模型。下方草案 / 待审 / R1 修正措辞为当时历史。新增非阻断建议 V2-S10～S12 留待恢复；按用户暂停指令不再开新任务。外部 v1 Handoff 与 H-x 交接仍未登记，不授权 Implement；恢复入口为根 `HANDOFF.md`。
+> **恢复修订 R3（2026-10-28，用户“按 HANDOFF.md 继续”）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`（会话由用户以该通道启动；本会话未探 bridge、未改 provider / 路由 / 配置）；基线 `ded7161`，分支 `docs/frontend-workbench-v2-resume`。只做状态与事实更新，不改 §7 技术设计：(1) v1 Handoff 合入 main 的 SHA = `43b6d79681a49562f41751368b2ae00c24062f56`（PR #7 merge commit），已按其真实代码复核 §7.0 引用的壳文件事实，与 `0ffa15e` 一致（详见 tasks 1.1）；(2) 互动方当前已提交的有效审核为 `8af343f` 中的 Checklist R6（通过、仍 BLOCKED 于实施基线），但其 plan / Tasks r5 尚未吸收 §7.3 对 H-2 ①～⑤、H-3 路由切片先行、H-4、H-5、H-6 的新增要求，H-x 全部未交付；(3) 新发现待 Walter 裁定：§7.4“九项换行”与 `design/ui/UI_LAYOUT.md#narrow`“横向滚动”不一致（v1 P3 H-02 已登记），裁定前不改 §7.4。R3 未经 A 定向复核。
 > **Analyze R1 后修正（2026-10-28，历史记录）**：修正 = `claude-opus-5-5` via `anthropic`（bridge 本窗口额度不可用，未重试、未换模型）；基线 `b364971a1a76fde96be6f924a7b7263ecb9cd447`，分支 `docs/frontend-workbench-v2-analyze-fixes`。按只读 Analyze R1（3 P2 / 4 P3，原文存同目录 `analyze-v2.md`）修 F-01～F-07：§7.2 加 `PlaceholderPage.vue` 最小派生修改（F-01）；§7.3 H-2⑤ 写明随交接交付的写 action（F-04），H-4 交接须登记公开设置方式并加条件依赖（F-05），H-6 `jobFixtures` 可替换整个作业样例集合（F-06）；§7.11 AC-002-2 / AC-003-7 / AC-003-9 与 §7.13 S0 / S1-ctx 同步（F-02、F-03、F-05）。无需求变化，不改 spec、checklist 或 §1～§6。**本修正未经 A 定向复核，也未重跑 Analyze**；R1 的 F 项须由下一轮独立只读 Analyze 确认后才算关闭。
 
 ## 1. 技术方案
@@ -271,6 +272,7 @@ send({sessionId?, message}) / subscribe(cb)
   - 这两项由互动方修 Plan，再经 A 做 R4 复核；壳方不代修，也不消费这些错误字段或推导。
   - 结论：**外部交接未就绪**，必须以互动方最新有效审核为准，不能以旧的 R2 通过为准。外部 checklist 可能被并行会话更新；本 Plan 的固定设计基线仍是 `8bd1b31`，核对结果也不是本 feature 的审核结论。
   - 互动方分支后续移动，不算已交付证据。§7.3 各交接项须按其规则交付后，壳方对应任务才能开启。
+  - **R3 状态补记（2026-10-28）**：互动方已提交 `8af343f`，其中 Checklist R6 通过（B-09 / B-10 / B-11 关闭），实施仍 BLOCKED 于 v1 基线；其 plan / Tasks r5 尚未吸收本节 §7.3 的 H-2 ①～⑤、H-3 路由切片先行、H-4 同次导航清空、H-5 快照与容器约定、H-6 整集合替换等新增要求。上面的 R3 / R4 描述是 Plan 时的历史状态。
 - **实施起点（硬前置）**：Tasks 头部必须登记 v1 完成 Review、Gate 2、Handoff 并合入 main 的准确 SHA。双方都以它作为实施起点，v2 实现分支也从这个 SHA 建立。
   - `fdaa7d8`（本分支前端快照）不能作为开工基线。
   - `0ffa15e`（Plan 与 A 核对时使用的 v1 实施分支固定历史参照，不是当前 HEAD，尚未 Handoff）也不能作为开工基线。v1 实施分支其后的移动（如 `b19427a`）只是只读元信息，同样不代表 Handoff，也不能作为开工基线。
@@ -325,7 +327,7 @@ send({sessionId?, message}) / subscribe(cb)
 - 一个固定 commit；
 - 该交接项的定向测试命令和输出摘要。
 
-当前互动方的有效审核是 R3 未通过，所以至少要等 R4 通过后才能交接。指定集成人把交接单元串行集成到仅由集成人可写的集成验证分支，分支名在 Tasks 登记；壳方任务基于集成后的 SHA 开启。双方开发者仍各自在独立 worktree / 分支写各自拥有的文件，不共享可写目录；其他会话只读集成验证分支。
+Plan 时互动方的有效审核是 R3 未通过；R3 恢复修订时已提交的有效轮次为 `8af343f` 中的 R6 通过，但它不含本节新增要求，交接仍以覆盖这些要求的、已提交的有效 Checklist 为准。指定集成人把交接单元串行集成到仅由集成人可写的集成验证分支，分支名在 Tasks 登记；壳方任务基于集成后的 SHA 开启。双方开发者仍各自在独立 worktree / 分支写各自拥有的文件，不共享可写目录；其他会话只读集成验证分支。
 
 - 不要求互动方整个 feature 先完成 Review、Gate 2、Handoff 并合入 main。它的 H 组集成验证本来就依赖壳 S1，如果要求先合 main，会形成循环依赖。
 - 互动方的 A～G 组可以按可用切片交接。共享的契约、schema、mock、路由、stores 和 `IntakeDrawer`，按壳方实际用到的组分批解锁（§7.13）。
@@ -552,7 +554,7 @@ S0、S1-*、S2 的定义见 §7.13。`blocked_by` 表示：要等对应的生产
 | 风险 | 对策 |
 |---|---|
 | 生产方接口名或字段与设计输入不一致 | 任务以 §7.3 交接单元的 SHA 为前提开启；有差异就更新 Tasks，壳不兜底 |
-| 互动方 R3 未通过，后续审核继续推迟 | 相关 S1/S2 保持 blocked；壳不修 B-09/B-10，不把旧 R2 当成依赖已完成 |
+| 互动方 R3 未通过，后续审核继续推迟（R3 补记：R6 已通过，但未吸收 §7.3 新增要求） | 相关 S1/S2 保持 blocked；壳不修 B-09/B-10，不把旧 R2 或不含新增要求的 R6 当成依赖已完成 |
 | H-2 的共享未筛选缓存、刷新覆盖面、进行中判定或 `JobTypeLabel` 缺失 | 由互动方在其 Plan/Tasks 中补齐；对方拒绝时报 Walter 裁决。壳不自建缓存、映射、轮询或 watch 终态 |
 | 列表筛选覆盖共享缓存，导致轨道与列表不一致 | H-2 ④ 约束；AC-003-7 集成部分在筛选后返回工作台复验 |
 | `addRoute` 同名替换失败，出现双路由 | 在 `integration-v2` 中断言名为 `jobs` 的路由只有一条 |
@@ -560,4 +562,5 @@ S0、S1-*、S2 的定义见 §7.13。`blocked_by` 表示：要等对应的生产
 | 投放与对话抽屉在窄宽下互相遮挡 | 在 960 和 1440 下同时打开两者，跑 breakpoints 断言，并做 M-11 人工验收 |
 | 轨道挤压 900 高度的视口 | 轨道固定一行，由 AC-002-6 和 M-10 验证 |
 | 契约 2.0.0 使 v1 测试变红 | 壳只更新与壳语义相关的测试；契约测试由互动方修复 |
-| v1 Handoff 延迟 | 整体 blocked，不用 `fdaa7d8` 或 `0ffa15e` 提前开工 |
+| v1 Handoff 延迟 | 整体 blocked，不用 `fdaa7d8` 或 `0ffa15e` 提前开工（R3：已解除，Handoff SHA = `43b6d79`） |
+| 窄窗导航形态与 `UI_LAYOUT.md#narrow` 不一致（R3 新发现；v1 P3 H-02） | 由 Walter 裁定“换行”还是“横向滚动”；裁定前 T-V2-01 不开工，若改为横向滚动则修改 §7.4 并重跑 Analyze / A 复核 |
