@@ -1,5 +1,8 @@
 # 暂停交接 — workbench-interaction
 
+> ⚠️ **恢复更新见 §9（2026-10-28 22:20 +04:00）；下方 §1～§8 的旧暂停状态已被 §9 新记录替代，仅作历史保留。**
+> 当前要点：v1 基线已合入 main（`43b6d79`）并登记；r6 设计经独立 A Checklist R7 通过（`9acf3de`）；**仍 BLOCKED 于 Walter 代码实施授权 + 集成人 / 集成验证分支 / 实施 worktree 登记**；H 组仍待外部 v2。本文件仍不是正式 feature Handoff，不表示实现完成或 Gate 2 通过。
+
 > 用户暂停指令下的会话存档，不是 AGENTS.md 工作流里的正式 feature Handoff，不表示实现完成或 Gate 2 通过。
 > 记录时间：2026-10-28 17:55 +04:00。收到暂停后未开启新任务、未启动新 agent、构建、测试、下载或服务；仅保存状态、核验文档、检查本会话子进程并做本地 WIP 提交。
 > 暂停记录执行者：当前协调会话 `openai/gpt-6.1-sol`；此前 Plan / Tasks / Analyze 作者为 `claude-opus-5-5 via anthropic`，独立审核员 A 为 `claude-fable-5-1 via anthropic`。
@@ -158,3 +161,80 @@ fi
 ## 8. 下次恢复后发给用户的第一句话
 
 > 已读取交接记录；我会先核对前端 PR #7 和实施基线，未解除阻塞前不启动代码实施。
+
+## 9. 恢复记录（2026-10-28 22:20 +04:00；替代 §1～§8 的暂停状态）
+
+> 恢复收尾的文档记账，**不是**正式 feature Handoff，不走也不代批 Gate 2，不表示实现完成。
+> 本节记账执行者：`claude-opus-5-5 via anthropic`。原因：本限额窗口对 `claude-bridge/claude-opus-5-5` 的真实最小调用 exit 1（quota / rate / spend_limit 类，原文未记录）；同模型 `anthropic` 最小调用及本轮 Plan 任务 exit 0。按 AGENTS §6 规则 2 / 5 只换通道不换模型，本窗口不重试已耗尽的 bridge，未改任何 provider / key / 路由 / 全局配置。
+
+### 9.1 恢复授权边界
+
+- 起点：`8af343ff085c0f958068b6b50008a6985f51d170`（§1～§8 的暂停 WIP 提交）。
+- 用户指令为“按照 HANDOFF.md 继续”。协调器按原“此前不改代码”边界，只恢复**基线登记 + 接口设计（H-x 对拍）+ 独立审核**；“继续”**不视为新增代码实施授权**。
+
+### 9.2 当前提交、分支与目录
+
+| 项 | 值 |
+|---|---|
+| 文档 writer worktree | `D:/2030/Futures-AI-interaction-resume`，分支 `docs/workbench-interaction-resume-20261028` |
+| r6 文档提交（Opus） | `0e37fbf9f2810ad04f1c1b3fd856b0219f9c2f0d`：plan / tasks / analyze / `interface-handoff.md`（新）/ `specs/README.md` |
+| A R7 审核原件 | `9acf3de661187840ea5be6f6d6f78205872ac356`（审核分支提交原样 cherry-pick，hash 相同）；`checklist.md` Git blob `7c219c071607596c813af6a3ebc1b651e25cd8d0` |
+| 本节 / README 记账提交 | 不在文件内硬编码自身提交号；用 `git log -1 --format="%H %s" -- HANDOFF.md` 查询（本记账写入时尚未提交） |
+| 主规格 worktree | `D:/2030/Futures-AI-interaction` 仍为 `spec/workbench-interaction@8af343f`、clean。**计划**：协调器在本记账提交后，核验其 clean + HEAD，再把文档分支 **ff-only** 合回该 worktree；不 merge main、不 push。写入本节时**尚未执行**，恢复时以 `git -C D:/2030/Futures-AI-interaction log -1` 实查为准 |
+| v1 基线只读目录 | `D:/2030/Futures-AI-interaction-base-43b6d79`（detached `43b6d79`） |
+| v2 参照只读目录 | `D:/2030/Futures-AI-interaction-v2-ref-ded7161`（HEAD `ded716100381fcd2b4b5d3481f4f56e44c9869fd`；v2.1 Gate 1 + 其 A R2 内部审核已过，**仍未实施**） |
+| A 审核 worktree | `D:/2030/Futures-AI-interaction-review-r7`，分支 `review/workbench-interaction-resume-r7` |
+
+上述四个新建目录均**不清理**；原 v1（`D:/2030/Futures-AI-frontend`）/ v2（`D:/2030/Futures-AI-workbench-v2`）实际 worktree 本轮只读、未改。
+
+### 9.3 阅读时的状态优先级（取代 §2 末节）
+
+1. **当前权威**：`checklist.md` §R7、`specs/README.md` 本 feature 行与跨 feature 待同步行、本 §9。
+2. `tasks.md` / `plan.md` / `analyze.md` 页首及 Analyze R6 中“待 A 新会话定向复核 = Checklist R7”等措辞是**交审时输入原文**；R7 已通过，但为保持审查输入不变，本轮**不改**这些文件。`interface-handoff.md` 同理。
+3. `checklist.md` 只有 §R7 的 26 个复选框有效；R6 及更早轮次已由 A 改为文字符号，仅作历史。协调器与本记账者**未手勾**任何检查项。
+4. §1～§8 中“`implementation_base_sha = PENDING`”“PR #7 OPEN”“62 任务 / 96.5 h”“Checklist R6 为当前”均已过时。
+
+### 9.4 本轮完成事项
+
+- **v1 基线门已满足**：`gh pr view 7` = MERGED，mergedAt `2026-10-28T12:49:38Z`，mergeCommit `43b6d79681a49562f41751368b2ae00c24062f56`；`git fetch` 后 `git merge-base --is-ancestor` 对 `origin/main` 成功，`origin/main` 正为该 SHA。tasks 已登记 `implementation_base_sha = 43b6d79`。
+- **r6 设计（`0e37fbf`，Opus）**：在 `43b6d79` 真实文件审计 B-1～B-11，唯一实质差异 `mock.spec.ts:96-99` 旧硬编码循环落到 T-A09；与 v2 H-1～H-6 / 页面切片对拍，均为既有需求内接口精度，**无需求变化，46 AC 不变**，冻结 spec 零 diff。
+- **任务变化**：r5 = 62 任务 / 96.5 h → r6 = **66 任务 / 约 101.5 h**，新增 T-A09a / T-A22a / T-A22b / T-C01a；**全部未开始**。Analyze R6 内部一致。
+- **独立审核 Checklist R7**：A = `claude-fable-5-1 via anthropic`，新会话、独立 worktree、与实施异模型；未重探 fable bridge（继承本窗口 bridge 已耗尽证据），官方 fable 最小调用 exit 0，实际任务 exit 0。固定审 `0e37fbf` 相对 `8af343f` 的真实 diff：**通过，26/26 当前有效项，0 P1 / P2**，6 项 P3（S-27～S-32）不阻断。
+  - 记录性说明：A 的 wrapper 打印因 Windows stdout GBK 不支持 Unicode minus 返回 1，但 A 进程本身 exit 0，`review-r7-result.md` 已以 UTF-8 保存；属输出编码问题，不是调用失败，**不重跑、不回退**。
+
+### 9.5 已过与仍缺的门槛
+
+| 门槛 | 状态 |
+|---|---|
+| spec v1.1 Gate 1 | 已过（冻结，未改） |
+| v1 Handoff 合入 main / `implementation_base_sha` | **已满足**：`43b6d79` |
+| IMPL-GATE-R6 (1) A 对 r6 定向复核 | **已满足**：Checklist R7 通过，`9acf3de` |
+| IMPL-GATE-R6 (2) Walter 代码实施授权 | **未取得** |
+| IMPL-GATE-R6 (3) 指定集成人、集成验证分支、实施 worktree / 分支（从 `43b6d79` 建立并带入 `specs/workbench-interaction/**`） | **未登记** |
+| H 组（T-H01～T-H03）外部 v2 壳方 S1 / S2 | **阻塞**；AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项未解除前 Converge 必报“未收敛（外部阻塞）” |
+| H-x 八切片（H-1、H-2·标签、H-2·列表、H-3·路由切片、页面切片、H-4、H-5、H-6）交接四项 | 仅“已提交有效 Checklist SHA”可填 `9acf3de`；**实现固定 commit、定向测试输出摘要、集成 SHA 三项未取得**，全部**未交付** |
+| interface-handoff §5 v2 接收方确认（含 H-6 是否分批） | **未办**；设计通过 ≠ 双向签收 |
+
+**结论：现在不能开工写代码。** (2)(3) 任一未满足，任何任务不得开始。
+
+### 9.6 下一步（按顺序）
+
+1. **Walter 决定**：是否允许代码实施；本协调会话是否担任集成人（并登记集成验证分支与实施 worktree）。**未答复前不写代码。**
+2. **实施前精度修订（可选但建议）**：按 R7 建议在建实现分支前吸收 S-27（`job-state.ts` 模块级单例会话状态 / `jobFixtures` 建状态时读一次 vs v1 `fixtures` 每请求读）、S-29（j-failed 分析产物 draft vs 阶段 conflict、`pendingCount` 初始期望），可同带 S-28（终态-only 刷新依赖的摘要不变量断言）、S-30（追问经 `agentClient.send` 不带 sessionId 的措辞与 v2 知悉）。仅措辞 / 断言精度不需重过 R7；超出则重跑 Analyze 并请 A 定向复核。S-31 留作 Converge 逐写路径核对刷新，S-32 为实施期 lint 提示。**本轮未吸收、未改审核输入，不得声称已修复。**
+3. v2 接收方对 interface-handoff §5 各项给出确认；合并时按 §5-6 处理 main 上 `specs/README.md` 的本 feature 行与已完成的 D-018 待同步行。
+4. 授权与登记齐后：从 `43b6d79` 建实施分支（带入本规格文档），按 tasks §7 复核 §0.0；按 AGENTS §6 Implement 首选 `openai/gpt-6-astra`；首批 T-A01～T-A09 / T-A09a，按真实 DAG 推进，H-x 逐切片按四项证据交接。
+
+### 9.7 工具、子进程、目录与临时产物
+
+- 独占临时目录：`C:/Users/iswal/AppData/Local/Temp/wi-resume-01a18388-dmiq93ec/`，含各 prompt、片段、模型 sessions 与输出（如 `plan-result.md`、`analyze-r6.md`、`review-r7-result.md`、A 的 `r7-*` 片段）。核心产物已正式写入 `specs/workbench-interaction/` 与本文件，**恢复不依赖该目录**；保持不清理，原始 sessions / key / 完整报错**不入库**。
+- 本轮**未再次删除** `/tmp` 任何文件；§6 所述旧 `/tmp/an.py` 异常按原记录保留，无新进展。
+- **后台服务：无。** 本轮共派出 Opus Plan / Tasks / Analyze、独立 A R7、Opus 恢复记账三个子会话，均经同步调用完成后退出，没有待续跑的子会话或常驻 agent（本行由协调器在记账调用返回后核实）。
+
+### 9.8 验证与未执行项
+
+- 已做（纯文档）：独立结构核验——66 任务 / 101.5 h、每项 1～2 h；220 条完成标准 ↔ 220 条验证命令 1:1；46 AC 集合一致；DAG 无环、部分前置均为最终任务祖先；18 条 e2e AC 的最终命令均为 e2e；测试 jobs 路径 / WI 标题隔离。文档 `git diff --check` 通过。
+- **未执行**：任何产品单测 / e2e / 构建 / 安装 / 服务 / 下载；已做 git / gh 查询、`git fetch origin` 元数据同步、独立文档 worktree / 分支建立、文档结构核验与文档 git 提交。无实现 commit、无定向产品测试、无集成 SHA。不 push、不建 PR、不 merge 到 main；文档分支 ff-only 同步计划见 §9.2。
+
+### 9.9 下次恢复后发给用户的第一句话（取代 §8）
+
+> 已读取交接记录：v1 基线 `43b6d79` 已合入并登记，r6 设计已过独立 A Checklist R7；现在只等你确认是否允许代码实施、以及本会话是否担任集成人，答复前我不写代码。
