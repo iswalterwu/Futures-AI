@@ -7,7 +7,7 @@
 
 - **栈**：Vue 3.5 + Vite 8 + TypeScript、Pinia、vue-router、ECharts 6（D-008 / D-004）；契约 schema 用 zod 4
 - **测试**：Vitest + @vue/test-utils（单元 / 组件）、Playwright（端到端，复用本机 Chrome）
-- **工具链**：pnpm；Node ≥ 22.12；ESLint + Prettier（`endOfLine: lf`）；版本在 T-01 冒烟后锁进 `pnpm-lock.yaml`
+- **工具链**：pnpm；Node ≥ 22.12；ESLint（换行统一交 `.gitattributes`，不另引 Prettier）；版本在 T-01 冒烟后锁进 `pnpm-lock.yaml`
 - **文件边界**（spec §4）：不碰 `backend/`；共享文件为 `.gitignore`（追加）、`specs/README.md`（本 feature 一行）、`docs/designUI.md`（引用指针）、`docs/decisions/`（D-013）、`docs/plan.md` §3（D-013 行）
 - **目录**：
 
@@ -94,7 +94,7 @@
 
 ### 2.4 模块系统（R-004）
 
-`getModuleCatalog()` 返回 `{id, zh, en, description, defaultSpan, order}[]`；`modules/registry.ts` 只做 `id → 组件` 映射（目录有、注册表无的 id 显示"不可用"）。v1 目录（顺序即默认布局，同 designUI §3）：
+`getModuleCatalog()` 返回 `{id, zh, en, description, defaultSpan, order}[]`；`modules/registry.ts` 只做 `id → 组件` 映射。v1 目录（顺序即默认布局，同 designUI §3）：
 
 | order | id | 名称 | 跨列 | 深度 | 形态 |
 |---|---|---|---|---|---|
@@ -109,18 +109,18 @@
 - **栅格**：`repeat(var(--fai-grid-cols), minmax(0, 1fr))`，模块 `grid-column: span min(defaultSpan, 当前列数)`
 - **布局**：`layoutStore` 持有 `order[]`，默认 = 目录顺序；`add`（追加末尾）/ `remove` / `moveUp` / `moveDown`；localStorage `fai.layout`
 - **模块库**：`.glass-drawer` 面板，列出全部七个模块并标明是否已在工作台
-- **模块壳 DOM 契约**（AC-004-3）：`section.fai-module[data-module-id][data-state]` > `header`（`h3.title` / `span.en` / `span.right` / `span.badge[data-badge]` / `span.ai[data-ai]` / `nav.actions`）+ `div.body`（三态或内容）；错误态 `<code>` 含 `{moduleId, code, message, ts}` 与复制钮；`data-highlight` 持续 1500ms
+- **模块壳 DOM 契约**（AC-004-3）：`section.fai-module[data-module-id][data-state]` > `header`（`h3.title` / `span.en` / `span.right` / `span.badge[data-badge="ok|warn|bad|sample"]` / `span.ai[data-ai="none|running|done"]` / `nav.actions`）+ `div.body`（三态或内容）；样例态用虚线边 + 文字"样例"（不靠颜色区分）；错误态 `<code>` 含 `{moduleId, code, message, ts}` 与复制钮；`data-highlight` 持续 1500ms
 
 ### 2.5 AI 对话抽屉与 CoT 时间线（R-005）
 
-- `AgentDock.vue`：底部输入栏（全页可见），运行中显示脉冲点与中止钮
+- `AgentDock.vue`：底部输入栏（全页可见），运行中显示脉冲点
 - `AgentDrawer.vue`：`.glass-drawer`，`closed / half(45vh) / tall(80vh)`，localStorage `fai.drawer`；提交时若为 `closed` 自动展开到 `half`
 - `CotTimeline.vue`：按 run 分组；步骤行（类型图标 + 摘要 + 时间）可展开详情；终态行（完成 / 失败 / 中止）
 - `agent/store.ts`：`main.ts` 里订阅 `agentClient.subscribe()`（应用级），切页 / 收抽屉不中断；`badgesStore` 按事件的 `moduleId` 置 running / done，用户点击模块后清除
-- **引导跳转**（AC-005-5）：目标在布局 → 不在工作台先 `router.push('/workbench')` → 等挂载 → 滚动 → 高亮；目标已移除 → 时间线内联提示 + "添加回工作台"按钮（点击后加回 → 导航 → 等挂载 → 滚动 → 高亮），不改布局；目标不存在 → 提示且不跳转
-- **事件契约**（zod，10 种）：`run.started`、`step.thinking`、`step.text`、`step.tool.call`、`step.tool.result`、`step.error`（非终态，带 `willRetry`）、`hint.navigate`、`run.completed`、`run.failed`、`run.aborted`；一次 run 恰好一个终态。`ts` 为 ISO 8601 带偏移，`stepId` 在 run 内单调，文本类 `done=false` 为增量、`done=true` 为权威全文
-- **与 pi 的映射**（本 feature 不接 pi，留给 agent-runtime）：`agent_start` → run.started；`message_update.assistantMessageEvent` 的 `thinking_delta/end`、`text_delta/end` → step.thinking / step.text；`tool_execution_start/end` → step.tool.call / result；`message_end.message.stopReason = "error"` → step.error（`willRetry` 由后续 `auto_retry_start` 或 `compaction_end.willRetry` 判定）；`agent_settled` 时归约唯一终态（aborted → aborted；最后一次 `stopReason=error` 或 `auto_retry_end.success=false` → failed；否则 completed）。依据 pi 1.4.0 `docs/json.md`、`docs/rpc.md`
-- **mock 回放**：`success / failure / retry / long / abort` 五份脚本，`[{afterMs, event}]`；选择 `?agentScript=` > `window.__FAI_MOCK__.agentScript` > success；`abort()` 后不再推后续事件
+- **引导跳转**（AC-005-5）：目标为模块且在工作台 → 不在工作台先 `router.push('/workbench')` → 等挂载 → 滚动 → 高亮；目标模块已移除 → 时间线内联提示 + "添加回工作台"按钮（点击后加回 → 导航 → 等挂载 → 滚动 → 高亮），不改布局；目标为页面且存在 → `router.push(path)`；目标不存在 → 提示且不跳转
+- **事件契约**（zod，10 种）：`run.started{runId, sessionId, ts, prompt}`、`step.thinking{stepId, ts, text, done}`、`step.text{同前}`、`step.tool.call{stepId, ts, toolCallId, toolName, argsSummary, moduleId?}`、`step.tool.result{stepId, ts, toolCallId, isError, resultSummary, durationMs?, moduleId?}`、`step.error{stepId, ts, message, willRetry}`（非终态）、`hint.navigate{stepId, ts, target{kind, id}, reason?}`、`run.completed{ts, moduleIds}`、`run.failed{ts, error{code, message, retryable}}`、`run.aborted{ts}`；一次 run 恰好一个终态。`ts` 为 ISO 8601 带偏移，`stepId` 在 run 内单调，文本类 `done=false` 为增量、`done=true` 为权威全文
+- **与 pi 的映射**（本 feature 不接 pi，留给 agent-runtime）：`agent_start` → run.started；`message_update.assistantMessageEvent` 的 `thinking_delta/end`、`text_delta/end` → step.thinking / step.text；`tool_execution_start/end` → step.tool.call / result；`message_end.message.stopReason = "error"` → step.error（`willRetry` 由后续 `auto_retry_start` 或 `compaction_end.willRetry` 判定）；`agent_settled` 时归约唯一终态（aborted → aborted；最后一次 `stopReason=error` 或 `auto_retry_end.success=false` → failed；否则 completed）。依据 pi 1.4.0 `docs/json.md`、`docs/rpc.md`。`run.aborted` 只作为事件类型存在（对应 pi 的 `agent_settled.aborted`），v1 不做中止交互
+- **mock 回放**：`success / failure / retry / long` 四份脚本，`[{afterMs, event}]`；选择 `?agentScript=` > `window.__FAI_MOCK__.agentScript` > success
 
 ### 2.6 图表暗色主题（R-006）
 
@@ -137,7 +137,7 @@ getWatchlist() -> WatchlistTable
 getReleaseCalendar(from, to) -> CalendarEntry[]
 getModuleSummary(moduleId) -> ModuleSummary
 getNewsTicker() / getSourceStatus() / getResearchList()
-send({sessionId?, message}) / abort(runId) / subscribe(cb) / getHistory(sessionId)
+send({sessionId?, message}) / subscribe(cb)
 ```
 
 - 数值三类形态（AC-007-4）：`Figure = {label, value, unit, decimals, freq, delta?, deltaKind?, semantic, asOf, seriesId?}`；`BoardCell = {state, figure}`（`ok ⇔ figure ≠ null`）；`SparkSeries = {points, unit, freq, semantic, asOf, seriesId}`
@@ -214,11 +214,11 @@ send({sessionId?, message}) / abort(runId) / subscribe(cb) / getHistory(sessionI
 | AC-005-7 | e2e：三态切换 + reload 保持；运行中指示出现 / 终态消失 |
 | AC-006-1 / -2 | unit：主题不含退役色；序列 / 类目色对卡面 ≥ 3、文字用色 ≥ 4.5（中性退后色豁免登记） |
 | AC-006-3 / -4 | e2e：`getOption().color` 与令牌一致、`backgroundColor` 透明；M-08 |
-| AC-007-1 | `check:network` |
+| AC-007-1 | `check.network` |
 | AC-007-2 | unit：五种场景；e2e：normal / empty / error / slow |
-| AC-007-3 | `contract-build` 生成 + unit：CONTRACT.md 覆盖全部方法与字段描述 |
+| AC-007-3 | `check:generated`（重生成并比对）+ unit：CONTRACT.md 覆盖全部方法、错误形态与字段描述 |
 | AC-007-4 | unit：fixtures 全部过 schema；Figure 缺元数据、`BoardCell` ok 缺 figure、`SparkSeries` 缺元数据 → 失败 |
-| AC-008-1 / -2 / -3 | unit `design-registry.spec`：条目 front matter 齐备、令牌 `source` 可解析、PALETTE_DARK 覆盖 16 个原色 |
+| AC-008-1 / -2 / -3 | unit `design-registry.spec`：条目 front matter 齐备、令牌 `source` 可解析、PALETTE_DARK 覆盖 14 个 palette-core 原色（按不同 hex 计） |
 | AC-009-1 | `pnpm test` 退出码 0 |
 | AC-009-2 | `manual-acceptance.md`（M-01 ~ M-08）+ Handoff 截图 |
 

@@ -8,7 +8,8 @@
 
 - 命令在 worktree 根执行：`pnpm -C frontend …`
 - 测试标题以所验证的 AC 编号开头，验证命令用 `-t`（Vitest）/ `-g`（Playwright）按编号选取
-- `pnpm -C frontend check` 跑 `scripts/check.mjs` 六项仓库检查（plan §2.8）
+- `pnpm -C frontend check [--only <name>]` 跑 `scripts/check.mjs` 六项仓库检查（generated / colors / glass / updown / grid / network）
+- **文件边界**：只动 `frontend/`、`design/`、`specs/frontend-workbench/`、根 `.gitignore`（追加）、`specs/README.md`（本 feature 一行）、`docs/designUI.md`（引用指针）；不碰 `backend/`
 - 每完成一个任务提交一次，信息以任务号开头
 
 ## 任务
@@ -16,7 +17,7 @@
 ### T-01 脚手架与依赖冒烟
 
 - **上下文**：确认 Vue 3.5 + Vite 8 + TS + Vitest + Playwright 在本机（Node 25）可用；后续任务的前提。
-- **修改范围**：`frontend/` 下 `package.json`（`engines.node ≥ 22.12`，scripts：`dev/build/preview/typecheck/lint/test:unit/test:e2e/tokens/tokens:check/contract/check/test`）、`pnpm-lock.yaml`、`vite.config.ts`、`tsconfig.json`、`vitest.config.ts`、`playwright.config.ts`（本机 Chrome）、`eslint.config.js`、`.prettierrc`（lf）、`.gitattributes`（lf）、`index.html`、`src/main.ts`、`src/App.vue`、`tests/unit/smoke.spec.ts`、`e2e/smoke.spec.ts`；根 `.gitignore` 追加五行
+- **修改范围**：`frontend/` 下 `package.json`（`engines.node ≥ 22.12`，scripts：`dev/build/preview/typecheck/lint/test:unit/test:e2e/tokens/tokens:check/contract/check/test`）、`pnpm-lock.yaml`、`vite.config.ts`、`tsconfig.json`、`vitest.config.ts`、`playwright.config.ts`（本机 Chrome）、`eslint.config.js`、`.gitattributes`（`* text=auto eol=lf`）、`index.html`、`src/main.ts`、`src/App.vue`、`tests/unit/smoke.spec.ts`、`e2e/smoke.spec.ts`；根 `.gitignore` 追加四行（`node_modules/`、`frontend/test-results/`、`frontend/playwright-report/`、`frontend/coverage/`；`dist/` 根文件已有）
 - **依赖**：无　**预计**：1.5 h
 - **完成标准**：
   1. 依赖按 lockfile 可复现安装（AC-009-1 打底）
@@ -37,17 +38,19 @@
   2. 令牌 `source` 指向 `design/ui/*`、`PALETTE_DARK` 或 `designUI.md` 的既有锚（AC-008-2 的数据前提）
 - **验证命令**：
   1. `pnpm -C frontend tokens:check`
-  2. `pnpm -C frontend tokens:check && git status --short src/design/generated`
+  2. `pnpm -C frontend tokens:check`（令牌 `source` 能否解析由 T-05 验证）
 
 ### T-03 仓库检查脚本
 
 - **上下文**：plan §2.8（六项检查合成一个 `scripts/check.mjs`，直接扫真实仓库，不写样例自检）。
-- **修改范围**：`scripts/check.mjs`、`package.json` 的 `check` 脚本
+- **修改范围**：`scripts/check.mjs`、`scripts/check-samples/colors/{positive,negative}.css`、`package.json` 的 `check` 脚本
 - **依赖**：T-02　**预计**：1.5 h
 - **完成标准**：
   1. `generated` / `colors` / `glass` / `updown` / `grid` / `network` 六项可单独与整体运行，非零退出表示违规（AC-001-2、AC-001-3、AC-001-5、AC-001-6、AC-004-6、AC-007-1）
+  2. `colors` 先核 `check-samples/colors/{positive,negative}.css`（阳性全部命中、阴性不中），再扫真实仓库（AC-001-2 的样例要求）
 - **验证命令**：
   1. `pnpm -C frontend check`
+  2. `pnpm -C frontend test:unit -t "AC-001-2 samples"`
 
 ### T-04 基础样式与数值
 
@@ -66,14 +69,16 @@
 ### T-05 规范资产移植
 
 - **上下文**：plan §2.9；spec R-008。令牌 `source` 与后端 `api` feature 都要引用这些条目。
-- **修改范围**：`design/ui/` 八份条目 + `UI_DARK_ADDITIONS.md` + `README.md`；`design/charts/PALETTE_CORE.md`（原件）、`PALETTE_DARK.md`（暗色值表 + 方法 + 对比度）、`README.md`
+- **修改范围**：`design/ui/` 八份条目 + `UI_DARK_ADDITIONS.md` + `README.md`；`design/charts/PALETTE_CORE.md`（原件）、`PALETTE_DARK.md`（暗色值表 + 方法 + 对比度）、`README.md`；`tests/unit/design-registry.spec.ts`
 - **依赖**：T-02　**预计**：1.5 h
 - **完成标准**：
   1. 每份保留原 `id`，front matter 含 `source / source_verified / migrated / adaptation`，末尾有 `## 暗色适配` 段（AC-008-1）
-  2. `PALETTE_DARK.md` 列出 16 个 palette-core 原色的暗色值与对比度（AC-008-3）
+  2. `PALETTE_DARK.md` 列出 14 个 palette-core 原色（按不同 hex 计）的暗色值与对比度（AC-008-3）
+  3. `tokens.json` 每个 `source` 可解析到本任务条目锚或 designUI 节号（AC-008-2）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-008-1 registry"`
   2. `pnpm -C frontend test:unit -t "AC-008-3 palette"`
+  3. `pnpm -C frontend test:unit -t "AC-008-2 sources"`
 
 ### T-06 契约类型、方法语义与事件
 
@@ -83,7 +88,7 @@
 - **完成标准**：
   1. 数值只取 `Figure` / `BoardCell` / `SparkSeries`；缺元数据或 `ok` 缺 figure 的反例被拒（AC-007-4，类型部分）
   2. 十种事件可校验，终态唯一约束有断言（AC-005-6，类型部分）
-  3. 每个方法在语义表有条目、每个字段有描述（AC-007-3 的数据前提）
+  3. `DataClient`（10 个方法）与 `AgentClient`（`send` / `subscribe`）每个方法在语义表有条目、每个字段有描述（AC-007-3 的数据前提）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-007-4 types"`
   2. `pnpm -C frontend test:unit -t "AC-005-6 types"`
@@ -97,18 +102,18 @@
 - **完成标准**：
   1. fixtures 全部通过 schema；关注列表为合约价格（AC-007-4，数据部分）
   2. 五种场景按 plan 行为可切换（error 下 `bootstrap` 与目录成功、模块数据报错）（AC-007-2，单元部分）
-  3. 五份 agent 脚本每份恰好一个终态（AC-005-6，脚本部分）
-  4. CONTRACT.md 覆盖全部方法与十种事件（AC-007-3）
+  3. 四份 agent 脚本（success / failure / retry / long）每份恰好一个终态（AC-005-6，脚本部分）
+  4. CONTRACT.md 覆盖全部方法、错误形态 `{error:{code,message,retryable}}` 与十种事件（AC-007-3）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-007-4 fixtures"`
   2. `pnpm -C frontend test:unit -t "AC-007-2"`
   3. `pnpm -C frontend test:unit -t "AC-005-6 scripts"`
-  4. `pnpm -C frontend contract && pnpm -C frontend test:unit -t "AC-007-3 doc"`
+  4. `pnpm -C frontend contract && pnpm -C frontend check --only generated && pnpm -C frontend test:unit -t "AC-007-3 doc"`
 
 ### T-08 外壳、加载页与顶栏
 
 - **上下文**：plan §2.2（路由与八项菜单、占位页、侧栏折叠、启动与深链、失败重试、顶栏）。工作台页骨架在此建立，供后续任务接入。
-- **修改范围**：`src/app/{router.ts,nav.ts,AppShell.vue,Rail.vue,TopBar.vue,LoadingScreen.vue}`、`src/pages/PlaceholderPage.vue`、`src/workbench/WorkbenchPage.vue`（骨架：焦点带占位 + 模块区容器）、`src/stores/{app.ts,ui.ts}`、`src/main.ts`、`e2e/shell.spec.ts`
+- **修改范围**：`src/app/{router.ts,nav.ts,AppShell.vue,Rail.vue,TopBar.vue,LoadingScreen.vue}`、`src/pages/PlaceholderPage.vue`、`src/workbench/WorkbenchPage.vue`（骨架：焦点带占位 + 模块区容器）、`src/stores/{app.ts,ui.ts}`、`src/main.ts`、`index.html`（静态骨架标记）、`tests/component/topbar.spec.ts`、`e2e/shell.spec.ts`
 - **依赖**：T-04、T-07　**预计**：2 h
 - **完成标准**：
   1. 八项菜单固定顺序、当前项 `aria-current`、占位页注明归属 feature、直接打开非工作台地址刷新仍停留（AC-002-2）
@@ -163,15 +168,17 @@
 - **修改范围**：`src/modules/market-board/MarketBoard.vue`、`src/modules/watchlist/Watchlist.vue`、`src/modules/release-calendar/ReleaseCalendar.vue`、`src/modules/summary/ModuleSummary.vue`、`src/shared/components/{DataTable,BoardGrid,Spark}.vue`、`src/modules/registry.ts`、`tests/component/modules.spec.ts`
 - **依赖**：T-09　**预计**：2 h
 - **完成标准**：
-  1. 盘面四态格 `休 / 待 / –` 与数值分工，数值等宽右对齐，红涨绿跌（AC-004-5，盘面部分）
+  1. 盘面四态格 `休 / 待 / –` 与数值分工，数值等宽右对齐，红涨绿跌（AC-004-5 盘面部分；AC-001-5 引入位置部分）
   2. 关注列表数值对齐与千分位、涨跌只涂字色，`Spark` 输入为 `SparkSeries`（AC-004-5，数据表部分）
   3. 日程按日期时间升序（AC-004-5，日程部分）
   4. 四个壳模块显示占位与"内容随 domain feature 交付"（AC-004-3，占位部分）
+  5. 关注列表与盘面的涨跌色经 `src/design/updown.css` 取色（AC-001-5，模块引入位置部分）
 - **验证命令**：
   1. `pnpm -C frontend test:unit -t "AC-004-5 board"`
   2. `pnpm -C frontend test:unit -t "AC-004-5 watchlist"`
   3. `pnpm -C frontend test:unit -t "AC-004-5 calendar"`
   4. `pnpm -C frontend test:unit -t "AC-004-3 summary"`
+  5. `pnpm -C frontend check --only updown`
 
 ### T-12 图表暗色主题与样例图
 
@@ -214,12 +221,12 @@
   1. 十个视口下侧栏形态、栅格列数、焦点带卡数符合断点表，无横向溢出（AC-002-6）
   2. 浏览器内逐令牌对拍、计算字体族正确（AC-001-1 运行时部分、AC-001-4 运行时部分）
   3. `.sem-market` 只在登记容器内且背景非涨跌色（AC-001-5 运行时部分）
-  4. 四场景端到端：normal / empty / error / slow（AC-007-2 端到端部分）
+  4. 四场景端到端：normal / empty / error / slow；error 场景下模块错误态可达、诊断可复制（AC-007-2 端到端部分；AC-004-4 端到端部分）
 - **验证命令**：
   1. `pnpm -C frontend test:e2e -g "AC-002-6"`
   2. `pnpm -C frontend test:e2e -g "AC-001-1"`
   3. `pnpm -C frontend test:e2e -g "AC-001-5"`
-  4. `pnpm -C frontend test:e2e -g "AC-007-2"`
+  4. `pnpm -C frontend test:e2e -g "AC-007-2" && pnpm -C frontend test:e2e -g "AC-004-4"`
 
 ### T-15 一条命令、人工验收清单与文档指针
 
@@ -228,7 +235,7 @@
 - **依赖**：T-01 ~ T-14　**预计**：1 h
 - **完成标准**：
   1. `pnpm test` 一条命令全绿（AC-009-1）
-  2. 人工清单八项各写"看什么"，含 M-01 层次、M-03 两段、M-04 模块形态、M-08 图表主题（AC-009-2）
+  2. 人工清单八项各写"看什么"：M-01 玻璃层次、M-02 字族与双语、M-03 焦点带两段、M-04 模块壳与形态、M-05 抽屉与时间线、M-06 窄窗口、M-07 ticker、M-08 图表主题（AC-009-2）
   3. designUI 的移植引用指向真实条目（AC-008-1，引用部分）
 - **验证命令**：
   1. `pnpm -C frontend test`
@@ -247,7 +254,7 @@
 | AC-002-1、AC-002-7 | T-08 |
 | AC-002-2 ~ AC-002-5 | T-08 |
 | AC-002-6 | T-14 |
-| AC-003-1 ~ AC-003-6 | T-10 |
+| AC-003-1 ~ AC-003-4、AC-003-6 | T-10；AC-003-5 另有人工 M-03（T-15） |
 | AC-004-1、AC-004-2 | T-09 |
 | AC-004-3 | T-09、T-11 |
 | AC-004-4 | T-09、T-14 |
@@ -255,15 +262,15 @@
 | AC-004-6 | T-03 |
 | AC-005-1 ~ AC-005-5、AC-005-7 | T-13 |
 | AC-005-6 | T-06、T-07 |
-| AC-006-1 ~ AC-006-4 | T-12 |
+| AC-006-1 ~ AC-006-3 | T-12；AC-006-4 另有人工 M-08（T-15） |
 | AC-007-1 | T-03 |
 | AC-007-2 | T-07、T-14 |
 | AC-007-3 | T-06、T-07 |
 | AC-007-4 | T-06、T-07 |
 | AC-008-1 | T-05、T-15 |
-| AC-008-2 | T-02 |
+| AC-008-2 | T-02、T-05 |
 | AC-008-3 | T-05 |
 | AC-009-1 | T-01、T-15 |
 | AC-009-2 | T-15 |
 
-合计 15 个任务，预计约 25.5 小时。
+合计 15 个任务，预计约 25.5 小时。T-08 与 T-13 各承担 5–6 个 AC，若实施时超过 2 h，按 AGENTS §2 第 6 步拆成两项（各自更新矩阵与依赖），不改变本清单的覆盖。
