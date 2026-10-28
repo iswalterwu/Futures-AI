@@ -1,0 +1,167 @@
+import { expect, test, type Page } from '@playwright/test'
+import { navItems } from '../src/app/nav.ts'
+import catalog from '../src/contracts/mock/fixtures/module-catalog.json' with { type: 'json' }
+
+async function send(page: Page, message: string) {
+  await page.getByRole('textbox', { name: '向 AI 提问' }).fill(message)
+  await page.getByRole('button', { name: '发送', exact: true }).click()
+  await expect(page.locator('.agent-run').last().locator('.user-message')).toHaveText(message)
+}
+
+async function expectUniqueSteps(page: Page, runId: string, count: number) {
+  const runs = page.locator('.agent-run')
+  await expect(runs).toHaveCount(1)
+  await expect(runs).toHaveAttribute('data-run-id', runId)
+  const steps = runs.locator('.timeline-step')
+  await expect(steps).toHaveCount(count)
+  const ids = await steps.evaluateAll(elements => elements.map(element => element.getAttribute('data-step-id')))
+  expect(new Set(ids).size).toBe(count)
+}
+
+test('AC-005-1 dock remains visible at the viewport bottom on all eight routes; submit opens the drawer', async ({ page }) => {
+  await page.goto('/workbench')
+  for (const item of navItems) {
+    await page.getByRole('link', { name: item.title, exact: true }).click()
+    await expect(page).toHaveURL(new RegExp(`${item.path}$`))
+    const dock = page.locator('.agent-dock')
+    await expect(dock).toBeVisible()
+    await expect(page.getByRole('textbox', { name: '向 AI 提问' })).toBeVisible()
+    expect(await dock.evaluate(element => Math.abs(element.getBoundingClientRect().bottom - window.innerHeight) < 1)).toBe(true)
+  }
+  await expect(page.locator('#agent-drawer')).toBeHidden()
+  await send(page, '分析今日合成油品数据')
+  await expect(page.locator('#agent-drawer')).toBeVisible()
+  await expect(page.locator('#agent-drawer')).toHaveAttribute('data-drawer', 'half')
+  await expect(page.locator('#agent-drawer')).toHaveClass(/glass-drawer/)
+})
+
+test('AC-005-7 half/tall/closed persist across reload; a running indicator disappears at completion', async ({ page }) => {
+  await page.goto('/prices')
+  const drawer = page.locator('#agent-drawer')
+  await page.getByRole('button', { name: '展开对话', exact: true }).click()
+  await expect(drawer).toHaveAttribute('data-drawer', 'half')
+  await expect(drawer).toHaveCSS('height', `${page.viewportSize()!.height * 0.45}px`)
+  await page.reload()
+  await expect(drawer).toBeVisible()
+  await expect(drawer).toHaveAttribute('data-drawer', 'half')
+  await drawer.getByRole('button', { name: '加高', exact: true }).click()
+  await expect(drawer).toHaveCSS('height', `${page.viewportSize()!.height * 0.8}px`)
+  await page.reload()
+  await expect(drawer).toHaveAttribute('data-drawer', 'tall')
+  await send(page, '保持加高抽屉')
+  await expect(drawer).toHaveAttribute('data-drawer', 'tall')
+  await expect(page.locator('.running-indicator')).toBeVisible()
+  await expect(page.getByRole('button', { name: '发送', exact: true })).toBeDisabled()
+  await expect(drawer.locator('.terminal-row')).toHaveAttribute('data-terminal', 'run.completed')
+  await expect(page.locator('.running-indicator')).toHaveCount(0)
+  await page.getByRole('button', { name: '收起对话抽屉' }).click()
+  await expect(drawer).toBeHidden()
+  expect(await page.evaluate(() => localStorage.getItem('fai.drawer'))).toBe('closed')
+  await page.reload()
+  await expect(drawer).toBeHidden()
+  await expect(page.getByRole('button', { name: '展开对话', exact: true })).toHaveAttribute('aria-expanded', 'false')
+})
+
+test('AC-005-3 long run continues across menu changes without restarting or duplicating steps', async ({ page }) => {
+  await page.goto('/workbench?agentScript=long')
+  await send(page, '切页时继续运行')
+  const run = page.locator('.agent-run')
+  const runId = (await run.getAttribute('data-run-id'))!
+  await expect(run.locator('.timeline-step')).toHaveCount(2)
+  await page.getByRole('link', { name: '价格', exact: true }).click()
+  await expect(page).toHaveURL(/\/prices$/)
+  await expect(run.locator('[data-step-id="4"]')).toHaveCount(1, { timeout: 8000 })
+  await page.getByRole('link', { name: '工作台', exact: true }).click()
+  await expect(page).toHaveURL(/\/workbench$/)
+  await expect(run.locator('.terminal-row')).toHaveAttribute('data-terminal', 'run.completed', { timeout: 15000 })
+  await expectUniqueSteps(page, runId, 7)
+  await expect(run.locator('[data-step-id="3"]')).toContainText('行情样例批次已返回')
+  await expect(run.locator('[data-step-id="5"]')).toContainText('库存样例批次已返回')
+  await expect(page.locator('.running-indicator')).toHaveCount(0)
+})
+
+test('AC-005-3 closing and reopening the drawer preserves steps emitted in the background', async ({ page }) => {
+  await page.goto('/workbench?agentScript=long')
+  await send(page, '收起时继续运行')
+  const run = page.locator('.agent-run')
+  const runId = (await run.getAttribute('data-run-id'))!
+  await expect(run.locator('.timeline-step')).toHaveCount(2)
+  await page.getByRole('button', { name: '收起对话抽屉' }).click()
+  await expect(page.locator('#agent-drawer')).toBeHidden()
+  await expect(page.locator('.running-indicator')).toBeVisible()
+  await expect(run.locator('[data-step-id="4"]')).toHaveCount(1, { timeout: 8000 })
+  await page.getByRole('button', { name: '展开对话', exact: true }).click()
+  await expect(run.locator('[data-step-id="3"]')).toBeVisible()
+  await expect(run.locator('.terminal-row')).toHaveAttribute('data-terminal', 'run.completed', { timeout: 15000 })
+  await expectUniqueSteps(page, runId, 7)
+  await expect(page.locator('.running-indicator')).toHaveCount(0)
+})
+
+test('AC-005-4 module badge transitions running to done and clears only when the module is viewed', async ({ page }) => {
+  await page.goto('/workbench?agentScript=long')
+  await send(page, '观察模块角标')
+  const module = page.locator('.fai-module[data-module-id="market-board"]')
+  const badge = module.locator('.ai')
+  await expect(badge).toHaveAttribute('data-ai', 'running')
+  await page.getByRole('button', { name: '收起对话抽屉' }).click()
+  await expect(badge).toHaveAttribute('data-ai', 'done', { timeout: 15000 })
+  await expect(badge).toHaveText('AI 已完成')
+  await module.locator('h3.title').click()
+  await expect(badge).toHaveAttribute('data-ai', 'none')
+  await expect(badge).toHaveText('')
+  await page.getByRole('link', { name: '价格', exact: true }).click()
+  await page.getByRole('link', { name: '工作台', exact: true }).click()
+  await expect(badge).toHaveAttribute('data-ai', 'none')
+})
+
+test('AC-005-5 in-layout module hint navigates from another page and highlights the mounted target', async ({ page }) => {
+  await page.goto('/prices')
+  await send(page, '跳转行情模块')
+  const hint = page.locator('[data-target-id="market-board"]')
+  await hint.locator('.hint-link').click()
+  await expect(page).toHaveURL(/\/workbench$/)
+  const module = page.locator('.fai-module[data-module-id="market-board"]')
+  await expect(module).toHaveAttribute('data-highlight', 'true')
+  await expect(module).toBeFocused()
+  await expect(page.locator('#agent-drawer')).toBeHidden()
+  expect(await module.evaluate(element => {
+    const rect = element.getBoundingClientRect()
+    const dockTop = document.querySelector('.agent-dock')!.getBoundingClientRect().top
+    return rect.top >= 0 && rect.top < dockTop
+  })).toBe(true)
+  await expect(module).toHaveAttribute('data-highlight', 'false')
+})
+
+test('AC-005-5 removed module hint is inline only until explicit add, then appends, navigates and highlights', async ({ page }) => {
+  const order = catalog.map(module => module.id).filter(id => id !== 'market-board')
+  await page.addInitScript(ids => localStorage.setItem('fai.layout', JSON.stringify(ids)), order)
+  await page.goto('/prices')
+  await send(page, '恢复行情模块')
+  const hint = page.locator('[data-target-id="market-board"]')
+  await hint.locator('.hint-link').click()
+  await expect(hint.getByRole('status')).toContainText('该模块不在工作台')
+  await expect(page).toHaveURL(/\/prices$/)
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('fai.layout')!))).toEqual(order)
+  await expect(page.locator('.fai-module[data-module-id="market-board"]')).toHaveCount(0)
+  await hint.getByRole('button', { name: '添加回工作台' }).click()
+  await expect(page).toHaveURL(/\/workbench$/)
+  const module = page.locator('.fai-module[data-module-id="market-board"]')
+  await expect(module).toHaveAttribute('data-highlight', 'true')
+  await expect(module).toBeFocused()
+  await expect(page.locator('.module-grid > .fai-module').last()).toHaveAttribute('data-module-id', 'market-board')
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('fai.layout')!))).toEqual([...order, 'market-board'])
+})
+
+test('AC-005-5 existing page hint pushes its route; an unknown target shows a notice without navigation', async ({ page }) => {
+  await page.goto('/daily')
+  await send(page, '检查引导目标')
+  await expect(page.locator('.terminal-row')).toHaveAttribute('data-terminal', 'run.completed')
+  const missing = page.locator('[data-target-id="sample-unavailable-module"]')
+  await missing.locator('.hint-link').click()
+  await expect(missing.getByRole('status')).toContainText('目标模块不存在')
+  await expect(missing.getByRole('button', { name: '添加回工作台' })).toHaveCount(0)
+  await expect(page).toHaveURL(/\/daily$/)
+  await page.locator('[data-target-id="/prices"] .hint-link').click()
+  await expect(page).toHaveURL(/\/prices$/)
+  await expect(page.locator('.placeholder-page[data-placeholder-owner="prices"]')).toBeVisible()
+})
