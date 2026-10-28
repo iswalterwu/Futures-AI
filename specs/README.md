@@ -21,6 +21,8 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
+| desktop-shell | in-progress（Spec，Gate 1 待批准） | frontend-workbench（构建产物）、settings、data-layer v23 | 2026-10-28 | v1 外壳：安装即用 / 进程托管与就绪 / 单实例 / 首启引导与设置入口 / 托盘与通知 / 更新 / 安全边界；承载 settings 的 GUI 类 AC |
+| workbench-interaction | in-progress（Plan 完成，待 Checklist） | frontend-workbench（R-002/R-003 v2）、api | 2026-10-28 | Phase 1.5 协作交付骨架；Spec Gate 1 已批准（9 需求/46 AC）；Plan 完成；前置 v2 变更清单见 plan §7；v1 mock 验收不依赖 api |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
