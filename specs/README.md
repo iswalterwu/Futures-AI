@@ -21,7 +21,8 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| workbench-interaction | in-progress（Plan 完成，待 Checklist） | frontend-workbench（R-002/R-003 v2）、api | 2026-10-28 | Phase 1.5 协作交付骨架；Spec Gate 1 已批准（9 需求/46 AC）；Plan 完成；前置 v2 变更清单见 plan §7；v1 mock 验收不依赖 api |
+| frontend-workbench | in-progress（v1 实施中；v2 Clarify 草稿待 Gate 1） | 无后端依赖；v2 集成 AC 依赖 workbench-interaction 前端 | 2026-10-28 | 隔离 worktree D:/2030/Futures-AI-workbench-v2（spec/frontend-workbench-v2）：九项导航/固定作业轨道/全局投放/对话上下文，52 AC、Q-023～Q-030 待 Walter 批准；按 A 首轮 B-06 细化唯一文件所有者；未进入 v2 Plan |
+| workbench-interaction | blocked（Checklist R1 未通过；Plan 已补正待 A R2） | 实现硬前置：frontend-workbench v1 Handoff；壳集成：v2 Gate 1+交付；api 仅后续真实集成 | 2026-10-28 | 冻结 spec 9需求/46AC 不变。A=claude-fable-5-1 via anthropic 首轮 B-01～B-08（均设计补全）已归档；Plan 补正候审，不等于关闭。工作目录 D:/2030/Futures-AI-interaction；未进入 Tasks / Implement；全局投放/抽屉上下文/首页轨道未集成时 Converge 须报外部阻塞 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。

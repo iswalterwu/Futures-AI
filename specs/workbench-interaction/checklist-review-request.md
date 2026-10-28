@@ -6,13 +6,14 @@
 
 ## 1. 基线与阶段
 
-- 仓库：`D:/2030/Futures-AI`，分支 `spec/workbench-interaction`。
+- 稳定审阅仓库：`D:/2030/Futures-AI-interaction`，分支 `spec/workbench-interaction`。所有后续审核从此 worktree 启动，不再使用并行会话共享的 `D:/2030/Futures-AI`。
 - 冻结 spec：`cfb6c66`，Walter 2026-10-28 Gate 1 批准；9 条需求、46 条 AC；Q-001～Q-012 已裁定。
-- Plan：`d52e784`。接手时 HEAD 为 `3d9d8ee`；其后 desktop-shell 并行工作不属于本次评审范围。
-- 阶段：**Plan → Checklist**。尚无本 feature 的 `tasks.md`；不得因 Tasks 尚未生成而要求倒置流程，也不得把未来 Tasks / Analyze / 测试执行视为已通过。
+- 首轮 Plan 基线：`d52e784`；首轮 A 报告已原样归档到 `1d6b54c`，结论未通过、B-01～B-08 全为设计补全。**本次 R2 复核修正后的 plan.md**，以启动提示登记的提交 SHA 为准，比较 `git diff d52e784 -- specs/workbench-interaction/plan.md`。
+- 首轮期间其他会话把共享目录切到 `feat/desktop-shell`；A 已自行用 git show 核对冻结 spec/Plan 与原基线一致后完成首轮，故保留其正式发现，不把它误记为中断。误启动的重复 R1b 已停止、无产物/无结论，不计审核轮次。后续所有工作只在本隔离路径进行。
+- 阶段：**Plan 补正 → Checklist R2**。尚无本 feature 的 `tasks.md`；不得因 Tasks 尚未生成而要求倒置流程，也不得把未来 Tasks / Analyze / 测试执行视为已通过。
 - 前端地基：`D:/2030/Futures-AI-frontend`，`feat/frontend-workbench`，基线 `fdaa7d8`（T-01～T-08 部分地基已落地；后续任务仍在实施）。只读参考，不得修改。
 - frontend-workbench v2：隔离草稿分支 `spec/frontend-workbench-v2`，worktree `D:/2030/Futures-AI-workbench-v2`；**未经 Gate 1 批准**，不得将其建议当作已交付依赖。
-- 其他会话正在本 worktree 写 desktop-shell / backend。**不修改、不暂存、不提交这些文件，不切换分支、不 merge，不安装依赖**。
+- 其他会话在原共享目录继续 desktop-shell / backend；本 worktree 不包含那些未提交实现。**不修改其他 feature 文件，不切换分支、不 merge，不安装依赖**。
 
 ## 2. 必须重新读取的文件
 
@@ -63,14 +64,29 @@ git -C D:/2030/Futures-AI-frontend log -6 --oneline
 - **视觉与工程纪律**：现有令牌、来源/状态文案、派生标记、≤3 玻璃层、网络只在契约边界；不引入猜测性复杂度、不重复边界校验、不手改生成物、不用测试复制业务实现。
 - **测试设计**：逐条 AC 的正向/负向测试形态与最小输入；静态守卫是否确实覆盖 AC 声称的属性，而非只写“沿用”；Handoff 截图属未来验收，不可现在声称已有。
 
-## 5. 审核输出要求
+## 5. R2 定向复核导航（实施侧说明，不是关闭结论）
 
-**允许写入的唯一仓库文件**：`D:/2030/Futures-AI/specs/workbench-interaction/checklist.md`。其他文件均只读。
+| 首轮项 | 本次设计补全落点 |
+|---|---|
+| B-01 | §2.4 新方法、动作→方法→kind→payload 表，分析/规则/批注/删除/取消/改稿等写路径 |
+| B-02 | §2.4 场景×读写/持久化表、样例×状态表；删除 jobScript，沿既有 send 脚本/runId 驱动 |
+| B-03 | §4 rerunStage 迁移表、运行中请求排队；有 run 的检查点与无 run 的 mergePending 两条路径 |
+| B-04 | §2.4 字段/标签映射/线程/revision/chart-spec/来源说明与状态/命名对照；schema 注册表 |
+| B-05 | §4 回退新版本、保留非目标块改动、冲突选版、发布未决项拒绝、领域只读与快照不可变 |
+| B-06 | §1.1 明确 v1 Handoff SHA 为实现前置、唯一文件修改者、jobs/routes + main 注册和外部阻塞 AC；v2 草稿 §4 同步所有权 |
+| B-07 | §3 持久化白名单、原文只在内存、512KiB/异常/损坏后的非模态横幅与保留旧 key、唯一显式重置 |
+| B-08 | §2.3/§2.4 inbox 生成/去重/已读规则、计数契约、列表/阶段轨道与首页轨道责任区分 |
+
+S-01～S-10 也在 Plan 中处理（bootstrap 版本不假兼容、去轮询、徽标组件守卫、列表排序、投放状态、schema 注册、手写 diff 期望、人工清单主题、外部阻塞）。请逐条独立核实并检查修复是否引入新矛盾，不能按此表直接勾选。首轮已勾选项若回退应重新打开；Tasks / Analyze 尚未发生仍只记录阶段状态。
+
+## 6. 审核输出要求
+
+**允许写入的唯一仓库文件**：`D:/2030/Futures-AI-interaction/specs/workbench-interaction/checklist.md`。其他文件均只读。
 
 - 以 `templates/checklist.md` 起稿，按本 feature 定制；由 A 自己生成/勾选，实施者不修改勾选。
 - 头部记录审核员、实际通道与切换原因、独立新会话、冻结 spec / plan 基线、审查范围和未执行项。
 - 本轮指定通道：`A = claude-fable-5-1 via anthropic`。原因：2026-10-28 接手时桥接实测返回 `quota exceeded / rate limit (seven_day) / monthly spend limit`；按 AGENTS.md 改用同一模型的 Anthropic API。认证状态 ready 不等于审核已完成。
 - 覆盖需求完整性、一致性、可测试性、工程准则，附 46 AC 逐项设计映射。只在确有证据时勾选；发现问题保留未勾选项。
 - 尚未发生的 Tasks / Analyze 不得勾选为完成，可写阶段说明并要求后续独立复核。
-- 给出二元结论（通过 / 未通过）及阻断清单；不以风格化总结代替具体发现。需求需变更时明确回流 Clarify，不自行修改冻结 spec。
+- 给出 R2 二元结论（通过 / 未通过）及逐项 B-01～B-08 复核；不以风格化总结代替具体发现。保留首轮历史，不因本轮修正而改写首轮发现；需求需变更时明确回流 Clarify，不自行修改冻结 spec。
 - 不安装依赖、不跑应用测试、不启动其他 agent、不读用户凭证、不 commit / push。最终回复概括结论与所写文件。
