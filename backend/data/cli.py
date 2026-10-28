@@ -16,7 +16,6 @@ import re
 import socket
 import sqlite3
 import sys
-import threading
 import time
 import urllib.parse
 from pathlib import Path
@@ -46,7 +45,6 @@ _SOURCE_ID_RE = re.compile(r"^[a-z0-9-]{1,64}$")  # 同 manifest id（plan §2.1
 READ_WAIT_S = 30  # 只读命令在写进程启停过渡窗口（尚无只读通道）内的等待上限（秒）
 ROUTE_TIMEOUT_S = 10  # 单次内部路由请求超时（秒）
 ROUTE_RETRY_S = 1.0  # 端点不可达/无响应后的重试间隔（秒）
-EXTERNAL_BUSY_S = 2.0  # 无写锁但本地开库持续失败（外部进程占用观测库）的提前失败时长（秒）
 
 
 def _json_out(obj):
@@ -79,14 +77,6 @@ def _route_timeout() -> TimeoutError:
     return TimeoutError("只读通道响应超时（超出统一截止时间）")
 
 
-def _shutdown_quietly(sock) -> None:
-    """看门狗：到期 shutdown 套接字，立即解除任何阻塞中的 recv（含响应头、分块帧、Connection: close 型正文）。"""
-    try:
-        sock.shutdown(socket.SHUT_RDWR)
-    except OSError:
-        pass
-
-
 def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TIMEOUT_S):
     """经持锁进程的内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。
 
@@ -100,14 +90,9 @@ def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TI
     deadline = time.monotonic() + timeout
     qs = urllib.parse.urlencode(params)
     conn = http.client.HTTPConnection("127.0.0.1", ep["port"], timeout=max(0.01, timeout))
-    watchdog = None
-    sock = None
     try:
         conn.connect()
         sock = conn.sock
-        watchdog = threading.Timer(max(0.0, deadline - time.monotonic()), _shutdown_quietly, args=(sock,))
-        watchdog.daemon = True
-        watchdog.start()
         conn.request(
             "GET", path + (f"?{qs}" if qs else ""), headers={"Authorization": f"Bearer {ep['token']}"}
         )
@@ -133,8 +118,6 @@ def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TI
             raise _route_timeout() from e
         raise ConnectionError(f"只读通道读取失败：{e}") from e
     finally:
-        if watchdog is not None:
-            watchdog.cancel()
         conn.close()
     if resp.status == 503:
         raise ConnectionError("只读通道正在关闭")
@@ -173,10 +156,9 @@ def _readonly(root: Path, args) -> int:
     """
     deadline = time.monotonic() + READ_WAIT_S
     route_err = busy_err = None
-    retry_at, busy_since = 0.0, None
+    retry_at = 0.0
     while True:
         if _lock_held(root):
-            busy_since = None
             remaining = deadline - time.monotonic()
             if read_endpoint(root / "data") and time.monotonic() >= retry_at and remaining > 0:
                 try:
@@ -196,12 +178,7 @@ def _readonly(root: Path, args) -> int:
             try:
                 svc = Service(root, readonly=True)
             except LockBusy as e:
-                svc, busy_err = None, e  # 写进程恰在取锁开库（竞态）→ 回到等待/路由
-                busy_since = busy_since or time.monotonic()
-                if time.monotonic() - busy_since >= EXTERNAL_BUSY_S and not _lock_held(root):
-                    # 持续开库失败且始终无写锁 = 外部进程占用观测库，不再等满截止时间
-                    print(f"错误：{e}", file=sys.stderr)
-                    return 1
+                svc, busy_err = None, e  # 写进程开库中或外部进程占用 → 继续等待/重试
             except Exception as e:
                 _json_out(_err_dict(e))
                 return 1
@@ -567,13 +544,7 @@ def _dispatch(args) -> int:
         return 1
     try:
         svc.init()
-        from data import mcp_server
-
-        # 持锁期间提供内部只读通道：其他进程的只读命令经其路由，不受本写命令影响（AC-004-6）
-        with mcp_server.readonly_channel(svc, root / "data") as port:
-            if port is None:
-                print("警告：只读通道未能启动，本命令执行期间其他进程的只读命令需等待其结束", file=sys.stderr)
-            return _run_write(svc, root, args)
+        return _run_write(svc, root, args)
     except Exception as e:  # 业务错误/库错误/意外错误 → 结构化输出（不抛裸异常）
         _json_out(_err_dict(e))
         return 1

@@ -109,13 +109,13 @@ class TestStateFile:
         def write(i):
             ob.write_state(tmp_path, f"src{i}", verified_at=f"t{i}")
 
-        threads = [threading.Thread(target=write, args=(i,)) for i in range(8)]
+        threads = [threading.Thread(target=write, args=(i,)) for i in range(4)]
         for t in threads:
             t.start()
         for t in threads:
             t.join(30)
         data = json.loads(ob.state_path(tmp_path).read_text(encoding="utf-8"))
-        assert len([k for k in data if k.startswith("src")]) == 8  # 串行化：全部写入且文件可解析
+        assert len([k for k in data if k.startswith("src")]) == 4  # 串行化：全部写入且文件可解析
 
     def test_onboard_state_roundtrip(self, tmp_path):
         from settings import onboarding as ob

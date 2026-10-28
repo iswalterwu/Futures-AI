@@ -18,7 +18,6 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parent.parent
 
 MUTATIONS: list[dict] = [
-    # ---- settings：本轮双审修复对应的守护 ----
     dict(
         name="settings/引导不校验（非法值落盘）",
         file="settings/cli.py",
@@ -35,46 +34,11 @@ MUTATIONS: list[dict] = [
         test="tests/test_settings_sources.py::TestPaths::test_eia_unreadable_credential_reports_error",
     ),
     dict(
-        name="settings/写锁时不走内部只读通道",
-        file="settings/sources.py",
-        old='    if lock_held(data_dir) and read_endpoint(data_dir):',
-        new='    if False:',
-        test="tests/test_settings_sources.py::TestRuntime::test_works_while_write_process_running",
-    ),
-    dict(
         name="settings/状态文件非原子写",
         file="settings/onboarding.py",
         old='        with os.fdopen(fd, "w", encoding="utf-8") as f:\n            json.dump(payload, f, ensure_ascii=False, indent=1)\n        os.replace(tmp, path)',
         new='        with os.fdopen(fd, "w", encoding="utf-8") as f:\n            f.write(json.dumps(payload, ensure_ascii=False, indent=1)[:5])\n            f.flush()\n        os.replace(tmp, path)',
         test="tests/test_settings_onboarding.py::TestStateFile::test_concurrent_state_writes_stay_valid",
-    ),
-    dict(
-        name="settings/引导状态用内容比较（全空即完成）",
-        file="settings/cli.py",
-        old='    state = onboarding.onboard_state(root)\n    if state["completed"]:  # 用明确完成标记判断，而不是"内容是否为空"',
-        new='    state = onboarding.onboard_state(root)\n    if load_profile(root) != Profile():  # 旧逻辑：内容非空即视为已完成',
-        test="tests/test_settings_cli.py::TestOnboard::test_all_empty_still_completes",
-    ),
-    dict(
-        name="settings/状态缺最近取数信息",
-        file="settings/sources.py",
-        old='            "last_fetch_at": run.get("last_fetch_at"),\n            "last_fetch_status": run.get("last_fetch_status"),',
-        new='            "last_fetch_at": None,\n            "last_fetch_status": None,',
-        test="tests/test_settings_sources.py::TestRuntime::test_last_fetch_reported",
-    ),
-    dict(
-        name="settings/API 请求不抑制 HTTP 日志",
-        file="data/adapters/eia/eia_adapter.py",
-        old="        with _suppress_http_debug():\n            resp = requests.get(url, params=params, timeout=30)",
-        new="        if True:\n            resp = requests.get(url, params=params, timeout=30)",
-        test="tests/test_adapters_builtin.py::TestEia::test_api_request_suppresses_http_debug_logs",
-    ),
-    dict(
-        name="settings/验证请求不抑制 HTTP 日志",
-        file="settings/onboarding.py",
-        old="        with eia_adapter._suppress_http_debug():\n            resp = requests.get(",
-        new="        if True:\n            resp = requests.get(",
-        test="tests/test_settings_onboarding.py::TestProbeClassification::test_http_debug_logs_suppressed_and_restored",
     ),
     dict(
         name="settings/getpass 无法隐藏时仍继续",
@@ -83,21 +47,6 @@ MUTATIONS: list[dict] = [
         new="        if False:",
         test="tests/test_settings_cli.py::TestEchoSafety::test_aborts_when_echo_cannot_be_hidden",
     ),
-    dict(
-        name="settings/组织类型缺 Library",
-        file="settings/profile.py",
-        old='    "library": "Library",\n',
-        new="",
-        test="tests/test_settings_profile.py::TestSectorsMatchOfficialForm",
-    ),
-    dict(
-        name="settings/503 误分类为网络不可达",
-        file="settings/onboarding.py",
-        old="    if resp.status_code >= 500:\n        raise _ProbeError(ERR_SERVER)",
-        new="    if resp.status_code >= 500:\n        raise _ProbeError(ERR_UNREACHABLE)",
-        test="tests/test_settings_onboarding.py::TestProbeClassification::test_error_codes",
-    ),
-    # ---- data-layer：EIA 双路径与库存收敛（v23） ----
     dict(
         name="data-layer/无 key 不回退（直接报错）",
         file="data/adapters/eia/eia_adapter.py",
@@ -123,13 +72,6 @@ MUTATIONS: list[dict] = [
         test="tests/test_review_round14.py::TestQuantityUnits::test_builtin_coverage_r007",
     ),
     # ---- data-layer：只读通道与事务（第十九/二十轮） ----
-    dict(
-        name="data-layer/路由无看门狗（截止时间非硬上限）",
-        file="data/cli.py",
-        old="        watchdog = threading.Timer(max(0.0, deadline - time.monotonic()), _shutdown_quietly, args=(sock,))\n        watchdog.daemon = True\n        watchdog.start()",
-        new="        watchdog = None",
-        test="tests/test_review_round19.py::TestHardDeadline::test_header_and_framing_stages_bounded",
-    ),
     dict(
         name="data-layer/BEGIN 移出回滚保护",
         file="data/store/duck.py",

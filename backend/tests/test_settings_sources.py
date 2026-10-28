@@ -104,20 +104,6 @@ class TestRuntime:
         assert row["last_fetch_status"] == "succeeded"
         assert row["last_fetch_at"]
 
-    def test_works_while_write_process_running(self, tmp_path):
-        """F-03：写进程（持锁 + 已发布只读通道）运行时，状态查询仍可用。"""
-        from data import mcp_server
-        from data.service import Service
-
-        svc = Service(tmp_path).init()
-        try:
-            with mcp_server.readonly_channel(svc, tmp_path / "data") as port:
-                assert port
-                rows = sources.list_with_status(tmp_path)  # 经内部通道路由，不另开库
-                assert {r["adapter_id"] for r in rows} >= {"akshare", "eia"}
-                assert all(r.get("runtime_note") for r in rows)  # 运行态由写进程持有
-        finally:
-            svc.close()
 
     def test_write_process_without_channel_fails_cleanly(self, tmp_path, capsys):
         """写进程已开启观测库但未发布只读通道：结构化提示，不抛裸 traceback。"""
