@@ -197,7 +197,7 @@
 - 环境：Windows 11；Node 工具链版本在 plan 锁定；验收浏览器为 Chromium 内核（与 Electron 同内核）
 - 目录：`frontend/`（docs/plan.md §5）；规范资产 `design/ui/`、`design/charts/`
 - 文件边界（Q-022 的 v1 范围保留）：本 feature 不修改 `backend/`；共享文件为 `specs/README.md`（状态表）、`.gitignore`（追加前端忽略项，不移除既有锚点）、`docs/designUI.md`（§2.1 玻璃边范围注、§2.2 涨跌色作用域、移植条目指针同步）、`docs/decisions/`（D-015）与 `docs/plan.md`（§3 D-015 行）。D-016 交互权威已在主线批准，本轮不新增产品决策、不改写历史 ADR
-- **v2 职责与共享文件**：壳接线唯一归本 feature：`frontend/src/app/{nav.ts,router.ts,Rail.vue,TopBar.vue,AppShell.vue}`、`frontend/src/workbench/WorkbenchPage.vue` 及作业轨道展示件、`frontend/src/agent/` 的 store/抽屉/输入栏上下文、`SendMessage` / agent 事件的可选上下文字段，以及相应测试。`workbench-interaction` 拥有 `frontend/src/jobs/` 的页面/采集抽屉/阶段与编辑行为、完整作业契约方法/类型/有状态 mock；其路由和全局抽屉由壳集成，不在两个 feature 同时改共享接线
+- **v2 职责与共享文件**：壳接线唯一归本 feature：`frontend/src/app/{nav.ts,router.ts,Rail.vue,TopBar.vue,AppShell.vue}`、`frontend/src/workbench/WorkbenchPage.vue` 及作业轨道展示件、`frontend/src/agent/` 的 store/抽屉/输入栏上下文消费与展示，以及相应测试。`workbench-interaction` 统一修改完整作业契约、`SendMessage` / agent 事件的可选上下文 schema（壳方只消费，不并写），拥有 `frontend/src/jobs/` 页面/采集抽屉/阶段与编辑、有状态 mock，另在 `jobs/routes.ts` 定义作业路由并由 `main.ts` 注册；壳的 router 文件不再同时追加作业路由。全局采集抽屉仍由壳挂载。此所有权细化对应 A 首轮 B-06，不改变需求与 AC
 - **v2 流程边界**：不新开功能性 feature；本次在同一 `frontend-workbench` 回 Clarify → 重新 Gate 1。只有本 v2 获批后才能更新 Plan，再由独立 A 审新 Checklist，之后更新 Tasks / Analyze / Implement。历史 v1 Checklist 不修改、不据其授权 v2；未变部分的复用证据也须由审核员确认
 - 设计纪律：数值只在令牌 / 条目碎片登记一次（FTEngine `#values_once`），代码从令牌取；令牌与代码不一致时以令牌为准、改代码
 - 视觉基准 = `docs/designUI.md` 的文字与令牌；D-011 的 10-26 mockup 产物已不存在（Q-002），不再作为依据
@@ -217,7 +217,7 @@
 | Q-026 | 消息/agent 事件加可选作业与阶段上下文；抽屉显示、历史保留、按作业查看；旧消息/事件继续有效 | 建议按推荐，待 Walter 确认 | R-005 / R-007 / AC-005-8、AC-005-9、AC-007-5 |
 | Q-027 | AC-002-3 从“专题研究动态子项”改为“作业入口对应的列表由共享 mock 作业驱动”；不另做专题子导航，实际列表仍归 workbench-interaction | 建议按推荐，待 Walter 确认 | R-002 / AC-002-3 |
 | Q-028 | 壳（导航/固定轨道/投放挂载/上下文接线）归本 feature；作业页面、采集内容、阶段/编辑/版本/发布归 workbench-interaction；跨 feature AC 单列集成依赖 | 建议按推荐，待 Walter 确认 | §2 非目标 / §4 |
-| Q-029 | v2 共享文件由壳方唯一接线：nav / router / Rail / TopBar / AppShell / WorkbenchPage / agent store 与上下文展示 / 契约可选字段及测试；不触碰 backend | 建议按推荐，待 Walter 确认 | §4 |
+| Q-029 | v2 壳方唯一接线：nav / router / Rail / TopBar / AppShell / WorkbenchPage / agent store 与上下文展示及测试；契约/事件的可选字段由 workbench-interaction 统一写入，壳只消费；作业路由另由其 jobs/routes + main 注册，不并改 router；不触碰 backend | 建议按推荐，待 Walter 确认 | §4 |
 | Q-030 | 同一 feature 回 Clarify 并重新 Gate 1，不新开 feature；获批后才更新 Plan / Checklist / Tasks；不继承 v1 审核为 v2 通过 | 建议按推荐，待 Walter 确认 | 头部 / §4 |
 
 ### v1 历史裁定（保留记录）

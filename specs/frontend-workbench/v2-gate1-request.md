@@ -21,7 +21,7 @@
 | 对话上下文 | 消息/事件的可选作业/阶段上下文，抽屉可见；切页不改已有 run 归属，全局发送不残留旧作业，旧事件可用 | R-005 / R-007，新增 AC-005-8、AC-005-9、AC-007-5 |
 | 原动态子项 | AC-002-3 改为作业入口对应的列表由共享 mock 作业驱动；不另做专题研究动态子导航，不由壳复制列表 | R-002，AC-002-3 |
 | 分工 | 壳接线归 v2；作业页面/阶段/投放内容/介入/编辑/版本/发布归 workbench-interaction | §2 非目标 / §4 |
-| 文件边界 | 壳侧统一拥有导航、路由、Rail/TopBar/AppShell、WorkbenchPage/轨道、agent 上下文与可选契约字段的接线及测试；不改 backend | §4 |
+| 文件边界 | 壳侧统一拥有导航/router、Rail/TopBar/AppShell、WorkbenchPage/轨道、agent 上下文消费/展示；契约/事件可选字段由 workbench-interaction 统一写入，作业路由由其 jobs/routes + main 注册，避免并改同一文件；不改 backend（按 A 首轮 B-06 细化） | §4 |
 | 同 feature 回流 | 不新建功能性 feature；重新 Gate 1 后再更新 Plan → A Checklist → Tasks → Analyze → Implement | 头部 / §4 |
 
 ## AC 变化
