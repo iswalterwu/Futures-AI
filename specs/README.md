@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| frontend-workbench | in-progress（v1 实施中；v2.1 Clarify 草稿待 Gate 1（已按 D-018 术语同步：格物致知 / 定稿，Q-031）） | 无后端依赖；v2 集成 AC 依赖 workbench-interaction 前端 | 2026-10-28 | v1：45 AC，A Checklist 通过；前端基线 fdaa7d8，T-09 等在独立 worktree 实施。v2：隔离分支 spec/frontend-workbench-v2，九项导航/固定作业轨道/全局投放/对话上下文，52 AC、Q-023～Q-030 待批准；plan/tasks/checklist 仍为 v1，不授权 v2 实施。见 specs/frontend-workbench/v2-gate1-request.md |
+| frontend-workbench | in-progress（v1 实施中；v2.1 Gate 1 已通过（2026-10-28，含 D-018 术语同步 Q-031）→ 可进入 v2 Plan） | 无后端依赖；v2 集成 AC 依赖 workbench-interaction 前端 | 2026-10-28 | v1：45 AC，A Checklist 通过；前端基线 fdaa7d8，T-09 等在独立 worktree 实施。v2：隔离分支 spec/frontend-workbench-v2，九项导航/固定作业轨道/全局投放/对话上下文，52 AC、Q-023～Q-030 待批准；plan/tasks/checklist 仍为 v1，不授权 v2 实施。见 specs/frontend-workbench/v2-gate1-request.md |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
