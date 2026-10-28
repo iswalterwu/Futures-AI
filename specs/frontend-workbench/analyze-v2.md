@@ -1,5 +1,7 @@
 # frontend-workbench v2 — Analyze 汇总
 
+> **当前独立复跑：R5（2026-10-28）**，固定审 `5ba40ad4524cd823bc0a73a90c7c9ae10d72e274`，原文 [`analyze-v2-r5.md`](analyze-v2-r5.md)。结论为不通过（2 P2 / 3 P3）；修正提交 `71a21adcd6d9ecb6c8906b1a03869407b29a9677` 已集成，但 F-01～F-05 尚待下一轮只读复跑确认。R3 / R4 是作者 / 文档集成者自查，不能代替本轮独立报告；下方 R2“当前有效”只指当时固定基线。G-02 与 H-x 尚未解除，不授权 Implement。
+
 > **R3 定向补记（2026-10-28 恢复后）**：R3 只覆盖恢复修订（v1 Handoff `43b6d79` 登记、V2-S10～S12、T-V2-01 的 AppShell 条件消解），原文 `analyze-v2-r3.md`；内部没有新增 F，外部 / 裁定项为 G-01～G-03。下面 R2 对 `6bda6c9` 的结论仍然有效。
 > **当前有效轮次：R2（2026-10-28）**。Analyze = `claude-opus-5-5` via `anthropic`（bridge 本窗口额度不可用，未重复探活、未换模型），固定审查提交 `6bda6c910343b887fad2ffede062fe241f034752`。**内部一致：R1 的 F-01～F-07（3 P2 / 4 P3）全部关闭，无新增 F。** 逐项闭环证据、实际只读核验与 O-1～O-4 观察项见同目录 [`analyze-v2-r2.md`](analyze-v2-r2.md)（作者原样产物）。
 > **后续状态补记（2026-10-28 暂停时）**：A = `claude-fable-5-1` via `anthropic` 已在全新独立会话中审 `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`，Checklist R2 通过（0 阻断，I-01b / V-02 正式勾选），原样产物提交 `f1f755bad8e4bab7577c415f4aea3d297c9d37a8`。这不改写下方或 `analyze-v2-r2.md` 的历史报告；R2 报告内“待 A 复核”是报告产出时状态。**仍不授权 Implement**：外部开工条件 E-01～E-12 未取得交接证据，新增非阻断建议 V2-S10～S12 待恢复处理。用户已要求暂停；恢复入口 `HANDOFF.md`。本 Analyze 报告本身不是 A 审核、Converge、Review、Gate 2 或实施验收。
