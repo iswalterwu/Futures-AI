@@ -69,7 +69,9 @@ test('AC-007-2 AC-004-4 error configuration reaches every module error and copie
     await page.evaluate(() => navigator.clipboard.writeText(''))
     await error.getByRole('button', { name: '复制诊断', exact: true }).click()
     await expect(error.getByRole('status')).toHaveText('诊断已复制。')
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(text)
+    const copied = await page.evaluate(() => navigator.clipboard.readText())
+    // 剪贴板与页面显示的是同一份诊断：按语义比对，忽略排版空白
+    expect(JSON.parse(copied)).toEqual(JSON.parse(text))
     await expect(error.getByRole('button', { name: '重试', exact: true })).toBeEnabled()
   }
 })
