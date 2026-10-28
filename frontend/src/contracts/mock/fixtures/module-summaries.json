@@ -1,0 +1,20 @@
+{
+  "supply-demand": {
+    "moduleId": "supply-demand", "text": "库存/供需示例占位；内容随 supply-demand domain feature 交付。",
+    "figures": [{ "label": "商业库存（样例）", "value": 2460, "unit": "万吨", "decimals": 0, "freq": "1w", "delta": -35, "deltaKind": "abs", "semantic": "analysis", "asOf": "2026-10-28T09:00:00+08:00", "seriesId": "mock.oil.inventory" }],
+    "asOf": "2026-10-28T09:00:00+08:00"
+  },
+  "logistics-onwater": {
+    "moduleId": "logistics-onwater", "text": "物流在途示例占位；内容随 logistics domain feature 交付。",
+    "figures": [{ "label": "在途运量（样例）", "value": 820, "unit": "万吨", "decimals": 0, "freq": "1d", "delta": 0, "deltaKind": "abs", "semantic": "analysis", "asOf": "2026-10-28T09:00:00+08:00", "seriesId": "mock.oil.onwater" }],
+    "asOf": "2026-10-28T09:00:00+08:00"
+  },
+  "positions": {
+    "moduleId": "positions", "text": "当前头寸示例占位，不含真实用户头寸；内容随 positions domain feature 交付。",
+    "figures": [], "asOf": "2026-10-28T09:00:00+08:00"
+  },
+  "doc-catalog": {
+    "moduleId": "doc-catalog", "text": "文档目录示例占位，不读取私有文档；内容随 knowledge domain feature 交付。",
+    "figures": [], "asOf": "2026-10-28T09:00:00+08:00"
+  }
+}

@@ -1,0 +1,6 @@
+[
+  { "id": "sample-inventory-previous", "ts": "2026-10-27T16:00:00+08:00", "name": "区域成品油库存（样例）", "source": "合成日程", "status": "fresh" },
+  { "id": "sample-refinery", "ts": "2026-10-28T09:00:00+08:00", "name": "炼厂开工率（样例）", "source": "合成日程", "status": "fresh" },
+  { "id": "sample-inventory", "ts": "2026-10-28T22:30:00+08:00", "name": "周度原油库存（样例）", "source": "合成日程", "status": "stale" },
+  { "id": "sample-onwater", "ts": "2026-10-29T10:00:00+08:00", "name": "油品在途周报（样例）", "source": "合成日程", "status": "stale" }
+]

@@ -1,0 +1,5 @@
+[
+  { "id": "sample-market", "name": "行情样例", "status": "fresh", "asOf": "2026-10-28T15:00:00+08:00" },
+  { "id": "sample-inventory", "name": "库存样例", "status": "stale", "asOf": "2026-10-21T22:30:00+08:00" },
+  { "id": "sample-documents", "name": "文档样例（未读取）", "status": "stale", "asOf": null }
+]
