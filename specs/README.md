@@ -22,6 +22,7 @@ specs/<feature>/
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
 | frontend-workbench | done（v1；H-01 修复） | 无（与后端唯一接口为 R-007 契约） | 2026-10-28 | v1 已经 [PR #7](https://github.com/iswalterwu/Futures-AI/pull/7) 合并到 main（`43b6d79`），Gate 2 已确认（11 项 P3 接受为后续、未修复、未扩改），证据见 [review.md §9](frontend-workbench/review.md#9-handoff-记录2026-10-28)。**H-01 修复**（T-18）：独立 A 通过（[review-h01.md](frontend-workbench/review-h01.md)），Walter 2026-10-28 Gate 2 已批准，经 [iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8) Handoff（[review.md §13 ~ §14](frontend-workbench/review.md)）；A-H01-P3-1（1440 整图补采）接受为后续、未补采。待办：Walter 人工复核 M-01 ~ M-08（8 项未勾）；H-02 留待 v2、未修复。v2 在独立规格分支推进，不属 v1。 |
+| workbench-interaction | in-progress（Implement 已授权；首批 T-A01～T-A09 / T-A09a） | v1 Handoff `43b6d79` + 上游同步 `90187f7`；Checklist R7 `9acf3de` 通过；H 组仍待 frontend-workbench v2 | 2026-10-28 | spec v1.1 冻结、46 AC；66 项 / 101.5 h。Walter 回复“允许”授权代码实施及本协调会话 `01a18388` 担任集成人。实施树 `D:/2030/Futures-AI-interaction-implement`（`feat/workbench-interaction-astra`），生产方集成树 `D:/2030/Futures-AI-interaction-integration`（`integration/workbench-interaction`）。规格由 `1ad7963` 定向导入，R7 S-27～S-32 已按措辞 / 断言精度吸收、Analyze R7 内部一致；未改冻结需求。当前尚无本 feature 代码或产品测试；H-x 八切片未交付，消费方集成 SHA 由 v2 所有者登记。进度与证据见 [implementation-log.md](workbench-interaction/implementation-log.md)。 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
@@ -30,7 +31,7 @@ specs/<feature>/
 
 | 日期 | 来源 | 影响 feature | 要做什么 |
 |---|---|---|---|
-| 2026-10-28 | D-018（定稿取代"发布"；学习区定名"格物致知"） | `workbench-interaction`（spec 已冻结） | 按 AGENTS.md §2 第 8 步回 Clarify 做术语级修订（R-006 / AC-006-7 / AC-007-3 "发布"→"定稿"，"学习"→"格物致知"；不加 AC）后重过 Gate 1 |
+| 2026-10-28 | workbench-interaction r6.1（Checklist R7 `9acf3de`，规格来源 `1ad7963`） | `frontend-workbench` v2 | 生产方接口设计、公开名称与尚未完成的接收确认见 [interface-handoff.md](workbench-interaction/interface-handoff.md) §3 / §5；当前所有 H-x 均未交付。生产方先按切片提供固定实现 commit + 已提交有效 Checklist SHA + 定向测试摘要；④ 消费方集成 SHA 必须由 `integration/frontend-workbench-v2` 的所有者真正集成后登记，不能用本 feature 集成树冒充，不代写壳文件。 |
 | 2026-10-28 | D-018 | `frontend-workbench` v2（Gate 1 待批） | R-002 / AC-002-2 / Q-023 菜单第七项"学习"→"格物致知"（路由 `/learning` 不改），在 Gate 1 前改入 |
 | 2026-10-28 | D-019（多 agent 编排、模型三档） | `settings`（后续版本） | 新增模型三档配置需求，另起 spec 修订 |
 | 2026-10-28 | D-024（协议冷启动） | `playbook-bootstrap`（待起 spec，Phase 1） | 依赖知识库 v1 摄取管线 + 透明页最小版；历史产出摄取与可跳过 / 重做访谈 → bootstrap proposed，经透明页确认、不自动 active；待按模板起 spec，本表不代表已开始实施 |
