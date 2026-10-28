@@ -1,6 +1,6 @@
 # Feature: frontend-workbench 任务清单（tasks.md）
 
-> Tasks 阶段产物；每项 0.5–2 小时。**状态：已生效（Checklist 第四轮基线 `2c2fbc8`，70/70）；T-01 ~ T-17 已实施，待独立 Review 定向复核；Gate 2 未批准。**
+> Tasks 阶段产物；每项 0.5–2 小时。**状态：已生效（Checklist 第四轮基线 `2c2fbc8`，70/70）；T-01 ~ T-17 已实施，独立 A 第二轮 Review 通过；Gate 2 未批准。**
 > 依据：`spec.md`（Gate 1 批准冻结，45 条 AC）+ `plan.md`（精简版）。
 > 按 AGENTS.md §5 去掉了守卫样例自检（AC-001-2 明文要求的 `colors` 最小样例除外）、逐锚盘点、跨字段校验与单次使用的抽象层；15 个任务，约 25.5 小时。
 
@@ -270,7 +270,7 @@
 
 - **上下文**：review.md R1-01（P2）；plan §2.1 / §2.7 已登记精度解析机制；不改取整后判零规则，不扩大到其他 P3 或 v2。
 - **修改范围**：`frontend/src/contracts/types.ts`、`frontend/src/shared/format.ts`、`frontend/src/shared/components/{Kpi,BoardGrid}.vue`；`frontend/tests/unit/{contracts,contract-doc}.spec.ts`、`frontend/tests/component/{typography,focus-band,modules}.spec.ts`、`frontend/e2e/workbench.spec.ts`；仅经 `pnpm contract` 更新 `frontend/contracts/{CONTRACT.md,schema.json}`。
-- **依赖**：T-04、T-06、T-07、T-10、T-11　**预计**：1.5 h　**状态**：已实施（待独立 Review 复核）
+- **依赖**：T-04、T-06、T-07、T-10、T-11　**预计**：1.5 h　**状态**：已完成（独立 A 第二轮确认 R1-01 闭环，见 review.md §7）
 - **完成标准**：
   1. 契约接收可选非负整数 `deltaDecimals`（含 0），拒绝负数 / 小数 / 字符串 / null，旧 fixture 仍合法；文档与 schema 重生成一致（AC-007-3、AC-007-4）。
   2. KPI 与盘面共用精度解析：缺省 pct 两位、abs 沿用主值精度、显式精度优先；默认 LPG 显示 `-0.46%` 且为跌、FU 显示 `+0.60%`；主值精度不变；空值、按显示位为零与负零仍中性（AC-001-4、AC-003-1、AC-003-4、AC-004-5）。
@@ -285,7 +285,7 @@
 
 - **上下文**：review.md R1-09（P3）与 AGENTS §2 第 9 步。只补齐完成证据、TS 锁定与收敛记录；其余 P3 登记为后续候选，不以“继续”代替 Gate 2 风险接受。
 - **修改范围**：`specs/frontend-workbench/{plan,tasks,analyze,converge}.md`、`specs/README.md` 本 feature 行；审核员报告在 Review 复核后追加，不改写第一轮历史；不改 `spec.md` / `checklist.md` / `manual-acceptance.md` 的冻结需求或人工勾选。
-- **依赖**：T-01 ~ T-16　**预计**：1 h　**状态**：已实施（待独立 Review 复核）
+- **依赖**：T-01 ~ T-16　**预计**：1 h　**状态**：已完成（独立 A 第二轮确认 R1-09 闭环，见 review.md §7）
 - **完成标准**：
   1. plan 回写 TS 5.9.2、tasks 补原任务实施证据与逐项 P3 后续归属；Analyze 无剩余冲突 / 漏映射；无新增需求（AC-009-1 的验收证据、AC-007-3 的契约精度落点）。
   2. 一条命令全绿且生产构建通过，Converge 对全部 45 AC 给出实现 / 测试 / 人工待验的对应证据；自动化实现范围“已收敛”，不声称人工项已通过（AC-009-1、AC-009-2）。
@@ -294,7 +294,7 @@
   1. `git diff -- specs/frontend-workbench/plan.md specs/frontend-workbench/tasks.md`（核对版本、状态、精度机制与 P3 台账）；只读 Analyze 证据见 `analyze.md`。
   2. `pnpm -C frontend test && pnpm -C frontend build`
   3. `git diff --check && git diff -- specs/README.md specs/frontend-workbench/manual-acceptance.md`；对照 `converge.md` 的人工待验与 Gate 2 记录。
-- **实施证据**：`analyze.md` 无剩余冲突；`converge.md` 覆盖 45 条 AC、结论为 v1 实现与自动验证范围“已收敛”；全量 559 单元 / 组件 + 66 e2e 与 build 全绿；原 spec / Checklist / 8 项人工清单 / v2 草稿不变。R1-09 的文档缺口已补，等待 A 独立确认。
+- **实施证据**：`analyze.md` 无剩余冲突；`converge.md` 覆盖 45 条 AC、结论为 v1 实现与自动验证范围“已收敛”；全量 559 单元 / 组件 + 66 e2e 与 build 全绿；原 spec / Checklist / 8 项人工清单 / v2 草稿不变。R1-09 的文档缺口已补，独立 A 第二轮已确认闭环（review.md §7）。
 
 ### P3 后续候选台账（非本轮默认实施；Gate 2 待 Walter 决定）
 
@@ -310,6 +310,8 @@
 | R1-09 | 本轮 T-17 补齐 | 原任务状态 / TS 版本 / Analyze / Converge；人工 M-01 ~ M-08 仍待 Handoff | AC-009-1、AC-009-2；T-17 验证命令 |
 | R1-10 | 登记、未改 UX | 抽屉偏好与跳转 UX 专项，须先明确临时收起是否保留原档位 | AC-005-5、AC-005-7；导航后重开 / 刷新验证档位 |
 | R1-11 | 登记、未改卡片分配 | 日报 / 焦点带后续 spec 明确按段分配，再按 Gate 1 变更规则实施 | AC-002-6、AC-003-5；单一语义排序与紧凑断点测试 |
+| R2-01 | 第二轮 P3，登记、未修复 / 未风险接受 | 后续编辑性修订：限定头部“15 项 / 25.5 h”为原实施计数，或只保留末尾合计，避免与当前 17 项 / 28 h 混淆 | AC-009-1 的任务证据；核对 tasks 头尾计数 |
+| R2-02 | 第二轮 P3，登记、未加强 / 未风险接受 | 后续 e2e 强度改进：精度回归注入六个数字，明确宽窗六卡 / 窄窗四卡，或收窄标题承诺；现有精度断言有效 | AC-003-1、AC-002-6；`pnpm -C frontend test:e2e -g "AC-003-1"` |
 
 ## AC 覆盖
 

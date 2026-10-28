@@ -1,5 +1,7 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
+> **最新结论（2026-10-28）**：独立 A 第二轮定向复核 **通过，无新增 P1/P2**；R1-01 / R1-09 已闭环。首轮剩余 9 项 P3 + 第二轮新增 2 项 P3 均尚待 Gate 2 处置，人工 M-01 ~ M-08 未验收。详见 §7；§0 ~ §6 保留第一轮历史原件，不代表最新结论。
+
 > **阶段**：Review（AGENTS.md §2 第 10 步）。本文件是审核报告，**不是 Handoff**；**Gate 2 尚未批准**，未进入 PR / merge。
 > **审核员**：A = claude-fable-5-1 **via anthropic**（`--model anthropic/claude-fable-5-1`）。
 > **回退原因**：先实际尝试 `claude-bridge/claude-fable-5-1`，返回 code 1：Claude quota exceeded / rate limit (seven_day) / monthly spend limit（weekly limit resets Oct 30 6pm Asia/Dubai）。按 AGENTS §2 第 5 步改走 Anthropic API 通道，同一 Claude 模型、身份不变。
@@ -171,3 +173,60 @@
 4. Gate 2 批准后才进入 Handoff：执行 M-01 ~ M-08 并附截图，更新本文件，提交 PR 并 merge 到 main。
 
 **Gate 2 待用户决定；本轮未批准、未进入 PR / merge / Handoff。**
+
+## 7. 第二轮定向复核（2026-10-28）
+
+> **审核员**：A = claude-fable-5-1 **via anthropic**（`--model anthropic/claude-fable-5-1`）。
+> **回退原因**：本轮先实际运行 `claude-bridge/claude-fable-5-1`，返回 code 1：Claude quota exceeded / rate limit (seven_day) / monthly spend limit（weekly reset Oct 30 6pm Asia/Dubai）。按 AGENTS §2 第 5 步改走 Anthropic API 通道，同一模型、身份不变。
+> **性质**：独立定向复核（R1-01 + R1-09 + Converge），新开会话、与实施隔离；不重做首轮全面 Review。实施者摘要未作为证据，以下全部为本人核对。
+> **基线**：分支 `feat/frontend-workbench`，HEAD `b19427a`（T-17）；T-16 代码 `923e238`；首轮原件 `e282c56`；复核 diff = `git diff e282c56..b19427a`（17 文件 +344/−26；其中 `frontend/` 12 文件全部在 `923e238`，`b19427a` 只动 `specs/`）。本人核实 `git diff --stat e282c56..HEAD -- spec.md checklist.md manual-acceptance.md backend docs design AGENTS.md assets` 为空；`git diff --numstat 1b5659d HEAD -- spec.md` 仍为 9+/8−（D-013→D-015 勘误），45 条 AC 未动；`git diff --quiet 923e238 HEAD -- frontend` 通过；工作区干净。只读审核：未改仓库文件、未勾 Checklist、未 commit / push / merge；临时探针脚本放在证据目录 `r2tmp/` 并已删除。
+
+### 7.1 结论
+
+**通过。** 新增 P1 = 0、P2 = 0、P3 = 2（R2-01、R2-02，均为编辑性 / 测试强度备注，可作后续）。首轮剩余 P3 仍为 9 项（R1-02 ~ R1-08、R1-10、R1-11），本轮只登记、未修复、**未获用户风险接受**——这与实施者记录一致，不构成冒充。
+
+- **R1-01 闭环**：契约、解析函数、两个消费组件、生成物、测试五处同步；默认 mock 下 LPG `-0.46%` 跌色、FU `+0.60%` 涨色，主值精度不变；零中性 / 负零 / 空值规则未被改成"非零即着色"。修复为冻结 spec R-001 数值规则的实现纠偏，不是需求变更，无需回流 Gate 1。
+- **R1-09 闭环**：tasks 状态、15 条原任务提交号、plan §1 TS 5.9.2 回写、Analyze、Converge 45 条对拍均已落地；人工 M-01 ~ M-08 与 Gate 2 均如实标为未完成。
+- Gate 2 仍待 Walter 确认；人工验收未做；未 PR / merge。
+
+### 7.2 R1-01 核验（真实文件行号）
+
+| 要求 | 证据 | 判定 |
+|---|---|---|
+| 可选 `deltaDecimals` 入口 schema 与文档 | `frontend/src/contracts/types.ts:26` `z.int().nonnegative().optional()`；`:22` `decimals` 描述改为"主数值…不决定百分比变化量精度"；生成物 `frontend/contracts/CONTRACT.md:167`、`schema.json:248-253`（`integer, minimum 0`，不在 required）；本人运行 `pnpm -C frontend check --only generated` exit 0，证明生成物未手改 | ✓ |
+| 共享解析，Kpi 与 BoardGrid 同源 | `frontend/src/shared/format.ts:33-35` `figureDeltaDecimals = deltaDecimals ?? (deltaKind==='pct' ? 2 : decimals)`；`Kpi.vue:26`、`BoardGrid.vue:15`（盘面字色按变化量精度判向，`:17` 主值为零 / 缺数仍中性）。`rg` 确认不存在第三处自行拼精度的消费者；`Watchlist.vue:26-27,75,83` 的 `change` / `changePct` 是独立 `Figure`、`value` 即变化量，用自身 `decimals` 正确，不属本缺陷 | ✓ |
+| pct 缺省两位、abs 沿用 decimals、显式 0 / 其他精度生效、主值不变、空值 / 显示零 / 负零中性 | 本人以 `node --experimental-strip-types` 直接调用 `e282c56` 旧 `format.ts` 与当前 `format.ts` 对拍 11 组用例：`-0.46 pct` 旧 `0%/neutral` → 新 `-0.46%/down`；`0.6 pct` 旧 `+1%` → 新 `+0.60%`；`-0.004 pct` 缺省 → `0.00%/neutral`，`deltaDecimals:3` → `-0.004%/down`；`deltaDecimals:0` → `0%/neutral`；`abs -0.46` 缺省 `0/neutral`、`deltaDecimals:2` → `-0.46/down`；`-0` → `0.00%/neutral`；`null` → `–`。fixture `daily-brief.json:10-15` 未改 | ✓ |
+| 新增回归真实有效、不是只改期望 | `red.log`（修复前）14 failed / 7 passed，失败点为 `typography.spec.ts:112`、`contracts.spec.ts:93/:100` 等真实断言；新增用例：`tests/unit/contracts.spec.ts:89-101`（含 0 / 2 / 3 通过，−1 / 1.5 / "2" / null 拒绝）、`contract-doc.spec.ts:95-97`、`tests/component/typography.spec.ts:96-115`（10 组）、`modules.spec.ts:114-130`（盘面 6 组）、`focus-band.spec.ts:70-73`（加 `is-down` / `is-up` 类断言）、`e2e/workbench.spec.ts:26-49`；旧期望 `e2e/workbench.spec.ts:19-21` 改为 `-0.46%` 跌色；`:137` 去掉了首轮点名的"把 LPG decimals 手改成 2"绕法 | ✓ |
+
+本人实测（HEAD，端口 4173 空闲）：`pnpm -C frontend test:unit -t "R1-01|AC-003-1|AC-003-4|AC-007-4|AC-001-4|AC-004-5 board"` → 6 文件 103 passed，exit 0；`pnpm -C frontend test:e2e -g "AC-003-1|AC-003-5"` → 5 passed（含 R1-01 浏览器用例），exit 0。
+
+### 7.3 R1-09 核验
+
+- `tasks.md:3` 状态"已生效（基线 `2c2fbc8`，70/70）；T-01 ~ T-17 已实施，待独立 Review 定向复核；Gate 2 未批准"——不再称草案。
+- `tasks.md:245-262` 原 15 任务提交表：本人逐一 `git log -1` 核实 `9d6204b … 0b819d4` 均存在且以对应任务号开头；`923e238` / `b19427a` 同。
+- `plan.md:9` 回写 TypeScript **5.9.2**（`frontend/package.json:41` 确为 `"typescript": "5.9.2"`）；`plan.md:236` 风险行同步；`plan.md:5/:57/:148/:227` 登记精度机制与 AC-007-4 落点。
+- `analyze.md` 结构核验（45 AC、17 任务、无前向依赖、Checklist 70/0 未动）；`converge.md:8-12` 结论限定为"实现与自动化验证范围已收敛"，`:14-38` R1-01 证据，`:40-90` 45 条逐项，`:90` AC-009-2 明写"人工勾选与截图尚待 Handoff"，`:100-105` 列 Gate 2 未批准。
+- `tasks.md:299-312` P3 台账：10 行均标"登记、未修复 / 未风险接受"或"本轮 T-17 补齐"，无一处写成已接受；`specs/README.md:23` 状态 `in-progress`、明示 9 项 P3 未风险接受、M-01 ~ M-08 待验、Gate 2 未批准。
+- 人工清单：`manual-acceptance.md` 自 `e282c56` 零改动，8 项仍未勾选、截图"待补"。
+
+### 7.4 测试证据
+
+- 证据目录三组日志本人读取：`red.exit=1`（预期红）、`tests.exit=0`（守卫六项 / typecheck / lint / Vitest 14 文件 559 / Playwright 66，本机 Chrome）、`build.exit=0`（仅 780 kB chunk 提示）。`tests.log` 时间 15:38–15:39 早于 `923e238` 提交时间 15:40:13，但 `frontend/` 在 `923e238` 与 HEAD 逐字一致，且本人在 HEAD 复跑的定向用例全绿，可采信。
+- 本轮新增 21 单元 / 组件 + 1 e2e 与首轮 538 / 65 的差额一致（559 / 66）。未重跑整套，未把协调会话结果冒称亲跑。
+
+### 7.5 新发现
+
+- **R2-01 · P3 · 编辑性**：`specs/frontend-workbench/tasks.md:5` 头部仍写"15 个任务，约 25.5 小时"，与同文件 `:345-347`"合计 17 项 / 28 小时"并存。影响：读者在头部得到过时计数。最小修复：头部改为"原 15 项 25.5 h + 整改 2 项 2.5 h"，或删去头部数字只留末行。
+- **R2-02 · P3 · 测试强度备注**：`frontend/e2e/workbench.spec.ts:26-49` 标题称"宽 / 窄视口"，但注入 4 个数字，`T.window.width`（6 卡上限）与 `min_width`（4 卡上限）下都只渲染 4 卡，视口维度没有触及 1240 断点截取逻辑；精度与溢出断言本身有效（对旧实现会以 `-0.46%` vs `0%` 失败）。建议后续用 6 个数字跑两档，或把标题改为"最小宽度下不溢出"。不影响 R1-01 判定。
+
+两项均不触及 spec、Checklist，不阻断。
+
+### 7.6 Converge 可信度与边界
+
+- Converge 由实施会话执行、自述非审核员判定，这在 AGENTS §2 第 9 步允许；本人抽核其 §4 中与本轮相关的 AC-001-4 / 003-1 / 003-4 / 004-5 / 007-3 / 007-4 行，证据路径与真实测试文件、守卫一致；其余行与首轮 §3 本人独立对齐表无矛盾。
+- 可信边界：① "自动通过 + 人工待验"不等于视觉 AC 已验收（M-01 ~ M-08 全未做）；② R1-02 / R1-03 / R1-07 等涉及真实后端、agent-runtime 与守卫机制的风险仍在，Converge 未声称关闭；③ 未接真实后端、Electron、domain 内容、完整图表库、v2 草稿、D-018 均不在本轮范围，未作为依据。
+- 契约版本保留 `1.0.0` 且新增可选字段、`decimals` 描述语义收窄，因 v1 尚未 Handoff 可接受（plan §2.1 已登记）；`api` feature 接线时须以当前 `CONTRACT.md` 为准。
+
+### 7.7 Gate 2 状态
+
+R1-01 与 R1-09 已闭环，本轮判定**通过**（无 P1 / P2）。待 Walter 在 Gate 2 决定：① 接受本轮整改；② 对 9 项首轮 P3 + 2 项本轮 P3 作"修 / 接受为后续任务"处置；③ 批准后进入 Handoff（执行 M-01 ~ M-08 附图、更新 review.md、PR 并 merge 到 main）。本轮未 PR / merge / Handoff，未执行人工验收。
