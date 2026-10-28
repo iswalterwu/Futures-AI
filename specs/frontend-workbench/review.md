@@ -1,6 +1,14 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **当前状态（2026-10-28，H-01 修复 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“好的”——**本次 H-01 修复 Gate 2 已批准**，A-H01-P3-1（1440 整图补采）接受为后续、尚未补采（§13）；Handoff 记录见 §14，PR：[iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8)。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复；11 项旧 P3 未修复。
+> **当前状态（2026-10-28，T-19 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“确认”——**T-19 证据补采 Gate 2 已批准**，A-M08-P3-1 接受为非阻断备注（§18）；已合并主线 `90187f7` 并 Handoff（§19，PR：[iswalterwu/Futures-AI#10](https://github.com/iswalterwu/Futures-AI/pull/10)）。A-H01-P3-1 已补采、待 Walter 复核 M-08；M-01 ~ M-08 仍待 Walter 人工复核（8 项未勾）；H-02 留待 v2、未修复。
+
+> **（Review 时点指针）当前状态（2026-10-28，T-19 独立 Review）**：独立 A（claude-fable-5-1 via anthropic）对 `167b337` 定向 Review **通过**（0 P1 / 0 P2 / 1 P3，A-M08-P3-1 待 Walter 裁定），原件 [review-m08.md](review-m08.md)、记录 §17；**本轮 Gate 2 待 Walter 明确批准**，未 Handoff；A-H01-P3-1 已补采、待 Walter 复核 M-08，未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
+
+> **（Converge 时点指针）当前状态（2026-10-28，M-08 整图证据补采）**：T-19 已补采修复后 1440 整图（`bf04f69`），Converge 判定 T-19 证据补采范围已收敛（§16、[converge.md §10](converge.md)）；**待独立 A Review，本轮 Gate 2 未发生**；A-H01-P3-1 未关闭。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
+
+> **（规划时点指针）当前状态（2026-10-28，M-08 整图证据补采 in-progress）**：H-01 已经 PR #8 合并（§13 ~ §14，历史已批准）；本轮 T-19 只补采修复后 1440 整图（A-H01-P3-1），已规划、未采集（§15）；本轮 Gate 2 未发生。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
+
+> **（H-01 Handoff 时点指针）当前状态（2026-10-28，H-01 修复 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“好的”——**本次 H-01 修复 Gate 2 已批准**，A-H01-P3-1（1440 整图补采）接受为后续、尚未补采（§13）；Handoff 记录见 §14，PR：[iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8)。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复；11 项旧 P3 未修复。
 
 > **（Review 时点指针）当前状态（2026-10-28，H-01 修复 Review）**：独立审核员 A（claude-fable-5-1 via anthropic）对固定目标 `869cb71` 定向 Review **判定通过**（无 P1 / P2，1 项 P3-1 待 Walter 处置），原件见 [review-h01.md](review-h01.md)、记录见 §12；**本次修复 Gate 2 未批准，待 Walter 明确批准**；P3-1 未补采、未被接受为后续；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。未进入 Handoff。
 
@@ -495,4 +503,93 @@ Handoff 核对：`frontend/` 树 `03fda1de…` 与 A 审查目标 `869cb71` 相�
 ### 14.4 PR 与合并
 
 - PR：[iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8)（`fix/frontend-workbench-visual` → `main`，普通 merge commit；仓库没有配置 CI 检查）。
+- merge 提交号在 merge 后才产生，记在 PR 页面与 Handoff 结果文件上，不再为此另提交一次。
+
+## 15. M-08 修复后 1440 整图证据补采：授权与计划（2026-10-28，追加）
+
+> §0 ~ §14 为历史原件，不改写；H-01 的 Gate 2 保持历史已批准（§13），PR #8 已合并。
+> **执行者**：Plan / Tasks / Analyze = claude-opus-5-5 via anthropic（bridge 本窗口 account 额度耗尽，不重复探活）；本阶段唯一写入者。分支 `docs/frontend-workbench-m08-evidence`，基线 `origin/main@44845c8`。
+
+- **授权上下文**：H-01 合并报告列出待办（首项：补采修复后 1440 整图；其余 H-02 留 v2、M-01 ~ M-08 Walter 本人复核、旧 11 项 P3 后续）后，用户回复「继续」。协调会话明确限定本轮**只补采修复后 1440×900 样例图整图**，补齐 A-H01-P3-1，新增截图 / 溯源 / 验收入口，不改功能、不代签。这不是对本轮尚未产生的 Review / Gate 2 的批准，也不是逐图人工签字。
+- **计划**：plan §8；任务 T-19（0.5 h，AC-009-2 / M-08）；Analyze 无冲突。
+- **派工**：Implement = 首选 openai/gpt-6-astra（回退 deepseek/deepseek-flash），未开始；其后 Converge、独立 A 定向 Review（claude-fable-5-1，先 bridge 后 anthropic）、Walter Gate 2。
+- **边界**：不改 `frontend/` / 冻结 spec / Checklist（70/70）/ `review-h01.md` / 旧 60 图 / 4 张图注特写；manual 勾选保持 0 / 8；H-02 与 v2（独立负责会话，当前 blocked）不接管、不变更；旧 11 项 P3 不扩改。
+
+## 16. T-19 实施与收敛简报（2026-10-28，追加）
+
+> §0 ~ §15 为历史，不改写。本节不是 Review 结论。
+
+| 角色 | 产物 | provider / model | 结果 |
+|---|---|---|---|
+| Plan / Tasks / Analyze | `3c9d714`（plan §8、T-19、analyze、§15） | anthropic / claude-opus-5-5 | 完成；bridge 额度耗尽 |
+| Implement | `bf04f69`（整图 PNG、生成 JSON、README / manual M-08 / tasks 记录） | openai / gpt-6-astra | 完成，无回退；采集首跑 exit 1（截图前断言写法，未出图）→ 修正后 exit 0；定向 e2e 6 passed、AC-009-2 单元 9 passed / 550 skipped |
+| Converge | converge §10、本节、tasks / 状态表、证据 README 追记 | anthropic / claude-opus-5-5 | **T-19 证据补采范围已收敛**；未跑测试 |
+| 审核员 A | 定向 Review `44845c8..` 本轮提交 | claude-fable-5-1（先 bridge 后 anthropic），回退按 §6 | **未开始**；须新会话、与实施模型不同 |
+
+- 证据：[after-1440x900-full.png](assets/h01-fix-20261028/after-1440x900-full.png)（sha256 `15c08282…a678`）、[capture-full-1440.json](assets/h01-fix-20261028/capture-full-1440.json)；来源 HEAD / 代码基线 `44845c8`，`frontend` 树 `03fda1de…`，与基线零差异。
+- AI 看图（Converge，不是人工验收）：整个 figure，图注单行、曲线与双轴完整、无裁切、无白底。
+- 待办：独立 A Review → Walter 本轮 Gate 2；Walter 人工复核 M-01 ~ M-08（含 M-08，8 项未勾）；H-02 留待 v2；旧 11 项 P3 未扩改。
+
+## 17. T-19 独立 Review 记录（2026-10-28，追加）
+
+> §0 ~ §16 为历史，不改写（§16 中“A 未开始”为 Converge 时点记录）。本节由集成人（claude-opus-5-5 via anthropic，非 A）落盘；A 原件逐字归档于 [review-m08.md](review-m08.md)（与临时 `review-m08-result.md` sha256 `aa9e1ed6…6ed6` 一致），结论以原件为准。
+
+- **固定目标**：`167b337f516c5e55a9c24355eddf0c36fdbad2b8`（基线 `44845c8`；diff 10 文件全部在 `specs/`；`frontend` 树 `03fda1de…` = 基线 = H-01 审查代码树）。
+- **审核员**：A = **claude-fable-5-1 via anthropic**，全新会话，与 Implement（openai/gpt-6-astra）不同；bridge 本窗口 account 额度耗尽、不重复探活。会话 exit 0，审前审后工作树干净、HEAD 不变，自启 Vite / 浏览器已退出，4173 / 4191 无监听。
+- **结论：通过**（P1 = 0，P2 = 0，P3 = 1）。T-19 四条完成标准**满足**，A-H01-P3-1 的证据缺口已补齐（修复后 1440 整图）。
+- **A-M08-P3-1**（原件 P3-1，证据链可读性）：JSON 中 `provenance.frontendDiffExit`、`frontendUntrackedFiles` 与 `checks.*` 是断言守卫后写出的字面常量，不是计算结果；数据真实（独立复采一致），仅只读 JSON 无法区分。本轮无须返工、不新增实施任务；若临时脚本将来沉淀为通用工具再考虑计算值化。A 原件写“可接受为后续”是审核员建议，**是否接受待 Walter 裁定**，集成人不代接受；不混入旧 11 项 P3 或 A-H01-P3-1。
+
+| 类别 | 内容 | 结果 |
+|---|---|---|
+| A 亲看 | 原生视觉读新整图，并对照修复前 `m08-chart-1440.png` 与图注特写 | 整个 figure、图注单行、轴与折线完整、无裁切 / 白底（AI 观察，非人工验收） |
+| A 亲跑 | `test:e2e -g "AC-006-3\|AC-006-4\|AC-001-4"` | **6 passed / exit 0** |
+| A 亲跑 | `test:unit -t "AC-009-2"` | **9 passed / 550 skipped / exit 0**（skipped 不计通过） |
+| A 独立复采 | 原脚本副本（仅 `assetDir` 改为临时子目录） | exit 0；PNG 与入库**逐字节相同**（`15c08282…a678`）；JSON 仅 executor / sourceHead / workingTreeStatus / scriptSha256 / capturedAt 预期差异 |
+| A 亲核 | 边界 `--exit-code`、`git diff --check`、manual 0 / 8、checklist 70 / 0、脚本 hash = JSON | 全部通过 |
+| A 只查日志 | Implement 采集首跑 exit 1（截图前断言口径）、成功采集、定向 e2e 6 / 单元 9、boundary | 一致 |
+| 旧证据 | H-01 全量 559 + 68、build | 非本轮重跑 |
+
+集成核对：审后实现与证据未变（`git diff --quiet 167b337..HEAD -- frontend design backend docs AGENTS.md spec checklist manual-acceptance 新 PNG / JSON` → exit 0）；`review-h01.md`、旧 60 图与 4 张图注特写未变；manual 0 checked / 8 unchecked。
+
+**待办**：Walter 本轮 Gate 2（含是否接受 A-M08-P3-1）；Walter 人工复核 M-01 ~ M-08；H-02 留待 v2；旧 11 项 P3 未扩改。用户“继续”只授权补采，不是对本 Review 的提前批准。
+
+## 18. T-19 本轮 Gate 2 用户确认记录（2026-10-28，追加）
+
+> §0 ~ §17 为历史，不改写。
+
+- **协调会话的完整 Gate 2 问题**：「Gate 2：是否确认本次补采证据，并接受上述非阻断备注，随后提交 PR 合入 `main`？」
+- **Walter 原话**：「确认」（2026-10-28）。
+- **批准范围**：T-19 修复后 1440 整图、生成元数据与入口，及独立 A 通过结论（[review-m08.md](review-m08.md)）；**A-M08-P3-1 接受为非阻断备注**（JSON 部分字段为断言守卫后常量，数据真实；本轮不返工，仅在脚本将来通用化时考虑计算值化），不新增实施任务；进入 PR / 合并。
+- **不包含**：M-01 ~ M-08 人工签字（8 项仍不勾）；A-H01-P3-1 人工关闭（保持“已补采，待 Walter 复核 M-08”）；旧 11 项 P3；H-02 / v2。
+
+## 19. T-19 Handoff 记录（2026-10-28，追加）
+
+> **执行者**：Handoff = claude-opus-5-5 via anthropic（bridge 本窗口额度耗尽，不重试）。只做记录、合并主线与发布；未改代码 / 测试 / 截图 / 元数据，未重跑测试。
+
+### 19.1 完成项
+
+- 新证据：[after-1440x900-full.png](assets/h01-fix-20261028/after-1440x900-full.png)（sha256 `15c08282…a678`）与程序生成的 [capture-full-1440.json](assets/h01-fix-20261028/capture-full-1440.json)；来源 provenance 保持采集时的 `44845c8` / `frontend` 树 `03fda1de…`（不改写为合并后的提交）。入口：证据 [README](assets/h01-fix-20261028/README.md)、manual M-08 两行链接 / 采集说明。
+- 流程：Plan / Tasks / Analyze（`3c9d714`）→ Implement（`bf04f69`）→ Converge（`167b337`）→ 独立 A 通过（`88d3975` 归档原件）→ Gate 2 已批准（§18）→ 合并主线（`1a625e7`）→ 本 Handoff。
+
+### 19.2 验收证据摘要（引用既有实测，Handoff 未重跑）
+
+| 来源 | 内容 | 结果 |
+|---|---|---|
+| Implement | 采集脚本 | 首跑 exit 1（截图前断言口径，未出图）→ exit 0 |
+| Implement | 定向 e2e `AC-006-3\|AC-006-4\|AC-001-4`；`test:unit -t "AC-009-2"` | 6 passed；9 passed / 550 skipped（skipped 不计通过） |
+| 独立 A 亲跑 | 同上两组 | 6 passed；9 passed / 550 skipped，均 exit 0 |
+| 独立 A 复采 | 原脚本副本 | exit 0，PNG 与入库逐字节相同 |
+| Converge | 结论 | T-19 证据补采范围已收敛（converge §10） |
+| 旧证据 | H-01 全量 559 + 68 / build | 非本轮重跑；本仓库无 CI |
+
+### 19.3 未完成项、风险
+
+1. **M-01 ~ M-08**：仍待 Walter 人工复核（0 checked / 8 unchecked）；A-H01-P3-1 已补采，待复核 M-08。
+2. **A-M08-P3-1**：已接受为非阻断备注，未改脚本。
+3. **H-02**：留待 v2（独立负责会话），未修复；旧 11 项 P3 未修复、未扩改。
+4. 主线 PR #9 的 D-020 ~ D-024 是后续目标，不追加 v1 冻结 AC。
+
+### 19.4 PR 与合并
+
+- PR：[iswalterwu/Futures-AI#10](https://github.com/iswalterwu/Futures-AI/pull/10)（`docs/frontend-workbench-m08-evidence` → `main`，普通 merge commit；仓库没有配置 CI 检查）。
 - merge 提交号在 merge 后才产生，记在 PR 页面与 Handoff 结果文件上，不再为此另提交一次。

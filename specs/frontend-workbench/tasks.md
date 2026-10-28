@@ -350,7 +350,40 @@
 
 | 发现 | 当前处理 | 内容 / 建议 | 验收引用 |
 |---|---|---|---|
-| A-H01-P3-1（原件编号 P3-1） | ~~未补采，待 Walter 决定修 / 接受为后续~~（Review 时点）→ **已接受为后续（Walter 2026-10-28 Gate 2 回复“好的”），未补采**；与原 11 项已接受 P3 分开计 | `assets/handoff/m08-chart-1440.png` 仍为修复前原件，1440 不受 H-02 影响；建议 Walter 复核 M-08 前补采修复后 1440×900 整图到新目录（不覆盖旧图），或在 Gate 2 材料中明确当前看图路径为 `assets/h01-fix-20261028/after-1440x900.png` / `after-960x900.png`（图注特写）。来源：[review-h01.md §3](review-h01.md) | AC-009-2、M-08 |
+| A-H01-P3-1（原件编号 P3-1） | ~~未补采，待 Walter 决定修 / 接受为后续~~（Review 时点）→ **已接受为后续（Walter 2026-10-28 Gate 2 回复“好的”），未补采**；与原 11 项已接受 P3 分开计。→ 2026-10-28 用户“继续”后执行 T-19：**已补采，待 Walter 人工复核 M-08**；新整图与程序生成元数据见 `assets/h01-fix-20261028/after-1440x900-full.png` / `capture-full-1440.json`（未关闭，尚待本轮 Converge / 独立 Review / Gate 2）。→ Converge：T-19 证据补采范围已收敛（converge §10）；**仍未关闭，待独立 A Review / 本轮 Gate 2 / Walter 复核 M-08**。→ 独立 A Review 通过（`167b337`，[review-m08.md](review-m08.md)）；仍为**已补采，待 Walter 复核 M-08**，待本轮 Gate 2，未关闭。→ 本轮 Gate 2 已批准（Walter 2026-10-28“确认”，review §18），T-19 Handoff（review §19）；仍**已补采，待 Walter 复核 M-08**，未关闭 | `assets/handoff/m08-chart-1440.png` 仍为修复前原件，1440 不受 H-02 影响；建议 Walter 复核 M-08 前补采修复后 1440×900 整图到新目录（不覆盖旧图），或在 Gate 2 材料中明确当前看图路径为 `assets/h01-fix-20261028/after-1440x900.png` / `after-960x900.png`（图注特写）。来源：[review-h01.md §3](review-h01.md) | AC-009-2、M-08 |
+
+## M-08 整图证据补采任务（2026-10-28，追加；不变更冻结 spec，不改功能）
+
+### T-19 修复后 1440×900 样例图整图补采
+
+- **上下文**：plan §8、review §15。A-H01-P3-1：`assets/handoff/m08-chart-1440.png` 仍为修复前整图，`assets/h01-fix-20261028/` 只有图注特写。本任务只补一张修复后 1440 整图与可复核元数据，为 Walter 复核 M-08 提供入口；不改功能、不改 AC、不代签。
+- **修改范围**：新增 `specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900-full.png` 与 `capture-full-1440.json`（均由采集脚本真实生成，不手改）；同目录 `README.md` 末尾追加入口与溯源；`manual-acceptance.md` 仅在 M-08 的“截图证据”行追加新链接、在 AI 观察后追加本轮 AI 采集补充记录（保留旧观察与旧链接，不改任何 `[ ]` / `[x]`）；`tasks.md` 只更新本任务状态与实施证据。采集脚本 `%TEMP%/fw-m08-evidence.nY5thg/capture-full.mjs` 不入库。不改 `frontend/`、`design/`、`docs/`、spec、Checklist、`review-h01.md`、其他 M 项、旧 60 张图与 4 张图注特写，不涉及 H-02 / v2。
+- **依赖**：T-18（已合并 `44845c8`）　**预计**：0.5 h　**状态**：已补采、定向验证通过；待 Walter 人工复核 M-08，尚未本轮 Converge / 独立 Review / Gate 2（2026-10-28）。→ Converge 已收敛（T-19 证据补采范围，converge §10；claude-opus-5-5 via anthropic）；尚未独立 Review / 本轮 Gate 2。→ 独立 A Review 通过（[review-m08.md](review-m08.md)，0 P1 / 0 P2 / 1 P3）；待 Walter 本轮 Gate 2。→ **Gate 2 已批准**（Walter 2026-10-28“确认”）；已合并主线 `90187f7` 并 Handoff（review §19）。
+- **执行**：Implement 按 AGENTS §6（首选 `openai/gpt-6-astra`，回退 `deepseek/deepseek-flash`），分支 `docs/frontend-workbench-m08-evidence`，基线 `44845c8`；提交信息以 `T-19` 开头。
+- **完成标准**：
+  1. 脚本在 1440×900、本机 Chrome、内置 mock normal 下对整个 `[data-chart-id="market-board"]` figure 截图；截图前脚本自身断言 plan §8.2 五项（就绪、figure 完全在 viewport 与 `.modules-container` 可视矩形内、图注与 SVG 折线 / 轴文字完整、图注一行、背景 transparent 且序列 id = fixture），任一失败不出图、exit ≠ 0；成功 exit 0 并生成 PNG 与 plan §8.3 全部字段的 JSON（JSON 中 SHA256 与文件实际一致）（AC-009-2、M-08）。
+  2. 主题 / 透明 / 字族既有运行时回归仍通过，manual 结构单测仍通过（AC-006-3、AC-006-4、AC-001-4、AC-009-2）。
+  3. 边界：相对 `44845c8` 无代码与冻结件差异，无空白错误；旧 60 张图（`assets/handoff/`）与 4 张图注特写不变；manual-acceptance 仍 0 checked / 8 unchecked（AC-009-2 人工证据不被覆盖）。
+  4. 文档：README 追加新图 / JSON 链接、采集命令、来源 HEAD / frontend 树、版本与“AI 采集非人工验收”；manual M-08 追加新链接与 AI 采集补充（AI 看图结论如有须标明为 AI 观察）；A-H01-P3-1 台账更新为“已补采，待 Walter 人工复核 M-08”，不写已关闭（AC-009-2、M-08）。
+- **验证命令**：
+  1. `node C:/Users/iswal/AppData/Local/Temp/fw-m08-evidence.nY5thg/capture-full.mjs` → exit 0；随后 `sha256sum specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900-full.png` 与 JSON 中 SHA256 一致
+  2. `pnpm -C frontend test:e2e -g "AC-006-3|AC-006-4|AC-001-4" && pnpm -C frontend test:unit -t "AC-009-2"` → exit 0（e2e 应为 6 条；单元计数以真实输出为准）
+  3. `git diff --check && git diff --exit-code 44845c8 -- frontend design backend docs AGENTS.md specs/frontend-workbench/spec.md specs/frontend-workbench/checklist.md specs/frontend-workbench/review-h01.md specs/frontend-workbench/assets/handoff specs/frontend-workbench/assets/h01-fix-20261028/before-1440x900.png specs/frontend-workbench/assets/h01-fix-20261028/before-960x900.png specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900.png specs/frontend-workbench/assets/h01-fix-20261028/after-960x900.png`；`grep -c -- "- \[x\]" specs/frontend-workbench/manual-acceptance.md`（0）与 `grep -c -- "- \[ \]" specs/frontend-workbench/manual-acceptance.md`（8）
+  4. `git ls-files specs/frontend-workbench/assets/h01-fix-20261028`（含新 PNG 与 JSON）`&& git diff 44845c8 --stat -- specs/frontend-workbench/manual-acceptance.md specs/frontend-workbench/assets/h01-fix-20261028/README.md`（仅新增行；人工核对 M-08 之外无改动）
+- **实施证据（2026-10-28）**：Implement = **openai/gpt-6-astra via openai**（`PI_PROVIDER` / `PI_MODEL` 实核，首选，无回退）；唯一写入者，未另派 agent。分支 `docs/frontend-workbench-m08-evidence`；基线 / 采集时 HEAD `44845c8922becfdb26bf4d0c5572f12a79ce748f`，frontend 树 `03fda1deaef016793033c29f79ffce5b901f83a4`。Checklist 实核 70 / 0，Analyze 本轮允许实施。
+  - 采集程序 `%TEMP%/fw-m08-evidence.nY5thg/capture-full.mjs` 实际生成 `assets/h01-fix-20261028/after-1440x900-full.png`（764×211 像素，17,540 bytes）及 `capture-full-1440.json`；Chrome 156.0.8078.49 / Playwright 1.64.1，T.window 1440×900、deviceScaleFactor 1、新上下文、仅 mock normal。采集时未提交的仅五份规划文档；程序核实 frontend 与基线无差异、无未跟踪前端文件，状态与命令结果已写入 JSON。
+  - 实际 figure bounds `(237, 498.75)–(1000.328125, 708.25)` 完整落在 viewport `(0,0)–(1440,900)` 与模块可视区内（模块 bounds `(224,416.75)–(1414,829.5)`）；图注、SVG 均在 figure 内，`fullVisibility` 四项 true。图注 Range 共同竖向区间 `500.75–513.75`，单位同行在右；真实曲线路径 / 轴文字非空、60 点与 fixture 一致、主题与令牌一致、背景 transparent、pageErrors 空。未改 DOM / CSS 或后处理 PNG，本轮未作看图结论、不代人工验收。
+  - `node …/capture-full.mjs`：成功 **exit 0**。首次临时脚本断言将 ECharts 未销毁时的 `isDisposed()=undefined` 当作必须等于 false，**exit 1、未出图且进程已清理**；改为既有 e2e 的“不为 true”后成功，未改产品或完整可见判据。失败与成功日志均保留（不是旧代码红跑）。
+  - `pnpm -C frontend test:e2e -g "AC-006-3|AC-006-4|AC-001-4"`：**6 passed / exit 0**；`pnpm -C frontend test:unit -t "AC-009-2"`：**1 文件 / 9 passed，13 文件 / 550 skipped，exit 0**。没有重跑全量或 build；559 + 68 / build 为旧 H-01 证据，不作本轮亲跑结果。
+  - `git diff --check` 与 T-19 验证命令 3 的全部边界检查 **exit 0**；frontend / design / backend / docs / AGENTS / 冻结 spec / Checklist / A 原件 / 旧 60 图 / 4 张 caption PNG 零差异。manual **0 checked / 8 unchecked**，仅 M-08 新增两行（链接与采集补充）；资产 README 仅末尾新增。PNG SHA256 实际对拍通过：`15c08282a5f7b65f6df162ab5818dbaf513f7bc891571e757d956beb3c79a678`。
+  - 本机日志与 exit：`C:/Users/iswal/AppData/Local/Temp/fw-m08-evidence.nY5thg/{capture-attempt-1,capture,e2e,unit,boundary}.{log,exit}`；脚本 / 日志不入库。4191 由脚本自启停且仅清理自己的 PID 树，浏览器已关闭；4173 由既有 Playwright 自启停。H-02 / v2 / 旧 11 项 P3 未处理。
+- **实施后流程（不属本任务）**：Converge 追加记录 → 独立 A 定向 Review → Walter Gate 2。M-08 人工勾选仍由 Walter 复核。
+
+### 本次 T-19 Review 新增备注（2026-10-28；不属原 11 项已接受 P3，不属 A-H01-P3-1，不是实施任务，不计工时）
+
+| 发现 | 当前处理 | 内容 | 验收引用 |
+|---|---|---|---|
+| A-M08-P3-1（原件编号 P3-1） | ~~待 Walter 裁定 / 风险接受~~（Review 时点）→ **已接受为非阻断备注（Walter 2026-10-28 Gate 2“确认”）**；本轮不返工，不新增任务 | `capture-full-1440.json` 的 `frontendDiffExit`、`frontendUntrackedFiles`、`checks.*` 为断言守卫后的字面常量，数据真实且独立复采一致，仅证据链可读性；若临时脚本沉淀为通用工具再改为计算值。来源 [review-m08.md §5](review-m08.md) | AC-009-2、M-08 |
 
 ## AC 覆盖
 
@@ -381,7 +414,7 @@
 | AC-008-2 | T-02、T-05 |
 | AC-008-3 | T-05 |
 | AC-009-1 | T-01、T-15、T-17；T-18（全量回归 559 + 68 / build 通过，`771f2af`） |
-| AC-009-2 | T-15、T-17 |
+| AC-009-2 | T-15、T-17；T-19（M-08 修复后 1440 整图证据：已补采 `bf04f69`、定向验证通过、Converge 已收敛；独立 A 通过 [review-m08.md](review-m08.md)，Gate 2 已批准、Handoff） |
 
 原始实施合计 15 个任务，预计约 25.5 小时。T-08 与 T-13 各承担 5–6 个 AC，若实施时超过 2 h，按 AGENTS §2 第 6 步拆成两项（各自更新矩阵与依赖），不改变本清单的覆盖。
 
@@ -390,3 +423,7 @@ Review 后新增 T-16 / T-17 共 2.5 小时，合计 17 项 / 28 小时；不新
 2026-10-28 恢复追加 T-18（H-01，1 小时，已授权待修复、未实施），合计 18 项 / 29 小时；不新增 AC，不改冻结 spec。H-02 留待 v2、未修复，不计工时；11 项已接受 P3 不在 T-18 范围内。
 
 2026-10-28 Converge：上句“未实施”为规划时点记录；T-18 已实施（`771f2af` / `f4ff7be`），Converge 已收敛（H-01 实现与自动化验证范围，converge §9），未新增任务，合计仍 18 项 / 29 小时；待独立 A Review 与本次修复 Gate 2。
+
+2026-10-28 追加 T-19（M-08 整图证据补采，0.5 小时，已规划、未实施），合计 19 项 / 29.5 小时；不新增 AC，不改冻结 spec；H-02 / v2 / 旧 11 项 P3 不在范围内。
+
+2026-10-28 Converge：上句“未实施”为规划时点记录；T-19 已实施（`bf04f69`），Converge 已收敛（T-19 证据补采范围，converge §10），未新增任务，合计仍 19 项 / 29.5 小时；待独立 A Review 与本轮 Gate 2。

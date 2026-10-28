@@ -67,3 +67,31 @@ H-02 未修复、留待 v2；11 项旧 P3 未扩改。该修复尚未 Converge�
 ## Gate 2 / Handoff 追记（2026-10-28；以上原文不改写）
 
 - Walter 2026-10-28 对本轮 Gate 2 回复“好的”：修复获批；A-H01-P3-1（补采修复后 1440 整图）接受为后续、**尚未补采**，本目录仍只有图注特写。这不是 M-08 人工签字。Handoff 记录见 [review.md §14](../../review.md)。
+
+## T-19：修复后 1440 整图补采（2026-10-28；以上历史不改写）
+
+- 新入口：[after-1440x900-full.png](after-1440x900-full.png)（整个 figure：图注、单位、完整 SVG 曲线与坐标轴）；程序生成的溯源 / 几何 / hash：[capture-full-1440.json](capture-full-1440.json)。这是一张 **764×211 像素的元素截图**，采集 viewport 为 **1440×900 CSS px**，不与旧图注特写混淆。
+- 执行者：Implement = **openai/gpt-6-astra via openai**（首选，无回退）。仅 AI 浏览器采集与自动断言，**本轮未作看图结论，不是 Walter 人工验收**；M-08 待 Walter 复核，8 项人工框仍未勾选。A-H01-P3-1 已补采，不在本阶段宣称关闭；尚待 Converge / 独立 Review / 本轮 Gate 2。
+- 来源：分支 `docs/frontend-workbench-m08-evidence`；采集时 HEAD 与代码基线均为 `44845c8922becfdb26bf4d0c5572f12a79ce748f`（PR #8 merge），frontend 树 `03fda1deaef016793033c29f79ffce5b901f83a4`。当时仅五份规划文档未提交；脚本实际执行 `git diff --exit-code 44845c8 -- frontend` 并核对 frontend 树一致、无未跟踪前端文件。工作树状态原样记录在 JSON，未编造截图提交号。
+- 环境：Chrome **156.0.8078.49** / Playwright **1.64.1**，`channel: chrome`，deviceScaleFactor **1**；新 browser context、默认布局与偏好，`http://127.0.0.1:4191/workbench?scenario=normal`，仅内置 mock normal。视口来自 `T.window.width` / `T.window.height`；采集时间 **2026-10-28T18:20:23.216Z**。
+- 真实采集命令（仓库根）：`node C:/Users/iswal/AppData/Local/Temp/fw-m08-evidence.nY5thg/capture-full.mjs`。一次性脚本只在临时目录，使用仓库既有 Playwright / Vite；先检查端口空闲，再以 `--host 127.0.0.1 --port 4191 --strictPort` 启动自己的 Vite 子进程，完成或失败均关闭自己的浏览器并仅终止自己创建的 PID 树，不共享 / 清理他人服务。
+- 步骤：等待模块 ready、SVG 与图实例 → 等待字体 → `figure.scrollIntoViewIfNeeded()` → 读取真实几何 / Range / 主题并断言 → 对整个 figure 调用 `locator.screenshot()` → 计算 PNG SHA256 并生成 JSON。没有改页面 DOM / CSS、隐藏元素、修改生产代码或后处理 PNG。
+- 几何证明（CSS px）：figure `(left=237, top=498.75, right=1000.328125, bottom=708.25)`；模块区 bounds `(224, 416.75)–(1414, 829.5)`，client 可视矩形 `(224, 416.75)–(1414, 829.75)`；viewport `(0,0)–(1440,900)`。figure 完全在两者内部，图注与 SVG 完全在 figure 内，四项 `fullVisibility` 全为 true。图注三段 Range 的共同竖向区间 `500.75–513.75`，单位同行在右；SVG 有真实序列 path 与非空轴文字；实例数据与 fixture 的 **60 点**一致、主题色与令牌一致、背景为 `transparent`。
+- PNG SHA256：`15c08282a5f7b65f6df162ab5818dbaf513f7bc891571e757d956beb3c79a678`（17,540 bytes），可用 `sha256sum specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900-full.png` 对拍 JSON。
+- 脚本首次运行在临时脚本的 `isDisposed() === false` 断言停止（ECharts 未销毁时实际返回 undefined），未出图，且己方进程已清理；改为与既有 e2e 一致的“不为 true”判据后采集成功（exit 0）。未改变任何产品行为或完整可见判据。首次日志 `capture-attempt-1.{log,exit}` 与成功日志 `capture.{log,exit}` 均保留在本轮临时证据目录，不入库。
+- 本轮定向验证见 T-19 实施记录；上方 **559 + 68 / build 是旧 H-01 证据**，本轮不重跑全量 / build、不做旧代码红跑。旧 60 张图与 4 张图注特写均保留；不采 960 整图、不改 H-02 / v2 / 旧 11 项 P3。
+
+## T-19 Converge 追记（2026-10-28；以上原文不改写）
+
+- Converge = claude-opus-5-5 via anthropic。PNG sha256 实测 = JSON；JSON `scriptSha256` = 临时脚本当前 hash；来源 HEAD / frontend 树与基线 `44845c8` 一致。
+- 原生视觉读 `after-1440x900-full.png`（**AI 观察，不是 Walter 人工验收**）：整个 figure，图注“近 60 日收盘 · 样例”单行、“元/桶”在右；折线、y 轴 480 ~ 515 与 x 轴 08-06 ~ 10-23 完整，无裁切、无白底。
+- 当前阶段：T-19 证据补采范围已收敛（[converge §10](../../converge.md)）；待独立 A Review 与本轮 Gate 2；M-08 人工复核待 Walter。
+
+## T-19 独立 Review 追记（2026-10-28；以上原文不改写）
+
+- 独立 A（claude-fable-5-1 via anthropic）Review **通过**；A 用原脚本副本独立复采，PNG 与本目录 `after-1440x900-full.png` 逐字节相同，JSON 仅执行者 / HEAD / 工作树 / 脚本 hash / 时间等预期差异。原件 [review-m08.md](../../review-m08.md)。
+- A-M08-P3-1：JSON 中 `checks.*` 等为断言守卫后的常量（数据真实），待 Walter 裁定。本轮 Gate 2 未批准；M-08 人工复核待 Walter。
+
+## T-19 Gate 2 / Handoff 追记（2026-10-28；以上原文不改写）
+
+- Walter 2026-10-28 对本轮 Gate 2 回复“确认”：本证据获批，A-M08-P3-1 接受为非阻断备注（本轮不改脚本 / JSON）。provenance 仍为采集时的 `44845c8`，不随合并改写。这不是 M-08 人工签字；8 项人工框仍未勾。Handoff 见 [review.md §19](../../review.md)。
