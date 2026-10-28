@@ -1,6 +1,6 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **当前状态（2026-10-28，H-01 修复 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“好的”——**本次 H-01 修复 Gate 2 已批准**，A-H01-P3-1（1440 整图补采）接受为后续、尚未补采（§13）；Handoff 记录见 §14，PR 链接见 §14.4。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复；11 项旧 P3 未修复。
+> **当前状态（2026-10-28，H-01 修复 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“好的”——**本次 H-01 修复 Gate 2 已批准**，A-H01-P3-1（1440 整图补采）接受为后续、尚未补采（§13）；Handoff 记录见 §14，PR：[iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8)。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复；11 项旧 P3 未修复。
 
 > **（Review 时点指针）当前状态（2026-10-28，H-01 修复 Review）**：独立审核员 A（claude-fable-5-1 via anthropic）对固定目标 `869cb71` 定向 Review **判定通过**（无 P1 / P2，1 项 P3-1 待 Walter 处置），原件见 [review-h01.md](review-h01.md)、记录见 §12；**本次修复 Gate 2 未批准，待 Walter 明确批准**；P3-1 未补采、未被接受为后续；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。未进入 Handoff。
 
@@ -494,4 +494,5 @@ Handoff 核对：`frontend/` 树 `03fda1de…` 与 A 审查目标 `869cb71` 相�
 
 ### 14.4 PR 与合并
 
-- PR：待创建后补链接。
+- PR：[iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8)（`fix/frontend-workbench-visual` → `main`，普通 merge commit；仓库没有配置 CI 检查）。
+- merge 提交号在 merge 后才产生，记在 PR 页面与 Handoff 结果文件上，不再为此另提交一次。
