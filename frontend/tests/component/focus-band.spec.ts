@@ -67,7 +67,10 @@ describe('AC-003-1', () => {
     expect(wrapper.findAllComponents(Kpi).map(card => card.props('figure'))).toEqual(brief!.figures)
     expect(wrapper.findAll('.kpi-value').map(value => value.text())).toEqual(['512.6', '4,320', '3,018', '2,460', '76.8', '820'])
     expect(wrapper.findAll('.unit').map(unit => unit.text())).toEqual(['元/桶', '元/吨', '元/吨', '万吨', '%', '万吨'])
-    expect(wrapper.findAll('.kpi-delta').map(delta => delta.text())).toEqual(['+1.5%', '0%', '+1%', '-35', '+0.8', '0'])
+    const deltas = wrapper.findAll('.kpi-delta')
+    expect(deltas.map(delta => delta.text())).toEqual(['+1.50%', '-0.46%', '+0.60%', '-35', '+0.8', '0'])
+    expect(deltas[1].classes()).toContain('is-down')
+    expect(deltas[2].classes()).toContain('is-up')
     expect(wrapper.find('.loading-state').exists()).toBe(false)
   })
 

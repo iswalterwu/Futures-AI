@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { MarketBoard } from '../../contracts/types.ts'
-import { fmtDelta, fmtValue } from '../format.ts'
+import { figureDeltaDecimals, fmtDelta, fmtValue } from '../format.ts'
 import '../num.css'
 
 const props = defineProps<{ board: MarketBoard }>()
@@ -12,7 +12,7 @@ const rows = computed(() => props.board.rows.map(row => ({
   cells: row.cells.map(cell => {
     if (cell.state !== 'ok') return { ...cell, display: null }
     const value = fmtValue(cell.figure.value, { decimals: cell.figure.decimals })
-    const delta = fmtDelta(cell.figure.delta, { decimals: cell.figure.decimals, kind: cell.figure.deltaKind })
+    const delta = fmtDelta(cell.figure.delta, { decimals: figureDeltaDecimals(cell.figure), kind: cell.figure.deltaKind })
     // 价格的正负不是涨跌，字色取变化量；显示为零或缺数时仍须中性。
     return { ...cell, display: { ...value, tone: value.tone === 'neutral' ? 'neutral' : delta.tone } }
   }),

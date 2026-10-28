@@ -111,6 +111,24 @@ describe('AC-004-5 board', () => {
     expect(number.classes()).toEqual(['num', 'sem-market', `is-${tone}`])
   })
 
+  test.each([
+    { deltaKind: 'pct', delta: -0.46, deltaDecimals: undefined, tone: 'down' },
+    { deltaKind: 'pct', delta: 0.6, deltaDecimals: undefined, tone: 'up' },
+    { deltaKind: 'pct', delta: -0.46, deltaDecimals: 0, tone: 'neutral' },
+    { deltaKind: 'pct', delta: -0.004, deltaDecimals: 3, tone: 'down' },
+    { deltaKind: 'abs', delta: -0.46, deltaDecimals: undefined, tone: 'neutral' },
+    { deltaKind: 'abs', delta: -0.46, deltaDecimals: 2, tone: 'down' },
+  ] as const)('R1-01 board uses the declared delta precision, not price precision: $deltaKind / $deltaDecimals / $tone', async ({ deltaKind, delta, deltaDecimals, tone }) => {
+    const board = await createMockDataClient().getMarketBoard()
+    Object.assign(board.rows[0].cells[0].figure!, { value: 4320, decimals: 0, deltaKind, delta, deltaDecimals })
+    window.__FAI_MOCK__ = { fixtures: { 'market-board': board } }
+    const wrapper = renderModule('market-board')
+    await flushPromises()
+    const number = wrapper.get('tbody .num')
+    expect(number.text()).toBe('4,320')
+    expect(number.classes()).toEqual(['num', 'sem-market', `is-${tone}`])
+  })
+
   test('uses the shared numeric rules and only amber for pending cells', () => {
     const number = styleRule(numCss, '.num')
     expect(number.fontFamily).toBe('var(--fai-font-mono)')

@@ -92,6 +92,9 @@ describe('AC-007-3 doc', () => {
       })
     }
     expect(document).toContain('| `$.delta` | 否 |')
+    expect(document).toContain('| `$.deltaDecimals` | 否 |')
+    expect(generated.$defs.Figure.properties?.deltaDecimals).toMatchObject({ type: 'integer', minimum: 0 })
+    expect(generated.$defs.Figure.required).not.toContain('deltaDecimals')
     expect(document).toContain('| `$.unit` | 是 |')
     expect(document).toContain('| `$.semantic` | 是 |')
     expect(document).toContain('"market" &#124; "analysis"')

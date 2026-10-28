@@ -1,6 +1,6 @@
 # Feature: frontend-workbench 任务清单（tasks.md）
 
-> Tasks 阶段产物；每项 0.5–2 小时。**状态：草案（2026-10-28 精简版）—— Checklist 通过后生效。**
+> Tasks 阶段产物；每项 0.5–2 小时。**状态：已生效（Checklist 第四轮基线 `2c2fbc8`，70/70）；原 T-01 ~ T-15 已实施，Review 整改 T-16 / T-17 进行中。**
 > 依据：`spec.md`（Gate 1 批准冻结，45 条 AC）+ `plan.md`（精简版）。
 > 按 AGENTS.md §5 去掉了守卫样例自检（AC-001-2 明文要求的 `colors` 最小样例除外）、逐锚盘点、跨字段校验与单次使用的抽象层；15 个任务，约 25.5 小时。
 
@@ -242,6 +242,74 @@
   2. `pnpm -C frontend test:unit -t "AC-009-2"`
   3. `pnpm -C frontend test:unit -t "AC-008-1 docs"`
 
+## 原任务实施记录（2026-10-28 补录）
+
+原任务均已实施；下列提交可由 `git show <commit>` 查验修改范围，完整自动化证据见 review.md §1（538 单元 / 组件 + 65 e2e）；这不是人工视觉验收完成记录。
+
+| 任务 | 实施提交 | 状态 |
+|---|---|---|
+| T-01 | `9d6204b` | 已实施；实际锁定 TS 5.9.2，版本回写由 T-17 补齐 |
+| T-02 | `0f885c9` | 已实施 |
+| T-03 | `fcdc325` | 已实施 |
+| T-04 | `8ee432c` | 已实施；变化量精度由 T-16 修正 |
+| T-05 | `65b998f` | 已实施 |
+| T-06 | `7b2cc70` | 已实施；变化量精度由 T-16 补全 |
+| T-07 | `7ebd17b` | 已实施 |
+| T-08 | `2a5785b` | 已实施 |
+| T-09 | `5958e54` | 已实施 |
+| T-10 | `96e348f` | 已实施；变化量精度由 T-16 修正 |
+| T-11 | `32f9fb9` | 已实施；盘面变化量精度由 T-16 修正 |
+| T-12 | `4ad46f1` | 已实施 |
+| T-13 | `5fdba62` | 已实施 |
+| T-14 | `6eeae3b` | 已实施 |
+| T-15 | `0b819d4` | 已实施；人工清单存在，M-01 ~ M-08 尚待 Handoff 执行与附图 |
+
+## Review 整改任务（原 15 项之后追加，不变更冻结 spec）
+
+### T-16 R1-01 变化量独立精度与回归
+
+- **上下文**：review.md R1-01（P2）；plan §2.1 / §2.7 已登记精度解析机制；不改取整后判零规则，不扩大到其他 P3 或 v2。
+- **修改范围**：`frontend/src/contracts/types.ts`、`frontend/src/shared/format.ts`、`frontend/src/shared/components/{Kpi,BoardGrid}.vue`；`frontend/tests/unit/{contracts,contract-doc}.spec.ts`、`frontend/tests/component/{typography,focus-band,modules}.spec.ts`、`frontend/e2e/workbench.spec.ts`；仅经 `pnpm contract` 更新 `frontend/contracts/{CONTRACT.md,schema.json}`。
+- **依赖**：T-04、T-06、T-07、T-10、T-11　**预计**：1.5 h　**状态**：已实施（待独立 Review 复核）
+- **完成标准**：
+  1. 契约接收可选非负整数 `deltaDecimals`（含 0），拒绝负数 / 小数 / 字符串 / null，旧 fixture 仍合法；文档与 schema 重生成一致（AC-007-3、AC-007-4）。
+  2. KPI 与盘面共用精度解析：缺省 pct 两位、abs 沿用主值精度、显式精度优先；默认 LPG 显示 `-0.46%` 且为跌、FU 显示 `+0.60%`；主值精度不变；空值、按显示位为零与负零仍中性（AC-001-4、AC-003-1、AC-003-4、AC-004-5）。
+  3. 浏览器验证默认百分比与显式精度（含 0）在宽 / 窄视口仍正确，旧断言不再固化 `0%` / `+1%` 的错误输出（AC-003-1、AC-003-4）。
+- **验证命令**：
+  1. `pnpm -C frontend contract && pnpm -C frontend check --only generated && pnpm -C frontend test:unit -t "AC-007-3|AC-007-4"`
+  2. `pnpm -C frontend test:unit -t "AC-001-4|AC-001-5 num|AC-003-1|AC-003-4|AC-004-5 board"`
+  3. `pnpm -C frontend test:e2e -g "AC-003-1|AC-003-5"`
+- **实施证据**：修复前 `test:unit -t R1-01` 为 14 failed / 7 passed；修复后相关定向单元 / 组件 128 passed；全量 `pnpm test` 为 559 passed + 66 e2e passed，`pnpm build` exit 0。完整收敛记录由 T-17 写入 `converge.md`，此状态不是审核通过。
+
+### T-17 R1-09 流程文档补齐与 Converge
+
+- **上下文**：review.md R1-09（P3）与 AGENTS §2 第 9 步。只补齐完成证据、TS 锁定与收敛记录；其余 P3 登记为后续候选，不以“继续”代替 Gate 2 风险接受。
+- **修改范围**：`specs/frontend-workbench/{plan,tasks,analyze,converge}.md`、`specs/README.md` 本 feature 行；审核员报告在 Review 复核后追加，不改写第一轮历史；不改 `spec.md` / `checklist.md` / `manual-acceptance.md` 的冻结需求或人工勾选。
+- **依赖**：T-01 ~ T-16　**预计**：1 h　**状态**：待实施
+- **完成标准**：
+  1. plan 回写 TS 5.9.2、tasks 补原任务实施证据与逐项 P3 后续归属；Analyze 无剩余冲突 / 漏映射；无新增需求（AC-009-1 的验收证据、AC-007-3 的契约精度落点）。
+  2. 一条命令全绿且生产构建通过，Converge 对全部 45 AC 给出实现 / 测试 / 人工待验的对应证据；自动化实现范围“已收敛”，不声称人工项已通过（AC-009-1、AC-009-2）。
+  3. 原 M-01 ~ M-08 仍待人工验收，P3 未获风险接受；状态表如实进入待独立 Review 复核，Gate 2 未批准（AC-009-2）。
+- **验证命令**：
+  1. `git diff -- specs/frontend-workbench/plan.md specs/frontend-workbench/tasks.md`（核对版本、状态、精度机制与 P3 台账）；只读 Analyze 证据见 `analyze.md`。
+  2. `pnpm -C frontend test && pnpm -C frontend build`
+  3. `git diff --check && git diff -- specs/README.md specs/frontend-workbench/manual-acceptance.md`；对照 `converge.md` 的人工待验与 Gate 2 记录。
+
+### P3 后续候选台账（非本轮默认实施；Gate 2 待 Walter 决定）
+
+| 发现 | 当前处理 | 后续归属 / 进入条件 | 验收引用与后续验证 |
+|---|---|---|---|
+| R1-02 | 登记、未修复 / 未风险接受 | `api` 接线前处理 real 桩的启动失败展示，不在本轮实现真实客户端 | AC-002-7、R-007；real 模式启动应见原因与重试，补 `AC-002-7 real` 测试 |
+| R1-03 | 登记、未扩加防御 | `agent-runtime` 明确重连 / 事件顺序契约后再设计；遵守 AGENTS §5.1，非本轮推测性加固 | AC-005-3；按真实入口注入事件序列，验证 run 连续且不崩溃 |
+| R1-04 | 登记、未修复 / 未风险接受 | `api` / 日历 domain feature 定义真实查询窗口时处理 | AC-004-5、R-007；契约窗口边界测试 + 日历 e2e |
+| R1-05 | 登记、未删预留字段 | 摘要 domain feature / `api` 确定 `figures` 消费前同步契约 | AC-007-3；契约文档对拍 + 摘要组件测试 |
+| R1-06 | 登记、未改时间显示 | `chart-templates` Formats 移植 / 真实 API 接线时统一时间展示 | AC-002-4、AC-004-5；含 UTC / 偏移的显示用例 |
+| R1-07 | 登记、未扩改选择器 | 单独守卫改进任务（需用户同意），不新增 D-015 登记位置 | AC-001-5；登记容器与非登记容器的浏览器字色测试 |
+| R1-08 | 登记、未删脚手架 | 后续清理真实根组件冒烟入口 | AC-009-1；`pnpm -C frontend test:unit -t SMOKE` + e2e SMOKE |
+| R1-09 | 本轮 T-17 补齐 | 原任务状态 / TS 版本 / Analyze / Converge；人工 M-01 ~ M-08 仍待 Handoff | AC-009-1、AC-009-2；T-17 验证命令 |
+| R1-10 | 登记、未改 UX | 抽屉偏好与跳转 UX 专项，须先明确临时收起是否保留原档位 | AC-005-5、AC-005-7；导航后重开 / 刷新验证档位 |
+| R1-11 | 登记、未改卡片分配 | 日报 / 焦点带后续 spec 明确按段分配，再按 Gate 1 变更规则实施 | AC-002-6、AC-003-5；单一语义排序与紧凑断点测试 |
+
 ## AC 覆盖
 
 | AC | 任务 |
@@ -273,4 +341,6 @@
 | AC-009-1 | T-01、T-15 |
 | AC-009-2 | T-15 |
 
-合计 15 个任务，预计约 25.5 小时。T-08 与 T-13 各承担 5–6 个 AC，若实施时超过 2 h，按 AGENTS §2 第 6 步拆成两项（各自更新矩阵与依赖），不改变本清单的覆盖。
+原始实施合计 15 个任务，预计约 25.5 小时。T-08 与 T-13 各承担 5–6 个 AC，若实施时超过 2 h，按 AGENTS §2 第 6 步拆成两项（各自更新矩阵与依赖），不改变本清单的覆盖。
+
+Review 后新增 T-16 / T-17 共 2.5 小时，合计 17 项 / 28 小时；不新增 AC。T-16 补强 AC-001-4 / AC-003-1 / AC-003-4 / AC-004-5 / AC-007-3 / AC-007-4，T-17 补齐 AC-009-1 / AC-009-2 的收敛证据；P3 台账不是已获批准的实施任务，不计入上述工时。

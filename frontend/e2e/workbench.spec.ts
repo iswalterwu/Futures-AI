@@ -16,11 +16,36 @@ test('AC-003-1 focus renders the mock brief, formatted numbers and direction cla
   await expect(focus.locator('time')).toHaveAttribute('datetime', dailyFixture.brief.date)
   await expect(focus.locator('.focus-conclusions li')).toHaveText(dailyFixture.brief.conclusions)
   await expect(focus.locator('.kpi-value')).toHaveText(['512.6', '4,320', '3,018', '2,460', '76.8', '820'])
-  await expect(focus.locator('.kpi-delta')).toHaveText(['+1.5%', '0%', '+1%', '-35', '+0.8', '0'])
+  await expect(focus.locator('.kpi-delta')).toHaveText(['+1.50%', '-0.46%', '+0.60%', '-35', '+0.8', '0'])
   await expect(focus.locator('.kpi-delta').nth(0)).toHaveClass(/sem-market is-up/)
-  await expect(focus.locator('.kpi-delta').nth(1)).toHaveClass(/sem-market is-neutral/)
+  await expect(focus.locator('.kpi-delta').nth(1)).toHaveClass(/sem-market is-down/)
   await expect(focus.locator('.kpi-delta').nth(3)).toHaveClass(/sem-analysis is-down/)
   await expect(focus.locator('.kpi-delta').nth(4)).toHaveClass(/sem-analysis is-up/)
+})
+
+test('AC-003-1 R1-01 independent delta precision and displayed-zero neutrality survive wide and narrow viewports', async ({ page }) => {
+  const lpg = dailyFixture.brief.figures[1]
+  const inventory = dailyFixture.brief.figures[3]
+  await page.addInitScript(brief => {
+    window.__FAI_MOCK__ = { fixtures: { 'daily-brief': { brief } } }
+  }, { ...dailyFixture.brief, figures: [
+    { ...lpg, label: '默认百分比' },
+    { ...lpg, label: '百分比精度三位', delta: -0.004, deltaDecimals: 3 },
+    { ...lpg, label: '显式零位精度', deltaDecimals: 0 },
+    { ...inventory, label: '绝对变化独立精度', delta: -0.46, deltaDecimals: 2 },
+  ] })
+  await page.goto('/workbench')
+  const focus = page.locator('.focus-band')
+  await expect(focus).toHaveAttribute('data-state', 'ready')
+  for (const width of [T.window.width, T.window.min_width]) {
+    await page.setViewportSize({ width, height: T.window.height })
+    await expect(focus.locator('.kpi-value')).toHaveText(['4,320', '4,320', '4,320', '2,460'])
+    await expect(focus.locator('.kpi-delta')).toHaveText(['-0.46%', '-0.004%', '0%', '-0.46'])
+    for (const [index, tone] of ['down', 'down', 'neutral', 'down'].entries()) {
+      await expect(focus.locator('.kpi-delta').nth(index)).toHaveClass(new RegExp(`is-${tone}`))
+    }
+    expect(await focus.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+  }
 })
 
 test('AC-003-1 focus truncates conclusions and uses four/six cards across the registered breakpoint without overflow', async ({ page }) => {
@@ -109,7 +134,7 @@ test('AC-003-5 semantic sections isolate market colors from analysis colors with
   const [oil, lpg, fuel, inventory, utilization, onwater] = dailyFixture.brief.figures
   await page.addInitScript(brief => {
     window.__FAI_MOCK__ = { fixtures: { 'daily-brief': { brief } } }
-  }, { ...dailyFixture.brief, figures: [inventory, oil, utilization, { ...lpg, decimals: 2 }, onwater, fuel] })
+  }, { ...dailyFixture.brief, figures: [inventory, oil, utilization, lpg, onwater, fuel] })
   await page.goto('/workbench')
   const focus = page.locator('.focus-band')
   const market = focus.locator('[data-semantic="market"]')

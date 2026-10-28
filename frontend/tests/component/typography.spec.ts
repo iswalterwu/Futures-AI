@@ -93,6 +93,27 @@ describe('AC-001-4 typography', () => {
     expect(declarations(baseCss, '.ticker').fontSize).toBe('var(--fai-type-ticker)')
   })
 
+  test.each([
+    { changes: {}, text: '-0.46%', tone: 'down' },
+    { changes: { delta: 0.6 }, text: '+0.60%', tone: 'up' },
+    { changes: { delta: -0.004 }, text: '0.00%', tone: 'neutral' },
+    { changes: { delta: -0 }, text: '0.00%', tone: 'neutral' },
+    { changes: { deltaDecimals: 0 }, text: '0%', tone: 'neutral' },
+    { changes: { delta: -0.004, deltaDecimals: 3 }, text: '-0.004%', tone: 'down' },
+    { changes: { deltaKind: 'abs' }, text: '0', tone: 'neutral' },
+    { changes: { deltaKind: 'abs', deltaDecimals: 2 }, text: '-0.46', tone: 'down' },
+    { changes: { deltaKind: undefined }, text: '0', tone: 'neutral' },
+    { changes: { delta: null }, text: '–', tone: 'neutral' },
+  ] as const)('R1-01 separates KPI price precision from delta precision: $text / $tone', ({ changes, text, tone }) => {
+    const wrapper = mount(Kpi, { props: { figure: {
+      ...figure, value: 4320, decimals: 0, delta: -0.46, deltaKind: 'pct', ...changes,
+    } } })
+    expect(wrapper.get('.kpi-value').text()).toBe('4,320')
+    expect(wrapper.get('.kpi-delta').text()).toBe(text)
+    expect(wrapper.get('.kpi-delta').classes()).toContain(`is-${tone}`)
+    expect(wrapper.get('.kpi-delta').classes()).toContain('sem-analysis')
+  })
+
   test('distinguishes absent KPI delta from missing and rounded-zero delta', async () => {
     const wrapper = mount(Kpi, { props: { figure: { ...figure, value: null, delta: undefined } } })
     expect(wrapper.get('.kpi-value').text()).toBe('–')
@@ -143,7 +164,7 @@ describe('AC-001-5 num', () => {
 
   test('passes the declared KPI delta semantic and pct kind to the real Num component', async () => {
     const wrapper = mount(Kpi, { props: { figure: { ...figure, semantic: 'market', delta: 1.5, deltaKind: 'pct' } } })
-    expect(wrapper.getComponent(Num).text()).toBe('+1.5%')
+    expect(wrapper.getComponent(Num).text()).toBe('+1.50%')
     expect(wrapper.getComponent(Num).classes()).toContain('sem-market')
     expect(wrapper.getComponent(Num).classes()).toContain('is-up')
     expect(wrapper.get('.kpi-value').attributes('class')).toBe('kpi-value')
