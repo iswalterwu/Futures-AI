@@ -1,15 +1,17 @@
 # 恢复交接 — frontend-workbench v2
 
-> **当前状态（2026-10-28，用户已明确恢复）**：已登记并合入 v1 正式 Handoff `43b6d79681a49562f41751368b2ae00c24062f56`，已落实 S10～S12；本轮没有新写 v2 实现，代码 / 权威 docs 与该 v1 SHA 一致。合并后的独立 Analyze R5 / R6 发现的文档问题已修正，R7 固定审 `217960d` 确认全部关闭、无新增 P1/P2/P3（原文 `specs/frontend-workbench/analyze-v2-r7.md`）。A R3（`claude-fable-5-1 via anthropic`）已在独立会话固定审 `b375b270a47d210823ae62da16438eeac17096db` 并通过，0 阻断，原样产物提交 `425c1fd6c639734b0c45ba7cf9259dbee4439074`，已登记到 tasks §1.1。G-02 窄窗导航形态与 S1/S2 的 H-x 实现交接仍缺，不能启动实施。
-> **工作树登记**：协调 / 串行集成 = 当前 `openai/gpt-6.1-sol` 会话；主规格树仍为 `D:/2030/Futures-AI-workbench-v2` / `spec/frontend-workbench-v2`。另已从 `43b6d79` 建立 `D:/2030/Futures-AI-workbench-v2-integration` / `integration/frontend-workbench-v2` 和 `D:/2030/Futures-AI-workbench-v2-implement` / `feat/frontend-workbench-v2-s0`，尚无 v2 实现提交。两树已快进到已审基线 `b375b27`，本次状态提交后可再串行快进审核登记；无 v2 实施提交。详见 tasks §1.1。建立 / 同步工作树不等于放行。
-> **模型记录（脱敏）**：Plan/Tasks / v1 文档合并 = `claude-opus-5-5 via anthropic`，由协调器派出独立会话，不是用户直接切换模型；本次恢复已最小真实探活 Opus bridge，返回额度 / 限流类失败，同模型 anthropic 返回 OK。只换通道、未改配置。下方 R3/R4 的“用户以该通道启动”属作者措辞，本段给出实际派工事实。
+> **当前状态（2026-10-28，G-02 已裁定，设计修订待 Analyze R8 / A R4）**：v1 正式 Handoff `43b6d79681a49562f41751368b2ae00c24062f56` 已合入；代码、`design/`、权威 docs 与它一致，冻结 spec（52 AC）与两份 Checklist 未改。历史复核：Analyze R7 审 `217960d`、A R3 审 `b375b270a47d210823ae62da16438eeac17096db` 通过（原样产物 `425c1fd6c639734b0c45ba7cf9259dbee4439074`），只覆盖各自固定提交。**G-02 人工裁定已满足**：协调器问“是否按推荐，采用导航内部横向滚动？”，Walter 本轮回复“可以”。内容是小于 980px 时九项顶部导航单行，导航容器内部横向滚动，页面不横滚；按 `design/ui/UI_LAYOUT.md#narrow` 原规则执行，不改该文件。Plan / Tasks 已据此修改（提交 `docs(frontend-workbench): apply approved G-02 horizontal navigation plan`，基线 `e84ee27`）。这属于 plan §7.4 的实质设计修改，所以先要独立只读 Analyze R8，再由 A R4 定向复核，之后 T-V2-01 / 02 才能开工。S1/S2 仍缺 H-x 四项交接。
+> **工作树登记**：协调 / 串行集成 = `openai/gpt-6.1-sol` 会话。主规格树 `D:/2030/Futures-AI-workbench-v2` / `spec/frontend-workbench-v2`、集成树 `D:/2030/Futures-AI-workbench-v2-integration` / `integration/frontend-workbench-v2`、实施树 `D:/2030/Futures-AI-workbench-v2-implement` / `feat/frontend-workbench-v2-s0` 都已真实建立，均在 `79b521207a93567c4da8651e5f6e53c665e3d098`，没有 v2 实施提交。本 G-02 修订在 `D:/2030/Futures-AI-workbench-v2-g02` / `docs/frontend-workbench-v2-g02`，由集成人串行合入。建立 / 同步工作树不等于放行。
+> **模型记录（脱敏）**：Plan/Tasks = `claude-opus-5-5 via anthropic`，由协调器派出独立会话，不是用户直接切换模型。同一限额窗口内 Opus bridge 的最小真实调用已返回额度 / 限流类失败，本轮未重试 bridge，同模型 anthropic 正常；只换通道，未改配置。下方 R3/R4 的“用户以该通道启动”属作者当时措辞，以本段为准。
 
 ## 当前下一步与证据边界
 
-- **仅需 Walter 裁定 G-02**：小于 980 的九项顶部导航，保留“换行”，还是改为“导航容器内部横向滚动”（页面不横滚）？推荐后者，可减少导航占高。两者都不改变冻结的 52 条 AC。保持换行按已审计划登记适配例外；改为横滚须先改 Plan / Tasks，再按已审变更流程 Analyze / A 定向复核，然后才能开启 S0。
-- **生产方仍未交接实现**：旧固定 `8af343f` 是 R6 设计快照。A 另观察到已提交 `0e37fbf9f2810ad04f1c1b3fd856b0219f9c2f0d`（补 v1 基线和 H-x 生产方设计），协调器只读核对其中仍无 `frontend/src/jobs`。不能把新的设计文字或移动工作树当成 H-x 已交付；仍按 tasks §1.2 四项登记逐切片核验，不代写生产方。
-- **非阻断建议**：A R3 新增 V2-S13（T-V2-01 超 2h 的拆分提醒）/ V2-S14（已满足前置措辞）留待开工前按规则处理，未伪称完成；V2-S15（审核 SHA / 固定对象 / 状态同步）本次已完成。
-- **验证只到文档 / Git**：52 AC、12 任务 / 22h、标准命令一一对应、依赖无环、原样 A 产物一致。代码 / design / 权威 docs 与 `43b6d79` 完全一致，冻结 spec 未改。没有安装依赖或运行 pnpm / Vitest / Playwright / 构建 / 应用，没有本轮遗留服务；本轮 pi 调用均同步返回。没有 push / PR / main 合并；没有 v2 Converge / 代码 Review / Gate 2 / 正式 Handoff。
+- **G-02 已闭环（人工选择）**：Plan §7.2 / §7.4 / §7.11 / §7.12 M-09 / §7.13 / §7.14 与 Tasks T-V2-01（修改范围、标准 4 / 6、命令 4 / 6）已改为单行加容器内横滚。新增窄窗用例放在 T-V2-01 拥有的 `e2e/shell.spec.ts`（`AC-002-6 v2-nav`），不写 T-V2-08 的 `breakpoints.spec.ts`；`UI_LAYOUT.md` 不写，`UI_NAV.md` / README 由 T-V2-01 实施时先改资产、再改代码。
+- **下一步（按序）**：(1) 独立只读 Analyze R8，审 `79b5212..` 本次提交（含 `e84ee27` 的 S13 / S14 文字）；(2) 集成人把 R8 报告落盘的提交登记为 A R4 固定对象（tasks §1.1“A 定向复核”行当前口径：只允许文档路径，范围外断言对 `43b6d79` / `fec3556` / `425c1fd`）；(3) A R4 新开独立会话复核；(4) 实施树快进到复核过的规格提交，S0 才能开工。本作者没有写 Analyze 报告，也不宣称 A 已通过。
+- **生产方仍未交接实现**：互动方已提交 `0e37fbf9f2810ad04f1c1b3fd856b0219f9c2f0d`、`9acf3de661187840ea5be6f6d6f78205872ac356`（A R7 Checklist）和 `5e9e1f4e99e7d5d7c4dfbf682a7fd92bd7dff796`（R7 通过记录）。这些只作设计授权参考，均不含 `frontend/src/jobs`，不是任何 H-x 的四项交付；tasks §1.2 八行仍为“未交付”，壳不代写。
+- **S13 / S14**：S13 只是预登记超 2h 拆分规则，没有实际拆分（12 任务 / 22 h）；S14 在各任务状态行统一标“已满足前置：v1 Handoff `43b6d79`”。
+- **v1 P3 H-02**：台账原文不改。不宣称 H-02 已关闭、v1 截图已补齐、视觉验收已完成或 v1 缺陷已全部修完。
+- **验证只到文档 / Git**：52 AC、12 任务 / 22 h、标准与命令一一对应、依赖无环、矩阵引用有效、`git diff --check`。没有安装依赖，没有运行 pnpm / Vitest / Playwright / 构建 / 应用，没有启动服务；没有 push / PR / main 合并。
 
 ## 暂停时历史快照（以下“当前 / 未取得 / 不启动新任务”仅指暂停时刻，不覆盖上方恢复状态）
 
