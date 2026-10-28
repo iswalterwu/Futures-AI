@@ -7,6 +7,194 @@
 > **切换原因**：2026-10-28 接手时 `claude-bridge` 实测返回 `quota exceeded / rate limit (seven_day) / monthly spend limit`，按 AGENTS.md §2 第 5 步改走同一模型的 Anthropic API 通道；只换接入路径，审核员身份不变。
 > **单审**（AGENTS.md §2 第 5 步）：本文件结论即审核结论。
 >
+> **文件结构**：§R2 为**当前有效结论与勾选**；§R1 为首轮原始记录（历史快照，内容原样保留，其复选框改以 ☐ / ☑ 文字呈现，**不参与** Implement 前置判定）。
+> 阶段不适用项（Tasks / Analyze / 代码级 / Handoff 截图）统一放在 §R2「阶段说明」，以文字说明而非复选框，避免未来项造成流程死锁；Tasks 产出后由 A 另开会话复核并补勾。
+
+---
+
+# R2（2026-10-28，第二轮定向复核）
+
+## 基线与范围
+
+- 稳定工作目录 `D:/2030/Futures-AI-interaction`，分支 `spec/workbench-interaction`，审查提交 **`630e06f`**（HEAD；工作区干净）。
+- 冻结 spec：`cfb6c66`。`git show 630e06f:specs/workbench-interaction/spec.md` 的 blob md5 `7c689362…` 与 `cfb6c66` 一致（工作区文件为 CRLF 检出，`git diff --quiet HEAD` 无差异）；**spec 未被修改**。
+- 首轮报告归档 `1d6b54c`；本轮比较 `git diff d52e784 630e06f -- specs/workbench-interaction/plan.md`（plan.md +197/−52 行，304 行）。
+- 前端地基 `D:/2030/Futures-AI-frontend` `feat/frontend-workbench`：审核期间该分支由 `5958e54`（T-09）推进到 `fd2d755`（T-11/T-13 合入）；本审核员只读核对了 `src/app/{router,nav}.ts`、`src/main.ts`、`src/contracts/{types,methods}.ts`、`src/contracts/mock/index.ts`、`src/contracts/mock/agent/{long,retry}.ts`、`src/agent/events.ts`、`scripts/contract-build.mjs`、`specs/frontend-workbench/{plan,tasks}.md`。分支移动不影响本轮判定——Plan §1.1 已把实现起点定为 v1 Handoff 后的 SHA，而非任一中间提交。
+- `spec/frontend-workbench-v2` 草稿（最新 `150c392`）**未过 Gate 1**，不作为已交付依赖；本轮未读取其内容作为闭环证据。
+- **未执行**：未安装依赖、未运行测试或应用、未启动其他 agent、未读用户凭证、未修改 spec / plan / docs / 前端分支、未 commit / push。唯一写入文件为本文件。
+
+## 结论（R2）：**通过**
+
+- 首轮阻断 **B-01～B-08 全部闭环**（逐项见下），建议 **S-01～S-10 全部已处理**；首轮已通过项**无回退**；修订未引入阻断级新矛盾。
+- 新发现 **S-11～S-15** 均为建议（不阻断、不计入判定），应在 Tasks A 组（契约与骨架）任务中落实。
+- 允许进入 **Tasks**。**Implement 仍阻塞**于 `frontend-workbench` v1 Handoff 合入 SHA（Plan §1.1，Tasks 头部登记后方可建实现分支）；**Converge** 在 v2 未 Gate 1 + 合入前，须将 AC-003-1（工作台入口）、AC-005-5（抽屉上下文标签）、AC-007-4（首页作业轨道角标）列为"未收敛（外部阻塞）"，不得报全量收敛。
+
+## 逐 B 复核（B-01～B-08）
+
+| # | 首轮最小关闭要求 | 修订落点（plan.md 行号） | 核实 | 判定 |
+|---|---|---|---|---|
+| **B-01** 契约闭环 | 增补写方法 + 动作→方法→kind→payload 矩阵覆盖 spec 全部介入动作 | :96–112 方法表新增 `submitIntervention / mergePending / removeUpload / cancelJob / replyBlockComment / resolveBlockComment / listInbox / markInboxRead / resetMockData`；:120–144 矩阵 19 行 | 五类分析动作各有唯一 `action` 与 kind：批注→framework、追问→ask_why/question、深挖→rewrite、删除→delete、否决→veto（AC-005-3 可逐一断言）；pin_rule 带 `state='candidate'`（AC-005-4）；块批注新建/回复/解决三方法（AC-006-3）；删除来源 / 取消作业有方法且进入二次确认清单（AC-007-3、AC-002-5）；矩阵用到 13 种 kind 全部，不新造 merge 类，`mergePending` 只改 outcome（:144）。`methods.ts` 的 `satisfies RequestMethods<…>` 会强制每个新方法登记语义（已核）。 | **闭环** |
+| **B-02** 场景与驱动 | 场景×方法行为表、场景×作业样本表、pending-merge 驱动、合并记录形态、统一 :60/:123 | :146–162 九场景×读/写/快照表；:164–176 九个作业样本（status × 四阶段 × 产物）；:117 删除 `jobScript`，统一经 `send({jobContext})` + 既有 success/failure/retry/long 脚本；:178 终态由同一 runId 驱动；:65 与 :162/:196 统一为"非 normal 不读不写不清两个 key" | 互斥情景分属不同作业（j-running / j-human 分离，j-conflict / j-delivered 各自场景）；`empty/error/slow/boot-error` 对**全部新增读写方法**的返回/拒绝/延迟已定；合并结果 = 原事件 `outcome=merged`（:83、:144）；前端 mock `send` 为每次调用分配 uuid runId（`mock/index.ts:161`，已核），"仅匹配 pendingRunId 的终态才合并"可测；`?agentScript=long` 读取点存在（`mock/index.ts:192`）。 | **闭环** |
+| **B-03** 事件与状态闭环 | rerunStage 迁移表；pendingMerge 两条清除路径；横幅目标字段 | :209–218 四行迁移表（无 run / 成功终态 / failed·aborted / 运行中排队）+ 串行执行规则；:206 有 run → 匹配 runId 的 `run.completed`，无 run → 显式 `mergePending`（运行中拒绝）；:201 横幅 = 固定顺序第一个 H（冲突样例第一个 C） | 迁移表给出阶段状态、job.status、revision 变化三列，AC-002-4 的"mock 状态迁移"可断言；AC-004-2 无 run 时仍返回 `pendingMerge=true`，清除路径确定；旧 revision 保留、overlay 不误标合并（R1/R2）；排队请求把 `pendingRunId` 转交后继 run，不丢人的 overlay。 | **闭环** |
+| **B-04** 契约类型完整性 | 类型表逐项补字段；契约导出展示映射；chart 块载荷；命名规则 | :80 `Job.reason`；:81 `JobStatusLabel / StageLabel / StageStateLabel / ArtifactStatusLabel / SourceLabel` 由契约导出、徽标只消费；:83 `Intervention` 十字段 + outcome 枚举；:84 `Upload / SourceNote` 字段与 `pending_validation / ingested / quarantined`；:88 `ChartSpec` = designUI §5.1 三元组最小子集 + `SparkSeries` 绑定；:89 `Revision` 七字段 + `BlockComment` 线程/状态；:94 统一 camelCase 并登记 snake_case 对照；:95 schema 进 `contractSchemas` | (a)～(g) 七项均有落点；`SparkSeries` / `Figure` / `TradingDate` / 错误码枚举在基线 `types.ts` 存在（已核）；生成器按 `contractSchemas + methodSemantics` 表驱动（`contract-build.mjs:41–47`，已核），新 schema 注册即进 `schema.json` / CONTRACT.md。展示映射进 CONTRACT.md 的具体机制见 S-11（非阻断）。 | **闭环** |
+| **B-05** 版本与发布 | accept/revert 语义；发布检查点对 conflict/pendingMerge 的处理；delivered 后只读的契约保证 | :204 accept → 新 confirmed revision；revert → 仅请求涉及块恢复至 baseRev、其他人工改动保留、两版不删；冲突候选不能直接 accept，走 `resolve_conflict`（:141）产新 confirmed revision；:205 `publishDeliverable` 遇未决项返回 `validation_error`（列目标块）、不生成快照；成功后一切领域写方法在契约入口拒绝，读/历史/diff/`markInboxRead` 可用；`PublishSnapshot` 深拷贝、读 API 返回副本（:90） | 符合 interaction §3.3 R1（不覆盖、可回滚）、R3（冲突只在发布检查点收口）与 designUI §3.5-3；`job-conflict` 场景有可验证收口行为（发布列未决项并拒绝）；AC-006-6 / AC-006-7 / AC-005-6 / AC-006-4 可测。 | **闭环** |
+| **B-06** 前置依赖与所有权 | 实施起点 SHA；每个共享文件唯一修改者；blocked_by 与 Converge 口径 | :16–18 唯一修改者清单（本 feature：`jobs/**`、`contracts/**` 作业部分、`agent/events.ts` 可选字段、`main.ts` 路由注册；v2：`app/{nav,router,Rail,TopBar,AppShell}`、`WorkbenchPage`、`agent/{store,AgentDock,AgentDrawer,CotTimeline}`）；:22 实现起点 = v1 T-01～T-15 Handoff 合入后的 commit，Tasks 头部登记 SHA；:23 接线顺序；:24 blocked_by 清单 + "Converge 必报未收敛（外部阻塞）"；:36 `jobs/routes.ts` + `main.ts addRoute`，**不改 `app/router.ts`** | 已核基线 `router.ts` 由 `navItems` 生成具名路由、`main.ts` 为应用装配点，`addRoute` 具名记录可替换同名占位，方案可行且与 v2 无文件重叠；`main.ts` 在 v1 T-13 修改范围内，但本 feature 起点在 v1 Handoff 之后，为顺序关系而非并发冲突；§6 回滚块（:289）与所有权一致。 | **闭环** |
+| **B-07** 隐私与本地持久化 | Upload 持久化子集；提示落点；唯一清空触发 | :191 粘贴正文只在草稿/提交参数中，不进 fixture / localStorage；File 只取元数据；:192 `fai.jobs.v1` Upload 白名单字段，事件 payload 不夹带原文；:193 512 KiB（UTF-8 字节）/ 配额异常 → 内存 + 共享非模态横幅，保留最后成功快照；损坏/版本不支持 → 本次用 fixture、保留原 key、不自动覆写；:194 / :162 唯一清空 = 显式 `resetMockData` 二次确认 | 界面文案明确"原文不保存，刷新后需重新投放原文"，与 AC-003-3（来源说明随记录提交）不冲突；横幅落点为列表/详情/投放抽屉顶部，不依赖已删除的 Toast；与 B-02d 统一后用户丢失本地状态的时点唯一且可预期。 | **闭环** |
+| **B-08** 角标与收件箱 | 待处理项来源枚举与生成规则；角标位置归属；"清除"语义 | :68 四类生成规则（首次 needs_human / 首次 conflict / overlay 首次待合并 / agent 改稿待接受）且同目标同原因不重复；:69 `listInbox(jobId?)` 返回条目 + 作业/阶段计数（只数未读且未解决），`markInboxRead(ids)` 标已读保留条目，resolved 由 mock 层在收口时置位；角标位置 = 列表卡 + 详情阶段轨道（本 feature），首页作业轨道消费同一计数（v2）；:91 `InboxItem` 类型；`JobListItem.pendingCount` / 阶段 `pendingCount` 由契约提供 | 与 :186 "阶段状态不在前端推导"口径一致；designUI §3.9 "完成态不常驻角标"由 resolved 规则落实；AC-007-4 "查看收件箱后清除"= 本次展示 id 已读，可测。 | **闭环** |
+
+## S-01～S-10 处理核实
+
+| # | 核实 |
+|---|---|
+| S-01 | :12 改为"不承诺旧 bootstrap 通过新 literal，bootstrap 必须声明 2.0.0"，并给出升 MAJOR 理由（新增必实现方法 + 封闭场景枚举使旧 real 实现不再满足接口）✓ |
+| S-02 | :61 `jobsStore` "不做轮询"，状态来自写回执 / agent 通知后重新读取 ✓ |
+| S-03 | :182 明确状态/来源徽守卫由组件测试承担（AC-001-5 / 003-6 / 006-8），"不假称既有脚本具备该扫描" ✓ |
+| S-04 | `specs/README.md:23` 依赖列已区分"实现硬前置：v1 Handoff / 壳集成：v2 Gate 1+交付 / api 仅后续真实集成" ✓（AGENTS §2 "依赖未满足不得进入 Plan" 与"硬前置为实现而非 Plan"的口径已在 spec §4 与 Gate 1 时由 Walter 接受，本轮不再提出） |
+| S-05 | :115 `listJobs` 缺省 `updatedAt` 倒序 ✓ |
+| S-06 | :85 submit → `pending_validation`，confirm → `ingested`/样例 `quarantined`，单位修正随 mapping 提交 ✓ |
+| S-07 | :95 新 schema 进入 `contractSchemas` 注册表 ✓ |
+| S-08 | :183 diff 单测期望用手写样例、不重写算法 ✓ |
+| S-09 | :186 M-01～M-10 逐项主题 ✓ |
+| S-10 | :24、:264、:302 blocked_by 清单与 Converge 外部阻塞口径 ✓ |
+
+## 新发现（R2；均为建议 S，不阻断）
+
+| # | 位置 | 建议 |
+|---|---|---|
+| S-11 | plan:81 / :95 / :16 | "展示映射由生成器进 CONTRACT.md"与 :16 "表驱动生成器无需修改"需二选一落实：要么把 `JobStatusLabel` 等映射以 zod 形式（枚举 `describe` 或 literal-object schema）放进 `contractSchemas`，要么允许本 feature 修改 `contract-build.mjs`（需加入 :16 所有权清单）。Tasks A 组写明机制，AC-001-5 / AC-008-1 据此断言。 |
+| S-12 | plan:89 / :80 | `Revision.blocks` 对 `kind=dataset/recipe` 产物不自然（参数 overlay 的 revision 内容是什么）；建议 Tasks 中定义 revision 载荷按 artifact kind 可辨识（deliverable→blocks，recipe→params），不影响 AC-004-2 / AC-006-4。 |
+| S-13 | plan:153 / :115 | `empty` 场景 `getJob` 对预置 id 返回 `null` 而未知 id 返回 `not_found`，要求 `getJob` 结果 schema 为 `Job \| null`；Tasks 中写明并让 AC-001-4 的空态断言用预置 id。 |
+| S-14 | plan:215 / :169 | run `failed` 时"当前运行阶段→conflict"是把失败映射到 `StageState.conflict`（枚举无 failed）；可接受，但 CONTRACT.md 的 `StageStateLabel` 与 j-failed 样例说明应写明"失败以 conflict 呈现 + job.reason"，避免 Review 时被当作状态误标。 |
+| S-15 | plan:116 / :174 / :203 | 抽屉经 `send({jobContext})` 的普通追问是否设置该作业的 `activeRunId`（从而使同期编辑进入 pendingMerge）未显式写出；按 :117 "作业运行统一经既有 send({jobContext})" 推断为是。Tasks 中一句话定清，并在 mock 状态机单测覆盖。 |
+
+## 当前有效检查项（R2 勾选）
+
+### 需求完整性
+
+- [x] **N-01 每条编号需求至少有一条可验证的验收规则。** spec 未变（R1 已核）。
+- [x] **N-02 无未澄清歧义。** spec §5 Q-001～Q-012 全部裁定；本轮无新需求问题，无需回流 Clarify。
+- [x] **N-03 目标与非目标边界清晰。** spec §2 未变。
+- [x] **N-04 spec 每条 what 与 AC 在 plan 均有可实现的设计落点。** B-01 / B-03 / B-04 / B-08 关闭后，46 条 AC 全部有契约方法 / 场景 / 状态迁移 / 类型落点（逐 AC 表见下）。
+
+### 一致性
+
+- [x] **I-01a spec ↔ plan 无冲突。** R1 三处冲突已消除：介入方法空指（:120 → :96–144）、非 normal 快照语义（:65 / :162 / :196 一致）、版本字面量（:12）。
+- [x] **I-02 与 docs/ 决策与 ADR 无冲突。** R1 已核项未回退；R1 未闭环的 interaction §3.3 R1/R3 与 designUI §3.5-3 现由 :204–:206 落实。D-016 结论 2/3/5/9 ✓；D-017 仅边界 ✓；D-015 未引用 ✓。
+- [x] **I-03 前端基线事实核对。** R1 结论维持；本轮补核：`router.ts` 具名路由由 `navItems` 生成、`main.ts` 为装配点（`addRoute` 方案可行）；mock `send` 分配 uuid runId；`?agentScript=` 读取点存在；`fai-dark` 为 frontend-workbench plan §2.6 / T-12 登记的主题名。T-12/T-13 已在 `fd2d755` 合入，但本 feature 仍以 Handoff SHA 为起点（Plan §1.1）。
+- [x] **I-04 文件边界与回滚一致。** :16–18 所有权 = :289 回滚块 = spec §4 "只改 frontend/"；新增 `main.ts` 路由注册在两处同时登记。
+
+### 可测试性
+
+- [x] **V-01 每条验收规则可映射到自动测试或人工验收步骤，且被映射的设计存在。** 46 条中 43 条设计闭环可测；AC-003-1 / AC-005-5 / AC-007-4 各含一个 **外部阻塞子项**（v2），其余子项可测——这三条在 Converge 必须报外部阻塞，不计为本轮缺口（见逐 AC 表）。
+- [x] **V-03 静态守卫声称与真实脚本一致。** R1 已核，未回退；:182 不再声称脚本具备徽标扫描。
+
+### 工程准则（AGENTS §5）
+
+- [x] **P-1 不为猜测场景加复杂度（§5.1）。** 轮询已删（S-02）；新增方法均有 spec 行为来源；rerun 排队只用内存记录"不引调度器"（:218）；不引第三方 diff 库。
+- [x] **P-2 外部数据只在入口层校验（§5.2）。** :95 "只在契约输入、返回值和本地快照入口 parse 一次，内部组件不重复校验"。
+- [x] **P-3 不提前抽只用一次的抽象（§5.3）。** 新增组件（`PendingMergeChip` / `InboxDrawer` / `RuleCandidatePanel` / `RevisionRequestPanel`）均对应 designUI §6 / §3.5 具名概念；不复制第二套对话组件。
+- [x] **P-5 自动生成文件不手改（§5.5）。** :95 / :182 / :195。
+- [x] **P-6 测试测真实实现、少用 mock（§5.6）。** :178 "用既有脚本和时钟推进真实 mock 定时器，不凭 UI 手工造终态"；:183 手写期望。
+- [x] **P-7 按仓库现有流程（§5.7）。** 栈与命令未变。
+
+### 其他自定义项
+
+- [x] **C-01 前置依赖与职责边界清楚。**（B-06）
+- [x] **C-02 契约闭环。**（B-01）
+- [x] **C-03 事件与状态闭环（R1–R6 旁路语义）。**（B-02c / B-03 / B-05）agent 始终用 `latestMergedRev`，不读 overlay（:206）；未用"等人确认才继续"替代旁路。
+- [x] **C-04 场景定义足以稳定验证。**（B-02）
+- [x] **C-05 版本与发布闭环。**（B-05）
+- [x] **C-06 隐私与本地持久化自洽。**（B-07）
+- [x] **C-07 视觉与工程纪律。** R1 已核，未回退。
+- [x] **C-08 D-015 / D-013 未混淆；D-017 仅边界引用。** 未回退。
+
+### 阶段说明（不设复选框；后续由 A 独立复核）
+
+- **I-01b spec / plan / tasks 无冲突（Analyze）**：tasks.md 尚不存在，Analyze 未发生。Tasks 产出后由 A 复核并在本文件补勾；Analyze 报告由实施侧产出、A 复核结论。
+- **V-02 任务粒度与验证命令满足 tasks.md 模板要求**：Tasks 产出后由 A 复核——每条完成标准引用 AC 编号、验证命令一一对应、0.5–2 h、依赖无前向环、H 组任务显式 `blocked_by: frontend-workbench-v2`、头部登记 v1 Handoff SHA。
+- **P-4 主函数只写正常流程（§5.4）**：代码级准则，Review 阶段核 `job-state.ts` 各方法与 `IntakeDrawer` 提交流程。
+- **AC-009-1 命令输出 / AC-009-2 截图**：属 Implement / Handoff 证据，当前不声称。
+- **Implement 前置**：本文件 §R2 当前有效复选框全部勾选，但 Implement 开工另需 (1) Tasks 经 A 复核补勾、(2) Tasks 头部登记 frontend-workbench v1 Handoff SHA（外部依赖未交付前不得以中间提交或空壳冒充）。
+
+### 逐 AC 设计映射（46 条；R2 状态）
+
+| AC | plan 落点 | R1 | R2 | 说明 |
+|---|---|---|---|---|
+| AC-001-1 | :46/:222 | ✓ | ✓ | |
+| AC-001-2 | :61/:115/:223 | ✓ | ✓ | 排序已入契约语义（S-05） |
+| AC-001-3 | :199/:224 | ✓ | ✓ | |
+| AC-001-4 | :153–154/:225 | ✗ | ✓ | empty / error 对 `listJobs` / `getJob` / `getStageWorkspace` 行为已定（S-13 建议写明 null 形态） |
+| AC-001-5 | :81/:226 | ✗ | ✓ | 映射由契约导出（S-11 定机制） |
+| AC-002-1 | :47/:77/:227 | ✓ | ✓ | |
+| AC-002-2 | :36–37/:228 | ✓ | ✓ | |
+| AC-002-3 | :172/:201/:229 | ✗ | ✓ | j-human：status=needs_human、D,H,R,N，横幅定位第一个 H |
+| AC-002-4 | :209–218/:230 | ✗ | ✓ | 迁移表三列可断言 |
+| AC-002-5 | :80/:169/:231 | ✗ | ✓ | `reason` 必填；`cancelJob` 可置 cancelled |
+| AC-003-1 | :24/:38/:232 | ◐ | ◐ | 列表 / 详情入口可测；**工作台入口外部阻塞（v2）** |
+| AC-003-2 | :233 | ✓ | ✓ | |
+| AC-003-3 | :84/:124/:192/:234 | ✗ | ✓ | `SourceNote` 字段 + ingest payload + 持久化子集已定 |
+| AC-003-4 | :85/:235 | ✓ | ✓ | |
+| AC-003-5 | :124/:200/:236 | ✓ | ✓ | |
+| AC-003-6 | :84/:237 | ◐ | ✓ | 三状态枚举已登记 |
+| AC-004-1 | :86/:238 | ✓ | ✓ | |
+| AC-004-2 | :126/:206/:239 | ✓ | ✓ | kind=recipe；无 run 时 `pendingMerge=true` + `mergePending` |
+| AC-004-3 | :86/:240 | ✓ | ✓ | |
+| AC-004-4 | :137/:241 | ✓ | ✓ | |
+| AC-004-5 | :153–154/:242 | ✗ | ✓ | |
+| AC-005-1 | :243 | ✓ | ✓ | |
+| AC-005-2 | :244 | ✓ | ✓ | |
+| AC-005-3 | :127–131/:245 | ✗ | ✓ | 五动作 → framework / ask_why·question / rewrite / delete / veto |
+| AC-005-4 | :132/:246 | ✗ | ✓ | `payload.state='candidate'` |
+| AC-005-5 | :24/:55/:247 | ◐ | ◐ | mock 回放经 `send(jobContext)` 可测；**抽屉上下文标签外部阻塞（v2）** |
+| AC-005-6 | :174/:248 | ✗ | ✓ | j-conflict 冲突分布已定 |
+| AC-006-1 | :87–88/:249 | ✗ | ✓ | `ChartSpec` 样例 + `fai-dark`（v1 T-12 已在 Handoff 范围内） |
+| AC-006-2 | :204/:250 | ✓ | ✓ | |
+| AC-006-3 | :89/:108/:136/:251 | ✗ | ✓ | 新建 / 回复 / 解决三方法 + 线程状态 |
+| AC-006-4 | :89/:109/:252 | ✓ | ✓ | `Revision` 七字段 |
+| AC-006-5 | :253 | ✓ | ✓ | |
+| AC-006-6 | :110/:141/:204/:254 | ✗ | ✓ | accept / revert / resolve_conflict 语义 |
+| AC-006-7 | :111/:205/:255 | ✗ | ✓ | 未决项拒绝 + delivered 只读 |
+| AC-006-8 | :256 | ✓ | ✓ | |
+| AC-007-1 | :83/:94/:257 | ✓ | ✓ | camelCase 对照已登记 |
+| AC-007-2 | :173/:178/:206/:258 | ✗ | ✓ | `requestRevision → send(long)`，同 runId 终态合并 |
+| AC-007-3 | :55/:259 | ✗ | ✓ | 五个破坏性动作均有方法可挂确认 |
+| AC-007-4 | :68–69/:91/:260 | ✗ | ◐ | 列表卡 / 阶段轨道角标与收件箱可测；**首页作业轨道外部阻塞（v2）** |
+| AC-007-5 | :182/:261 | ✓ | ✓ | |
+| AC-008-1 | :95/:262 | ✓ | ✓ | S-11 定展示映射入文档机制 |
+| AC-008-2 | :146–176/:263 | ✗ | ✓ | 九场景行为与样本已定 |
+| AC-008-3 | :264 | ✓ | ✓ | |
+| AC-008-4 | :12/:265 | ✓ | ✓ | |
+| AC-009-1 | :187/:266 | ✓ | ✓ | 实现时登记输出 |
+| AC-009-2 | :186/:267 | ✓ | ✓ | 截图属 Handoff |
+
+◐ = 设计闭环但含外部阻塞子项（Converge 必报"未收敛（外部阻塞）"）。
+
+## 最小关闭要求与下一步
+
+1. **R2 通过**，无需再做 Checklist 轮次；S-11～S-15 在 Tasks A 组任务中写明即可，不要求回 Plan 修订。
+2. 进入 **Tasks**：按 Plan §8 A～H 分组；H 组显式 `blocked_by: frontend-workbench-v2`；头部登记 v1 Handoff SHA（未登记则 Implement 不得开工）。
+3. Tasks 产出后由 A（新开独立会话）复核 V-02 / I-01b 并在本文件 §R2 补勾；Analyze 报告结论由 A 复核。
+4. Converge 口径：AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项在 v2 Gate 1 + 合入 + 壳方交付前为"未收敛（外部阻塞）"；`api` 不阻塞 mock 验收。
+5. 实施侧更新 `specs/README.md` 本 feature 行（状态与最近更新）；本审核员不改该文件。
+
+## 结构核验证据（R2，只读）
+
+```text
+HEAD      630e06f（spec/workbench-interaction，工作区干净）
+SPEC      630e06f:spec.md blob md5 7c689362… == cfb6c66（未变；工作区 CRLF 检出，git diff --quiet HEAD 通过）
+PLAN      git diff d52e784 630e06f -- plan.md：+197/−52；现 304 行
+METHODS   §2.4 新增 DataClient 30 个（含 resetMockData）+ AgentClient.send(jobContext)；矩阵 19 行用满 13 种 kind
+SCENARIO  9 场景 × 读/写/快照 行为表；9 个作业样本（status × 四阶段 × 产物）；jobScript 已删
+FRONTEND  feat/frontend-workbench 审核期间 5958e54 → fd2d755（T-11/T-13 合入）；只读核对 router/nav/main/mock/events/types/contract-build
+          mock send runId = mock-run-<uuid>（index.ts:161）；?agentScript 读取（:192）；scenario 封闭枚举（types.ts:68）
+          generator 表驱动（contract-build.mjs:41–47）；fai-dark 为 fw plan §2.6 登记名
+V2        spec/frontend-workbench-v2 @150c392 未 Gate 1，未作为依赖读取
+```
+
+---
+
+# R1（2026-10-28，第一轮；历史快照，原样保留，复选框改为文字符号，不参与当前判定）
+
 > **本轮性质**：Plan 后首轮 Checklist（第一轮）。**尚无 tasks.md**；凡涉及 Tasks / Analyze / 测试执行 / Handoff 截图的项目一律不勾选，只写阶段说明。
 >
 > **基线**：
@@ -20,34 +208,32 @@
 > **未执行**：未安装依赖、未运行任何测试或应用、未启动其他 agent、未读用户凭证、未修改 spec / plan / docs、未 commit / push。
 >
 > **口径**：只在确认满足时勾选；未勾选项写原因与位置（文件 + 行号）。阻断项 **B-xx**（任一未闭环 = 未通过），建议项 **S-xx**（不阻断、不计入判定）。每项阻断标注"设计补全"（Plan 内闭环）或"需求变更"（回流 Clarify）。
-
----
+>
+> 注：以下 plan 行号均指 `d52e784` 版 plan.md。
 
 ## 结论（第一轮）：**未通过**
 
 阻断 **B-01 ～ B-08**（全部为**设计补全**，无需求变更、不需回流 Clarify、不动冻结 spec）。Plan §5 的 46 行映射对 46 条 AC 全部"有一行"，但逐条核到契约方法、场景、状态迁移与版本语义时，**15 条 AC 的设计不闭环**（见"逐 AC 映射"表）。Plan 修订后需**第二轮定向复核**（仍由 A 独立会话执行），复核通过前不得进入 Tasks。
 
----
-
 ## 需求完整性
 
-- [x] **N-01 每条编号需求至少有一条可验证的验收规则。** spec R-001～R-009 共 46 条 AC（5 / 5 / 6 / 5 / 6 / 8 / 5 / 4 / 2），编号连续，每条写明验证形态（组件 / 端到端 / 契约 / 静态 / 人工）。
-- [x] **N-02 无未澄清歧义。** spec §5 Q-001～Q-012 全部"按推荐（2026-10-28 Walter）"并给出融入位置；冻结后无新增问题。
-- [x] **N-03 目标与非目标边界清晰。** spec §2：交付作业对象 / 四阶段 / 四台 / 介入与不干扰 / 契约 v2 + mock / 可验收性；排除验证队列、学习区、闸门、协议、真实 api / agent / 解析、完整块编辑器、导出、导航与作业轨道本体（归 v2）。
-- [ ] **N-04 spec 每条 what 与 AC 在 plan 均有可实现的设计落点。** 未满足。缺口集中在：spec 已写明的写行为没有契约写路径（B-01）、AC 直接依赖的契约声明 / 字段缺失（B-04）、重跑状态迁移未定义（B-03）、角标 / 收件箱语义未定义（B-08）。详见阻断表。
+- ☑ **N-01 每条编号需求至少有一条可验证的验收规则。** spec R-001～R-009 共 46 条 AC（5 / 5 / 6 / 5 / 6 / 8 / 5 / 4 / 2），编号连续，每条写明验证形态（组件 / 端到端 / 契约 / 静态 / 人工）。
+- ☑ **N-02 无未澄清歧义。** spec §5 Q-001～Q-012 全部"按推荐（2026-10-28 Walter）"并给出融入位置；冻结后无新增问题。
+- ☑ **N-03 目标与非目标边界清晰。** spec §2：交付作业对象 / 四阶段 / 四台 / 介入与不干扰 / 契约 v2 + mock / 可验收性；排除验证队列、学习区、闸门、协议、真实 api / agent / 解析、完整块编辑器、导出、导航与作业轨道本体（归 v2）。
+- ☐ **N-04 spec 每条 what 与 AC 在 plan 均有可实现的设计落点。** 未满足。缺口集中在：spec 已写明的写行为没有契约写路径（B-01）、AC 直接依赖的契约声明 / 字段缺失（B-04）、重跑状态迁移未定义（B-03）、角标 / 收件箱语义未定义（B-08）。详见阻断表。
 
 ## 一致性
 
-- [ ] **I-01 spec / plan / tasks 之间无冲突。** tasks 尚不存在（阶段说明，不勾选）。spec ↔ plan 已发现冲突：① plan:120 "批注/追问/教规则/否决 → 对应契约方法"，但 plan:80–91 方法表中没有任何分析介入方法（B-01）；② plan:60 "`scenario !== normal` 时不恢复本地状态"与 plan:123 "重置 mock 状态与本地快照"语义不一致（B-02d）；③ plan:11 "1.x 数据可解析"与前端 `types.ts:66` `contractVersion: z.literal(CONTRACT_VERSION)` 矛盾（S-01）。
-- [ ] **I-02 与 docs/ 决策与 ADR 无冲突。** 已核无冲突项：D-016 结论 2/3/5/9（作业一等对象、旁路介入、块模型、三层玻璃）✓；designUI §2.4 状态徽文案 + 图标、不新增色值（plan:12–13）✓；§3.9 作业轨道 / 阶段轨道不新增玻璃层 ✓（plan 复用 `glass-*` 三类，`check.mjs:269` 强制）；§5.2 六类块 ✓；D-015 与主线 D-013 未混淆（plan 未引用）✓；D-017 仅作边界引用 ✓。**未闭环**：interaction §3.3 R1（编辑不覆盖、可回滚）与 R3（冲突只在发布检查点要求处理）、designUI §3.5-3（冲突芯片、发布检查点集中处理）在 plan §4.5 发布流程与 `resolveRevision` 语义中没有落点（B-05）。
-- [x] **I-03 前端基线事实核对（代替"组件存在"的推定）。** 已读真实代码：`contract-build.mjs:6–7/41/47` 由 `contractSchemas` + `methodSemantics` 表驱动，新方法只需进 `methods.ts`（plan:16 "如方法表驱动则无需改"成立；新 schema 须进 `contractSchemas` 注册表或改脚本）；`methods.ts:101/123` 的 `satisfies RequestMethods<…>` 会强制每个新 `DataClient` 方法有语义条目（利于 AC-008-1）；`check.mjs:269–278` glass 三类白名单真实存在（AC-007-5 继承成立）；`check.mjs:313–320` network 白名单只含 `src/contracts/real/`（AC-008-3 继承成立）；`mock/index.ts:56–58` `MockOverrides.fixtures` 为封闭键集、`types.ts:68` `scenario` 为封闭枚举（扩展场景须改 schema）。**基线上不存在**：`src/agent/{store.ts,AgentDrawer.vue,AgentDock.vue,CotTimeline.vue}`（T-13）、`src/design/theme.ts`（T-12）、`src/modules/`、`src/stores/{layout,badges}.ts`——plan:48 的"复用"与 plan:156 的"既有暗色主题"目前是**对未来产物的依赖**（B-06）。
-- [x] **I-04 文件边界与回滚一致。** spec §4 "只改 `frontend/`（+ `specs/README.md`、`.gitignore`）" = plan:14–17 所有权清单 = plan:189 回滚块；不碰 `backend/`、`docs/` 权威内容、冻结的 `specs/frontend-workbench/spec.md`。
+- ☐ **I-01 spec / plan / tasks 之间无冲突。** tasks 尚不存在（阶段说明，不勾选）。spec ↔ plan 已发现冲突：① plan:120 "批注/追问/教规则/否决 → 对应契约方法"，但 plan:80–91 方法表中没有任何分析介入方法（B-01）；② plan:60 "`scenario !== normal` 时不恢复本地状态"与 plan:123 "重置 mock 状态与本地快照"语义不一致（B-02d）；③ plan:11 "1.x 数据可解析"与前端 `types.ts:66` `contractVersion: z.literal(CONTRACT_VERSION)` 矛盾（S-01）。
+- ☐ **I-02 与 docs/ 决策与 ADR 无冲突。** 已核无冲突项：D-016 结论 2/3/5/9（作业一等对象、旁路介入、块模型、三层玻璃）✓；designUI §2.4 状态徽文案 + 图标、不新增色值（plan:12–13）✓；§3.9 作业轨道 / 阶段轨道不新增玻璃层 ✓（plan 复用 `glass-*` 三类，`check.mjs:269` 强制）；§5.2 六类块 ✓；D-015 与主线 D-013 未混淆（plan 未引用）✓；D-017 仅作边界引用 ✓。**未闭环**：interaction §3.3 R1（编辑不覆盖、可回滚）与 R3（冲突只在发布检查点要求处理）、designUI §3.5-3（冲突芯片、发布检查点集中处理）在 plan §4.5 发布流程与 `resolveRevision` 语义中没有落点（B-05）。
+- ☑ **I-03 前端基线事实核对（代替"组件存在"的推定）。** 已读真实代码：`contract-build.mjs:6–7/41/47` 由 `contractSchemas` + `methodSemantics` 表驱动，新方法只需进 `methods.ts`（plan:16 "如方法表驱动则无需改"成立；新 schema 须进 `contractSchemas` 注册表或改脚本）；`methods.ts:101/123` 的 `satisfies RequestMethods<…>` 会强制每个新 `DataClient` 方法有语义条目（利于 AC-008-1）；`check.mjs:269–278` glass 三类白名单真实存在（AC-007-5 继承成立）；`check.mjs:313–320` network 白名单只含 `src/contracts/real/`（AC-008-3 继承成立）；`mock/index.ts:56–58` `MockOverrides.fixtures` 为封闭键集、`types.ts:68` `scenario` 为封闭枚举（扩展场景须改 schema）。**基线上不存在**：`src/agent/{store.ts,AgentDrawer.vue,AgentDock.vue,CotTimeline.vue}`（T-13）、`src/design/theme.ts`（T-12）、`src/modules/`、`src/stores/{layout,badges}.ts`——plan:48 的"复用"与 plan:156 的"既有暗色主题"目前是**对未来产物的依赖**（B-06）。
+- ☑ **I-04 文件边界与回滚一致。** spec §4 "只改 `frontend/`（+ `specs/README.md`、`.gitignore`）" = plan:14–17 所有权清单 = plan:189 回滚块；不碰 `backend/`、`docs/` 权威内容、冻结的 `specs/frontend-workbench/spec.md`。
 
 ## 可测试性
 
-- [ ] **V-01 每条验收规则可映射到自动测试或人工验收步骤，且被映射的设计存在。** 46 条中 31 条映射成立、15 条存在设计缺口（逐条见下表）。"有一行映射"不等于"可测"：AC-005-3 / AC-005-4 / AC-006-3 / AC-007-3 所断言的契约方法与事件 kind 在 plan 中不存在；AC-002-4 要求断言的"状态迁移"未定义；AC-007-2 / AC-008-2 依赖的场景驱动未定义。
-- [ ] **V-02 任务粒度与验证命令满足 tasks.md 模板要求。** 阶段不适用（尚无 tasks.md）。要求：Tasks 产出后由 A 独立复核——每条完成标准引用 AC 编号、完成标准与验证命令一一对应、0.5–2h、依赖无前向无环；v2 集成任务显式 `blocked_by`。
-- [x] **V-03 静态守卫声称与真实脚本一致。** AC-007-5 → `check --only glass`、AC-008-3 → `check --only network`、AC-008-1 → `check --only generated`（重生成 `contracts/*` 逐字节比对，`check.mjs:189–197`）均已对照真实脚本确认，不是"沿用"空话。spec R-009 what 中"状态徽不只靠颜色 / 来源徽覆盖"两项静态守卫在 plan 中以组件测试承担（S-03）。
+- ☐ **V-01 每条验收规则可映射到自动测试或人工验收步骤，且被映射的设计存在。** 46 条中 31 条映射成立、15 条存在设计缺口（逐条见下表）。"有一行映射"不等于"可测"：AC-005-3 / AC-005-4 / AC-006-3 / AC-007-3 所断言的契约方法与事件 kind 在 plan 中不存在；AC-002-4 要求断言的"状态迁移"未定义；AC-007-2 / AC-008-2 依赖的场景驱动未定义。
+- ☐ **V-02 任务粒度与验证命令满足 tasks.md 模板要求。** 阶段不适用（尚无 tasks.md）。要求：Tasks 产出后由 A 独立复核——每条完成标准引用 AC 编号、完成标准与验证命令一一对应、0.5–2h、依赖无前向无环；v2 集成任务显式 `blocked_by`。
+- ☑ **V-03 静态守卫声称与真实脚本一致。** AC-007-5 → `check --only glass`、AC-008-3 → `check --only network`、AC-008-1 → `check --only generated`（重生成 `contracts/*` 逐字节比对，`check.mjs:189–197`）均已对照真实脚本确认，不是"沿用"空话。spec R-009 what 中"状态徽不只靠颜色 / 来源徽覆盖"两项静态守卫在 plan 中以组件测试承担（S-03）。
 
 ### 逐 AC 设计映射（46 条；"✓" = 设计闭环可测，"✗" = 缺口，"◐" = 部分 / 受前置阻塞）
 
@@ -102,24 +288,24 @@
 
 ## 工程准则（AGENTS §5）专项核查
 
-- [ ] **P-1 不为猜测场景加复杂度、不悄悄扩大范围（§5.1）。** 基本符合：行级 diff 自实现 + 2000 行上限、512KB 降级、mock 单一可变状态层均有 AC 或风险依据，不引第三方 diff 库。**一处待去除**：plan:54 `jobsStore` "运行态轮询（mock 立即返回）"——状态变化全部来自契约方法返回值与 agent 事件流，轮询没有需求来源（S-02）。非阻断，Plan 修订时删或给依据后勾选。
-- [x] **P-2 外部数据只在入口层校验（§5.2）。** plan:57–58 契约 mock 层持有唯一可变状态、读写经契约方法；沿用 `methods.ts` 的 `validation` 约定（边界 parse 一次）；localStorage 损坏在 `persistence.ts` 边界重建（plan:46/102）。
-- [x] **P-3 不提前抽只用一次的抽象（§5.3）。** `diff.ts` / `persistence.ts` 各有多处消费者（diff 视图 + 变更摘要；jobs + inbox 快照）；徽标三组件对应 designUI §6 具名概念；不复制第二套对话组件（plan:48）。`sessionStore`（plan:56）若仅为 `jobContext` 透传，Tasks 时可并入 `jobsStore`（信息级）。
-- [ ] **P-4 主函数只写正常流程（§5.4）。** 代码级准则，Plan 阶段不适用；Review 阶段核 `job-state.ts` 各方法与 `IntakeDrawer` 提交流程。
-- [x] **P-5 自动生成文件不手改（§5.5）。** `contracts/{CONTRACT.md,schema.json}` 继续由 `contract-build.mjs` 生成、`check --only generated` 逐字节比对（plan:92/101/112）；本 feature 不新增生成物类别。
-- [x] **P-6 测试测真实实现、少用 mock（§5.6）。** 组件 / e2e 测真实组件，数据经契约 mock 在系统边界注入（spec R-008 要求的形态）；`diff.ts` / `persistence.ts` 单测测真实函数；不 vi.mock 内部模块。提醒：diff 单测的期望值须手写样例，不得在测试里再实现一遍 LCS。
-- [x] **P-7 按仓库现有流程、不引入未在用工具（§5.7）。** 栈与命令全部沿用 frontend-workbench（`package.json` 已核：Vue 3.5 / Vite 8 / zod 4 / Vitest 5 / Playwright 1.64 / pnpm 11）；不升级工具链（plan:8）。
+- ☐ **P-1 不为猜测场景加复杂度、不悄悄扩大范围（§5.1）。** 基本符合：行级 diff 自实现 + 2000 行上限、512KB 降级、mock 单一可变状态层均有 AC 或风险依据，不引第三方 diff 库。**一处待去除**：plan:54 `jobsStore` "运行态轮询（mock 立即返回）"——状态变化全部来自契约方法返回值与 agent 事件流，轮询没有需求来源（S-02）。非阻断，Plan 修订时删或给依据后勾选。
+- ☑ **P-2 外部数据只在入口层校验（§5.2）。** plan:57–58 契约 mock 层持有唯一可变状态、读写经契约方法；沿用 `methods.ts` 的 `validation` 约定（边界 parse 一次）；localStorage 损坏在 `persistence.ts` 边界重建（plan:46/102）。
+- ☑ **P-3 不提前抽只用一次的抽象（§5.3）。** `diff.ts` / `persistence.ts` 各有多处消费者（diff 视图 + 变更摘要；jobs + inbox 快照）；徽标三组件对应 designUI §6 具名概念；不复制第二套对话组件（plan:48）。`sessionStore`（plan:56）若仅为 `jobContext` 透传，Tasks 时可并入 `jobsStore`（信息级）。
+- ☐ **P-4 主函数只写正常流程（§5.4）。** 代码级准则，Plan 阶段不适用；Review 阶段核 `job-state.ts` 各方法与 `IntakeDrawer` 提交流程。
+- ☑ **P-5 自动生成文件不手改（§5.5）。** `contracts/{CONTRACT.md,schema.json}` 继续由 `contract-build.mjs` 生成、`check --only generated` 逐字节比对（plan:92/101/112）；本 feature 不新增生成物类别。
+- ☑ **P-6 测试测真实实现、少用 mock（§5.6）。** 组件 / e2e 测真实组件，数据经契约 mock 在系统边界注入（spec R-008 要求的形态）；`diff.ts` / `persistence.ts` 单测测真实函数；不 vi.mock 内部模块。提醒：diff 单测的期望值须手写样例，不得在测试里再实现一遍 LCS。
+- ☑ **P-7 按仓库现有流程、不引入未在用工具（§5.7）。** 栈与命令全部沿用 frontend-workbench（`package.json` 已核：Vue 3.5 / Vite 8 / zod 4 / Vitest 5 / Playwright 1.64 / pnpm 11）；不升级工具链（plan:8）。
 
 ## 其他自定义项
 
-- [ ] **C-01 前置依赖与职责边界清楚。** 未满足（B-06）：① plan:16 把 `router.ts` 列为"共享文件（需与 v2 协调）"，但 plan:29 又由本 feature 改它注册路由——没有唯一所有者；② plan:180 "本 feature 分支基于该 feature 完成后合并"未指明起始基线（frontend-workbench Handoff 后的 commit，还是当前 `fdaa7d8`）；③ plan:48/156 复用的 `AgentDrawer.vue` / `agent/store.ts` / `theme.ts` 在 `fdaa7d8` 不存在；④ `specs/README.md:23` 把 frontend-workbench v2 与 api 列为依赖，而 AGENTS §2 规定"依赖未满足不得进入 Plan"——spec §4 已把二者改写为"不阻塞 mock 验收"的软依赖，状态表应区分硬 / 软依赖（S-04）。
-- [ ] **C-02 契约闭环（spec 行为 ↔ 契约写路径）。** 未满足（B-01）：已写入 spec 的行为中，分析台五类介入、教规则、块批注回复 / 解决、取消作业、删除来源 / 结论没有任何 `DataClient` 方法；plan:120 的"对应契约方法"是空指。`listInterventions` / `subscribe(jobContext)` / `resolveRevision` / `rerunStage` / `markProvisional` 的读 / 写路径存在。
-- [ ] **C-03 事件与状态闭环（R1–R6 旁路语义）。** 部分满足：plan:122 人的编辑即时落 revision 并标 `pendingMerge`、agent 不被打断、`run.completed` 为检查点、`failed/aborted` 保持待合并并提示——符合 R2 / R3，没有用"等人确认才继续"替代旁路 ✓。**未满足**：重跑迁移（B-03）、未运行时参数修正的 `pendingMerge` 何时清除（无 run 则无 `run.completed`；B-03）、合并结果以何种契约可见形态记录（kind 列表无 merge 类；B-02c）、冲突与发布检查点（B-05b）。
-- [ ] **C-04 场景定义足以稳定验证。** 未满足（B-02）：四个 `job-*` 场景各含哪些作业、每个作业的 `status` × 四个 `StageState` × 产物状态组合、是否与 `normal` 叠加、`empty/error/slow` 对 22 个新方法（含写方法）的行为、`job-pending-merge` 的运行驱动，均未写；plan:60 与 plan:123 对非 normal 场景是否清空 `fai.jobs.v1` 说法相反。
-- [ ] **C-05 版本与发布闭环。** 未满足（B-05）：人改 / agent 改各产生 revision ✓（plan:121）；但回退语义、`PublishSnapshot` 不可变性（发布后写方法拒绝码）、发布检查点对 conflict / pendingMerge 的处理、历史版本只读在契约层的保证未定义。
-- [ ] **C-06 隐私与本地持久化自洽。** 部分满足：fixtures 为合成样例、不读真实 PDF、不落盘文件本体、URL 不抓取（plan:110、network 守卫）✓。**未满足**（B-07）：文本粘贴正文与 URL 是否进入 `fai.jobs.v1`（plan:60 列"投放"入快照、plan:110 又称"不写私有文档"），一次大段粘贴即可触发 512KB 降级；降级 / 损坏"提示"的界面落点缺失（frontend-workbench 已删除 Toast）。
-- [x] **C-07 视觉与工程纪律。** 不新增颜色字面量与玻璃层级（plan:12–13）；状态徽 / 来源徽文案 + 图标，派生标记以来源徽 + 文字表达（designUI §2.4）；冲突徽对比度不足时"登记后继设计变更、不私加色值"（plan:185）；`accent.amber` / `text.*` 令牌在 `tokens.json:16–22` 存在。
-- [x] **C-08 D-015 / D-013 编号未混淆；D-017 仅边界引用。** plan 未引用 D-015；spec §4 引用 D-017 "仅关联"；前端分支的旧八项导航未被用来否定 D-016（plan:195 明确 9 项归 v2）。
+- ☐ **C-01 前置依赖与职责边界清楚。** 未满足（B-06）：① plan:16 把 `router.ts` 列为"共享文件（需与 v2 协调）"，但 plan:29 又由本 feature 改它注册路由——没有唯一所有者；② plan:180 "本 feature 分支基于该 feature 完成后合并"未指明起始基线（frontend-workbench Handoff 后的 commit，还是当前 `fdaa7d8`）；③ plan:48/156 复用的 `AgentDrawer.vue` / `agent/store.ts` / `theme.ts` 在 `fdaa7d8` 不存在；④ `specs/README.md:23` 把 frontend-workbench v2 与 api 列为依赖，而 AGENTS §2 规定"依赖未满足不得进入 Plan"——spec §4 已把二者改写为"不阻塞 mock 验收"的软依赖，状态表应区分硬 / 软依赖（S-04）。
+- ☐ **C-02 契约闭环（spec 行为 ↔ 契约写路径）。** 未满足（B-01）：已写入 spec 的行为中，分析台五类介入、教规则、块批注回复 / 解决、取消作业、删除来源 / 结论没有任何 `DataClient` 方法；plan:120 的"对应契约方法"是空指。`listInterventions` / `subscribe(jobContext)` / `resolveRevision` / `rerunStage` / `markProvisional` 的读 / 写路径存在。
+- ☐ **C-03 事件与状态闭环（R1–R6 旁路语义）。** 部分满足：plan:122 人的编辑即时落 revision 并标 `pendingMerge`、agent 不被打断、`run.completed` 为检查点、`failed/aborted` 保持待合并并提示——符合 R2 / R3，没有用"等人确认才继续"替代旁路 ✓。**未满足**：重跑迁移（B-03）、未运行时参数修正的 `pendingMerge` 何时清除（无 run 则无 `run.completed`；B-03）、合并结果以何种契约可见形态记录（kind 列表无 merge 类；B-02c）、冲突与发布检查点（B-05b）。
+- ☐ **C-04 场景定义足以稳定验证。** 未满足（B-02）：四个 `job-*` 场景各含哪些作业、每个作业的 `status` × 四个 `StageState` × 产物状态组合、是否与 `normal` 叠加、`empty/error/slow` 对 22 个新方法（含写方法）的行为、`job-pending-merge` 的运行驱动，均未写；plan:60 与 plan:123 对非 normal 场景是否清空 `fai.jobs.v1` 说法相反。
+- ☐ **C-05 版本与发布闭环。** 未满足（B-05）：人改 / agent 改各产生 revision ✓（plan:121）；但回退语义、`PublishSnapshot` 不可变性（发布后写方法拒绝码）、发布检查点对 conflict / pendingMerge 的处理、历史版本只读在契约层的保证未定义。
+- ☐ **C-06 隐私与本地持久化自洽。** 部分满足：fixtures 为合成样例、不读真实 PDF、不落盘文件本体、URL 不抓取（plan:110、network 守卫）✓。**未满足**（B-07）：文本粘贴正文与 URL 是否进入 `fai.jobs.v1`（plan:60 列"投放"入快照、plan:110 又称"不写私有文档"），一次大段粘贴即可触发 512KB 降级；降级 / 损坏"提示"的界面落点缺失（frontend-workbench 已删除 Toast）。
+- ☑ **C-07 视觉与工程纪律。** 不新增颜色字面量与玻璃层级（plan:12–13）；状态徽 / 来源徽文案 + 图标，派生标记以来源徽 + 文字表达（designUI §2.4）；冲突徽对比度不足时"登记后继设计变更、不私加色值"（plan:185）；`accent.amber` / `text.*` 令牌在 `tokens.json:16–22` 存在。
+- ☑ **C-08 D-015 / D-013 编号未混淆；D-017 仅边界引用。** plan 未引用 D-015；spec §4 引用 D-017 "仅关联"；前端分支的旧八项导航未被用来否定 D-016（plan:195 明确 9 项归 v2）。
 
 ---
 
@@ -176,7 +362,7 @@ GUARDS    check.mjs: glass 白名单 3 类(L269) ✓；network 仅 src/contracts
 CONFLICT  plan:60 ↔ plan:123（非 normal 场景本地快照）；plan:120 ↔ plan:80–91（介入方法）；plan:11 ↔ types.ts:66（版本字面量）
 ```
 
-## 结论与下一步
+## 结论与下一步（R1）
 
 1. **未通过**。阻断 B-01～B-08 全部为设计补全；Plan 修订后由 A（独立新会话）做第二轮定向复核，逐项核闭环且确认其余内容未回退；通过后方可进入 Tasks。
 2. Tasks 产出后另需 A 复核 V-02（任务模板、AC 引用、命令对应、依赖 DAG、`blocked_by` 标注）；Analyze 报告与 Converge 结论不得由本轮任何勾选代替。
