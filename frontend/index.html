@@ -73,7 +73,15 @@
     <!-- fai:critical:end -->
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <main class="fai-loading" data-testid="loading-screen" data-phase="static" aria-busy="true">
+        <h1 class="wordmark">Futures-AI</h1>
+        <p role="status">正在启动本地工作台…</p>
+        <progress value="0" max="100" aria-label="加载进度"></progress>
+        <span class="num">0%</span>
+        <p class="notice">正在读取启动信息…</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
