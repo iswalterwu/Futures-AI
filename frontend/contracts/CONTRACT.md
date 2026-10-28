@@ -128,6 +128,84 @@
 类型中的枚举与常量直接来自 schema；必填不等于非空，null、空列表与零的语义见字段说明。
 完整格式、范围与长度约束见 `schema.json`；AgentRun 的唯一终态、同次运行与 stepId 单调约束还须遵守通用约定，不能只依赖 JSON Schema。
 
+### `StageSummary`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 阶段状态与待处理计数，来自契约而非 UI 推导。 |
+| `$.stage` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
+| `$.state` | 是 | `StageState` | 阶段状态；不另设 failed，运行失败以 conflict 呈现，原因见 Job.reason。 |
+| `$.pendingCount` | 是 | `integer` | 本阶段未读且未解决的收件箱条目数。 |
+
+### `Job`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
+| `$.id` | 是 | `string` | 作业唯一标识。 |
+| `$.title` | 是 | `string` | 作业标题，不能为空。 |
+| `$.type` | 是 | `JobType` | 作业类型：日报、专题、临时。 |
+| `$.subject` | 是 | `string &#124; null` | 品种 / 主题；未指定时为 null。 |
+| `$.status` | 是 | `JobStatus` | 九种作业状态；运行失败以 conflict 呈现，原因见 Job.reason。delivered / cancelled 作业领域只读。 |
+| `$.currentStage` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
+| `$.updatedAt` | 是 | `Timestamp` | 作业更新时间；列表默认按此倒序。 |
+| `$.reason` | 是 | `string &#124; null` | 失败 / 取消原因；failed / cancelled 时必须非空。 |
+| `$.stages` | 是 | `StageSummary[]` | 恰四项，固定顺序 collect / process / analyze / deliver，各一项；顺序约束由 zod 边界校验。 |
+| `$.stages[]` | 是 | `StageSummary` | 阶段状态与待处理计数，来自契约而非 UI 推导。 |
+| `$.pendingCount` | 是 | `integer` | 作业未读且未解决的收件箱条目数。 |
+| `$.goal` | 是 | `string` | 目标说明，可为空。 |
+| `$.createdBy` | 是 | `"human" &#124; "schedule"` | 创建者：人或计划。 |
+| `$.parentJobId` | 是 | `string &#124; null` | 父作业锚；没有父作业时为 null。 |
+| `$.parentJobId.anyOf[0]` | 是 | `string` |  |
+| `$.parentJobId.anyOf[1]` | 是 | `null` |  |
+
+### `JobListItem`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 作业列表摘要，字段固定；不含目标说明或创建者。 |
+| `$.id` | 是 | `string` | 作业唯一标识。 |
+| `$.title` | 是 | `string` | 作业标题，不能为空。 |
+| `$.type` | 是 | `JobType` | 作业类型：日报、专题、临时。 |
+| `$.subject` | 是 | `string &#124; null` | 品种 / 主题；未指定时为 null。 |
+| `$.status` | 是 | `JobStatus` | 九种作业状态；运行失败以 conflict 呈现，原因见 Job.reason。delivered / cancelled 作业领域只读。 |
+| `$.currentStage` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
+| `$.updatedAt` | 是 | `Timestamp` | 作业更新时间；列表默认按此倒序。 |
+| `$.reason` | 是 | `string &#124; null` | 失败 / 取消原因；failed / cancelled 时必须非空。 |
+| `$.stages` | 是 | `StageSummary[]` | 恰四项，固定顺序 collect / process / analyze / deliver，各一项；顺序约束由 zod 边界校验。 |
+| `$.stages[]` | 是 | `StageSummary` | 阶段状态与待处理计数，来自契约而非 UI 推导。 |
+| `$.pendingCount` | 是 | `integer` | 作业未读且未解决的收件箱条目数。 |
+
+### `JobContext`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 作业上下文；契约统一 camelCase：job_id→jobId、artifact_id→artifactId、base_rev→baseRev、created_at→createdAt。 |
+| `$.jobId` | 是 | `string` | 作业上下文锚；命名对照 job_id→jobId。 |
+| `$.stage` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
+
+### `InboxItem`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 作业收件箱条目，不适用的锚明确为 null。 |
+| `$.id` | 是 | `string` | 收件箱条目唯一标识。 |
+| `$.jobId` | 是 | `string` | 所属作业。 |
+| `$.stage` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
+| `$.artifactId` | 是 | `string &#124; null` | 产物锚；不适用时 null。 |
+| `$.artifactId.anyOf[0]` | 是 | `string` |  |
+| `$.artifactId.anyOf[1]` | 是 | `null` |  |
+| `$.revisionId` | 是 | `string &#124; null` | 修订锚；不适用时 null。 |
+| `$.revisionId.anyOf[0]` | 是 | `string` |  |
+| `$.revisionId.anyOf[1]` | 是 | `null` |  |
+| `$.interventionId` | 是 | `string &#124; null` | 介入锚；不适用时 null。 |
+| `$.interventionId.anyOf[0]` | 是 | `string` |  |
+| `$.interventionId.anyOf[1]` | 是 | `null` |  |
+| `$.reason` | 是 | `"needs_human" &#124; "conflict" &#124; "pending_merge" &#124; "revision_review"` | 待处理原因。 |
+| `$.createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+| `$.read` | 是 | `boolean` | 已读只清角标，不删除条目。 |
+| `$.resolved` | 是 | `boolean` | 已解决与已读独立；计数只数未读且未解决条目。 |
+
 ### `Stage`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |

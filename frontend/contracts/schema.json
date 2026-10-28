@@ -166,6 +166,307 @@
     }
   },
   "$defs": {
+    "StageSummary": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "$ref": "#/$defs/Stage"
+        },
+        "state": {
+          "$ref": "#/$defs/StageState"
+        },
+        "pendingCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "本阶段未读且未解决的收件箱条目数。"
+        }
+      },
+      "required": [
+        "stage",
+        "state",
+        "pendingCount"
+      ],
+      "additionalProperties": false,
+      "description": "阶段状态与待处理计数，来自契约而非 UI 推导。"
+    },
+    "Job": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "作业唯一标识。"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "作业标题，不能为空。"
+        },
+        "type": {
+          "$ref": "#/$defs/JobType"
+        },
+        "subject": {
+          "description": "品种 / 主题；未指定时为 null。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "$ref": "#/$defs/JobStatus"
+        },
+        "currentStage": {
+          "$ref": "#/$defs/Stage"
+        },
+        "updatedAt": {
+          "description": "作业更新时间；列表默认按此倒序。",
+          "$ref": "#/$defs/Timestamp"
+        },
+        "reason": {
+          "description": "失败 / 取消原因；failed / cancelled 时必须非空。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stages": {
+          "minItems": 4,
+          "maxItems": 4,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StageSummary"
+          },
+          "description": "恰四项，固定顺序 collect / process / analyze / deliver，各一项；顺序约束由 zod 边界校验。"
+        },
+        "pendingCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "作业未读且未解决的收件箱条目数。"
+        },
+        "goal": {
+          "type": "string",
+          "description": "目标说明，可为空。"
+        },
+        "createdBy": {
+          "type": "string",
+          "enum": [
+            "human",
+            "schedule"
+          ],
+          "description": "创建者：人或计划。"
+        },
+        "parentJobId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "父作业锚；没有父作业时为 null。"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "type",
+        "subject",
+        "status",
+        "currentStage",
+        "updatedAt",
+        "reason",
+        "stages",
+        "pendingCount",
+        "goal",
+        "createdBy",
+        "parentJobId"
+      ],
+      "additionalProperties": false,
+      "description": "作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。"
+    },
+    "JobListItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "作业唯一标识。"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "作业标题，不能为空。"
+        },
+        "type": {
+          "$ref": "#/$defs/JobType"
+        },
+        "subject": {
+          "description": "品种 / 主题；未指定时为 null。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "$ref": "#/$defs/JobStatus"
+        },
+        "currentStage": {
+          "$ref": "#/$defs/Stage"
+        },
+        "updatedAt": {
+          "description": "作业更新时间；列表默认按此倒序。",
+          "$ref": "#/$defs/Timestamp"
+        },
+        "reason": {
+          "description": "失败 / 取消原因；failed / cancelled 时必须非空。",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "stages": {
+          "minItems": 4,
+          "maxItems": 4,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StageSummary"
+          },
+          "description": "恰四项，固定顺序 collect / process / analyze / deliver，各一项；顺序约束由 zod 边界校验。"
+        },
+        "pendingCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991,
+          "description": "作业未读且未解决的收件箱条目数。"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "type",
+        "subject",
+        "status",
+        "currentStage",
+        "updatedAt",
+        "reason",
+        "stages",
+        "pendingCount"
+      ],
+      "additionalProperties": false,
+      "description": "作业列表摘要，字段固定；不含目标说明或创建者。"
+    },
+    "JobContext": {
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "作业上下文锚；命名对照 job_id→jobId。"
+        },
+        "stage": {
+          "$ref": "#/$defs/Stage"
+        }
+      },
+      "required": [
+        "jobId",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "description": "作业上下文；契约统一 camelCase：job_id→jobId、artifact_id→artifactId、base_rev→baseRev、created_at→createdAt。"
+    },
+    "InboxItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "收件箱条目唯一标识。"
+        },
+        "jobId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "所属作业。"
+        },
+        "stage": {
+          "$ref": "#/$defs/Stage"
+        },
+        "artifactId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "产物锚；不适用时 null。"
+        },
+        "revisionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "修订锚；不适用时 null。"
+        },
+        "interventionId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "介入锚；不适用时 null。"
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "needs_human",
+            "conflict",
+            "pending_merge",
+            "revision_review"
+          ],
+          "description": "待处理原因。"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "read": {
+          "type": "boolean",
+          "description": "已读只清角标，不删除条目。"
+        },
+        "resolved": {
+          "type": "boolean",
+          "description": "已解决与已读独立；计数只数未读且未解决条目。"
+        }
+      },
+      "required": [
+        "id",
+        "jobId",
+        "stage",
+        "artifactId",
+        "revisionId",
+        "interventionId",
+        "reason",
+        "createdAt",
+        "read",
+        "resolved"
+      ],
+      "additionalProperties": false,
+      "description": "作业收件箱条目，不适用的锚明确为 null。"
+    },
     "Stage": {
       "type": "string",
       "enum": [

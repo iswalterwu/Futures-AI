@@ -225,7 +225,63 @@ function labelSchema<const T extends Record<string, { readonly text: string; rea
   return z.object(shape)
 }
 
+export const StageSummarySchema = z.object({
+  stage: StageSchema,
+  state: StageStateSchema,
+  pendingCount: z.int().nonnegative().describe('本阶段未读且未解决的收件箱条目数。'),
+}).describe('阶段状态与待处理计数，来自契约而非 UI 推导。')
+const jobStagesSchema = z.array(StageSummarySchema).length(4).refine(
+  stages => stages.every((item, index) => item.stage === StageSchema.options[index]),
+  'stages 必须按 collect / process / analyze / deliver 顺序且各一项',
+).describe('恰四项，固定顺序 collect / process / analyze / deliver，各一项；顺序约束由 zod 边界校验。')
+const jobSummaryFields = {
+  id: z.string().min(1).describe('作业唯一标识。'),
+  title: z.string().trim().min(1).describe('作业标题，不能为空。'),
+  type: JobTypeSchema,
+  subject: z.string().nullable().describe('品种 / 主题；未指定时为 null。'),
+  status: JobStatusSchema,
+  currentStage: StageSchema,
+  updatedAt: TimestampSchema.describe('作业更新时间；列表默认按此倒序。'),
+  reason: z.string().nullable().describe('失败 / 取消原因；failed / cancelled 时必须非空。'),
+  stages: jobStagesSchema,
+  pendingCount: z.int().nonnegative().describe('作业未读且未解决的收件箱条目数。'),
+}
+export const JobListItemSchema = z.object(jobSummaryFields).refine(hasJobReason, {
+  path: ['reason'], message: 'failed / cancelled 必须提供非空原因',
+}).describe('作业列表摘要，字段固定；不含目标说明或创建者。')
+export const JobSchema = z.object({
+  ...jobSummaryFields,
+  goal: z.string().describe('目标说明，可为空。'),
+  createdBy: z.enum(['human', 'schedule']).describe('创建者：人或计划。'),
+  parentJobId: z.string().min(1).nullable().describe('父作业锚；没有父作业时为 null。'),
+}).refine(hasJobReason, { path: ['reason'], message: 'failed / cancelled 必须提供非空原因' }).describe('作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。')
+export const JobContextSchema = z.object({
+  jobId: z.string().min(1).describe('作业上下文锚；命名对照 job_id→jobId。'),
+  stage: StageSchema,
+}).describe('作业上下文；契约统一 camelCase：job_id→jobId、artifact_id→artifactId、base_rev→baseRev、created_at→createdAt。')
+export const InboxItemSchema = z.object({
+  id: z.string().min(1).describe('收件箱条目唯一标识。'),
+  jobId: z.string().min(1).describe('所属作业。'),
+  stage: StageSchema,
+  artifactId: z.string().min(1).nullable().describe('产物锚；不适用时 null。'),
+  revisionId: z.string().min(1).nullable().describe('修订锚；不适用时 null。'),
+  interventionId: z.string().min(1).nullable().describe('介入锚；不适用时 null。'),
+  reason: z.enum(['needs_human', 'conflict', 'pending_merge', 'revision_review']).describe('待处理原因。'),
+  createdAt: TimestampSchema,
+  read: z.boolean().describe('已读只清角标，不删除条目。'),
+  resolved: z.boolean().describe('已解决与已读独立；计数只数未读且未解决条目。'),
+}).describe('作业收件箱条目，不适用的锚明确为 null。')
+
+function hasJobReason(job: { status: JobStatus; reason: string | null }) {
+  return !['failed', 'cancelled'].includes(job.status) || (job.reason !== null && job.reason.trim().length > 0)
+}
+
 export const contractSchemas = {
+  StageSummary: StageSummarySchema,
+  Job: JobSchema,
+  JobListItem: JobListItemSchema,
+  JobContext: JobContextSchema,
+  InboxItem: InboxItemSchema,
   Stage: StageSchema,
   StageState: StageStateSchema,
   JobType: JobTypeSchema,
@@ -308,3 +364,8 @@ export type InterventionKind = z.infer<typeof InterventionKindSchema>
 export type InterventionOutcome = z.infer<typeof InterventionOutcomeSchema>
 export type UploadStatus = z.infer<typeof UploadStatusSchema>
 export type DeliverableStatus = z.infer<typeof DeliverableStatusSchema>
+export type StageSummary = z.infer<typeof StageSummarySchema>
+export type Job = z.infer<typeof JobSchema>
+export type JobListItem = z.infer<typeof JobListItemSchema>
+export type JobContext = z.infer<typeof JobContextSchema>
+export type InboxItem = z.infer<typeof InboxItemSchema>
