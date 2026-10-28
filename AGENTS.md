@@ -50,12 +50,10 @@ Constitution → Spec → Clarify → 【Gate 1】 → Plan → Checklist → Ta
 5. **Checklist**：生成一个自定义的质量检查清单，包括针对 spec 需求进行的单元测试，以便在工作进行分解前
    确保需求描述完整、清晰且一致。这些自定义检查清单属于审核员所确定的需求质量审查成果；只有当审核员认为
    某项检查标准得到满足时，才会标记该项检查为已通过。虽然某些自定义项已通过检查，但这并不意味着实施工作已经完成。
-   **审核员**：**仅 A = claude-fable-5-1**，独立会话（新开会话、与实施隔离、与实施不同模型）；
-   其结论即为审核结论（单审，不再要求第二名审核员、不做共识投票）。
-   **接入通道**：优先 `claude-bridge`（`--model claude-bridge/claude-fable-5-1`）；
-   该通道不可用时（额度耗尽、鉴权失败、launcher 异常等）改走 Anthropic API
-   （`--model anthropic/claude-fable-5-1`）。两条通道同为同一个 Claude 模型，只换接入路径，不改变审核员身份。
-   每轮在产物头部记录实际通道（如 `A = claude-fable-5-1 via anthropic`）及切换原因。
+   **审核员**：仅 A，独立会话（与实施隔离、不复用实施会话），单审，不做共识投票。
+   模型依次为 `claude-fable-5-1` → `claude-opus-5-5` → `openai/gpt-6.1-sol`；
+   Claude 模型先试 `claude-bridge`，失败再走 `anthropic` API key 通道（完整规则见 §2.1）。
+   切换模型或通道不改变审核员 A 的身份；每轮在产物头部记录实际模型、通道与切换原因。
    产物：`specs/<feature>/checklist.md`（实施者不勾选）。
 6. **Tasks**：把方案拆成 0.5 到 2 小时可完成的任务，每个任务包含上下文、修改范围、完成标准和验证命令。
    **完成标准必须引用 spec 的 AC 编号**（如“满足 AC-001-1”），验证命令与完成标准一一对应。
@@ -69,7 +67,7 @@ Constitution → Spec → Clarify → 【Gate 1】 → Plan → Checklist → Ta
    更新 plan/tasks），不许直接改 tasks.md 偷跑。
 9. **Converge**：对比代码库与规范、计划以及任务列表进行检查。如果发现差距，就在 tasks.md 处添加新的任务，
    然后运行 Implement 工作流再次进行比对，直到报告"已收敛"为止。否则任务完成，可以继续完成评审。
-10. **Review**：由**审核员 A**（新开独立会话，与实施隔离）参考 **spec.md + plan.md + tasks.md + 实际代码差异**
+10. **Review**：由**审核员 A**（按 §2.1 路由，新开独立会话，与实施隔离）参考 **spec.md + plan.md + tasks.md + 实际代码差异**
     （git diff）评审，按 bug、架构风险、测试缺口、目标是否对齐出结论，禁止只做风格化总结。
     判定规则：存在 P1/P2 = 未通过；仅 P3 或无发现 = 通过（P3 可接受为后续任务）。
 
@@ -96,6 +94,38 @@ specs/<feature>/          # 每个功能性 feature 一个独立规格目录（�
 依赖未满足的 feature 不得进入 Plan。
 
 新建 feature 一律从 `templates/` 模板起稿，走完整个工作流。
+
+## 2.1 开发多 agent 编排与模型路由（2026-10-28 Walter 指定）
+
+本节用于**本项目的开发协作**，不是产品中用户的研究 agent 配置。沿用 §2 工作流，不新增一套流程或编排框架；
+由协调会话分派独立 agent，会话启动时显式指定 provider/model，不依赖全局默认模型。
+
+| 角色 / 阶段 | 首选模型 | 用量不足、调用报错或超时后的回退顺序 |
+|---|---|---|
+| 实施（Implement，包括缺陷修复、测试及打包脚本的代码修改） | `openai/gpt-6-astra` | `deepseek/deepseek-flash` |
+| 计划、分析及其他非实施阶段（Constitution / Spec / Clarify / Plan / Tasks / Analyze / Converge） | `claude-opus-5-5` | `openai/gpt-6.1-sol` → `deepseek/deepseek-flash` |
+| 审核员 A（Checklist / Review，单审） | `claude-fable-5-1` | `claude-opus-5-5` → `openai/gpt-6.1-sol` |
+
+**Claude 通道顺序（对所有 Claude 模型生效）**：
+
+1. 首次使用某个 Claude 模型前，先做一次最小真实调用，测试 `claude-bridge/<model>` 链路；模型在列表中可见不代表可调用。
+2. bridge 用量不足、鉴权失败、launcher 异常、调用错误或超时 → 对**同一模型**测试并使用 `anthropic/<model>` API key 通道。
+3. 同一模型两条通道都失败后，才进入上表下一模型；进入另一个 Claude 模型时，也先 bridge、后 anthropic。
+4. 探活成功但正式任务调用失败时，同样按上述顺序回退。已明确限额耗尽的通道在当前限额窗口不反复重试；
+   新会话或窗口重置后重新测试。不得擅自改用户 provider、路由、API key 或全局 pi 配置。
+5. **只有调用失败才回退**：测试变红、Analyze 发现差距、Review 判未通过都是正常任务结果，不是换模型找“通过”的理由。
+   所有候选均不可用则标记 blocked 并报告，不跳过审核、不伪称已完成。
+
+**会话、工作树与交接**：
+
+- 协调者负责分工、集成、运行验证与 Gate 汇报；代码实施交给上表的实施 agent，计划与分析交给对应角色。
+- 每个并行写入 agent 使用**独立 git worktree / 分支**，明确文件所有权、任务范围、AC、验证命令与基线提交；
+  不在多个会话间共享可写工作目录，不同时改同一文件，不在其他 feature 分支上提交、reset 或强推。
+- 仅无共享写入、无顺序依赖的任务并行；共享文件由指定集成人串行合并。生成文件从源头重建（如 package-lock 由 npm 生成）。
+- 审核会话与实施会话分离，只读审查固定提交与真实 diff；除审核员勾选 checklist 外，不替实施者改代码。
+- 每次派工 / 回退在 `specs/<feature>/review.md`（前期可用 `plan.md`）简记：角色、任务、基线、实际 provider/model、
+  失败类别及回退原因、产出提交与验证结果。只记脱敏摘要，不记录 API key、token 或完整鉴权报错。
+- 模型回退不取消 Gate 1 / Gate 2、checklist 前置条件与 §5 工程准则；涉及需求变更仍回 Clarify，人工批准后再实施。
 
 ## 3. 已确认的关键决策（实现不得偏离）
 
