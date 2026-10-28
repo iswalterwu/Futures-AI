@@ -318,4 +318,5 @@ D-015 的其余同步（ADR 标题、活文档引用、`design/` 7 个文件）�
 
 ### 9.7 PR 与合并
 
-- PR：（创建后补）
+- PR：[iswalterwu/Futures-AI#7](https://github.com/iswalterwu/Futures-AI/pull/7)（`feat/frontend-workbench` → `main`，普通 merge commit；创建时 mergeable = CLEAN，仓库没有配置 CI 检查）。
+- merge 提交号在 merge 后才产生，记在 Handoff 结果文件和 PR 页面上，不再为此另提交一次。
