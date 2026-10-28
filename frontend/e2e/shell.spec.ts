@@ -110,15 +110,16 @@ test('AC-002-1 first-frame static skeleton hands over to mounted loading then wo
   await expect(loading).toHaveCount(0)
 })
 
-test('AC-002-7 loading displays measured progress and the bootstrap notice before readiness', async ({ page }) => {
+test('AC-002-7 v2-boot loading displays three-step progress and the bootstrap notice before readiness', async ({ page }) => {
   await page.goto('/?scenario=slow')
   const loading = page.getByTestId('loading-screen')
   await expect(loading).toHaveAttribute('data-phase', 'loading')
   await expect(loading.getByRole('progressbar')).toHaveAttribute('value', '0')
   await expect(loading.getByRole('status')).toHaveText('正在启动本地工作台…')
   await expect(loading.locator('.notice')).toHaveText(notice)
-  await expect(loading.getByRole('progressbar')).toHaveAttribute('value', '25')
-  await expect(loading.getByRole('status')).toHaveText('正在加载资讯、数据源与研究列表…')
+  await expect.poll(() => loading.getByRole('progressbar').evaluate(element => (element as HTMLProgressElement).value)).toBeCloseTo(33.333333, 5)
+  await expect(loading.getByRole('status')).toHaveText('正在加载资讯与数据源…')
+  await expect(loading.getByRole('status')).not.toContainText('研究列表')
   await expect(page.locator('[data-page="workbench"]')).toBeVisible()
 })
 

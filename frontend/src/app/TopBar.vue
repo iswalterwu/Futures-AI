@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import type { NewsItem, SourceStatus } from '../contracts/types.ts'
 
 const props = defineProps<{ news: NewsItem[]; sources: SourceStatus[] }>()
+const emit = defineEmits<{ intake: [] }>()
 // 时长随资讯字数增长，避免长列表被迫加速。
 const tickerDuration = computed(() => `${props.news.reduce((length, item) => length + item.title.length, 0)}s`)
 </script>
@@ -67,6 +68,13 @@ const tickerDuration = computed(() => `${props.news.reduce((length, item) => len
     >
       暂无数据源状态
     </p>
+    <button
+      type="button"
+      class="intake-button"
+      @click="emit('intake')"
+    >
+      投放
+    </button>
   </header>
 </template>
 
@@ -78,6 +86,16 @@ const tickerDuration = computed(() => `${props.news.reduce((length, item) => len
   min-width: 0;
   padding: var(--fai-space-grid-gap) var(--fai-space-content-pad-x);
   z-index: var(--fai-z-chrome);
+}
+
+.intake-button {
+  flex: none;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: calc(var(--fai-space-grid-gap) / 2) var(--fai-space-grid-gap);
+  border: thin solid var(--fai-glass-focus-border);
+  border-radius: var(--fai-radius-control);
+  background: transparent;
 }
 
 .ticker-viewport {

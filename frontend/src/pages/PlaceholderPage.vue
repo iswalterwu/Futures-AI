@@ -1,13 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAppStore } from '../stores/app.ts'
 
 const route = useRoute()
-const app = useAppStore()
-const title = computed(() => route.meta.navId === 'research'
-  ? app.research.find(item => item.id === route.params.id)?.title ?? route.meta.title
-  : route.meta.title)
 </script>
 
 <template>
@@ -16,7 +10,7 @@ const title = computed(() => route.meta.navId === 'research'
     :data-placeholder-owner="route.meta.placeholderOwner"
   >
     <header>
-      <h1>{{ title }}</h1>
+      <h1>{{ route.meta.title }}</h1>
       <p class="en">
         {{ route.meta.en }}
       </p>

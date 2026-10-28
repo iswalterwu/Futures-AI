@@ -41,9 +41,38 @@
 
 `git diff --check` 通过；保护路径（breakpoints、contracts、main、package/lock、AppShell）对 `43b6d79` 无差异。T01 后 4173 再查空闲。未触发 2h 超时拆分规则。
 
-## T-V2-02：待串行实施
+## T-V2-02：完成
 
-只在 T01 提交后开始；执行证据随后追加到此节，不预填完成或人工验收。
+T01 已提交 `0aebf660822663ea022fc059413c6ada5c95f78c`，提交后工作树干净。T02 开工重新读取 tasks §1 登记表、§5 四闸门及两任务正文；再次实测 v1 在 main 祖先中、清单与 `e596244` 一致、spec/plan/R9/HANDOFF 对开工基线未变（均 exit 0）。门 3 仍不适用于 S0，T01 依赖满足；不把历史 blocked 措辞当成最新登记，也不扩大为 S1 授权。
+
+删除 app store 的 research ref/导出/调用和失效类型，加载步骤为 3；PlaceholderPage 标题直接取 route.meta.title，删除 computed/useAppStore 及 research 分支，保留 owner 文案与 daily 日期展示。TopBar 仍是纯 props 消费，按钮文案“投放”，只 emit intake；未写 AppShell、未接抽屉。新增组件测试使用真实 mock client 数据，不 mock 内部模块。M09～M12 仅追加文本与未勾的人工验收项，单元测试同步到 12 项。
+
+### 四条标准 / 四条验证
+
+这些命令执行时 HEAD = `0aebf660822663ea022fc059413c6ada5c95f78c`，工作区为 T02 七个范围内文件的未提交绿代码；工作树仍为页首唯一实施树。
+
+| 标准 | 实际命令（完整） | 输出摘要 / exit | 证据范围 |
+|---|---|---|---|
+| 1 | `pnpm -C frontend test:e2e -g "AC-002-7"` | 3 passed / 0 | bootstrap 后约 33.333333%（三步中的一步）、新文案、两条既有失败重试路径；AC-002-7 |
+| 2 | `pnpm -C frontend test:unit -t "AC-002-4"` | 6 passed / 558 skipped，1 文件 passed / 13 skipped / exit 0 | 5 条既有 ticker/状态回归 + 1 条按钮可见/文案/点击 emit intake；AC-002-4 |
+| 3 | `pnpm -C frontend test:unit -t "AC-009-2"` | 13 passed / 551 skipped，1 文件 passed / 13 skipped / exit 0 | M01～M12 顺序、操作/看什么/截图证据槽；仅文本部分 |
+| 4 | `pnpm -C frontend typecheck && pnpm -C frontend lint` | 两项均成功 / 0 | PlaceholderPage 与 app 派生删除无残留，AC-009-1 静态打底 |
+
+用只读内存 Python 比较：新 manual 文本以 T01 提交中的整个旧文件为逐字前缀（统一 Git 换行后）；M01～M08、历史观察、截图链接及人工勾选原样保留，只追加 M09～M12。没有替 Walter 勾选或看图验收。
+
+### S0 附加回归（不是 T11/T12，也不是 v2 52 AC 验收）
+
+在同一 T02 代码状态上执行：
+
+- `pnpm -C frontend test` → **exit 0**：六项 check 全通过；156 个 tokens / 5 个 artifacts 对拍、12 methods / 10 events 的 2 个契约产物对拍；colors 阳性 24/24、阴性 0 命中；typecheck、lint 通过；**14 个单元/组件测试文件、564 tests passed；68 e2e passed**。原有后台运行、ticker、断点、模块、daily 日期与占位等回归均通过；没有触发既有 v1 风险扩修。
+- `pnpm -C frontend build` → **exit 0**：828 modules transformed，构建成功。Vite 提示一个压缩后 JS chunk 为 779.98 kB（gzip 263.11 kB）、超过 500 kB；仅记录警告，不改工具链或顺手拆包。
+- 生成物、contracts、index.html、package/lock、Playwright 配置、AppShell、breakpoints.spec、checklist-v2 对 `6a1fda4` 的保护路径 diff 均无输出 / exit 0。生成检查没有留下已跟踪变更，未手改自动生成物。
+- 最后检查：4173 无监听，未发现 command line 属于本实施树的 Vite / Playwright node 进程；所有测试 webServer 正常退出。没有启动常驻服务。
+
+### 本地提交与文件
+
+- T01：`0aebf660822663ea022fc059413c6ada5c95f78c`，消息以 `T-V2-01` 开头。改动：`design/ui/{UI_NAV.md,README.md}`、`frontend/src/app/{nav.ts,router.ts,Rail.vue}`、`frontend/e2e/{shell.spec.ts,agent.spec.ts}`，以及本记录和 tasks 中 T01 状态。
+- T02：本节随 `T-V2-02` 提交保存；准确 SHA 由 `git log -1 --format=%H -- frontend/src/app/TopBar.vue` 查询，避免自引用。改动：`frontend/src/stores/app.ts`、`frontend/src/pages/PlaceholderPage.vue`、`frontend/src/app/TopBar.vue`、`frontend/tests/component/topbar.spec.ts`、`frontend/e2e/shell.spec.ts`、`specs/frontend-workbench/manual-acceptance.md`、`frontend/tests/unit/manual-acceptance.spec.ts`，以及本记录和 tasks 中 T02 状态。
 
 ## 交付限制
 

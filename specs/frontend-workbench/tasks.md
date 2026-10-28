@@ -549,7 +549,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 
 #### T-V2-02 加载步骤派生修改、顶栏「投放」与人工清单文本（S0）
 
-- [ ] **状态**：pending（未开始，仅待 T-V2-01 完成后串行执行）。G-02 / R9 / A R4 / v1 Handoff 的内部前置已满足，证据同 T-V2-01；S0 不消费 H-x
+- [x] **状态**：completed（S0 实施与本任务四条验证完成；不含采集接线或人工验收）。Implement = `openai/gpt-6-astra via openai`，在 T01 提交 `0aebf660822663ea022fc059413c6ada5c95f78c` 后串行执行并重核闸门；S0 不消费 H-x。四条命令依次 3 个 e2e、6 个 topbar、13 个人工清单文本测试通过，typecheck + lint 通过；附加 S0 回归 `test` 为 564 unit/component + 68 e2e 全绿，build 成功（仅大 chunk 警告）。完整证据见 `implementation-v2-s0.md`。未接 AppShell/抽屉，不宣称 AC-002-8 或 v2 全量 52 AC 验收
 - **上下文**：
   - 依据：plan §7.2 中 `stores/app.ts` 的最小派生修改（checklist-v2 I-01 已确认），以及同源的 `PlaceholderPage.vue` 最小派生修改（Analyze R1 F-01 补入，待 A 定向复核确认）、§7.6 入口、§7.12 M-09～M-12。
   - 本任务只让按钮发出 `intake` 事件，**不宣称满足 AC-002-8**。
