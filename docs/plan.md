@@ -220,7 +220,7 @@ Walter 已明确回复 **“以上按建议全部接受”**，以下四组均�
 
 ### 文档同步路由与验证记录（脱敏）
 
-纯 docs 任务，无 feature 目录，以本节作前期记录；作者基线均为 `88ff28b`，工作树 `docs/agent-workflow-reshape`。探活与中止状态由协调者交接，本作者未重复探活或派生 agent。
+纯 docs 任务，无 feature 目录，以本节作前期记录。第三轮文档同步作者均从 `88ff28b` 接续；Handoff 集成作者另从 `4aaf019` 接续，集成分析与 A 第二轮复核固定在 `12408a0`。工作树为 `docs/agent-workflow-reshape`，各阶段探活、失败与切换按下表分别记录，不将前阶段记录泛指后续会话。
 
 | 角色 / 任务 | 实际 provider/model | 调用结果 / 切换原因 |
 |---|---|---|
@@ -229,6 +229,8 @@ Walter 已明确回复 **“以上按建议全部接受”**，以下四组均�
 | 文档方案同步作者：回退接续 Plan / Converge | `openai/gpt-6.1-sol` | 最小探活成功后接续；因正式调用超时回退，不是因验证失败或 Review 未过换模型；核查并保留可用 partial，补候选 / 导航 / 批准记录与一致性小修 |
 | 独立审核员 A：固定提交文档 Review | `anthropic/claude-fable-5-1` | bridge 当前窗口额度耗尽，不重复探活；同模型 API 最小探活与正式任务成功；新会话、独立 detached 工作树只读审核 `4ebb76b..f20fdfb`（接续差异 `88ff28b..f20fdfb`），结论通过：0 个 P1/P2，9 个 P3；详见 `../HANDOFF.md` §8 |
 | Handoff 文档集成作者：合入 main 冲突整合 | `anthropic/claude-opus-5-5` | bridge 本窗口已确认额度耗尽，不重复探活；同模型 API 最小探活成功，本阶段从首选重新开始（上一阶段超时回退仅是历史）；接续 `4aaf019`，合入 `origin/main` `44845c8`，只写 `docs/plan.md` / `docs/designUI.md` / `HANDOFF.md`，不派生 agent、不改代码与配置 |
+| 独立集成 Analyze / Converge 分析员（非审核员 A） | `anthropic/claude-opus-5-5` | 新会话、隔离工作树只读核查固定 `12408a0`；无新增 P1/P2，结论“已收敛”（限本轮 docs 对照）；三个记录措辞 P3 由交接补记，不作共识投票 |
+| 独立审核员 A：第二轮集成复核 | `anthropic/claude-fable-5-1` | 新会话、隔离工作树只读核查 `44845c8..12408a0` 与集成差异；通过，无新增 P1/P2；记录时态与待 Clarify 的权威导航两项 P3 由交接补记 / 指针处理，不决定新产品行为 |
 
 作者自查已执行：`git diff --check` 通过；候选 26 项连续唯一、五份 ADR 文件 / 标题唯一、架构图 29 行均 66 显示列且内框对齐、编号章节与 99 处显式“文件 + 首个章节号”引用存在；术语与分期复核结果见 `../HANDOFF.md` §2（不是全仓库链接检查）。协调者复跑修改范围、编号、图宽、旧术语与 AGENTS §6 原样保护检查，均通过。本轮文档与已批准项的对照已收敛，不等于后续 feature 实现完成；纯 docs 未运行后端业务测试。
 
@@ -241,7 +243,9 @@ Walter 已明确回复 **“以上按建议全部接受”**，以下四组均�
 - **前置分支**：`docs/interaction-v2` 已经 PR #6 于 2026-10-28 合入 main（head `4ebb76b`，merge `3bf6476`），不重复开 PR。
 - **主线**：`origin/main` = `44845c8`（含 PR #7 frontend-workbench v1、PR #8 H-01）；本分支接续 `4aaf019` 执行 `merge --no-ff origin/main`。main 的 `AGENTS.md` 即 `4ebb76b` 版 §6，只有一份路由、无 §2.1 并存，无需解冲突；desktop-shell 尚在其他分支，未来合入时仍须保留单一路由与既定纪律。
 - **冲突选择**（不整文件取一边）：本文件 §3 D-015 取 main 正式行（v1 已完成重编号，退回“预留”会抹掉完成事实）、D-016 取本分支“原始三层，现由 D-020 扩为四层”；编号说明后并存 main 完成记录与本分支第三轮 / 候选池句。`designUI.md` §3.10 并存本分支 D-022 Phase 2B 目标与 main“已交付地基（frontend-workbench v1）”整条（现行 8 项菜单 / 未来 9 项菜单区分由该条承载）；§6 采用 main 的 UI 资产链接行与采用边界，并保留本分支 D-020～D-023 新增组件行（本分支令牌 / 桌面适配两行与基线相同，由 main 加链接版取代）。
-- **状态**：冲突已在工作树整合；独立集成复核、提交、开 PR 与合并尚未完成，结果由协调者后补。A 的结论只覆盖 `f20fdfb`，未审本次 merge。
+- **集成提交与复核**：`12408a0` 已完成本地 merge。独立 Analyze / Converge（Opus）结论“已收敛”；A 第二轮（Fable）对该固定提交复核通过，无新增 P1/P2。首轮九项 P3 保留为后续；第二轮的记录时态 / 路由范围措辞已在本交接补记，议程焦点带与 D-015 分段的待 Clarify 指针已补在 `designUI.md` §3.2，不作新产品裁定。
+- **验收证据**：对 main `44845c8` 的差异仅 13 份 Markdown；前端、设计资产、后端、`.gitignore`、前端冻结 spec 与 main 字节一致，锁文件未改。结构 / 链接 / 冲突标记 / `git diff --check` 通过。现有前端守卫首次因本工作树缺 `zod` 未完成；按 `pnpm install --frozen-lockfile` 补依赖后，`pnpm check` 六项全部通过，`pnpm test:unit` 为 14 文件、559/559 通过。未跑 E2E / 后端测试。
+- **交付入口**：[PR #9](https://github.com/iswalterwu/Futures-AI/pull/9)，head `docs/agent-workflow-reshape` → base `main`。前置 PR #6 已合入，本 PR 是本轮唯一交付入口；最终合并状态与 merge commit 以该 PR 的 GitHub 记录及协调者合并确认评论为准，避免在提交内预写自己的合并结果。详细证据与后续见 `../HANDOFF.md` §10。
 
 ## 10. 风险与约束
 

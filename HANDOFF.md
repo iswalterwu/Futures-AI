@@ -1,8 +1,9 @@
-# HANDOFF — agent 工作流重塑（Review 通过、Gate 2 已确认；合入 main 集成中，待独立复核 / 提交 / PR）
+# HANDOFF — agent 工作流重塑（Gate 2 已确认；交付入口 PR #9）
 
 > 文档同步（Plan / Converge，历史）= openai/gpt-6.1-sol via openai；前作者 anthropic/claude-opus-5-5 正式调用超时后接续。
 > Handoff 文档集成 = anthropic/claude-opus-5-5 via anthropic（bridge 本窗口额度耗尽、不重复探活；同模型 API 最小探活成功），接续 `4aaf019`、合入 `origin/main` `44845c8`；真实路由见 `docs/plan.md` §9，集成记录见本文 §9。
-> **当前状态**：Gate 2 已由 Walter “继续”确认；merge 冲突已在工作树整合，**尚未独立集成复核 / 提交 / 开 PR / 合并**。以下 §1–§7 中“未 push / merge”“Gate 2 待确认”等为 Gate 2 前暂停阶段的历史记录。
+> **交付记录**：Gate 2 已由 Walter “继续”确认；集成提交 `12408a0` 已完成，独立 Analyze / Converge 与 A 第二轮复核均通过。本轮交付入口为 [PR #9](https://github.com/iswalterwu/Futures-AI/pull/9)，最终合并状态与 merge commit 以该 PR 的 GitHub 记录及协调者确认评论为准；验收与后续见 §10。
+> **历史范围**：以下开头基线条目与 §1–§9 为各阶段固定快照；其中“未 push / merge”“Gate 2 待确认”“merge 进行中”等只反映写入当时的状态，不覆盖本段与 §10 的后续交付记录。
 
 - 本轮：恢复会话同步记录（沿用 2026-10-28 任务背景，不另推断批准时间）
 - 工作树：`D:/2030/Futures-AI-docs-agent`（分支 `docs/agent-workflow-reshape`，文档已本地提交，**未 push / merge**）
@@ -143,4 +144,40 @@ Walter 本轮回复 **“以上按建议全部接受”**。保留原四组问�
 
 集成观察（未决，不修改、不做产品选择）：D-022 的 Phase 2B 目标把焦点带改为晨间议程头部，main v1 焦点带按 D-015 分“行情 | 指标”两段；两者届时如何共存由 frontend-workbench v2 / 常驻研究台相关 spec 的 Clarify 决定。
 
-**未完成**：独立 Analyze / Converge 集成复核、提交 merge、开 PR、合并到 main，结果由协调者后补。A 的结论只覆盖 `f20fdfb`，未审本次 merge。
+**该快照写入时未完成**：独立集成复核、提交 merge、开 PR 与合并；后续独立复核、提交与 PR 的完成证据见 §10。首轮 A 的结论仅覆盖 `f20fdfb`，第二轮 A 另审 `12408a0`，不混用受审范围。
+
+## 10. Handoff 交付记录与验收证据（PR #9）
+
+- **人工确认**：Walter 在首轮评审汇报后回复“继续”，Gate 2 已确认；首轮九项 P3 接受为后续事项，不擅自修复或选择新产品行为，不替其他 feature Gate。
+- **已完成**：D-020～D-024 五份独立 ADR；四份权威 docs 与 AGENTS 同步；26 项候选池与跨 feature 导航；主线整合的两文件冲突逐处保留双方已批准内容；复查、评审与交接记录。不是上述产品功能的代码实现。
+- **关键提交**：原文档受审 `f20fdfb`；首轮记录 `4aaf019`；集成 merge `12408a0`（父提交 `4aaf019` / `44845c8`）。本节所属交接补记只改文档记录和待 Clarify 指针。
+- **前置交付**：`docs/interaction-v2` 已由 [PR #6](https://github.com/iswalterwu/Futures-AI/pull/6) 合入。主线 `44845c8` 的 D-015、前端 v1、设计资产与完成事实已保留；AGENTS 仍为 §6 一份模型路由规范，未修改其他工作树。
+- **本轮交付入口**：[PR #9 — agent 工作流重塑（D-020～D-024）与候选池](https://github.com/iswalterwu/Futures-AI/pull/9)，`docs/agent-workflow-reshape` → `main`。最终合并状态、时间与 merge commit 以该 PR 的 GitHub 记录及协调者合并确认评论为准；这里不预写提交自身的远端合并结果。
+
+### 独立集成复核
+
+| 角色 | 实际模型 / 隔离 | 固定提交 / 真实范围 | 结论 |
+|---|---|---|---|
+| Analyze / Converge 分析员（非审核员 A） | `anthropic/claude-opus-5-5`，新会话、隔离只读工作树 | `12408a0`；集成 `4aaf019..12408a0` 与 PR `44845c8..12408a0`，另对照 main 自 `4ebb76b` 的变化 | 无新增 P1/P2；“已收敛”（仅本轮 docs），三个记录措辞 P3 在本次交接补记处理，不做共识投票 |
+| 唯一审核员 A，第二轮 | `anthropic/claude-fable-5-1`，新会话、与作者不同模型、隔离只读工作树 | `12408a0`；两段真实 diff、冲突最终文件与权威引用 | 通过，无新增 P1/P2；新增两项 P3：记录时态、议程焦点带与 D-015 分段的待 Clarify 导航 |
+
+记录时态已由顶部与本节明确区分历史快照 / 后续事实；`docs/plan.md` §9 的“作者基线均为 88ff28b”已限定到第三轮文档同步作者，不再泛指集成阶段。A 的导航建议已补入 `docs/designUI.md` §3.2：议程焦点带与 D-015“行情 | 指标”分段及涨跌作用域的衔接留对应 feature Clarify，**不裁定关系、不新增行情语义位置、不改 v1 AC**。这些处理不扩大首轮九项 P3 的解决范围。
+
+### 实际验收证据
+
+| 命令 / 方法 | 结果 |
+|---|---|
+| `git diff --check`；冲突标记 / 未合并条目检查 | 通过，无遗留冲突 |
+| 对 main `44845c8` 的路径与内容比对 | 差异仅 13 份 Markdown；`frontend/`、`design/`、`backend/`、`.gitignore`、`specs/frontend-workbench/` 字节一致，锁文件未改 |
+| Python 内联断言 | D-001～D-024 表行连续唯一、五份新 ADR 唯一、26 候选连续、四 docs 编号、架构图 29×66、main UI 链接与目标、AGENTS 单一路由、九 P3 均保留；通过 |
+| `pnpm install --frozen-lockfile` | 按现有 pnpm 11.21.0 / 锁文件补齐本工作树依赖；首次守卫因缺 `zod` 未完成，未改锁文件，补依赖后重跑 |
+| `pnpm check`（frontend） | 六项守卫全部通过；156 tokens / 5 artifacts 一致，12 methods / 10 events 契约生成一致；颜色样例 24/24、负例 0 命中 |
+| `pnpm test:unit`（frontend） | 14 文件、559/559 测试通过 |
+| 未运行 | E2E、后端业务测试、全仓库链接检查；不声称这些结果 |
+
+### 未完成项、风险与下一步
+
+- **原九项 P3**：完整保留 §8 清单，均仍为后续 Clarify / 任务，未修复、不扩改冻结 AC。
+- **集成观察**：未来议程焦点带与 D-015 分段的衔接由 frontend-workbench v2 / 常驻研究台相关 spec Clarify；若改变登记的涨跌语义位置，仍须遵守 D-015 后继 ADR 纪律，不在本轮提前选方案。
+- **实施入口**：`specs/README.md` 已挂起协议冷启动、settings 自主度 / 预算 / 主体绑定、三类新块与日报入口待办；各自仍须 Clarify / Gate，候选池不是实施入口。
+- **范围外**：不修改 desktop-shell / 前端 v2 等在飞分支，不替其批准 Gate，不启动下一功能实施；desktop-shell 未来合入须保留单一路由与既定纪律。
