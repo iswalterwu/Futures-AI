@@ -343,3 +343,63 @@
 1. 审核员 A（`anthropic/claude-fable-5-1`，新开独立会话）完成最终复查，`checklist.md` 全部复选框勾选；Astra 会话实施前重新读取全文确认。A 若提出新的 P1/P2，回到 Plan/Tasks 修补并重新运行 Analyze。
 2. 工程批准：无待批项（新端点是对既有 settings 核心的只读暴露，位于已冻结 AC-005-3 范围内，不是新的安全或并发机制）。
 3. 无需回 Clarify / Gate 1；无需新立 ADR。全部实施（含 T-03c、T-06d）待 `openai/gpt-6-astra`。
+
+---
+
+## 迭代 7（Plan 修订 4：T-04b 构建收集源头修正之后；只读）
+
+> 本文件页首的"固定源码基线 `8ba1b6a` / 未提交工作副本"描述只适用于迭代 1～6。本轮输入：固定提交 `1275ae2`（分支 `plan/desktop-shell-build-assets`）+ 四个规划文件的工作副本差异（`plan.md` 修订 4、`tasks.md` T-04b 修正、本文件追加本节、新增 `build-assets-review-request.md`）。作者 = `anthropic/claude-opus-5-5` via anthropic（本轮官方通道最小真实调用成功；`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽，不重复探活）；协调 = `openai/gpt-6.1-sol`。日期 2026-10-28。
+> 本轮**不是** Converge、Review、产品测试通过或 Gate 2；没有运行任何测试、构建、npm 或联网请求。
+
+### 1. 重读的输入
+
+AGENTS.md；HANDOFF.md（§10）；`docs/plan.md`、`docs/architecture.md`、`docs/decisions/20261026-desktop-shell.md`（D-007）；`templates/{plan,tasks}.md`；`specs/desktop-shell/{spec,plan,tasks,checklist,analyze,review,implementation-evidence}.md`；源码 `backend/tools/{build_backend,shell_check}.py`、`backend/tests/test_app_health.py`；已安装源码（只读）：`_pyinstaller_hooks_contrib/stdhooks/hook-pyarrow.py`、`PyInstaller/utils/hooks/__init__.py`（`collect_data_files`、`collect_dynamic_libs`、`PY_DYLIB_PATTERNS`）、`PyInstaller/depend/imphook.py`、`PyInstaller/depend/analysis.py`、`PyInstaller/building/build_main.py`、`pandas/compat/pyarrow.py`，以及已安装 pyarrow 22.0.0 的目录枚举。修补 Plan/Tasks 之后再次重读 spec、plan 修订 4 相关段、tasks T-04b 全文与 checklist。
+
+### 2. 执行的检查（只有静态检查）
+
+| 检查 | 方法 | 结果 |
+|---|---|---|
+| spec 冻结 | `git diff --exit-code 1275ae2 -- specs/desktop-shell/spec.md` | 无差异（相对 `8ba1b6a` 仍只有页首 Gate 1 元数据 1 行） |
+| 黑名单冻结 | `git hash-object backend/tools/shell_check.py` 与 `git rev-parse 1275ae2:backend/tools/shell_check.py` | 均为 `2aa8824b47088345ae450fd769697e416196787b`；`git diff --quiet 1275ae2 -- backend` 无差异 |
+| 其他只读文件 | `git diff --exit-code 1275ae2 --` checklist / review / README / HANDOFF / implementation-evidence | 均无差异；`checklist.md` 仍为 41 个 `[x]`、0 个 `[ ]`（作者未改） |
+| 空白 | `git diff --check` | 无错误 |
+| AC 计数 | 正则抽取 spec | 39 个编号，排除 spec §4 中属于 settings 的 `AC-003-5` 后为 38，与此前一致 |
+| 任务结构 | 脚本解析执行顺序表与任务块 | 41 行 / 41 块；估时全部 0.5～2h；顺序表合计 = 任务块合计 = **61.0h**；每块完成标准条数 = 验证条数（T-04b 为 4/4）；每条完成标准都含 AC 编号；顺序表无前向依赖；T-10c 仍依赖 T-04b |
+| 修订 4 只改 T-04b | `git diff 1275ae2 -- specs/desktop-shell/tasks.md` | 改动限于页首新增修订 4 说明、顺序表第 8 行、合计行与 T-04b 块；"实施进度"表（协调者所有）未改 |
+| 所有权与回滚 | 对照 plan §7.5 设计表、§10 回滚、tasks T-04b 修改范围 | 写入集合一致 = `build_backend.py`、新 `backend/tools/pyinstaller_hooks/hook-pyarrow.py`、新 `backend/tests/test_app_packaging.py`（匹配既有 `test_app_*`）、`implementation-evidence.md` 追加；`shell_check.py`、`test_app_health.py`、spec、site-packages、constraints、运行时代码明确只读；§10 回滚已加入 hook 目录 |
+| `.gitignore` | `git check-ignore -v --no-index` 新路径 | `backend/tools/pyinstaller_hooks/hook-pyarrow.py`、`backend/tests/test_app_packaging.py`、`specs/desktop-shell/build-assets-review-request.md` 均无输出、退出码 1（不被忽略） |
+| cwd | 对照 plan §8.2 新增两行 | 细则第 1～6 步为 `backend`，第 7 步为仓库根目录，与 plan 一致 |
+| 名称一致 | `rg` 三个测试名、`pyinstaller_hooks`、`--additional-hooks-dir` | plan §7.5 / §8.2 / §9 与 tasks T-04b 一致 |
+| 测试接缝 | 对照 AGENTS §5.6 与 checklist C-24 | 接线测试只替换 `subprocess.run`；两个 hook 测试真实执行仓库 hook 与已安装 contrib hook；参照规则取自 §7.4 黑名单表述，不复制生产 glob；禁止 mock `collect_*`；`importorskip` 只针对未装 pyarrow 的环境，最终证据禁止 skip |
+| 源码事实复核 | 只读阅读与枚举 | contrib hook 三行与 plan 所述一致；`excludes` 命中目录即追加 `<目录>/**/*`；动态库模式 `*.dll`/`*.dylib`/`lib*.so`；用户 hook 优先级 1000、contrib −1000、每模块只取最高者；`imphook.py` 第 420 行以 INFO 记录 `Processing standard module hook %r from %r`（细则第 4 步据此核对 hook 来源）；pyarrow 中名为 `tests` 的目录只有包根一处，内含 72 `.py`、72 `.pyc`、4 `.parquet`、4 `.orc`、4 `.gz`、3 `.pyx`、1 `.md`、1 `.feather`，无 `.dll`/`.pyd`；`pandas/compat/pyarrow.py` 以 `try: import pyarrow … except ImportError` 导入；`backend/app|data|settings` 无 `import pyarrow` / `from pyarrow` |
+| 验收循环 | 逐条核对 T-04b 完成标准 | 4 条标准都在 T-04b 自身的 7 步内验证，不依赖后序任务；"A 复查修订 4"是实施前置闸门，不是验收循环 |
+
+### 3. 发现
+
+| # | 级别 | 内容 | 处置 |
+|---|---|---|---|
+| AN7-01 | P3（已在本轮 Analyze 之前的修补阶段处理） | 修补阶段自检发现：细则第 6 步的产物对比依赖第 3 步的阻塞产物；若该产物不存在，完成标准 3"只少了 `_internal/pyarrow/tests/**`"将无法取证 | tasks 第 3 步写明"阻塞产物必须存在，不存在即停"，停止规则同步；本轮复核已生效 |
+| AN7-02 | P3（接受，残余边界） | 经 `pyarrow.conftest` 的导入链，PYZ 内可能含 `pyarrow.tests` 纯模块；未核实，不在冻结的文件系统黑名单扫描范围，也未被观测为失败 | 按 AGENTS §5.1 不做推测性加固；plan §10 已登记，交 A / Review 判断 |
+| AN7-03 | P3（接受） | pyarrow 与 pyinstaller-hooks-contrib 均未在 `constraints.txt` 锁定，pyarrow 随环境进入产物 | 本修正不改包版本；参照测试会暴露 contrib hook 漂移；plan §10 已登记 |
+| AN7-04 | P3（协调者动作） | 实施树的输入（`782aa20` + WIP）与规划基线 `1275ae2` 不同：细则第 7 步的 `<输入基线>` 须由协调者给定；四个规划文件须先集成为固定提交并同步到实施树，否则 Astra 会读到修订 3 的 T-04b | 写入 `build-assets-review-request.md` 与本节 §5 |
+| AN7-05 | P3（接受，测试缺口） | "仓库 hook 优先于 contrib"没有单元测试，由真实构建日志（细则第 4 步）与真实产物扫描证明 | 不为单测构造占位模块图；以真实构建证据为准 |
+
+P1：无。P2：无。
+
+### 4. 覆盖矩阵变化（相对迭代 6；其余行不变）
+
+| AC | 任务 | 自动验证 | 人工 |
+|---|---|---|---|
+| AC-001-4 | T-04b（完成标准 3：干净重建 + 未修改冒烟扫描；完成标准 4：收集源头）、T-10a、T-10b、T-10c | `test_app_packaging.py` 三个用例（待新增）；`build_backend.py --clean` + `shell_check.py` 12/12；产物清单对比；`builder-config.test.js`、`scan-package.test.js`、`build.ps1` 第 7 步 | M-04 |
+
+### 5. 正式结论（迭代 7）
+
+- **文档一致性通过（修订 4 范围）**：冻结 spec、plan 修订 4 与 tasks（41 个任务，61h）之间没有 P1/P2；修正落在 AC-001-4 冻结范围内，没有需求、schema 或黑名单变更，不需回 Clarify / Gate 1，不需新 ADR；所有权、cwd、依赖、粒度与计数一致。迭代 1～6（含 1、3、5 的未通过结论）原样保留。
+- 本结论**不**代表代码已实现、任何测试已运行或通过，也不是 Converge、Review 或 Gate 2。
+- **审批仍待定**：A 对修订 3 的 41/41 **不是**对修订 4 的自动批准。
+
+### 6. 实施前置条件（修订 4，补充迭代 6 §6）
+
+1. 审核员 A（新开独立会话，模型按 AGENTS §6）按 `build-assets-review-request.md` 复查受影响项，结论只写入 `checklist.md`；记录完成且全部复选框为勾选状态后，Astra 才可实施 T-04b 的修订 4 部分。A 若提出 P1/P2，回到 Plan/Tasks 修补并重新运行 Analyze。
+2. 协调者把四个规划文件集成为固定提交、同步到实施树，并给出细则第 7 步的 `<输入基线>`。
+3. 工程批准：除 Walter 已给出的这一项构建修正授权外，没有待批项；不需回 Clarify / Gate 1；不需新 ADR。

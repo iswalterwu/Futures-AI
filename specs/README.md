@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| desktop-shell | in-progress（用户要求暂停；T-04b WIP；Checklist A 41/41 通过） | frontend-workbench（完整前端集成）、settings、data-layer v23 | 2026-10-28 | Implement = openai/gpt-6-astra；首批 7 项后端代码已写且阶段局部测试曾通过，T-04b 最后编辑未验证，未构建；基线 389 passed / 5 online skips，最终全量回归未跑；本任务后台已停，本地 WIP 保存，不 push；恢复顺序与提交见根 HANDOFF.md；T-05 起及 T-07～T-10 未开始，Gate 2 未批准 |
+| desktop-shell | in-progress（Plan 修订 4 / Analyze 7 / A 修订 4 Checklist 41/41 通过；准备 T-04b Implement） | frontend-workbench（完整前端集成）、settings、data-layer v23 | 2026-10-28 | Plan 四文件固定提交 981d430，A = anthropic/claude-fable-5-1 新会话独立复查，无 P1/P2、3 P3；将已批准文档同步原实施树后由同模型 openai/gpt-6-astra 聚焦修构建收集源头，黑名单不变；新测试/重建尚未执行，最近仍为 451 passed / 5 online skips、构建成功、冒烟 11/12，未开 T-05；已知 PYZ 纯模块残余不在本次剔除范围；入口 HANDOFF.md §11，不 push / PR / merge，Gate 2 未批准 |
 | frontend-workbench | in-progress（v1 实施中；v2 Clarify 草稿待 Gate 1） | 无后端依赖；v2 集成 AC 依赖 workbench-interaction 前端 | 2026-10-28 | v1 地基在 feat/frontend-workbench（基线 fdaa7d8）；v2 草稿位于隔离 worktree D:/2030/Futures-AI-workbench-v2（spec/frontend-workbench-v2）：九项导航/固定作业轨道/全局投放/对话上下文，52 AC、Q-023～Q-030 待 Walter 批准；未进入 v2 Plan |
 | workbench-interaction | in-progress（Checklist A 独立审核中） | frontend-workbench v1 地基；壳集成待 v2 批准；api 仅后续真实集成 | 2026-10-28 | Phase 1.5 协作交付骨架；Spec Gate 1 已批准（9 需求/46 AC），Plan 完成。审阅包 checklist-review-request.md；bridge 实测额度受限，已启动 claude-fable-5-1 via anthropic 新会话；未取得结论，不进入 Tasks / Implement |
 
