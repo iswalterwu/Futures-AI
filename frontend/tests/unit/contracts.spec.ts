@@ -245,12 +245,12 @@ describe('AC-005-6 types', () => {
 
 describe('AC-007-3 methods', () => {
   test('covers all ten DataClient methods and both AgentClient methods with matching types', () => {
-    expect(Object.keys(dataMethods)).toEqual([
+    expect(Object.keys(dataMethods)).toEqual(expect.arrayContaining([
       'bootstrap', 'getModuleCatalog', 'getDailyBrief', 'getMarketBoard', 'getWatchlist',
       'getReleaseCalendar', 'getModuleSummary', 'getNewsTicker', 'getSourceStatus', 'getResearchList',
-    ])
+    ]))
     expect(Object.keys(agentMethods)).toEqual(['send', 'subscribe'])
-    expect(Object.keys(methodSemantics)).toHaveLength(12)
+    expect(Object.keys(methodSemantics)).toHaveLength(Object.keys(dataMethods).length + Object.keys(agentMethods).length)
     expectTypeOf<keyof typeof dataMethods>().toEqualTypeOf<keyof DataClient>()
     expectTypeOf<keyof typeof agentMethods>().toEqualTypeOf<keyof AgentClient>()
     type SchemaClient = {

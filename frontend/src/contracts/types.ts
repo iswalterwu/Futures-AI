@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const CONTRACT_VERSION = '1.0.0'
+export const CONTRACT_VERSION = '2.0.0'
 
 export const TradingDateSchema = z.iso.date().describe('交易日，YYYY-MM-DD。')
 export const TimestampSchema = z.iso.datetime({ offset: true }).describe('ISO 8601 时间，必须带时区偏移；Z 表示 UTC。')
@@ -66,7 +66,7 @@ export const BootstrapSchema = z.object({
   appVersion: z.string().min(1).describe('应用版本。'),
   contractVersion: z.literal(CONTRACT_VERSION).describe('数据访问契约版本。'),
   mode: z.enum(['mock', 'real']).describe('当前数据实现；默认 mock。'),
-  scenario: z.enum(['normal', 'empty', 'error', 'slow', 'boot-error']).describe('当前场景；real 使用 normal。'),
+  scenario: z.enum(['normal', 'empty', 'error', 'slow', 'boot-error', 'job-running', 'job-pending-merge', 'job-conflict', 'job-delivered']).describe('九场景；real 使用 normal。job-running / job-pending-merge / job-conflict / job-delivered 为作业专用样例；v1 十个方法在 job-* 场景下按 normal 行为。'),
   notice: z.string().optional().describe('加载页可展示的通知文案。'),
 }).describe('启动完成后返回的版本、运行模式与通知。')
 
@@ -518,13 +518,15 @@ export const JobCollectionsSchema = z.strictObject({
   'job-conflict': z.array(JobSchema).describe('保留冲突两版与暂定快照的样例集合。'),
   'job-delivered': z.array(JobSchema).describe('已定稿只读样例集合。'),
 }).describe('作业样例按场景集合分键；empty / error / slow / boot-error 使用 normal 种子再应用场景规则。')
-export const JobDetailsSchema = z.record(z.string().min(1), z.strictObject({
+export const JobDetailFixtureSchema = z.strictObject({
   collect: StageWorkspaceSchema.options[0],
   process: StageWorkspaceSchema.options[1],
   analyze: StageWorkspaceSchema.options[2],
   previews: z.record(z.string().min(1), ExtractionPreviewSchema).describe('按 Upload.id 索引的合成预览。'),
   reconciliations: z.array(ReconciliationDiffSchema).describe('按 seriesId 查询的对账样例。'),
-})).describe('以作业 id 为键的采集 / 处理 / 分析样例；预览与对账复用契约边界 schema。')
+}).describe('单作业的采集 / 处理 / 分析种子，预览与对账复用契约边界 schema。')
+export const JobDetailsSchema = z.record(z.string().min(1), JobDetailFixtureSchema)
+  .describe('以作业 id 为键的采集 / 处理 / 分析样例。')
 export const InboxCountsSchema = z.strictObject({
   unread: z.int().nonnegative().describe('未读且未解决条目总数。'),
   byStage: z.strictObject({
@@ -594,6 +596,7 @@ export const contractSchemas = {
   UploadFixtures: UploadFixturesSchema,
   JobCollections: JobCollectionsSchema,
   JobDetails: JobDetailsSchema,
+  JobDetailFixture: JobDetailFixtureSchema,
   InterventionPayload: InterventionPayloadSchema,
   Intervention: InterventionSchema,
   Artifact: ArtifactSchema,

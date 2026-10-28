@@ -44,7 +44,7 @@ describe('AC-007-3 doc', () => {
     const output = execFileSync(process.execPath, ['scripts/contract-build.mjs', '--check'], {
       cwd: frontendRoot, encoding: 'utf8',
     })
-    expect(output).toContain('12 methods, 10 events, 2 artifacts match')
+    expect(output).toContain(`${Object.keys(methodSemantics).length} methods, 10 events, 2 artifacts match`)
     expect(document).toContain('Do not edit.')
     expect(document).toContain(`v${CONTRACT_VERSION}`)
     expect(generated['x-contract-version']).toBe(CONTRACT_VERSION)
@@ -61,7 +61,7 @@ describe('AC-007-3 doc', () => {
 
   test('all ten data methods and send/subscribe match the method semantic table', () => {
     expect(Object.keys(generated['x-methods'])).toEqual(Object.keys(methodSemantics))
-    expect(Object.keys(generated['x-methods'])).toHaveLength(12)
+    expect(Object.keys(generated['x-methods'])).toHaveLength(Object.keys(methodSemantics).length)
     for (const [name, method] of Object.entries(methodSemantics)) {
       const entry = generated['x-methods'][name]
       expect(document).toContain(`### \`${name}\``)

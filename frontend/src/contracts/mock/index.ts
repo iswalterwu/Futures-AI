@@ -6,6 +6,11 @@ import { agentMethods, dataMethods } from '../methods.ts'
 import {
   BootstrapSchema,
   CONTRACT_VERSION,
+  JobCollectionsSchema,
+  JobDetailsSchema,
+  DeliverableFixturesSchema,
+  InterventionSchema,
+  UploadFixturesSchema,
   ModuleIdSchema,
   ModuleSummarySchema,
   type Bootstrap,
@@ -25,6 +30,31 @@ import moduleSummaries from './fixtures/module-summaries.json'
 import news from './fixtures/news.json'
 import sources from './fixtures/sources.json'
 import research from './fixtures/research.json'
+import jobs from './fixtures/jobs/jobs.json'
+import jobDetails from './fixtures/jobs/job-detail.json'
+import deliverables from './fixtures/jobs/deliverable.json'
+import interventions from './fixtures/jobs/interventions.json'
+import uploads from './fixtures/jobs/uploads.json'
+
+const jobFixtures = { jobs, 'job-detail': jobDetails, deliverable: deliverables, interventions, uploads }
+export const jobFixtureSchemas = {
+  jobs: JobCollectionsSchema,
+  'job-detail': JobDetailsSchema,
+  deliverable: DeliverableFixturesSchema,
+  interventions: z.array(InterventionSchema),
+  uploads: UploadFixturesSchema,
+}
+const jobFixturesBoundary = z.preprocess(value => {
+  // Only the file keys are merged. Each supplied file replaces its built-in counterpart.
+  if (value === undefined) return jobFixtures
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return value
+  return { ...jobFixtures, ...value }
+}, z.strictObject(jobFixtureSchemas))
+
+/** T-A10 calls this once when rebuilding shared session state, never on a read request. */
+export function readJobFixtures() {
+  return parseBoundary(jobFixturesBoundary, window.__FAI_MOCK__?.jobFixtures)
+}
 
 const fixtures = {
   'module-catalog': moduleCatalog,
@@ -55,6 +85,7 @@ export const agentScripts = { success, failure, retry, long } satisfies Record<s
 export type AgentScriptName = keyof typeof agentScripts
 export interface MockOverrides {
   fixtures?: Partial<Record<keyof typeof fixtures, unknown>>
+  jobFixtures?: Partial<Record<keyof typeof jobFixtures, unknown>>
   agentScript?: AgentScriptName
 }
 

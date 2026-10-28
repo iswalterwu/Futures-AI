@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { AgentRunSchema, isTerminalEvent, type AgentEvent } from '../../src/agent/events.ts'
 import type { DataClient } from '../../src/contracts/client.ts'
 import { dataMethods } from '../../src/contracts/methods.ts'
-import { ErrorResponseSchema, ModuleIdSchema, type ModuleId } from '../../src/contracts/types.ts'
+import { CONTRACT_VERSION, ErrorResponseSchema, ModuleIdSchema, type ModuleId } from '../../src/contracts/types.ts'
 import {
   agentScripts,
   createMockAgentClient,
@@ -94,10 +94,12 @@ describe('AC-007-2 mock scenarios', () => {
   test('defaults to normal and all ten data methods return schema-valid values', async () => {
     const client = createMockDataClient()
     const results = await Promise.all(dataRequests(client))
-    for (const [index, method] of Object.values(dataMethods).entries()) {
-      expect(method.result.safeParse(results[index]).success).toBe(true)
+    const v1Methods = ['bootstrap', 'getModuleCatalog', 'getDailyBrief', 'getMarketBoard', 'getWatchlist',
+      'getReleaseCalendar', 'getModuleSummary', 'getNewsTicker', 'getSourceStatus', 'getResearchList'] as const
+    for (const [index, name] of v1Methods.entries()) {
+      expect(dataMethods[name].result.safeParse(results[index]).success).toBe(true)
     }
-    expect(results[0]).toMatchObject({ mode: 'mock', scenario: 'normal', contractVersion: '1.0.0', notice: expect.any(String) })
+    expect(results[0]).toMatchObject({ mode: 'mock', scenario: 'normal', contractVersion: CONTRACT_VERSION, notice: expect.any(String) })
   })
 
   test('query scenario wins over environment, environment wins over normal', async () => {
