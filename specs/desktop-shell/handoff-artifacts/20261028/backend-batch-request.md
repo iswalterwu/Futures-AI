@@ -1,0 +1,50 @@
+# Implement — desktop-shell batch 1 backend corrections (Astra, actual code + tests)
+
+Walter said '继续' after Plan/Tasks/Analyze and independent Checklist finished, and explicitly requested openai/gpt-6-astra for Implement. You ARE Implement = openai/gpt-6-astra via openai, fresh independent implementation session. Coordinator is openai/gpt-6.1-sol (coordination/integration only). A fresh minimal real Astra call succeeded this turn; do not route to any other model or launch agents. Only invocation failure may trigger coordinator-managed fallback per AGENTS §6; red tests are ordinary work, not a fallback reason.
+
+Your private worktree = D:/2030/Futures-AI-desktop-implement, branch feat/desktop-shell-astra. Fixed source baseline = 8ba1b6a304f916e3d57ebdd6b89790b75a15f14c + copied approved planning overlay (uncommitted, do not describe as a committed baseline). No other writer in this worktree. Don't modify any other worktree or other feature, global pi/provider/auth/config, user data or real credentials. No pushes, PRs, merges, reset/force operations. Gate2 NOT granted.
+
+Mandatory preflight:
+1. Read AGENTS.md entirely; docs/plan.md and docs/architecture.md; appropriate ADRs; specs/desktop-shell/{spec,plan,tasks,checklist,analyze,review}.md completely (continue read offsets when truncated), especially Plan §3.1/§7/§8/§9/§10 and tasks batch below. Re-read relevant files at task boundaries. Frozen spec must not change. Independently count/confirm ALL 41 checklist boxes are checked and none unchecked BEFORE any implementation. checklist.md is READ ONLY and never ticked/edited by you. Analyze iteration 6 document consistency passed; this is not prior code pass.
+2. Print actual PI_PROVIDER/PI_MODEL (only these markers, no credential environment variables) and current HEAD for routing evidence. Inspect actual code; don't implement from prompt summary alone.
+3. Establish a genuine baseline: from backend run all existing tests with PYTHONDONTWRITEBYTECODE=1, pytest cache disabled, basetemp OUTSIDE repository in a new temporary directory. Historical result 389 passed/5 online skips is only a prior reference. Don't set FAI_LIVE/enable upstream tests or use real EIA keys. Record actual baseline output. If a pre-existing failure occurs, diagnose; don't silently skip or rewrite assertion to green.
+
+BATCH SCOPE in exact tasks.md order (first EIGHT implementation units):
+- T-01b true /health probes (AC-002-2)
+- T-01c startup failure markers and exit 3 (AC-004-2/3, AC-007-4)
+- T-01d port0/distinct hosts and explicit occupied port (AC-007-1)
+- T-02b --exit-on-stdin-eof cleanup (AC-003-1/3)
+- T-02c existing internal read-only channel in same host (WO-13; AC-004-1, AC-003-1)
+- T-03b masked-email rejection/non-overwrite and ENOSPC 507 (AC-005-4, AC-007-4)
+- T-03c authenticated registration-guide route reusing prepare/registration_hint (AC-005-3/4, AC-009-4)
+- T-04b honest packaged smoke, netstat loopback check, package exclusion scan (AC-002-2, AC-009-1, AC-001-4)
+Do NOT start T-05 or T-07~T-10 in this invocation; this large feature proceeds in validated batches in the SAME implementation worktree. This is code implementation, NOT another planning exercise. Finish these eight units, validate, leave a precise checkpoint for coordinator to continue shell tasks.
+
+Writable production/test ownership ONLY (union of these tasks):
+- backend/app/main.py, backend/app/__main__.py
+- backend/tests/test_app_health.py, backend/tests/test_app_lifecycle.py, backend/tests/test_app_settings_api.py
+- NEW backend/tests/test_app_startup_errors.py, backend/tests/test_app_channel.py, backend/tests/test_app_disk_full.py
+- backend/tools/shell_check.py
+- NEW specs/desktop-shell/implementation-evidence.md (implementation evidence only; model/channel, baseline, tasks, exact commands/result summaries, limitations, next step; no credentials or full auth errors)
+Existing backend/tools/build_backend.py is READ ONLY and may be RUN as specified. backend/data/**, backend/settings/**, shell/**, packaging/**, docs/**, .gitignore and all other specifications (including tasks/checklist/review/README) are READ ONLY this invocation; coordinator owns progress metadata. If a fix really needs code outside ownership or a plan/requirement change, stop the affected unit and return exact reason/evidence rather than silently widening scope. Don't replace a frozen design with a different mechanism. No new speculative races/security scaffolding, dependencies or generic wrappers.
+
+Implementation requirements already approved in Plan/tasks (read actual files for full criteria):
+- health probes catalog and observation stores under Service.access_lock(), 200 only when both work, 503 on unavailable/closed with exception type only, no input/payload leakage. Avoid racing or bypassing existing Service guard. Use real implementation in tests, injecting failures only at genuine storage boundary.
+- Host initialization before uvicorn in CLI, test-friendly create_app(root, token[, host]); any init failure must release resources using existing Service behavior. One stdout FAI_HOST startup_failed record, exit3 with locked/unwritable/disk_full/port_in_use/startup_internal classification per cause chain; no raw exception repr, keys or argv. Tests MUST exercise real subprocess/real locks/real ports and private temporary directories. icacls may be applied ONLY to temporary dirs CREATED BY THIS RUN, with reliable finally restoration; never repo root, real LOCALAPPDATA or broad user folders. Don't assume ACL subcommand exit0 proves directory unwritable; verify behavior.
+- stdin EOF flag optional and off for standalone CLI/test defaults, EOF of owned parent pipe causes graceful shutdown and lock/port release. No PID polling/Job Object or extra background watchdog beyond approved design. Avoid lingering test processes: track exact created pids and close in finally, never kill unrelated Python/Electron processes.
+- reuse data.mcp_server.build_internal_app and data.lock.write_endpoint/remove_endpoint in single FastAPI host/port; separate random channel token from shell bearer; existing CLI read-only commands work while host owns writer lock; no MCP tools/agent implementation this batch. Preserve data-layer single-writer/access discipline and CLI contracts. Don't modify data-layer source to make tests pass.
+- PUT masked email containing *** ->422 without overwrite; preserve normal partial-update/clear behavior. ENOSPC (including wrapped ProfileError/CredsError) maps507 and host stays healthy. No internal duplicate defensive validation or arbitrary error strings with private payload.
+- GET /settings/registration-guide authenticated read-only route returns existing core prepare detail plus submit=registration_hint detail; correct official sector LABEL/reason_for_use, true email only in this explicit local guide, regular profile endpoints remain masked. No stored key in response/logs. Real core + encrypted fixture profiles in tests, literal expected values, no mirrored business logic.
+- shell_check readiness must record actual successful health200+ok+data_ready, not endpoint-exists. Verify LISTENING address by owned pid with Windows netstat. Ensure new security tests assert something even on loopback-only hosts. Exclusion scan per Plan §7.4, not just pytest name checks. Package/build artifacts are generated (ignored), never hand edited or committed. If a bundled third-party file conflicts with the frozen blacklist, report it; don't weaken scan or fake a pass.
+
+Editing discipline is STRICT:
+- Use read to inspect content, NEVER cat/sed/head/tail to read source files.
+- Existing-file targeted changes MUST use edit (one call with multiple non-overlapping targeted edits per file). New files or genuinely complete rewrites may use write. If exact replacement fails, re-read exact small unique region and retry; do NOT fall back to shell/Python/PowerShell text splicing, patch-generating helpers or line-number rewrites. Previous planning deviations are documented and are NOT permission to repeat them.
+- Bash for file enumeration, actual tests/build commands and git inspection; not writing source via heredoc/redirect. No new project tools/frameworks. Normal generated outputs from pytest/PyInstaller are allowed, not hand edited.
+
+Verification / evidence:
+Run all per-task commands/tests with required case names from tasks.md (no weakening, skipping or claiming future tests passed). After all code changes, run backend full suite again (same no-cache/outside-basetemp discipline); then python tools/build_backend.py and python tools/shell_check.py (real bundled executable). Also run git diff --check and git status --short --ignored for owned paths. Keep full outputs locally outside repo if long; commit only concise sanitized summaries to implementation-evidence.md. Include baseline/regression test counts, explicit skip reasons (online tests default skipped != upstream verified), packaged smoke exact results, cleanup/owned process verification, and any partial criteria. No live EIA requests, opening user documents, user-installed app modifications or manual GUI acceptance claims. Never mark a task complete unless its required checks actually ran/passed.
+
+If the batch succeeds, you MAY make one LOCAL commit on YOUR feat/desktop-shell-astra branch after tests, staging ONLY the nine owned code/test files that changed plus implementation-evidence.md, with a clear backend-corrections message. Do not stage copied pre-existing planning overlay/other specs, do not git add -A, do not commit other features. Leave approved copied docs uncommitted and untouched for next batches. If any unit is incomplete, don't fake success or a completed-task commit; report precise blocker and last passing evidence.
+
+Final answer in Chinese: actual provider/model + session ID, fixed base and resulting commit (if any), completed task IDs with ACs, changed paths, actual commands/output summaries, unresolved issues/stop rules and next task T-05b. Distinguish backend batch from whole feature: no frontend/jobs/real-key/clean-machine completion, no Converge/Review/Gate2 claims.
