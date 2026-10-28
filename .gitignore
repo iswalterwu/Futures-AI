@@ -219,3 +219,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 .superpowers/
+node_modules/
+frontend/test-results/
+frontend/playwright-report/
+frontend/coverage/
