@@ -1,0 +1,19 @@
+## 审核员 A — desktop-shell Plan 修订 4 Checklist 局部复查报告
+
+**会话与通道**：`PI_PROVIDER=anthropic` / `PI_MODEL=claude-fable-5-1` / `PI_SESSION_ID=01a183ba-241b-76cf-8588-b472ac61c90c`（官方 API；bridge 同窗口已知限额耗尽，未重试；未因发现换模型）。
+
+**固定输入 / diff**：HEAD `981d4301f069f71dd120a1a86124dbe03aa54e0c`（`review/desktop-shell-build-assets`，未移动）。`git diff 1275ae2..981d430` 仅四文件：plan.md +80/−3、tasks.md +88/−12、analyze.md +60/−0（纯追加）、build-assets-review-request.md +50；spec / backend / shell / packaging / docs / .gitignore / checklist 零差异；`--check` 无错误；15 行删除均为 T-04b 相关行替换，历史未改写。
+
+**独立核实（只读/静态）**
+- 已安装源码：contrib `hook-pyarrow.py` 三行与 plan 一致；`collect_data_files` 的 `excludes` 命中目录即追加 `<dir>/**/*`；`PY_DYLIB_PATTERNS`；`imphook.py` 128–136 行单 hook 取最高优先级、420 行日志格式；用户 hook 1000 / contrib −1000；`CONF['pathex']` 默认 `[]`，hook 可用 `runpy` 脱离构建真实执行、无需 mock。
+- pyarrow 22.0.0 中 `tests` 目录仅包根一处；非 `.py/.pyc` 文件恰 17 个 = 实施树阻塞产物 `_internal/pyarrow/tests` 的 17 个文件；产物中唯一 `tests` 目录就是它 → "只来自 datas""只覆盖 pyarrow"均属实。锚点 `arrow.dll`/`parquet.dll`/`api.h` 存在。
+- tasks 结构：41 行 / 41 块 / 61.0h（两处一致）；T-04b 2h、4 条完成标准 ↔ 4 条验证、每条含 AC、依赖不变、无后序承担；新路径 `check-ignore` 不被忽略。
+
+**受影响项结论**：C-02、一致性两项、C-16、C-17、C-18、C-19、C-20、C-23、C-24、C-26、C-27、C-28、C-29、模板"任务粒度"——全部复查后**保持勾选**（依据写入各条目"修订 4 复查："）。analyze 迭代 7 结论属实。最终 **41 checked / 0 unchecked**，未新增条目。
+
+**发现**：P1 无；P2 无；P3 三项（R4-01～R4-03，已记入 checklist）：
+- **R4-01**：AN7-02 由"未核实"→已核实：阻塞构建 `PYZ-00.toc` 含 `pyarrow.conftest` / `pyarrow.tests` / `pyarrow.tests.util`（来自 contrib 与仓库 hook 相同的 hiddenimports → `conftest.py` 导入链）。修订 4 不改变它，不在冻结文件系统黑名单范围；按 §5.1 只登记，Review/Handoff 按模块名跟踪；如要剔除需 Walter 先批准。
+- **R4-02**：构建日志用 `%r`，路径反斜杠成对；细则原 `rg "hook-pyarrow.py"` 可命中，提醒勿用单反斜杠字面量 grep。不需改文档。
+- **R4-03**：`test_scan.py` 递归扫描整个 `backend/`（含保留的 dist/build）；A 静态核对产物内 40 个文本文件对凭证/`series_id` 正则零命中，步骤 2 不会因此误红。
+
+**判定**：**复查通过**。修订 4 仅对 T-04b 的 Implement 文档前置条件成立（不需回 Clarify/Gate 1、不需新 ADR、不需额外 §5.1 批准；A 不授予更大范围）。**不是** feature 完成、Converge、代码 Review 或 Gate 2；本轮未运行任何测试/构建/hook，未导入 pyarrow，未改源码或其他文档，未提交。协调者按 AN7-04 同步四文件并给出固定实施输入提交后，方可交 `openai/gpt-6-astra` 实施。

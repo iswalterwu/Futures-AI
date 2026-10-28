@@ -1,6 +1,6 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **最新状态（2026-10-28 18:28 UTC）：Plan 修订 4 / Analyze 迭代 7 已完成，独立 A 对修订 4 复查通过（41/41，无 P1/P2，3 项 P3）；正在准备固定实施输入，随后由 Astra 仅修 T-04b 构建收集源头。** 黑名单保持不变；新代码/测试/重建尚未执行。最近产品实证仍为 **451 passed / 5 online skips、构建成功、真实冒烟 11/12**，未启动 T-05。
+> **最新检查点：T-04b 后端范围已完成，原测试数据目录扫描阻塞解除（2026-10-28）**。Plan 修订 4 / Analyze 7 / A 独立复查 41/41 后，由 Astra 实施并验证：聚焦 **3 passed**、全量 **454 passed / 5 online skips**、真实干净重建成功、未修改冒烟 **12/12**；文件清单仅移除目标测试资产 **17** 个，新增 **0**、其他移除 **0**。源码修复已本地保存为实施提交 **`c1e33e0`**；黑名单未改，未开 T-05。
 > Plan = `anthropic/claude-opus-5-5`，A = `anthropic/claude-fable-5-1`（均独立会话/工作树）；实施继续 `openai/gpt-6-astra`，协调 = `openai/gpt-6.1-sol`。**先读 §11 和当前 Checklist 的第 3 轮复查，再读 §10 / `implementation-evidence.md`**。A 同时登记了 PYZ 中既存的 `pyarrow.conftest` / `pyarrow.tests` / `pyarrow.tests.util` 残余，本轮不剔除、不宣称包内没有任何测试代码。Gate 2 未批准，仍不 push / PR / merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
@@ -173,7 +173,7 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 
 我会先用 openai/gpt-6-astra 复跑暂停前的后端测试，从 T-04b 的打包冒烟继续，暂不跳到 T-07。
 
-## 10. 2026-10-28 恢复后检查点（当前权威状态）
+## 10. 2026-10-28 恢复后阻塞检查点（历史时点，最新见 §11）
 
 ### 实际完成与阻塞
 
@@ -196,12 +196,38 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 2. 明确构建修补的文件所有权后，走 Plan/Tasks 修补与 Analyze、A 独立复查相应质量项，再由 Astra 生成新产物、复跑测试和完整冒烟。若要改变需求本身则必须重新 Clarify / Gate 1；不能把黑名单放宽当作普通修复。
 3. T-04b 真实通过、写入 checkpoint 后，从 **T-05b** 按原顺序推进。未取得的前端/真实作业/干净机/15s/通知观感/真实 key 等边界不变；不 push / PR / merge，Gate 2 仍待用户批准。
 
-## 11. 2026-10-28 17:56 UTC 窄范围修补批准（进行中）
+## 11. 2026-10-28 窄范围修补（当前已验证检查点）
 
-- Walter 对“修构建收集源头、排除第三方测试资产、保持黑名单不变；先修 Plan/Tasks、Analyze、A 独立复查，再交 Astra”明确答复“是的”。这不是需求变更、黑名单例外或 Gate 2；上节“尚未批准范围”仅属先前时点。
-- 本轮固定输入主树 `1275ae2`。规划工作树 `D:/2030/Futures-AI-desktop-build-plan` / `plan/desktop-shell-build-assets`，会话 `01a183a9-aa0d-71f9-b5a9-add01c9d3107` 元数据已确认实际 `anthropic/claude-opus-5-5`；只写 feature 的 plan.md / tasks.md / analyze.md 与新增 build-assets-review-request.md，源码和 Checklist 只读。协调者在逐字节核对现有测试修复与证据和主快照一致后，将实施树这两个 WIP 文件本地保存为 **`9ae2ad9`**（非批次完成提交）；实施树已干净，无 reset，覆盖 §10 的旧 HEAD/dirty 定位。
-- Plan 首选 `claude-opus-5-5` 的 bridge 在本 seven_day 窗口已知耗尽，不重复请求；本轮官方最小真实调用返回 `PLAN_ROUTE_OK`，实际以 `anthropic/claude-opus-5-5` 开新独立会话。A 同窗口沿用官方通道，本轮最小真实调用返回 `REVIEW_ROUTE_OK`，实际 `anthropic/claude-fable-5-1`，尚未启动正式复查。
-- 仓库外请求/路由/会话/日志：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-buildfix-s9IO23nK/`。Plan 14 分钟内完成修订 4 / Analyze 7，仅四个规划文件，已集成为 **`981d4301f069f71dd120a1a86124dbe03aa54e0c`**；源码、spec、黑名单和旧 Checklist 均未改。T-04b 估时改为 2h，任务仍 41 个、总估时 61h。
-- A 在新工作树 `D:/2030/Futures-AI-desktop-build-checklist` / `review/desktop-shell-build-assets` 固定审查 `1275ae2..981d430`，会话 **`01a183ba-241b-76cf-8588-b472ac61c90c`** 元数据确认实际 `anthropic/claude-fable-5-1`。结论：修订 4 质量复查通过，**41 checked / 0 unchecked，无 P1/P2**。A 只改 Checklist；11 份输入文件 SHA-256 前后均一致。此结论不是代码 Review 或新产物通过。
-- 新 P3：R4-01 已核实 PYZ 中保留 `pyarrow.conftest`、`pyarrow.tests`、`pyarrow.tests.util`（不生成本轮文件系统黑名单目录，本次不剔除，Review/Gate 2 继续跟踪）；R4-02 日志路径使用 repr，反斜杠成对；R4-03 全量扫描会读保留的构建文本（A 静态核对未命中，但不代替实际测试）。不把这些写成已解决。
-- 接下来将已批准的四份规划文件与 A 的 Checklist 同步到实施树，并提交为固定输入；具体 `<输入基线>` 写入仓库外 `approved-baseline.txt`。本次新开同一 `openai/gpt-6-astra` 模型的聚焦实施会话，在**同一实施工作树/分支**串行修复，不是模型回退；旧会话已停，无并行 writer。只允许 build_backend.py、新仓库 hook、新 test_app_packaging.py 与实施证据追加，先完成七步验证再汇报，不开 T-05。
+### 批准、角色与固定输入
+
+- Walter 对“修构建收集源头、排除第三方测试资产、保持黑名单不变；先修 Plan/Tasks、Analyze、A 独立复查，再交 Astra”明确答复“是的”。这不是需求变更、黑名单例外或 Gate 2；§10“尚未批准范围”是历史时点。
+- Plan = **`anthropic/claude-opus-5-5`**，新独立会话 `01a183a9-aa0d-71f9-b5a9-add01c9d3107`、工作树 `D:/2030/Futures-AI-desktop-build-plan`。本 seven_day 窗口不重试已耗尽 bridge；本轮官方最小真实调用成功。Plan 修订 4 / Analyze 7 四文件集成提交 **`981d430`**，任务仍 41 项，T-04b 2h、总估时 61h，spec/AC/黑名单未改。
+- A = **`anthropic/claude-fable-5-1`**，新独立会话 `01a183ba-241b-76cf-8588-b472ac61c90c`、工作树 `D:/2030/Futures-AI-desktop-build-checklist`，固定审查 `1275ae2..981d430`；本轮官方探活成功。修订 4 **41 checked / 0 unchecked，无 P1/P2，3 P3**；A 只改 Checklist，11 份输入 SHA-256 前后均一致。质量批准集成主树 `ccbc291`，不是代码 Review 或 Gate 2。
+- 协调者先把旧测试修复与证据保存为实施树 WIP **`9ae2ad9`**，再串行同步 8 份批准/进度文档并核对源码，形成干净固定实施输入 **`3a9ec35512ad593cc931f98dc5c3a347342f4e45`**；七步验证的 `<输入基线>` 就是该提交。
+- Implement = **`openai/gpt-6-astra` via openai**，新聚焦会话 `01a183c8-f4a5-778d-acfc-d458ead81908`（18:32～18:44 UTC），元数据实核；使用原实施工作树/分支串行写入，不是模型回退。只改 build_backend.py、仓库 hook、新 test_app_packaging.py 与证据追加。结束后协调者本地保存源码修复为 **`c1e33e096621311ece7ec8f3d61ddadd4bffcb19`**，未开 T-05、未 push / PR / merge。
+
+### 本轮真实验证
+
+| 项 | 结果 |
+|---|---|
+| 三项聚焦测试 | **3 passed / 0 skipped（1.79s）**；真实执行仓库与 contrib hook，保留模块/DLL/header 正对照 |
+| 全量后端 | **454 passed / 5 skipped（181.46s）**；仅原 5 个在线冒烟未启用，不算上游通过 |
+| health 与逐名补验 | health 文件 **34 passed**；netstat/readiness 逐名 **6 passed** |
+| 真实干净重建 | `build_backend.py --clean` **退出 0（95.78s）**，日志确认 pyarrow hook 来自仓库目录 |
+| 未修改真实冒烟 | `shell_check.py` **12/12、退出 0（6.221s）**；健康/回环/鉴权/退出与锁、端点、端口清理通过 |
+| 文件路径差集 | **3411 → 3394，移除 17 / 新增 0 / 其他移除 0**；全部移除项均在 `_internal/pyarrow/tests/` 下，不是二进制逐字节一致的声明 |
+| 冻结与清理 | spec/黑名单/health/运行时代码/依赖版本未改，静态检查通过；后端 PID 30988 已退出，CIM owned 后端 0，冒烟临时目录已删；本轮 3 个 agent 均已结束，无服务或端口需保留 |
+
+构建仍有 Pydantic V1 / Python 3.14 兼容性及 `scipy.special._cdflib` hidden-import 警告，已记录，不称零警告或全部第三方能力兼容。旧 11/12 与测试失败历史保留；本轮产品测试/构建/冒烟首次通过，证据 EOF 空行检查的小失败和修正也有记录。
+
+### 保存位置与未完成边界
+
+- 当前主集成检查点 = 本文件所在 `HEAD`（`git log -1 --oneline`）；实施分支源码修复提交 = `c1e33e0`，后续若同步进度文档，以 `git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline` 查询最新 HEAD。主/实施源码与实施证据逐字节一致；不是 feature Handoff / Review / Gate 2。
+- 详细验收证据：**`specs/desktop-shell/implementation-evidence.md` §6**。Plan/A/Implement 最终报告、批准输入、审核输入指纹和真实路径差集已保存到 **`specs/desktop-shell/handoff-artifacts/20261028-build-assets/`**；完整会话、构建日志、全量 manifests 与测试数据库留仓库外，不入 Git。
+- 仓库外本轮 run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-buildfix-s9IO23nK/`；构建日志 `%TEMP%/fai-t04b-build-i_2sbw7u/build.txt`。`backend/build` / `backend/dist` 为忽略的真实产物，不手改、不提交。即使 Temp 被清理，源码/规划/批准与摘要证据均可从 Git 检查点恢复。
+- A 的 **R4-01** 已核实新旧 PYZ 均保留 `pyarrow.conftest` / `pyarrow.tests` / `pyarrow.tests.util`；本次按批准范围只排除测试数据，不剔除这些纯模块，Review/Gate 2 仍须跟踪。**不宣称包内没有任何测试代码**。R4-02 日志 repr 与 R4-03 扫描构建文本的提示已在实际验证中照做，不扩大授权。
+- 未取得的真实前端/作业引擎/drain/agent、真实 key/发布通道、干净 Windows、基准机 15s、系统 toast/托盘、真实满盘/507 GUI 等边界不变；Converge、独立代码 Review、Gate 2 仍未完成。
+
+### 下一步
+
+在**同一实施工作树/分支**按既定任务从 **T-05b 路径/偏好纯模块**开始，随后 T-05c/d/m/e/f 等串行推进，不跳到 T-07。本次停在已验证的后端检查点，无后台 worker；开始下一批前按 AGENTS 重读相应文档与完整 Checklist（含本轮批准），首选 Implement 仍为 `openai/gpt-6-astra`，不因测试失败换模型。不要重复修复已解除的 T-04b，也不要未经批准连带剔除 PYZ 纯模块或放宽黑名单。
