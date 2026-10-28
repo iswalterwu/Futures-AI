@@ -1,6 +1,7 @@
 # frontend-workbench v2 — Analyze R4（定向，合并 v1 Handoff 后）
 
 > **模型与通道**：`claude-opus-5-5` via `anthropic`（会话由用户以该通道启动；本会话未探 bridge，未改 provider / 路由 / 配置）。
+> **更正注记（R5 F-05，2026-10-28；原文不改）**：上行“会话由用户以该通道启动；本会话未探 bridge”是作者当时的措辞。实际是协调器派出的会话，Opus bridge 最小真实探活因额度 / 限流失败，同模型走 anthropic。详见 plan.md / tasks.md 页首“R5 修正与更正”行。
 > **角色**：协调器 `openai/gpt-6.1-sol` 指定的**本次文档 merge 唯一执行者**（串行文档集成；协调器执行期间不写文件）。不是 Implement，不是审核员 A；本报告是集成者的定向自查，**不代替 A**。该指定只覆盖本次 `43b6d79` 合并，不等于 tasks 1.1“指定集成人”（持续 H-x 集成）的登记。
 > **基线**：合并前 `d1c2133`（R3）；被合入 `43b6d79681a49562f41751368b2ae00c24062f56`（v1 Handoff，PR #7）；合并提交 `eb6ebd8`；本报告与合并后状态补记同一提交落盘，提交号用 `git log -1 --format=%H -- specs/frontend-workbench/analyze-v2-r4.md` 查询。
 > **范围**：analyze-v2-r3 G-03（4 处冲突）的解决是否引入语义冲突；合并带入的 v1 段是否影响 v2 设计 / 任务。R3 的 G-01 / G-02 与 A 复核闸门不在本轮处理。

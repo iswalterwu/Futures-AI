@@ -1,6 +1,7 @@
 # frontend-workbench v2 — Analyze R3（定向，恢复修订）
 
 > **模型与通道**：Analyze = `claude-opus-5-5` via `anthropic`。会话由用户以该通道启动；本会话没有探 bridge，也没有改 provider、路由或配置。本会话同时是 R3 修订的 Plan/Tasks 作者，所以本报告只是作者的定向自查，**不代替审核员 A**；A 要新开独立会话复核 R3 落盘提交。
+> **更正注记（R5 F-05，2026-10-28；原文不改）**：上行“会话由用户以该通道启动；本会话没有探 bridge”是作者当时的措辞。实际是协调器派出的会话，Opus bridge 最小真实探活因额度 / 限流失败，同模型走 anthropic。另：A 的复核对象不再是“R3 落盘提交”，以 tasks.md v2 第 1.1 节“A 定向复核”行为准。详见 plan.md / tasks.md 页首“R5 修正与更正”行。
 > **基线**：`ded7161`（暂停 WIP）加上 R3 修订。R3 修订与本报告在同一提交落盘，提交号用 `git log -1 --format=%H -- specs/frontend-workbench/analyze-v2-r3.md` 查询。
 > **范围**：只看 R3 修订，即 tasks.md v2 段、plan.md 页首 / §7.0 / §7.3 / §7.14 的状态补记，以及 `specs/README.md` 本 feature 一行。另外按 v1 正式 Handoff 的真实代码复核外部前置。R2 已关闭的 F-01～F-07 不重审。
 > **只读参照**：v1 Handoff = `43b6d79681a49562f41751368b2ae00c24062f56`；互动方 = `8af343f`（已提交的 WIP，含 Checklist R6）；`design/ui/UI_LAYOUT.md`。

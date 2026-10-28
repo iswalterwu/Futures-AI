@@ -11,6 +11,7 @@
 > **当前阶段补记—暂停交接（2026-10-28）**：Analyze R2 审 `6bda6c9`，F-01～F-07 全部关闭、无新增 F；A = `claude-fable-5-1` via `anthropic` 随后以全新独立会话审 `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`，Checklist R2 通过（0 阻断、I-01b / V-02 正式勾选），原样产物已提交为 `f1f755bad8e4bab7577c415f4aea3d297c9d37a8`。bridge 本窗口额度不可用，沿用同模型官方通道，未因审核结果换模型。下方草案 / 待审 / R1 修正措辞为当时历史。新增非阻断建议 V2-S10～S12 留待恢复；按用户暂停指令不再开新任务。外部 v1 Handoff 与 H-x 交接仍未登记，不授权 Implement；恢复入口为根 `HANDOFF.md`。
 > **恢复修订 R3（2026-10-28，用户“按 HANDOFF.md 继续”）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`（会话由用户以该通道启动；本会话未探 bridge、未改 provider / 路由 / 配置）；基线 `ded7161`，分支 `docs/frontend-workbench-v2-resume`。只做状态与事实更新，不改 §7 技术设计：(1) v1 Handoff 合入 main 的 SHA = `43b6d79681a49562f41751368b2ae00c24062f56`（PR #7 merge commit），已按其真实代码复核 §7.0 引用的壳文件事实，与 `0ffa15e` 一致（详见 tasks 1.1）；(2) 互动方当前已提交的有效审核为 `8af343f` 中的 Checklist R6（通过、仍 BLOCKED 于实施基线），但其 plan / Tasks r5 尚未吸收 §7.3 对 H-2 ①～⑤、H-3 路由切片先行、H-4、H-5、H-6 的新增要求，H-x 全部未交付；(3) 新发现待 Walter 裁定：§7.4“九项换行”与 `design/ui/UI_LAYOUT.md#narrow`“横向滚动”不一致（v1 P3 H-02 已登记），裁定前不改 §7.4。R3 未经 A 定向复核。
 > **集成记录 R4（2026-10-28）**：`claude-opus-5-5` via `anthropic`（协调器指定的本次文档 merge 唯一执行者）以合并提交 `eb6ebd8` 把 v1 Handoff `43b6d79` 合入本分支：页首先放 Handoff 的“Review 整改”行；§1～§6 现为 Handoff 版本（TS 5.9.2、R1-01 变化量独立精度 / `deltaDecimals`、AC-007-4 / 风险表措辞），§7 逐字未变。§7.1 对 §2.1 / §2.7 的覆盖声明在 Handoff 版本上仍成立（v2 壳任务不碰 `shared/format.ts` 与契约），无语义冲突，见 `analyze-v2-r4.md`。不改 §7 技术设计。
+> **R5 修正与更正（2026-10-28）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`，由协调器 `openai/gpt-6.1-sol` 新开会话派出（不是 Implement，也不是审核员 A）。协调器已对 Opus bridge 做最小真实探活，返回额度 / 限流类失败，同模型 anthropic 正常；只换通道，未重试 bridge，未改 provider / 路由 / 配置。基线 `d4b1853`，分支 `docs/frontend-workbench-v2-resume-fixes`。按只读 Analyze R5（`analyze-v2-r5.md`，2 P2 / 3 P3）修正：(1) §7.2 增加一行：`design/ui/{UI_NAV.md,README.md}` 由壳写入，G-02 裁定保持换行时 `design/ui/UI_LAYOUT.md` 暗色适配段也由壳写入；§7.4 / §7.11 / §7.13 / §7.14 同步（F-02）。(2) A 恢复后的固定复核对象以 tasks 1.1 为唯一口径（F-01）。没有需求变化，不改 spec、Checklist、§1～§6 或产品 ADR。**通道更正（F-05）**：上方 R3 / R4 行“会话由用户以该通道启动；本会话未探 bridge”是作者当时的措辞；实际是协调器派出的会话，bridge 探活因额度 / 限流失败后才走 anthropic。**审核范围更正（F-04）**：§7.0“这些小改未经审核”和 R1 修正行“未经 A 定向复核”是 A R2 之前的历史状态。A R2（产物 `f1f755b`）已审到 `949a232`，包括这些小改；还没经 A 审的增量从 `d1c2133` 起（R3、R4 合并带入的 §1～§6 Handoff 版本、本行修正），由 A 按 tasks 1.1 登记的固定提交复核。
 > **Analyze R1 后修正（2026-10-28，历史记录）**：修正 = `claude-opus-5-5` via `anthropic`（bridge 本窗口额度不可用，未重试、未换模型）；基线 `b364971a1a76fde96be6f924a7b7263ecb9cd447`，分支 `docs/frontend-workbench-v2-analyze-fixes`。按只读 Analyze R1（3 P2 / 4 P3，原文存同目录 `analyze-v2.md`）修 F-01～F-07：§7.2 加 `PlaceholderPage.vue` 最小派生修改（F-01）；§7.3 H-2⑤ 写明随交接交付的写 action（F-04），H-4 交接须登记公开设置方式并加条件依赖（F-05），H-6 `jobFixtures` 可替换整个作业样例集合（F-06）；§7.11 AC-002-2 / AC-003-7 / AC-003-9 与 §7.13 S0 / S1-ctx 同步（F-02、F-03、F-05）。无需求变化，不改 spec、checklist 或 §1～§6。**本修正未经 A 定向复核，也未重跑 Analyze**；R1 的 F 项须由下一轮独立只读 Analyze 确认后才算关闭。
 
 ## 1. 技术方案
@@ -257,7 +258,7 @@ send({sessionId?, message}) / subscribe(cb)
 ### 7.0 阶段、闸门、基线与依据
 
 - **当前阶段**：Plan（v2）。Gate 1 已通过：spec v2.1 由 Walter 于 2026-10-28 批准，52 条 AC 已冻结。各需求的 AC 数为：R-001～R-009 分别 6/8/9/6/9/4/5/3/2。后续流程：A 独立做 v2 Checklist → Tasks（追加 v2 任务）→ Analyze → Implement。
-- **本节不做的事**：不修改 spec、tasks、checklist、产品 ADR 或代码；不授权实施。**Tasks 阶段补充（2026-10-28）**：Tasks = `claude-opus-5-5` via `anthropic`（bridge 本限额窗口额度不可用，未换模型）。为落实 checklist-v2 建议 V2-S02～S07、S09，并修正两处依赖表述，对 §7.0、§7.1、§7.3、§7.5、§7.7、§7.11、§7.13 做了实施细节小改；没有需求变化，不改 spec，也不改产品 ADR。这些小改**未经审核**：A 的通过只针对 `d2bf5a7`，须由 A 新开独立会话定向复核后，才能作为实施依据。
+- **本节不做的事**：不修改 spec、tasks、checklist、产品 ADR 或代码；不授权实施。**Tasks 阶段补充（2026-10-28）**：Tasks = `claude-opus-5-5` via `anthropic`（bridge 本限额窗口额度不可用，未换模型）。为落实 checklist-v2 建议 V2-S02～S07、S09，并修正两处依赖表述，对 §7.0、§7.1、§7.3、§7.5、§7.7、§7.11、§7.13 做了实施细节小改；没有需求变化，不改 spec，也不改产品 ADR。这些小改**未经审核**：A 的通过只针对 `d2bf5a7`，须由 A 新开独立会话定向复核后，才能作为实施依据。（R5 更正：上一句是当时状态。A R2 已审到 `949a232`，包括这些小改，结论为通过；还没审的增量从 `d1c2133` 起，复核对象见 tasks 1.1。）
 - **设计依据**：
   - AGENTS §2/§4/§5/§6；
   - `docs/interaction.md` §2.4、§3.3、§7.2；
@@ -307,6 +308,7 @@ send({sessionId?, message}) / subscribe(cb)
 | 路径 | 唯一写入者 | 备注 |
 |---|---|---|
 | `frontend/src/app/{nav.ts,router.ts,Rail.vue,TopBar.vue,AppShell.vue}` | 壳（本 feature） | 只有 AppShell 挂载全局采集抽屉 |
+| `design/ui/{UI_NAV.md,README.md}`；`design/ui/UI_LAYOUT.md`（只在 G-02 裁定保持换行时写） | 壳（T-V2-01） | R5 F-02。`docs/designUI.md` §3.1 把 `UI_NAV` 指为导航登记处，但移植时写入的暗色适配段仍是“八项 + `getResearchList()` 研究子项”，README 索引行写的是“八项路由与研究扩展”。v2 只改 `UI_NAV` 暗色适配段（九项、窄窗形态与 G-02 裁定一致）和 README 的 UI_NAV 索引行；原文快照与 JSON 碎片不改。G-02 裁定保持换行时，在 `UI_LAYOUT.md` 暗色适配段为 `#narrow`“侧栏塌成顶栏横向滚动”登记“不采用 + 原因”；裁定横向滚动时，`UI_LAYOUT.md` 原样采用、不写入，并按 §7.4 实质修改处理。验证落在 AC-008-1 registry 与 AC-002-2 |
 | `frontend/src/stores/app.ts` | 壳（最小派生修改） | spec §4 的 v2 壳文件清单没有列出此文件。修改它是因为 AC-002-2 删除了专题子项，属于派生改动，需由 A 确认。只做三处改动：去掉 `getResearchList` 调用和 `research` ref 及其导出；加载步骤从 4 改为 3（`progress` 分母和“加载完成”判定）；状态文案从“正在加载资讯、数据源与研究列表…”改为“正在加载资讯与数据源…”。回归落在 AC-002-7 |
 | `frontend/src/pages/PlaceholderPage.vue` | 壳（最小派生修改） | 与 `stores/app.ts` 同源的派生改动：v1 中它按 `route.meta.navId === 'research'` 读取 `app.research` 取标题，删除 `research` 导出后不改就无法通过类型检查。只删除这条 research 标题分支，标题直接取 `route.meta.title`；占位文案、`data-placeholder-owner` 和 daily 日期展示不变。不在 spec §4 壳文件清单内，需由 A 定向复核确认（对照 checklist-v2 I-01）。验证落在 `pnpm -C frontend typecheck`（AC-002-7 派生修改、AC-009-1 类型打底） |
 | `frontend/src/workbench/{WorkbenchPage.vue,JobTrack.vue}` | 壳 | FocusBand、ModuleGrid、ModuleLibrary 不改 |
@@ -376,6 +378,7 @@ Plan 时互动方的有效审核是 R3 未通过；R3 恢复修订时已提交�
   - 当前项判定改为 `route.meta.navId === item.id`。如果同时 `route.name === item.id`，设 `aria-current="page"`；否则设 `aria-current="location"`，例如作业详情页高亮“作业”。
   - 全局同一时刻只有一个 `aria-current`。
   - 窄于 980 时的顶部横向导航按九项换行，不出现横向溢出。
+- **规范登记（R5 F-02）**：导航决定同步登记到 `design/ui/UI_NAV.md` 暗色适配段（九项、无专题子项、窄窗形态）和 `design/ui/README.md` 索引行；窄窗形态的登记方式按 G-02 裁定，见 §7.2。
 - **`stores/app.ts`**：按 §7.2 的最小派生修改执行。契约侧的旧方法、类型、fixture 和覆盖项都保留，不删除，它们归契约拥有者。
 
 ### 7.5 工作台作业轨道（R-003）
@@ -505,7 +508,7 @@ S0、S1-*、S2 的定义见 §7.13。`blocked_by` 表示：要等对应的生产
 | AC-006-1、AC-006-2、AC-006-3、AC-006-4 | 不变 | 旧 §5 | S0 |
 | AC-007-1、AC-007-2、AC-007-3、AC-007-4 | 不变 | 旧 §5。network 守卫纳入新文件；壳侧 e2e 继续使用 normal、empty、error、slow 场景。2.0.0 文档由生产方重新生成，壳只跑 `check --only generated` 作为回归 | S1 |
 | AC-007-5 | 新增；生产方证据 | 由互动方契约测试证明三点：可选上下文已声明；旧消息和 fixtures 能解析；新上下文能透传。壳跑全量回归只作参与证据；没看到生产方证据前不得勾选 | S1/S2 |
-| AC-008-1、AC-008-2、AC-008-3 | 不变 | 旧 §5。新令牌的 `source` 必须能解析（AC-008-2） | S1-intake |
+| AC-008-1、AC-008-2、AC-008-3 | 不变；AC-008-1 加导航条目同步 | 旧 §5。新令牌的 `source` 必须能解析（AC-008-2）。S0：`design/ui/UI_NAV.md` 暗色适配段与 README 索引行改为九项，G-02 裁定保持换行时 `UI_LAYOUT.md` 登记 `#narrow` 横向滚动“不采用 + 原因”；registry 测试不回归，`design/ui` 中不再出现“八项 / getResearchList / 研究扩展 / 研究列表”（R5 F-02） | S0、S1-intake |
 | AC-009-1 | 不变 | `pnpm -C frontend test` 全绿；只有集成后的全量结果才算 v2 证据 | S2 |
 | AC-009-2 | 不变 + 扩充 | `manual-acceptance.md` 保留 M-01～M-08，新增 M-09～M-12；`manual-acceptance.spec` 同步；Handoff 时附截图 | S0 文本 / S2 截图 |
 
@@ -539,7 +542,7 @@ S0、S1-*、S2 的定义见 §7.13。`blocked_by` 表示：要等对应的生产
 
 | 阶段 | 内容 | 依赖（交接单元按 §7.3 集成） | 可验证 | 说明 |
 |---|---|---|---|---|
-| S0 壳独立 | nav、router、Rail、`stores/app.ts` 与 `PlaceholderPage.vue` 最小派生修改；TopBar 按钮；M-09～M-12 文本 | v1 Handoff SHA | AC-002-2 壳部分、AC-002-4、AC-002-7、AC-005-1，以及不变项回归 | 未接线的按钮不能宣称满足 AC-002-8；S0 不单独 Handoff |
+| S0 壳独立 | nav、router、Rail、`stores/app.ts` 与 `PlaceholderPage.vue` 最小派生修改；`design/ui` 导航条目同步（§7.2）；TopBar 按钮；M-09～M-12 文本 | v1 Handoff SHA；G-02 裁定 | AC-002-2 壳部分、AC-002-4、AC-002-7、AC-005-1、AC-008-1 导航条目，以及不变项回归 | 未接线的按钮不能宣称满足 AC-002-8；S0 不单独 Handoff |
 | S1-ctx | agent 上下文：store、chip、`runsFor`、选择器 | S0 + H-1、H-4；chip 另外需要 H-2 中的 `StageLabel` 导出（不需要等共享列表缓存）；条件依赖 H-3 路由切片（H-4 只经路由守卫设置 context 时） | AC-005-8 单元部分、AC-005-9、AC-005-2～AC-005-7 回归 | 可以独立开启 |
 | S1-track | `JobTrack` | S0 + H-2（含 `JobTypeLabel`、`JobStatusBadge`）、H-3 的路由定义与注册切片（不含页面功能）、H-6 | AC-003-7 组件部分、AC-003-8、AC-003-9、AC-003-6 和 AC-002-6 回归 | 可以独立开启；H-2 共享缓存、`JobStatusBadge` 或 H-3 路由切片任一未交接时保持 blocked |
 | S1-intake | AppShell slot、令牌、AgentDrawer 避让 | S0 + H-4、H-5 | AC-008-2 新令牌、AC-002-6 双抽屉回归 | 从依赖上看可以独立开启；但它和 S1-ctx 都要写 `AgentDrawer.vue`，Tasks 按文件唯一写入者串行（先做 S1-ctx 的选择器，再做 S1-intake 的避让），所以实际排期会继承 S1-ctx 的交接前置 |
@@ -567,4 +570,4 @@ S0、S1-*、S2 的定义见 §7.13。`blocked_by` 表示：要等对应的生产
 | 轨道挤压 900 高度的视口 | 轨道固定一行，由 AC-002-6 和 M-10 验证 |
 | 契约 2.0.0 使 v1 测试变红 | 壳只更新与壳语义相关的测试；契约测试由互动方修复 |
 | v1 Handoff 延迟 | 整体 blocked，不用 `fdaa7d8` 或 `0ffa15e` 提前开工（R3：已解除，Handoff SHA = `43b6d79`） |
-| 窄窗导航形态与 `UI_LAYOUT.md#narrow` 不一致（R3 新发现；v1 P3 H-02） | 由 Walter 裁定“换行”还是“横向滚动”；裁定前 T-V2-01 不开工，若改为横向滚动则修改 §7.4 并重跑 Analyze / A 复核 |
+| 窄窗导航形态与 `UI_LAYOUT.md#narrow` 不一致（R3 新发现；v1 P3 H-02） | 由 Walter 裁定“换行”还是“横向滚动”；裁定前 T-V2-01 不开工。保持换行时，T-V2-01 在 `UI_LAYOUT.md` 暗色适配段登记 `#narrow` 横向滚动“不采用 + 原因”；改为横向滚动时，修改 §7.4 / §7.2，并重跑 Analyze / A 复核（R5 F-02） |
