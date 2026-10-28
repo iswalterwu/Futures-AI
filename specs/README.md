@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| frontend-workbench | in-progress（v2.1 Gate 1 → Plan → A Checklist R1 通过；Tasks 草案 12 项 / 22 h；Analyze R2 内部一致，待 A 定向复核；实施 blocked） | 无后端依赖；v1 Handoff 合入 main 的准确 SHA 和 H-1～H-6 / 页面切片的固定提交、有效已提交 Checklist SHA、测试摘要及集成 SHA 均未登记。分批交接见 plan §7.3 / tasks §1.2；不把互动方旧 R2 或移动工作树当新增要求的交付证据 | 2026-10-28 | 52 AC 已冻结并完整映射；checklist-v2.md 由 A = claude-fable-5-1 via anthropic 审 d2bf5a7：0 阻断 / 9 建议。新增 Tasks / Plan 小改尚未获 A 定向复核；Analyze R2 审 6bda6c9，R1 的 3 P2 / 4 P3 全部关闭、无新增 F，原文 analyze-v2-r2.md、索引 analyze-v2.md。旧 v1 Checklist / 任务正文不改，不进入 Implement |
+| frontend-workbench | blocked（用户暂停交接；v2 Plan / Tasks / Analyze 质量复核已通过，实施外部前置未齐） | 无后端依赖；v1 Handoff 合入 main 的准确 SHA 和 H-1～H-6 / 页面切片的固定提交、有效已提交 Checklist SHA、测试摘要及集成 SHA 均未登记。分批交接见 plan §7.3 / tasks §1.2；暂停与恢复入口 HANDOFF.md | 2026-10-28 | 52 AC、12 任务 / 22 h；Analyze R2 审 6bda6c9，7 项 F 全关、无新增 F。A = claude-fable-5-1 via anthropic 随后独立审 949a232，Checklist R2 通过：0 阻断，I-01b / V-02 正式勾选；产物提交 f1f755b。新增非阻断 V2-S10～S12 留待恢复，未启动 Implement、未改代码、未 push；旧 v1 Checklist / 任务正文保留 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。

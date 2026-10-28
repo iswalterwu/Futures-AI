@@ -8,7 +8,7 @@
 > **模型记录**：Tasks = `claude-opus-5-5` via `anthropic`。`claude-bridge` 在本限额窗口已明确额度不可用，按 AGENTS §6 第 5 条不重复探活；只换了通道，没有换模型。协调 = `openai/gpt-6.1-sol`（只读，不是审核员 A，也不是实施者）；串行落盘 = 本 Tasks 会话（`claude-opus-5-5` via `anthropic`），按协调器限定的范围落盘，不是新设计。任务 = frontend-workbench v2 Tasks 起草。固定基线 = `a8ab444a28e8e6a9fd056401b55f63a1b25a2c4a`（工作树干净）。失败类别 = 通道额度；本记录已脱敏。
 > **审核依据**：当前有效的 v2 清单是 `specs/frontend-workbench/checklist-v2.md`。审核员 A = `claude-fable-5-1` via `anthropic`，独立会话，审查对象 `d2bf5a7`，结论为通过：0 阻断、9 条建议，允许进入 Tasks，不授权 Implement。这个通过**只覆盖 `d2bf5a7` 的 plan §7**；本次 Tasks 以及随附的 plan §7 小改**都未经审核**。旧 `checklist.md` 只证明 v1，不修改，也不授权 v2。
 > **状态**：v2 任务是草案。下一步先做 Analyze，再由 A 新开独立会话定向复核，并补勾 checklist-v2「阶段说明」里的 I-01b 和 V-02。**全部 v2 实施任务 blocked**，原因有两个：v1 完成 Review / Gate 2 / Handoff 并合入 main 的准确 SHA 未取得；H-1～H-6 没有任何已交付的实现 SHA。本清单不启动 Implement；在等外部前置的任务，不能视为已完成。
-> **当前阶段补记—Analyze R2（2026-10-28）**：只读复跑固定在 `6bda6c910343b887fad2ffede062fe241f034752`，结论为内部一致，F-01～F-07 全部关闭、无新增 F；报告索引 `analyze-v2.md`，作者原文 `analyze-v2-r2.md`。下方 R1 修正记录保留为历史。新增 Tasks / Plan 小改仍待 A 定向复核；A 审核证据、v1 Handoff 与对应 H-x 交接尚未登记，12 个实施任务仍全部 blocked。本补记只同步事实，不授权 Implement。
+> **当前阶段补记—暂停交接（2026-10-28）**：Analyze R2 审 `6bda6c9`，F-01～F-07 全部关闭、无新增 F；随后 A = `claude-fable-5-1` via `anthropic` 新开独立会话审 `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`，Checklist R2 通过（0 阻断，I-01b / V-02 由 A 正式勾选），产物提交 `f1f755bad8e4bab7577c415f4aea3d297c9d37a8`。下方 Tasks 草案 / 待审 / R1 修正记录是当时历史；当前内部设计与任务质量已过审。新增非阻断建议 V2-S10～S12 尚未处理，见 `checklist-v2.md` R2 与根 `HANDOFF.md`；用户已要求暂停，不展开新工作。v1 Handoff 与对应 H-x 交接仍未登记，12 个实施任务全部 blocked，不授权 Implement。
 > **Analyze R1 后修正（2026-10-28，历史记录）**：修正 = `claude-opus-5-5` via `anthropic`（bridge 本窗口额度不可用，未重试、未换模型）；基线 `b364971a1a76fde96be6f924a7b7263ecb9cd447`，分支 `docs/frontend-workbench-v2-analyze-fixes`。按只读 Analyze R1（3 P2 / 4 P3，原文存同目录 `analyze-v2.md`）修 v2 段：F-01 `PlaceholderPage.vue` 入第 4 节与 T-V2-02（加 typecheck 标准）；F-02 T-V2-01 明确迁移 `shell.spec` 旧八项 / research 深链用例，并用 `AC-002-2` 全前缀验证；F-03 `shell.spec` 写入链改为 01→02→09，由 T-V2-09 把 `/jobs` 占位子断言迁移为集成态；F-04 H-2·列表随交接登记一个写 action，T-V2-05#2 只调用它；F-05 T-V2-03 条件依赖 H-3·路由切片；F-06 H-6 `jobFixtures` 可替换整个作业样例集合；F-07 闸门 2 改为 A 定向复核 SHA 与明确通过记录。仍为 12 个任务、22 h；v1 正文、spec 和两份 checklist 未改。**本修正未经 A 定向复核，也未重跑 Analyze。**
 
 ## 约定
@@ -301,7 +301,7 @@
 | 集成验证分支名 | 未取得（开工前由集成人登记） | 只有指定集成人能写；其他会话只读 |
 | 指定集成人 | 未取得（开工前登记） | 负责把生产方交接单元和壳提交串行集成进来 |
 | 最近一轮 Analyze | R2，固定 `6bda6c910343b887fad2ffede062fe241f034752`；索引 `analyze-v2.md`，作者原文 `analyze-v2-r2.md` | 内部一致：R1 的 F-01～F-07 全部关闭，无新增 F；外部前置仍 blocked，Tasks / Plan 小改还需 A 定向复核 |
-| A 对 Tasks（及 plan §7 小改）定向复核产物的已提交 SHA | **未取得** | 第 5 节闸门 2 的证据，须含 I-01b、V-02 的明确通过记录；实施者不改清单 |
+| A 对 Tasks（及 plan §7 小改）定向复核产物的已提交 SHA | `f1f755bad8e4bab7577c415f4aea3d297c9d37a8`（审 `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`） | A = claude-fable-5-1 via anthropic；R2 通过、0 阻断，I-01b / V-02 由 A 正式勾选。只解除第 5 节闸门 2 的内部审核子项；闸门 1 / 3 外部前置仍未满足。非阻断 V2-S10～S12 留待恢复处理；实施者不改清单 |
 | 本 Tasks 落盘提交 SHA | `b364971`（初稿）；`6bda6c9`（按 F-01～F-07 修正） | Analyze R2 审查后者；后续纯状态补记不改变任务设计，A 复核仍须固定到届时的准确提交 |
 
 **工作树规则**：
