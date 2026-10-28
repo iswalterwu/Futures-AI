@@ -6,34 +6,35 @@
 ## 1. 总体架构
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│ Shell 桌面外壳（Electron）                                  │
-│ 窗口/托盘/通知/自动更新/打包/激活窗口                         │
-├──────────────────────────────────────────────────────────┤
-│ Frontend Web 前端（Vue 3 + TS + ECharts）                   │
-│ 工作台(焦点带/作业轨道/模块) · 作业四阶段 · 交付台 · 格物致知    │
-│ 知识库 · 设置 · 对话                                          │
-│      ↕ localhost HTTP / WebSocket                          │
-├──────────────────────────────────────────────────────────┤
-│ Backend Python 核心（FastAPI，仅 localhost）                 │
-│  ┌───────────┬──────────────┬────────────────────┐          │
-│  │ 统一数据层  │ 知识层        │ Agent 层(pi RPC)    │          │
-│  │ adapters   │ ingest/gate  │ 角色会话池/三档路由  │          │
-│  │ catalog    │ index/memory │ 工具集              │          │
-│  └───────────┴──────────────┴────────────────────┘          │
-│  ┌──────────────┬───────────────┬───────────────┐          │
-│  │ 作业引擎       │ 交付管线        │ 学习/协议       │          │
-│  │ 状态机/版本/介入│ 块模型/复核/定稿 │ 会话/蒸馏       │          │
-│  └──────────────┴───────────────┴───────────────┘          │
-│  ┌───────────┐                                              │
-│  │ 授权模块   │                                              │
-│  └───────────┘                                              │
-├──────────────────────────────────────────────────────────┤
-│ Storage                                                    │
-│ DuckDB(时序/分析/断言台账) + SQLite(元数据) + LanceDB(向量)   │
-│ 用户数据目录：docs_in/ knowledge/ works/ claims/ playbook/    │
-│              learning/ clips/ memory/ creds/ log            │
-└──────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│ Shell 桌面外壳（Electron）                                     │
+│ 窗口/托盘/通知/自动更新/打包/激活窗口                          │
+├────────────────────────────────────────────────────────────────┤
+│ Frontend Web 前端（Vue 3 + TS + ECharts）                      │
+│ 工作台(焦点带/作业轨道/模块) · 作业四阶段 · 交付台 · 格物致知  │
+│ 知识库 · 设置 · 对话                                           │
+│      ↕ localhost HTTP / WebSocket                              │
+├────────────────────────────────────────────────────────────────┤
+│ Backend Python 核心（FastAPI，仅 localhost）                   │
+│  ┌──────────────┬────────────────┬──────────────────────┐      │
+│  │ 统一数据层   │ 知识层         │ Agent 层(pi RPC)     │      │
+│  │ adapters     │ ingest/gate    │ 角色会话池/三档路由  │      │
+│  │ catalog      │ index/memory   │ 工具集               │      │
+│  └──────────────┴────────────────┴──────────────────────┘      │
+│  ┌──────────────────┬──────────────────┬────────────────┐      │
+│  │ 作业引擎         │ 交付管线         │ 学习/协议      │      │
+│  │ 状态机/版本/介入 │ 块模型/复核/定稿 │ 蒸馏/校准/复盘 │      │
+│  └──────────────────┴──────────────────┴────────────────┘      │
+│  ┌──────────────┐                                              │
+│  │ 授权模块     │                                              │
+│  └──────────────┘                                              │
+├────────────────────────────────────────────────────────────────┤
+│ Storage                                                        │
+│ DuckDB(时序/分析/断言台账/世界模型槽位) + SQLite + LanceDB     │
+│ 用户数据目录：docs_in/ knowledge/ works/ claims/ playbook/     │
+│               learning/ clips/ memory/ calibration/ agenda/    │
+│               creds/ log                                       │
+└────────────────────────────────────────────────────────────────┘
 pi coding agent（子进程，`pi --mode rpc`）
    ↑ Backend 驱动（JSONL）
    └ 工具经本地 MCP server 指回 Backend
@@ -47,11 +48,11 @@ pi coding agent（子进程，`pi --mode rpc`）
 | Frontend | 工作台/作业四阶段/交付台/格物致知、图表渲染、知识库、设置、对话 | Vue 3 + Vite + TS + ECharts |
 | Backend/api | localhost REST/WS，前后端唯一边界 | FastAPI |
 | Backend/data | 统一数据层：适配器、序列目录、溯源、取数、对齐 | Python + DuckDB |
-| Backend/knowledge | 文档摄取、写入闸门、断言台账、检索、记忆与分析协议 | Python + LanceDB/bge-m3/DuckDB FTS |
-| Backend/workflow | 作业编排：阶段状态机、产物版本、检查点合并、介入事件、验证性需求生命周期 | Python |
-| Backend/agent | pi RPC 生命周期、按角色的会话池、虚拟模型三档路由、MCP server、agent 工具（§5.5） | Python + pi |
+| Backend/knowledge | 文档摄取、写入闸门、断言台账、检索、记忆与分析协议、**世界模型**（品种 schema、槽位投影、一致性门 L3.5、求解器后置，§4.8） | Python + LanceDB/bge-m3/DuckDB FTS |
+| Backend/workflow | 作业编排：阶段状态机、产物版本、检查点合并、介入事件、验证性需求与 calls / 决策对象生命周期、**常驻作业与触发器**（§5.6）、作业树 | Python |
+| Backend/agent | pi RPC 生命周期、按角色的会话池、虚拟模型三档路由、**主体（persona）配置与并行会话**、自主度档位、MCP server、agent 工具（§5.5） | Python + pi |
 | Backend/report | 交付管线：chart-spec 模板、块式交付物装配、复核、定稿快照 | Python |
-| Backend/learning | 学习会话、认知缺口、分析协议蒸馏 | Python + pi |
+| Backend/learning | 学习会话、认知缺口、分析协议蒸馏、**协议冷启动**（历史产出 + 访谈，D-024）、**校准**（call 评分、三方校准、自动复盘，D-020） | Python + pi |
 | Backend/settings | 用户档案、数据源开通向导（凭证由 data-layer 的 creds 管理） | Python |
 | Backend/license | 激活、校验、feature flags | Python |
 
@@ -128,6 +129,8 @@ observations(series_id, ts, value, unit,
 | 时间序列/大数据集 | 行情、期限结构、持仓、库存 | Parquet + DuckDB | `get_series()` / SQL |
 | 断言与派生 | 结论、观点、笔记、摘要 | DuckDB 断言台账（含派生谱系 DAG）；LanceDB 断言/派生向量 | 断言聚类/同义合并；检索后按谱系展开 |
 | 交付物与学习产物 | 日报、专题、学习笔记 | 块模型文档（JSON/Markdown）+ 版本库 | 交付物编辑器 / 检索（派生降权） |
+| 世界模型槽位（D-021） | 分地区供需 / 库存 / 曲线隐含等槽位，含置信 / 陈旧 / 状态 | DuckDB 视图 / 物化表（投影自 claims + observations，不复制数据）；品种包 schema 与恒等式 | `model_query`（槽位 / 分歧 / 残差 / 陈旧） |
+| calls / 决策日志（D-020） | 可裁决陈述、裁决记录、用户决策、校准统计 | DuckDB（`calls` / `call_resolutions` / `decisions` / `calibration_stats`） | 校准看板 / 验证队列 / `claim_query` 联动 |
 | 元数据 | 目录、来源、日期、品种、版本 | DuckDB catalog | 检索前过滤 |
 
 选型：PDF 解析 MinerU（纯文本层 PyMuPDF）；OCR PaddleOCR/RapidOCR；嵌入 bge-m3（1024 维/8192 token/dense+sparse）；精排 bge-reranker-v2-m3；向量库 LanceDB；关键词 DuckDB FTS（BM25，备选 Tantivy）；结构化 DuckDB + Parquet。
@@ -156,13 +159,15 @@ knowledge/   沉淀区：notes/（markdown 笔记）summaries/（文档摘要）
 claims/      断言台账的导入/导出与审计文件；权威表在 DuckDB（§4.7）
 works/       作业运行状态、阶段产物与版本、介入事件、待归属投放池（作业引擎）
 playbook/    分析协议：active/、proposed/、retired/（版本化）
-learning/    格物致知：学习会话、认知产物、认知缺口
+learning/    格物致知：学习会话、认知产物、认知缺口、复盘草稿（含 agent 排程的 call 复盘）
+calibration/ calls、裁决记录、决策日志、校准统计的导入/导出与审计文件；权威表在 DuckDB（D-020）
+agenda/      晨间议程与收件箱条目（常驻作业产物；不定稿、过期归档，D-022）
 clips/       网页剪藏产物：frontmatter `.md`（D-018 §3）；原始抽取稿在 parsed/；不写入只读的 docs_in/
 tables/      规范化 Parquet/DuckDB 表
-memory/      agent 记忆状态：profile/（用户画像）focus/（关注点）；分析逻辑只在 playbook/（D-018 §7）
+memory/      agent 记忆状态：profile/（用户画像）focus/（关注点）；分析逻辑只在 playbook/（D-018 §7）；首启访谈经 `profile_write` 回写（D-024）
 ```
 
-数据层目录（data/catalog.sqlite、data/observations.duckdb、data/.lock、adapters/、creds/）以 `specs/data-layer/plan.md` §3.3 为权威布局；本节新增的 `claims/`、`works/`、`playbook/`、`learning/` 与 `data/` 平级，属知识层/作业层，schema 由对应 feature spec 冻结。
+数据层目录（data/catalog.sqlite、data/observations.duckdb、data/.lock、adapters/、creds/）以 `specs/data-layer/plan.md` §3.3 为权威布局；本节新增的 `claims/`、`works/`、`playbook/`、`learning/`、`calibration/`、`agenda/` 与 `data/` 平级，属知识层/作业层，schema 由对应 feature spec 冻结。
 
 派生内容（`origin=derived`）不单独建目录：文本存 `knowledge/notes/` 或交付物块，谱系记入断言台账的派生谱系（DAG，§4.7）。
 
@@ -176,9 +181,11 @@ memory/      agent 记忆状态：profile/（用户画像）focus/（关注点�
 
 - 短期记忆：会话与近期作业；长期记忆：`knowledge/` 中的笔记、断言台账（DuckDB，见 §4.7）、`memory/` 的用户画像与关注点
 - **分析协议（playbook/）**：从介入痕迹蒸馏出的分析框架、判断标准、表达与数据偏好；显式、可编辑、可停用、版本化；规则权威见 `interaction.md` §6
-- **自迭代三层**：L1 产物（版本/重跑）、L2 协议（介入 → 协议）、L3 知识（写入闸门 + 断言台账 + 验证性需求）；定义与验收见 `interaction.md` §2.3
+- **自迭代四层**：L1 产物（版本/重跑）、L2 协议（介入 → 协议）、L3 知识（写入闸门 + 断言台账 + 验证性需求）、L4 校准（calls 裁决 + 三方校准 + 决策日志 + 自动复盘，D-020）；定义与验收见 `interaction.md` §2.3、§9
 - 用户画像与关注点由 agent 从交互中归纳、人工可改；与协议共用"Agent 学到的"透明页
-- 蒸馏触发：定稿后即时 + 夜间合并 + 用户手动（D-018 §6），由蒸馏员角色执行（§5.5）
+- 蒸馏触发：定稿后即时 + 夜间合并 + 用户手动（D-018 §6），由蒸馏员角色执行（§5.5）；协议来源四类分开登记：`intervention / pin_rule / bootstrap / postmortem`（`interaction.md` §6.2）
+- **协议冷启动（D-024）**：用户历史产出目录 → 摄取管线（§4.5，派生区、作者 = 人、`source_kind=user_history`）→ 蒸馏员抽 `proposed` 规则；首启访谈由蒸馏员访谈模式执行，经 `profile_write` 写 `memory/`；规则见 `interaction.md` §6.6
+- 校准结果只作信息呈现（镜子），不自动覆盖 / 停用用户显式规则与人填槽位（D-020 用户优先）
 - agent 产出不再直接写索引：一律经 `kb_write` 过闸门（§4.7）
 
 ### 4.7 知识写入闸门与断言台账（D-017）
@@ -187,8 +194,19 @@ memory/      agent 记忆状态：profile/（用户画像）focus/（关注点�
 
 - **存储**：源材料索引（catalog + 文件）、断言台账（DuckDB：`claims` / `claim_anchors` / `claim_edges` / `claim_revisions` / `conflicts`）、派生内容谱系（DAG）、闸门审计日志；断言与派生向量进 LanceDB
 - **接口**：`kb_write` 必须提交来源定位与作者类型，返回 `{inserted, merged, linked, conflict, quarantined}`；禁止绕过闸门直接写入索引
-- **检索衔接**：检索期去重与派生内容标注降权在 §4.2 管线末端执行
+- **检索衔接**：检索期去重与派生内容标注降权在 §4.2 管线末端执行；来源校准（D-020）作为检索权重的新输入，与互证计数并列
+- **L3.5 模型一致性门（D-021）**：断言落入世界模型槽位时由 `backend/knowledge/worldmodel/` 检查品种包恒等式与同槽位冲突；违反不拒绝 → 标冲突 + 冲突队列 + 验证性需求（§4.8）
 - **成本分级**：按 `interaction.md` §5.7 执行；v1 落 L0–L2 + 派生标记，L3 台账在知识库 v1 后接入
+
+### 4.8 世界模型（D-021）
+
+规则权威在 `interaction.md` §10；本节只定系统落点。
+
+- **不是新存储**：`backend/knowledge/worldmodel/` 持有品种包 schema（槽位 key、单位、恒等式与允差、两视图归属）与投影逻辑；槽位值为 DuckDB 视图 / 物化表，投影自断言台账（§4.7）与观测（§3.3，只引用 `series_id@asof` 不复制）
+- **一致性门 L3.5**：代码实现，在 `kb_write` / `model_update` 落槽位时执行；违反不拒绝，标冲突 + 冲突队列 + 验证性需求；对账员角色只做解释与建议
+- **人填槽位**：介入事件 `slot_fix` → 新版本（作者 = 人）；agent 不得覆盖，可标冲突
+- **求解器 / 敏感性 / 情景**：Phase 2D；敏感性输出供议程排序（§5.6）
+- **投影消费方**：平衡表页、图表块、晨间议程；定稿冻结所引用槽位版本（D-018 效果 ①）
 
 ## 5. Agent 层（pi 集成）
 
@@ -202,9 +220,10 @@ Backend 内置本地 MCP server（**streamable HTTP、localhost、Backend 进程
 
 - data：`search_series` `fetch_series` `list_sources` `reconcile`
 - knowledge：`kb_search`（混合检索）`table_query`（SQL 查表）`kb_write`（必经写入闸门）`kb_status` `claim_query`
-- workflow：`artifact_read` `artifact_write` `intervention_read` `verification_propose` `playbook_read` `playbook_propose`（蒸馏员写协议候选）
+- workflow：`artifact_read` `artifact_write` `intervention_read` `verification_propose` `playbook_read` `playbook_propose`（蒸馏员写协议候选）`call_propose`（定稿时登记 call，D-020）`decision_log`（决策日志起草）`agenda_write`（值班员写议程条目）`call_resolve_suggest`（裁决建议，最终裁决由引擎 / 人）
+- worldmodel（D-021）：`model_query`（槽位 / 两视图分歧 / 恒等式残差 / 陈旧）`model_update`（带槽位 key 的 `kb_write`，必经闸门含 L3.5）
 - deliverable：`render_chart` `build_deliverable`
-- learning：`study_material` `study_note`（格物致知，v1 后置；字段与权限在对应 feature spec 冻结）
+- learning：`study_material` `study_note`（格物致知，v1 后置；字段与权限在对应 feature spec 冻结）`profile_write`（蒸馏员访谈模式写画像 / 关注点，D-024）
 - 后置：`web_clip`（agent 触发剪藏，Phase 2B）、`dispatch_task`（编排者，Phase 2，仅分析阶段内派发，§5.5）
 
 权限：读默认；写知识/取数需显式工具调用，且 `kb_write` 必须提交来源定位与作者类型，返回新增/归并/冲突/隔离结果（§4.7）。v1 工具集以交付闭环最小集为准；除 `data` 四工具已实现（`backend/data/mcp_server.py`）外，其余为规划目标态，随对应 feature spec 落地。
@@ -232,22 +251,36 @@ Backend 内置本地 MCP server（**streamable HTTP、localhost、Backend 进程
 | 撰稿员 | 交付 | 按分析协议装配块、执行块级改稿 | standard（改稿升 strong） | `artifact_write` |
 | 复核员 | 交付前 | 证据可达、数字一致、来源徽 / 根来源齐全、协议遵循 | 默认与分析员不同模型 | kb / data 只读 |
 | 蒸馏员 | 定稿后 / 夜间 | 介入事件 → 分析协议候选 | standard | `intervention_read` + `playbook_propose` |
-| 格物 | 格物致知 | 复盘 / 阅读 / 深挖 / 笔记 | strong | 只读 + `study_note` |
+| 格物 | 格物致知 | 复盘 / 阅读 / 深挖 / 笔记；call 裁决后的自动复盘草稿（D-020） | strong | 只读 + `study_note` |
+| 值班员（D-022） | 常驻作业 | 预期表叙述、surprise 解释、议程装配、裁决建议、夜间整合的断言 / 预期表部分 | standard | 只读 + `agenda_write` + `call_resolve_suggest` |
+| 裁判员（D-023） | 分析（辩论） | 多主体案例 → 分歧地图 + crux + 共识；只引根来源 | strong，默认异模型 | kb / data 只读 |
 | 编排者 | 专题（Phase 2） | 分析阶段内拆子任务、派发、合并 | strong | `dispatch_task` + 全部读 |
 
 - **升档**：复核员打回或节点自报低置信 → 同任务升一档重跑，最多一次；仍不过 → 产物标暂定、进待人工确认（不阻塞下游）
 - **复核员异模型**：用户配置 ≥2 个 provider 时默认与分析员不同模型；否则同模型不同提示
 - **编排者**：v1 不设；Phase 2 引入且只能在分析阶段内派发，不能推进阶段、不能越过闸门
+- **主体（persona，D-023）**：角色实例化时的视角参数 `{关注点 / 框架, 模型绑定（档位或物理模型）, 作用域}`，定义文件在 `agent/personas/`；同一角色文件可按不同主体并行拉起多个会话（每主体一会话），产物来源徽 `agent:<角色>@<主体>`；会话间不共享可写产物，经作业引擎合并；辩论每作业可选、默认关
+- **自主度档位（D-022）**：A0 执行 / A1 提案 / A2 常驻 / A3 自扩展，由 settings 配置、作业引擎在调度与工具授权时执行；A3 的注册动作必须复核员（异模型）审查 + 人批准，沙箱 + 网络白名单；闸门、用户优先、破坏性确认不随档位放松
+- **蒸馏员访谈模式（D-024）**：首启或透明页重做；工具加 `profile_write`
 - **预算与可见**：每角色 token 上限、每作业成本上限；RPC usage 事件汇总成本，作业详情与 CoT 时间线显示角色芯片与成本
 - **隔离**：最小权限工具子集；写断言 / 产物只经 `kb_write` / `artifact_write`；剪藏员零工具；DuckDB 单写者不变
 - pi 自带 subagent 扩展作参考实现，控制权留在 Python（D-003）；pi 锁定版本 ≥ 1.4（虚拟模型 API）。本节是产品运行时的角色与模型档，与本仓库开发工作流的模型路由（`AGENTS.md` §6）无关
+
+### 5.6 常驻作业与触发器（D-022）
+
+- 常驻作业是作业子类，由 `workflow/standing/` 调度：触发源 = 日历（数据发布日历模块）/ 数据写入事件（§3.3 ingest_run 完成）/ 价格或序列阈值 / 文件系统事件（`docs_in/`、`clips/`）/ 定时；编排仍在代码里（§5.4）
+- v1 职责集：晨间台、数据台（预期表 / surprise / 修订异常）、一致性台（在持观点 / call / 人填槽位对照；"依据已变"；触发 call 裁决）、图书馆员（自动摄取、陈旧标记）、教练（复盘排程）、夜间整合（D-018 §6 夜间合并扩展）；集合由 feature spec 冻结
+- 产物进 `agenda/`（议程 / 收件箱）与平衡表页；不弹窗；议程不定稿、过期归档；日报由议程 + 定时作业交付物导出（§6）
+- 预算：每日 / 每台 token 预算叠加每角色 / 每作业上限；超预算降级为 A1 提案（状态 `budget_exceeded`）
+- call 裁决：引擎按 `resolution_rule` 取证（数据层 / 断言台账 / 事件）判定；需语义判断的由值班员建议、人裁定；裁决留痕、可推翻（`interaction.md` §9.3）
 
 ## 6. 交付管线与图表
 
 - **chart-spec**：`{template_id, series_bindings, overrides}` → 编译成 ECharts option → 前端渲染
 - **模板库 v1**：kind 枚举（season-daily/season-monthly/season-phase/line/dual/bar/hbar/bar-signed/stack/area/scatter-fit/band/heat/table）+ 油品模板集
 - **交付管线**：作业编排（§5.4）→ 阶段产物 → 块式交付物装配（块模型权威：`designUI.md` §5.2）→ 复核员复核（§5.5）→ 人改/agent 改稿 → 版本与**定稿**快照（定稿语义与效果：`interaction.md` §3.5）→ 验证性需求抽取（`interaction.md` §3.6）
-- **日报** = 定时作业的交付物模板，不再单独一条管线；交付物类型见 `designUI.md` §7
+- **晨间议程** = 常驻作业主产物（§5.6）；**日报** = 导出模板（仍以提供信息为主，固定模板不变），由议程 + 定时作业交付物生成，定稿语义适用于其底稿、不适用于议程（D-022）；交付物类型见 `designUI.md` §7
+- **calls**：定稿效果 ④ 同时抽取验证性需求与 calls（`call_propose`）；观点 / call / 决策块见 `designUI.md` §5.2（D-020）
 - **溯源**：每个数字可回溯到断言或观测（series_id + observation / claim + source，含来源与拉取时间）
 
 ## 7. 授权与收费模块
@@ -268,6 +301,11 @@ Backend 内置本地 MCP server（**streamable HTTP、localhost、Backend 进程
 7. **学习回流**：格物致知会话 → 笔记/问题/框架 → 派生区入库 + 协议候选 + 验证队列
 8. **定稿**：用户定稿 → 冻结版本 → 留存派生断言升人工确认 / 删除记否决 → 经闸门回流 → 抽取验证性需求 → 蒸馏员读本会话介入事件写协议候选（`interaction.md` §3.5）
 9. **一次作业的角色流转**：作业引擎按 DAG 调用 剪藏员（提取）→ 对账员（处理）→ 分析员（分析）→ 撰稿员 → 复核员（交付前）；打回则升一档重跑一次（§5.5）
+10. **常驻值班**（D-022）：发布日历到期 → 数据台预期表 → 数据写入事件 → surprise + 修订异常 → 一致性台对照在持观点 / call / 人填槽位 → "依据已变" + 到期 call 裁决 → 晨间台装配议程 → 焦点带 / 收件箱；夜间整合：协议合并 + 断言归并与矛盾 + 明日预期表预算
+11. **call 生命周期**（D-020）：定稿 → `call_propose` 登记（agent 的不需确认）→ 验证队列 → 到期 / 触发 → 引擎取证裁决（`hit / miss / unresolved`）→ 校准统计（agent@主体 / 来源 / 用户）→ 教练排程 → 格物生成复盘草稿 → 透明页（`source=postmortem` 协议候选）
+12. **世界模型更新**（D-021）：断言 / 观测入库 → 槽位投影 → L3.5 恒等式检查 → 通过则更新槽位（带陈旧 / 置信）/ 违反则标冲突 + 冲突队列 + 验证性需求 → 平衡表页与议程刷新；人填槽位 `slot_fix` 走版本
+13. **多主体辩论**（D-023，Phase 2D）：作业引擎冻结证据集 asof → 按主体并行拉起分析员会话 → 各出最强案例 + 预死亡 → 裁判员产出分歧地图 + crux → crux 进验证队列 / call → 用户在分析台裁定；红队（可选）在撰稿前跑一轮
+14. **协议冷启动**（D-024）：用户指定历史产出目录 → 摄取（派生区、作者 = 人）→ 蒸馏员抽 `proposed` 规则（`source=bootstrap`）；首启访谈 → `profile_write` + 协议候选 → 透明页确认
 
 ## 9. 隔离与安全
 
@@ -278,7 +316,9 @@ Backend 内置本地 MCP server（**streamable HTTP、localhost、Backend 进程
 - 介入、闸门判定、协议变更留审计日志，仅存本机，可导出供用户核查
 - 格物致知的外网检索按隐私开关，默认关闭，素材优先来自本机知识库
 - 网页是不可信输入：剪藏员零工具 + 输出 schema / 数字守恒校验，页面内嵌指令无法触发任何动作（D-018 §3）；抓取只由用户触发（agent 触发随 Phase 2B 且需可见）
-- 多角色最小权限：每角色只持有其工具子集（§5.5）
+- 多角色最小权限：每角色只持有其工具子集（§5.5）；主体不扩展角色权限（D-023）
+- 自主度档位与审批点（D-022）：常驻作业（A2）只持只读取数与登记权限；A3 自扩展代码在沙箱运行、网络白名单、复核员异模型审查 + 人批准后才注册；破坏性动作与写入闸门不随档位放松
+- 校准与用户优先（D-020）：校准统计不得触发自动覆盖 / 停用用户规则、确认断言或人填槽位；`basis=private` 的判断不进入来源校准、不被质询来源
 
 ## 10. 扩展路径
 
