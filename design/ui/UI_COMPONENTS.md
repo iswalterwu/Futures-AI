@@ -147,7 +147,7 @@ adaptation: dark-glass
 ## 暗色适配
 
 - **规定**：迷你折线的墨线 / 末点 → `chart.line_0`，零线 → `chart.axis_line`，仍只用单线与末点，不涂涨跌底色。**为什么**：暗色亮化保留微图不抢眼的语法，关注列表的方向语义由数值字色承担。
-- **规定**：新鲜度点尺寸沿用原 `status.fresh_dot.size`，登记为 `status.dot_size`；fresh / stale → `status.fresh / status.stale`（蓝 / 琥珀），不采用原绿色正常态。状态徽 good / warn / bad / sample → 模块壳 ok / warn / bad / sample，取 `status.*`；sample 的虚线边保留并加「样例」文字，bad 色只作非文字提示。**为什么**：D-013 禁止状态绿与行情跌色混淆，非文字与文字阈值不同，样例态不能只靠颜色。
+- **规定**：新鲜度点尺寸沿用原 `status.fresh_dot.size`，登记为 `status.dot_size`；fresh / stale → `status.fresh / status.stale`（蓝 / 琥珀），不采用原绿色正常态。状态徽 good / warn / bad / sample → 模块壳 ok / warn / bad / sample，取 `status.*`；sample 的虚线边保留并加「样例」文字，bad 色只作非文字提示。**为什么**：D-015 禁止状态绿与行情跌色混淆，非文字与文字阈值不同，样例态不能只靠颜色。
 - **规定**：加载 / 空 / 错误三态沿用留白、居中、弱文字；错误的补数命令 → 可复制的诊断 `{moduleId, code, message, ts}`。模块库与对话抽屉共用 `glass.drawer.*`，不创建第四层玻璃。**为什么**：本 feature 不执行旧站补数命令，但必须让故障有可追查信息。
 - **不采用**：分位条、年份图例芯片、来源胶囊完整变体、页签族、折叠箭头族、公式块、联立四值条、z 胶囊、套利灯、稀缺横幅、净出口 lint、晨间分诊卡、频率标、工具条、长口径脚注以及季节图 / 策略 / 平衡表 / 船级 / 自绘浮窗；原因是它们依赖各 domain 或 chart-templates 的完整内容，不能借移植目录提前实现。原浮层尺寸、层级与交互也不进入工作台。
 - **落点**：`frontend/src/shared/components/` 的 `Spark / Badge / EmptyState / ErrorState / Loading`，`frontend/src/app/TopBar.vue`、`frontend/src/modules/ModuleShell.vue`；数值与配色读取令牌。

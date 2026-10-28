@@ -148,7 +148,7 @@
 
 ### T-10 今日焦点带
 
-- **上下文**：plan §2.3（两段、固定、空 / 错态、跳转）；D-013。
+- **上下文**：plan §2.3（两段、固定、空 / 错态、跳转）；D-015。
 - **修改范围**：`src/workbench/{FocusBand.vue,WorkbenchPage.vue}`、`tests/component/focus-band.spec.ts`、`e2e/workbench.spec.ts`
 - **依赖**：T-09　**预计**：1.5 h
 - **完成标准**：

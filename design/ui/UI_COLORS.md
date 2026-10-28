@@ -261,7 +261,7 @@ adaptation: dark-glass
 
 ## 暗色适配
 
-- **规定**：`css_vars` 的纸 / 卡 / 墨字 → `bg.* / glass.* / text.*`，由 [designUI §2.1](../../docs/designUI.md) 与 [三层玻璃登记](UI_DARK_ADDITIONS.md#glass) 承接。原 `--up / --down` 的绿涨红跌 → `updown.up / updown.down` 的红涨绿跌，限 D-013 三个行情位置的字色；分析正负仍取 `chart.pos / chart.neg`。**为什么**：暗色主题和国内行情阅读习惯已冻结，不能把旧站表格的方向规则照抄到分析区。
+- **规定**：`css_vars` 的纸 / 卡 / 墨字 → `bg.* / glass.* / text.*`，由 [designUI §2.1](../../docs/designUI.md) 与 [三层玻璃登记](UI_DARK_ADDITIONS.md#glass) 承接。原 `--up / --down` 的绿涨红跌 → `updown.up / updown.down` 的红涨绿跌，限 D-015 三个行情位置的字色；分析正负仍取 `chart.pos / chart.neg`。**为什么**：暗色主题和国内行情阅读习惯已冻结，不能把旧站表格的方向规则照抄到分析区。
 
 `css_var_semantics` 的点睛与辅助色对应如下；暗色值均取自 T-02 令牌，原值来自上方 `css_vars`。对比度按 [PALETTE_DARK 的统一算法](../charts/PALETTE_DARK.md#contrast)。
 

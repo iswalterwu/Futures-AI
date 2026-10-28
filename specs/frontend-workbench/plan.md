@@ -8,7 +8,7 @@
 - **栈**：Vue 3.5 + Vite 8 + TypeScript、Pinia、vue-router、ECharts 6（D-008 / D-004）；契约 schema 用 zod 4
 - **测试**：Vitest + @vue/test-utils（单元 / 组件）、Playwright（端到端，复用本机 Chrome）
 - **工具链**：pnpm；Node ≥ 22.12；ESLint（换行统一交 `.gitattributes`，不另引 Prettier）；版本在 T-01 冒烟后锁进 `pnpm-lock.yaml`
-- **文件边界**（spec §4）：不碰 `backend/`；共享文件为 `.gitignore`（追加）、`specs/README.md`（本 feature 一行）、`docs/designUI.md`（引用指针）、`docs/decisions/`（D-013）、`docs/plan.md` §3（D-013 行）
+- **文件边界**（spec §4）：不碰 `backend/`；共享文件为 `.gitignore`（追加）、`specs/README.md`（本 feature 一行）、`docs/designUI.md`（引用指针）、`docs/decisions/`（D-015）、`docs/plan.md` §3（D-015 行）
 - **目录**：
 
   ```
@@ -53,7 +53,7 @@
 
 **数值**（`shared/format.ts`）：`fmtValue(v, {decimals, unit})`、`fmtDelta(v, {decimals, kind})`——先按显示位取整再判零；空值 `–`；差值正号；零中性；返回 `{text, tone}`。`Num` 只输出语义类（`sem-market` / `sem-analysis` + `is-up` / `is-down` / `is-neutral`）：analysis 的颜色在 `shared/num.css`（chart.pos / chart.neg），market 的颜色只在 `src/design/updown.css`，且只写 `color`。
 
-**涨跌色作用域**（D-013）：涨跌令牌只在 `updown.css` 引用；`updown.css` 只被 `modules/market-board/`、`modules/watchlist/`、`workbench/FocusBand.vue` 引入（`check.mjs` 三条 grep）。
+**涨跌色作用域**（D-015）：涨跌令牌只在 `updown.css` 引用；`updown.css` 只被 `modules/market-board/`、`modules/watchlist/`、`workbench/FocusBand.vue` 引入（`check.mjs` 三条 grep）。
 
 **暗色配色**（Q-003 已确认：A 等亮）。对比度对单层最不利卡面 `#252629`（模块玻璃 .045 叠渐变顶端 `#1B1C1F`）计算；阈值：线条 / 色块 ≥ 3，会当文字用的色 ≥ 4.5，点睛红只作非文字指示（≥ 3），有意退后的中性色不设下限。
 

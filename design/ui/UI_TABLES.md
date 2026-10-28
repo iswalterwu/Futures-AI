@@ -86,7 +86,7 @@ adaptation: dark-glass
 ## 暗色适配
 
 - **规定**：通用表与盘面网格结构保留，白卡 / 灰卡 / 纸色行线 → `glass.module.*` 与登记的文字 / 边框令牌；不另铺浅底或把涨跌色作行底。**为什么**：工作台只有三层玻璃，表格不能长出第四种表面；涨跌只表示数值方向。
-- **规定**：千分位、等宽数字、tabular-nums、数值右对齐、名称左对齐、差值正号、空值 en dash、取整后零中性不变；旧 `.up / .down` 通用样式 → `Num` 的 `sem-market / sem-analysis` 语义类。关注列表与盘面用 `updown.*` 字色，分析元素用 `chart.pos / chart.neg`。**为什么**：同一红色在行情与分析区含义相反，D-013 要求按登记区块隔离而非沿用全站涨跌类。
+- **规定**：千分位、等宽数字、tabular-nums、数值右对齐、名称左对齐、差值正号、空值 en dash、取整后零中性不变；旧 `.up / .down` 通用样式 → `Num` 的 `sem-market / sem-analysis` 语义类。关注列表与盘面用 `updown.*` 字色，分析元素用 `chart.pos / chart.neg`。**为什么**：同一红色在行情与分析区含义相反，D-015 要求按登记区块隔离而非沿用全站涨跌类。
 - **规定**：盘面的三种无数状态不变：`holiday` → 休、`pending` → 待、`missing` → en dash；正常 `ok` 显示数值。休 / 缺取弱文字，待取 `accent.amber`。关注列表采用通用表 + `SparkSeries` 迷你折线。**为什么**：假日休市、尚未结算、数据缺失不是同一种故障，不能合并成一个空格。
 - **不采用**：原盘面全套分组带 / 统计 / 分位 / 时间戳附属行、卡内小表、大平衡表与编辑 / 重放、季度表、美国平衡表变体，以及宽表复制溢出的旧待裁定项；原因是本 feature 只实现代表性 mock 形态，完整业务表、用户数据编辑与截图导出由各自 feature 负责。
 - **落点**：`frontend/src/shared/components/{Num,DataTable,BoardGrid,Spark}.vue`、`frontend/src/modules/{market-board,watchlist}/`；数值格式统一走 `frontend/src/shared/format.ts`。

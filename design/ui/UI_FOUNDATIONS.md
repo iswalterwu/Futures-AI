@@ -118,7 +118,7 @@ adaptation: dark-glass
 
 - **规定**：纸底 / 白卡 → `bg.*` 渐变与三层玻璃，采用 [UI_DARK_ADDITIONS](UI_DARK_ADDITIONS.md#glass)；`paper_not_white` 的画布透明原则不变，对应 `chart.canvas`，由 ECharts 透明画布透出底层。**为什么**：D-011 已选择暗色玻璃，数据第一与层次克制保留，不把旧纸面底色带入运行时。
 - **规定**：三族分工不变，但按 Q-019 明确 KPI 大数用 `font.serif`，是数值等宽的唯一例外；模块壳标题用 `font.sans`，其他数值用 `font.mono`、tabular-nums、右对齐。双语层级不变，英文副标取 `type.en_sub` 与 `tracking.en_sub`；后者由 T-02 登记加宽字距，原条目只有原则，不声称旧碎片已包含该值。**为什么**：消除原文「一切数值等宽」与 KPI 衬线的冲突，保持中文主、英文辅。
-- **规定**：空值 en dash、差值正号、按显示位判零且零中性不变；点睛红 → `accent.red`，只作非文字指示，琥珀 → `accent.amber`，仍表示非实绩 / 可编辑 / 待更新。涨跌 → `updown.up / updown.down`，只涂字色，且仅限行情价格、关注列表、焦点带行情段；分析负值取 `chart.neg`，状态不用绿。**为什么**：D-013 分隔行情红涨与分析红负，点睛红未达到文字对比度阈值。
+- **规定**：空值 en dash、差值正号、按显示位判零且零中性不变；点睛红 → `accent.red`，只作非文字指示，琥珀 → `accent.amber`，仍表示非实绩 / 可编辑 / 待更新。涨跌 → `updown.up / updown.down`，只涂字色，且仅限行情价格、关注列表、焦点带行情段；分析负值取 `chart.neg`，状态不用绿。**为什么**：D-015 分隔行情红涨与分析红负，点睛红未达到文字对比度阈值。
 - **规定**：直角细框、卡片不堆阴影、窄侧栏可收起不变；圆角只取 `radius.*` 登记例外。碎片与代码对拍 → `tokens.json` 生成 CSS / TS / 主题，生成物不手改。**为什么**：保留克制的形态和单一数值来源，避免维护第二套旧工程令牌。
 - **不采用**：浅色研究纸作为屏幕主题、双台切换、柴油 / LPG 页内语言约定和旧工程复制链路；原因是本 feature 为品种无关暗色工作台，亮色导出归日报导出，图表细则归 chart-templates，不移植旧站导航与 Plotly 实现。
 - **落点**：[设计权威](../../docs/designUI.md)、[实施机制](../../specs/frontend-workbench/plan.md) §2.1 / §2.2，`frontend/src/design/`、`frontend/src/shared/format.ts`；本文件原文不直接作为运行时样式输入。
