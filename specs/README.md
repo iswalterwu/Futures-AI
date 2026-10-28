@@ -21,6 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
+| workbench-interaction | in-progress（Spec/Clarify，Gate 1 待批准） | frontend-workbench（R-002/R-003 v2）、api | 2026-10-28 | Phase 1.5 协作交付骨架（作业对象/四阶段/采集·处理·分析·交付台/介入事件/块模型）；交互权威 `docs/interaction.md`；v1 mock 验收不依赖 api，导航集成需 R-002/R-003 v2 先批准 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
