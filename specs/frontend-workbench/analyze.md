@@ -111,3 +111,20 @@ HISTORY        plan.md / review.md 相对基线只有新增行；tasks.md 只改
 | 冻结件 | `git diff --exit-code 43b6d79 -- specs/frontend-workbench/{spec,checklist,manual-acceptance}.md specs/frontend-workbench/assets/handoff` → exit 0；Checklist 70/70、人工 0/8 勾选未动 |
 
 **结论：证据口径与 T-18 一致，无新增冲突、缺口或歧义；不需新增任务。**
+
+## M-08 整图证据补采（T-19）实施前的只读一致性分析（2026-10-28）
+
+- 执行者：Analyze = claude-opus-5-5 via anthropic（bridge 本窗口额度耗尽，不重复探活）；只读，不改 spec / Checklist / manual-acceptance。
+- 输入：重新读取 AGENTS.md、docs/plan.md、docs/designUI.md、冻结 spec、plan §7 ~ §8、tasks T-18 / T-19 / 台账、checklist 状态、review §12 ~ §15、`review-h01.md` P3-1、converge §9、manual M-08、`assets/h01-fix-20261028/README.md`；只读源码 `SampleChart.vue`、`ModuleGrid.vue`（滚动容器 `.modules-container`）、`e2e/theme.spec.ts`、`playwright.config.ts`、`tests/unit/manual-acceptance.spec.ts`。基线 `docs/frontend-workbench-m08-evidence` @ `44845c8`。
+
+| 检查 | 结果 |
+|---|---|
+| 需求 / 范围 | T-19 只补 AC-009-2 / M-08 的截图证据，不改实现、不改 AC 文字或判据；不需要回流 Clarify / Gate 1 / ADR |
+| AC 对应 | T-19 引用 AC-009-2、AC-006-3、AC-006-4、AC-001-4、M-08，全部存在于冻结 spec；AC 覆盖表 AC-009-2 行已追加 T-19 |
+| 标准 ↔ 命令 | 完成标准 4 条 ↔ 验证命令 4 条一一对应；依赖 T-18（已合并），无前向依赖；合计 19 项 / 29.5 h |
+| manual 改动风险 | `manual-acceptance.spec.ts` 校验 M-01 ~ M-08 顺序、每节含 AC 与“操作 / 看什么 / 截图证据”字段及勾选行；T-19 只在 M-08 现有行追加链接与补充记录，验证命令 2 复跑该单测兜底 |
+| 证据完整性 | plan §8.2 采集前断言覆盖可视完整（viewport + `.modules-container`）、图注 + SVG 完整、图注一行、透明与实例来源；§8.3 元数据含来源 HEAD / frontend 树 / 版本 / bounds / SHA256 / AI 非人工 |
+| 边界 | 不改 `frontend/` 及冻结件；旧 60 图与 4 张图注特写由验证命令 3 的 `--exit-code` 保护；960 整图不采（H-02），H-02 / v2 / 旧 11 项 P3 不在范围 |
+| Checklist / 人工 | Checklist 70 checked / 0 unchecked（未改）；manual 0 checked / 8 unchecked（未改） |
+
+**结论：无 spec / plan / tasks 冲突、缺口或歧义，T-19 可进入 Implement。** 首次分析未发现需回修项，未重复运行。本结论不代表已采集、已收敛或 Review 通过。

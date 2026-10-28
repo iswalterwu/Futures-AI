@@ -303,3 +303,37 @@ send({sessionId?, message}) / subscribe(cb)
 - §7.3 步骤 1 / 2 写的是对 `[data-chart-id="market-board"]` 滚动、对 `figure` 截图。实际实施（`771f2af`）改为对 `figcaption` 执行 `scrollIntoViewIfNeeded()` 并对 `figcaption` 截图（**图注特写**），理由：960×900 下 H-02 仍占据约 205 px 导航高度，模块区可视高度不足，整张 figure 截图会被模块区边界裁切；H-01 的缺陷只在图注一行，特写更准确覆盖 H-01。宽档同取图注特写，便于对照。
 - 自此 H-01 的截图证据口径以本段为准，取代 §7.3 步骤 2 中的 “`figure` 元素截图” 描述；`before-*` / `after-*` 文件名、视口（`T.window.width` / `T.window.min_width` × `T.window.height`）、先截图后断言、红跑后 / 绿跑前复制的时机均不变。几何与计算样式断言本来就读 `figcaption` 及其子节点，与截图口径无关。
 - 边界：这批截图**只证明图注一行**（文字与数字同行、单位在右），不证明整张样例图在 960 下一屏完整（这是 H-02，留待 v2、未修复）；整图的主题 / 透明 / 浮窗视觉仍以 `assets/handoff/` 的 M-08 原截图与 Walter 人工复核为准。
+
+## 8. M-08 修复后 1440 整图证据补采（2026-10-28，追加）
+
+> Plan = claude-opus-5-5 via anthropic（bridge 本窗口 account 额度耗尽，不重复探活）。分支 `docs/frontend-workbench-m08-evidence`，基线 `origin/main@44845c8`（PR #8 merge）。授权：用户在 H-01 合并报告后回复“继续”，协调会话据此限定为**只补采修复后 1440×900 样例图整图**、补齐 A-H01-P3-1（review §15）。不改功能、不改需求、不代签人工验收；不需要 Gate 1 / ADR。§7 为历史，不改写。
+
+### 8.1 采集对象与方式
+
+- 视口 `T.window.width × T.window.height`（1440×900）；本机 Chrome（`channel: 'chrome'`，沿 `playwright.config.ts`）；内置 mock `/workbench?scenario=normal`、新 browser context、默认布局与偏好、deviceScaleFactor 1。
+- 截图目标：`[data-chart-id="market-board"]` 整个 `figure`（图注 + 绘图区 SVG），不是图注特写。输出 `specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900-full.png`；**不覆盖** `assets/handoff/m08-chart-1440.png`（修复前原件，作对照）与本目录 4 张图注特写。
+- 采集脚本：一次性 Node 脚本，放临时证据目录（`%TEMP%/fw-m08-evidence.nY5thg/capture-full.mjs`），只用仓库已装的 `@playwright/test` / Vite；自启停独立 dev server（端口 4191，`--strictPort`；端口被占用即停止报告，不杀他人进程）。不改生产 DOM / CSS / 配置，不入库新工具。
+- 960 整图不采：H-02 仍使模块区可视高度不足，保持现有图注特写 + 边界说明。
+
+### 8.2 采集前脚本自身断言（任一失败即不出图、exit ≠ 0）
+
+1. 就绪：`market-board` 模块 `data-state=ready`，`.plot svg` 可见，`window.__FAI_TEST__.charts['market-board']` 存在（同 `openSample`）。
+2. 可视完整：`figure` 矩形完全落在 viewport 内，且完全落在模块滚动容器 `.modules-container` 的可视矩形内（必要时对 figure `scrollIntoViewIfNeeded()`，只滚动、不改样式）。
+3. 内容完整：`figcaption` 与 `.plot svg` 均在 figure 内、宽高 > 0；SVG 内有折线 `path` 与坐标轴文字（`text` 节点非空）。
+4. 图注一行：复用 §7.3 的 Range 判据（三段各 1 矩形、竖向区间有交集）。
+5. 主题 / 透明：ECharts 实例 `getOption().backgroundColor === 'transparent'`，序列 `id` = fixture `seriesId`（AC-006-3 / AC-006-4 的运行时对拍仍由既有 e2e 承担，此处只为证明拍到的是同一真实实例）。
+
+### 8.3 元数据（脚本生成 `capture-full-1440.json`，同目录，不手编）
+
+基线 commit（`44845c8`）、采集时 `HEAD` 与 `frontend/` 树 hash（`git rev-parse HEAD:frontend`）、Chrome 版本（`browser.version()`）、Playwright 版本、URL 与 scenario、viewport、deviceScaleFactor、ISO 时间戳、figure 与 `.modules-container` 的可视 bounds、§8.2 各断言结果、PNG 的 SHA256；字段 `aiCaptured: true`、`humanAccepted: false`（截图未改图，AI 采集不是 Walter 人工验收）。
+
+### 8.4 验收对应与不做
+
+| AC / 清单 | T-19 落点 |
+|---|---|
+| AC-009-2 / M-08 | 修复后 1440 整图 + 元数据 + README / manual M-08 链接；人工勾选仍待 Walter |
+| AC-006-3 / AC-006-4 | 不改实现；既有定向 e2e 复跑通过即可；整图供人工看透明 / 无白底 |
+
+- 不改 `frontend/`（含测试、依赖、令牌、契约）、`design/`、`docs/`、冻结 spec、Checklist（70/70）、`review-h01.md`、旧 60 张图与 4 张图注特写；manual-acceptance 只在 M-08 追加链接与 AI 采集补充记录，不改任何勾选框（保持 0 / 8）。
+- 不重跑全量 559 + 68 / build（无生产改动，仍引用 H-01 既有证据并标为旧证据）；不做红跑（没有修复行为）。
+- 不涉及 H-02、v2（另有负责会话）或旧 11 项 P3。

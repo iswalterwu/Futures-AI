@@ -1,6 +1,8 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **当前状态（2026-10-28，H-01 修复 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“好的”——**本次 H-01 修复 Gate 2 已批准**，A-H01-P3-1（1440 整图补采）接受为后续、尚未补采（§13）；Handoff 记录见 §14，PR：[iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8)。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复；11 项旧 P3 未修复。
+> **当前状态（2026-10-28，M-08 整图证据补采 in-progress）**：H-01 已经 PR #8 合并（§13 ~ §14，历史已批准）；本轮 T-19 只补采修复后 1440 整图（A-H01-P3-1），已规划、未采集（§15）；本轮 Gate 2 未发生。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复。
+
+> **（H-01 Handoff 时点指针）当前状态（2026-10-28，H-01 修复 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“好的”——**本次 H-01 修复 Gate 2 已批准**，A-H01-P3-1（1440 整图补采）接受为后续、尚未补采（§13）；Handoff 记录见 §14，PR：[iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8)。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复；11 项旧 P3 未修复。
 
 > **（Review 时点指针）当前状态（2026-10-28，H-01 修复 Review）**：独立审核员 A（claude-fable-5-1 via anthropic）对固定目标 `869cb71` 定向 Review **判定通过**（无 P1 / P2，1 项 P3-1 待 Walter 处置），原件见 [review-h01.md](review-h01.md)、记录见 §12；**本次修复 Gate 2 未批准，待 Walter 明确批准**；P3-1 未补采、未被接受为后续；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。未进入 Handoff。
 
@@ -496,3 +498,13 @@ Handoff 核对：`frontend/` 树 `03fda1de…` 与 A 审查目标 `869cb71` 相�
 
 - PR：[iswalterwu/Futures-AI#8](https://github.com/iswalterwu/Futures-AI/pull/8)（`fix/frontend-workbench-visual` → `main`，普通 merge commit；仓库没有配置 CI 检查）。
 - merge 提交号在 merge 后才产生，记在 PR 页面与 Handoff 结果文件上，不再为此另提交一次。
+
+## 15. M-08 修复后 1440 整图证据补采：授权与计划（2026-10-28，追加）
+
+> §0 ~ §14 为历史原件，不改写；H-01 的 Gate 2 保持历史已批准（§13），PR #8 已合并。
+> **执行者**：Plan / Tasks / Analyze = claude-opus-5-5 via anthropic（bridge 本窗口 account 额度耗尽，不重复探活）；本阶段唯一写入者。分支 `docs/frontend-workbench-m08-evidence`，基线 `origin/main@44845c8`。
+
+- **授权上下文**：H-01 合并报告列出待办（首项：补采修复后 1440 整图；其余 H-02 留 v2、M-01 ~ M-08 Walter 本人复核、旧 11 项 P3 后续）后，用户回复「继续」。协调会话明确限定本轮**只补采修复后 1440×900 样例图整图**，补齐 A-H01-P3-1，新增截图 / 溯源 / 验收入口，不改功能、不代签。这不是对本轮尚未产生的 Review / Gate 2 的批准，也不是逐图人工签字。
+- **计划**：plan §8；任务 T-19（0.5 h，AC-009-2 / M-08）；Analyze 无冲突。
+- **派工**：Implement = 首选 openai/gpt-6-astra（回退 deepseek/deepseek-flash），未开始；其后 Converge、独立 A 定向 Review（claude-fable-5-1，先 bridge 后 anthropic）、Walter Gate 2。
+- **边界**：不改 `frontend/` / 冻结 spec / Checklist（70/70）/ `review-h01.md` / 旧 60 图 / 4 张图注特写；manual 勾选保持 0 / 8；H-02 与 v2（独立负责会话，当前 blocked）不接管、不变更；旧 11 项 P3 不扩改。
