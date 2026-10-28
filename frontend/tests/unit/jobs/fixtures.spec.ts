@@ -4,6 +4,13 @@ import * as c from '../../../src/contracts/types.ts'
 import jobsInput from '../../../src/contracts/mock/fixtures/jobs/jobs.json'
 import detailsInput from '../../../src/contracts/mock/fixtures/jobs/job-detail.json'
 
+import deliverableInput from '../../../src/contracts/mock/fixtures/jobs/deliverable.json'
+import interventionsInput from '../../../src/contracts/mock/fixtures/jobs/interventions.json'
+import uploadsInput from '../../../src/contracts/mock/fixtures/jobs/uploads.json'
+
+const deliveries = c.DeliverableFixturesSchema.parse(deliverableInput)
+const uploads = c.UploadFixturesSchema.parse(uploadsInput)
+const interventions = c.InterventionSchema.array().parse(interventionsInput)
 const jobs = c.JobCollectionsSchema.parse(jobsInput)
 const details = c.JobDetailsSchema.parse(detailsInput)
 const allJobs = Object.values(jobs).flat()
@@ -109,6 +116,124 @@ describe('WI jobs fixtures — AC-008-2 / AC-002-3 / AC-002-5 / AC-005-6', () =>
   test('real boundaries reject malformed job and workspace files', () => {
     expect(c.JobCollectionsSchema.safeParse({ ...jobsInput, normal: [{ ...jobsInput.normal[0], stages: [] }] }).success).toBe(false)
     expect(c.JobDetailsSchema.safeParse({ broken: { ...detailsInput['j-collect'], collect: detailsInput['j-collect'].process } }).success).toBe(false)
+  })
+})
+
+describe('WI deliverable fixtures — AC-006-7 / AC-008-1 S-18', () => {
+  test('all three files parse unchanged, including the final and draft workspace boundaries', () => {
+    expect(deliveries).toEqual(deliverableInput)
+    expect(uploads).toEqual(uploadsInput)
+    expect(interventions).toEqual(interventionsInput)
+    for (const workspace of Object.values(deliveries)) expect(c.StageWorkspaceSchema.parse(workspace)).toEqual(workspace)
+  })
+  test('six ordered blocks, agent v1 / human v2 and open thread have usable anchors', () => {
+    const workspace = deliveries['j-deliver']
+    expect(workspace.deliverable!.blocks.map(block => block.type)).toEqual(['conclusion', 'chart', 'table', 'quote', 'verification', 'note'])
+    expect(workspace.revisions.map(rev => [rev.number, rev.author])).toEqual([[1, 'agent'], [2, 'human']])
+    expect(workspace.revisions[1].baseRev).toBe(workspace.revisions[0].id)
+    expect(workspace.deliverable!.blocks).toEqual(workspace.revisions[1].blocks)
+    expect(workspace.revisions[0].blocks.at(-1)).not.toEqual(workspace.revisions[1].blocks.at(-1))
+    const thread = workspace.deliverable!.blocks[0].comments[0]
+    expect(thread.status).toBe('open')
+    expect(thread.blockId).toBe(workspace.deliverable!.blocks[0].id)
+    expect(thread.comments[0]).toMatchObject({ threadId: thread.threadId, parentId: null })
+    for (const [id, delivery] of Object.entries(deliveries)) {
+      expect(delivery.deliverable!.jobId).toBe(id)
+      const artifact = delivery.artifacts[0]
+      expect(artifact.id).toBe(delivery.deliverable!.id)
+      expect(delivery.revisions.some(rev => rev.id === artifact.latestMergedRev)).toBe(true)
+      for (const rev of delivery.revisions) {
+        expect(rev.artifactId).toBe(artifact.id)
+        if (rev.baseRev) expect(delivery.revisions.some(base => base.id === rev.baseRev && base.number < rev.number)).toBe(true)
+        for (const block of rev.blocks) {
+          for (const anchor of block.anchors) {
+            const targets = anchor.kind === 'series' ? details[id].process.series.map(item => item.seriesId)
+              : anchor.kind === 'source' ? details[id].collect.uploads.map(item => item.id)
+                : details[id].analyze.revisions.flatMap(item => item.conclusions.map(conclusion => conclusion.id))
+            expect(targets).toContain(anchor.ref)
+          }
+          if (block.type === 'verification') expect(rev.blocks.some(target => target.id === block.conclusionBlockId && target.type === 'conclusion')).toBe(true)
+          if (block.type === 'quote') expect(details[id].collect.uploads.some(upload => upload.id === block.sourceAnchor.ref)).toBe(true)
+          if (block.type === 'chart') {
+            expect(block.chartSpec.seriesBindings.main).toBe(block.seriesData.seriesId)
+            expect(details[id].process.series.some(series => series.seriesId === block.seriesData.seriesId)).toBe(true)
+            expect(block.seriesData.points[0]).toMatchObject({ ts: details[id].reconciliations[0].rows[0].ts, value: 100 })
+          }
+        }
+      }
+    }
+  })
+  test('merge starts without overlay; conflict keeps human, agent and provisional snapshots', () => {
+    expect(deliveries['j-merge'].deliverable!.blocks.map(block => block.type)).toEqual(['conclusion', 'note'])
+    expect(deliveries['j-merge'].artifacts[0]).toMatchObject({ overlayRev: null, pendingMerge: false, pendingRunId: null })
+    const workspace = deliveries['j-conflict']
+    expect(workspace.deliverable!.blocks[0].status).toBe('conflict')
+    expect(workspace.revisions[0].id).toBe(workspace.artifacts[0].latestMergedRev)
+    expect(workspace.revisions[0].blocks.every(block => block.status === 'provisional')).toBe(true)
+    expect(workspace.revisions.slice(1).map(rev => rev.author)).toEqual(['human', 'agent'])
+    expect(workspace.revisions[1].blocks[0]).not.toEqual(workspace.revisions[2].blocks[0])
+  })
+  test('two unassigned uploads, one quarantined reason, metadata only and reachable previews', () => {
+    expect(uploads.uploads).toHaveLength(2)
+    expect(uploads.uploads.every(upload => upload.jobId === null)).toBe(true)
+    expect(uploads.uploads.filter(upload => upload.status === 'quarantined')).toHaveLength(1)
+    expect(uploads.uploads.find(upload => upload.status === 'quarantined')!.quarantineReason).toBeTruthy()
+    for (const upload of uploads.uploads) {
+      expect(uploads.previews[upload.id].fields).toEqual(upload.mapping)
+      expect(c.UploadSchema.safeParse({ ...upload, text: 'must not persist' }).success).toBe(false)
+    }
+  })
+  test('S-18 rejects non-null draft anchors, missing/mismatched final anchors and a draft snapshot', () => {
+    const draft = structuredClone(deliveries['j-deliver'])
+    const final = structuredClone(deliveries['j-delivered'])
+    expect(c.StageWorkspaceSchema.safeParse({ ...draft, deliverable: { ...draft.deliverable, finalSnapshotId: 'bad' } }).success).toBe(false)
+    expect(c.StageWorkspaceSchema.safeParse({ ...final, deliverable: { ...final.deliverable, finalSnapshotId: null } }).success).toBe(false)
+    for (const patch of [{ id: 'bad' }, { revisionNumber: 99 }, { finalizedAt: '2026-10-29T08:00:00Z' }]) {
+      expect(c.StageWorkspaceSchema.safeParse({ ...final, finalSnapshot: { ...final.finalSnapshot, ...patch } }).success).toBe(false)
+    }
+    expect(c.StageWorkspaceSchema.safeParse({ ...draft, finalSnapshot: final.finalSnapshot }).success).toBe(false)
+  })
+})
+
+describe('WI final only delivered — AC-006-7', () => {
+  test('only j-delivered is final and its snapshot freezes the actual revision', () => {
+    expect(Object.keys(deliveries).sort()).toEqual(allJobs.map(job => job.id).sort())
+    for (const [id, workspace] of Object.entries(deliveries)) {
+      if (id !== 'j-delivered') {
+        expect(workspace.deliverable).toMatchObject({ deliverableStatus: 'draft', finalSnapshotId: null, finalRevisionNumber: null, finalizedAt: null })
+        expect(workspace.finalSnapshot).toBeNull()
+        continue
+      }
+      const snapshot = workspace.finalSnapshot!
+      const revision = workspace.revisions.find(rev => rev.id === snapshot.revisionId)!
+      expect(workspace.deliverable).toMatchObject({ deliverableStatus: 'final', finalSnapshotId: snapshot.id, finalRevisionNumber: revision.number, finalizedAt: snapshot.finalizedAt })
+      expect(snapshot.jobId).toBe(id)
+      expect(snapshot.revisionNumber).toBe(revision.number)
+      expect(snapshot.blocks).toEqual(revision.blocks)
+      expect(workspace.deliverable!.blocks).toEqual(snapshot.blocks)
+      expect(snapshot.blocks.every(block => block.status === 'confirmed')).toBe(true)
+    }
+  })
+})
+
+describe('WI interventions fixtures — AC-007-1', () => {
+  test('ten fields, multiple stages/kinds, and all target/base anchors exist', () => {
+    expect(new Set(interventions.map(event => event.stage)).size).toBeGreaterThanOrEqual(2)
+    expect(new Set(interventions.map(event => event.kind)).size).toBeGreaterThanOrEqual(3)
+    for (const event of interventions) {
+      expect(Object.keys(event).sort()).toEqual(['id', 'jobId', 'stage', 'artifactId', 'baseRev', 'kind', 'payload', 'reason', 'outcome', 'createdAt'].sort())
+      expect(allJobs.some(job => job.id === event.jobId)).toBe(true)
+      const workspace = event.stage === 'deliver' ? deliveries[event.jobId] : details[event.jobId][event.stage]
+      expect(workspace.artifacts.some(artifact => artifact.id === event.artifactId)).toBe(true)
+      expect(workspace.revisions.some(revision => revision.id === event.baseRev)).toBe(true)
+      const payload = event.payload
+      if ('uploadId' in payload) expect(details[event.jobId].collect.uploads.some(upload => upload.id === payload.uploadId)).toBe(true)
+      if ('conclusionId' in payload) expect(details[event.jobId].analyze.revisions.some(revision => revision.conclusions.some(conclusion => conclusion.id === payload.conclusionId))).toBe(true)
+      if ('blockId' in payload) expect(deliveries[event.jobId].deliverable!.blocks.some(block => block.id === payload.blockId)).toBe(true)
+      if (payload.action === 'finalize') expect(deliveries[event.jobId].finalSnapshot).toMatchObject({ id: payload.snapshotId, revisionId: payload.revisionId, finalizedAt: event.createdAt })
+      expect(c.InterventionSchema.safeParse({ ...event, kind: 'veto' }).success).toBe(false)
+      expect(c.InterventionSchema.safeParse({ ...event, payload: { action: 'unknown' } }).success).toBe(false)
+    }
   })
 })
 

@@ -574,6 +574,13 @@ export const InterventionSchema = z.strictObject({
   path: ['kind'], message: 'kind 必须与 payload.action 的动作矩阵对应',
 }).describe('介入事件十个必有字段，camelCase；原动作不可改，检查点仅更新 outcome。action↔kind 对应关系由 zod 边界校验，见各 payload 分支的 kind 说明。')
 
+export const DeliverableFixturesSchema = z.record(z.string().min(1), StageWorkspaceSchema.options[3])
+  .describe('按作业 id 索引的交付工作区样例，复用 S-18 边界校验。')
+export const UploadFixturesSchema = z.strictObject({
+  uploads: z.array(UploadSchema).describe('待归属投放样例，不含正文。'),
+  previews: z.record(z.string().min(1), ExtractionPreviewSchema).describe('按 Upload.id 索引的合成预览。'),
+}).describe('全局投放池样例及预览；作业内投放在 JobDetails.collect 中。')
+
 export const WriteReceiptSchema = z.strictObject({
   jobs: z.array(JobSchema).describe('本次写入改变的作业。'),
   artifacts: z.array(ArtifactSchema).describe('本次改变的产物。'),
@@ -583,6 +590,8 @@ export const WriteReceiptSchema = z.strictObject({
 }).describe('领域写回执，携带变更对象与收件箱计数；不表示 agent run 已完成。')
 
 export const contractSchemas = {
+  DeliverableFixtures: DeliverableFixturesSchema,
+  UploadFixtures: UploadFixturesSchema,
   JobCollections: JobCollectionsSchema,
   JobDetails: JobDetailsSchema,
   InterventionPayload: InterventionPayloadSchema,

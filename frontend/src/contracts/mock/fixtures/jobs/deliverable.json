@@ -1,0 +1,1473 @@
+{
+  "j-collect": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-collect-deliverable",
+      "jobId": "j-collect",
+      "blocks": [],
+      "deliverableStatus": "draft",
+      "finalSnapshotId": null,
+      "finalRevisionNumber": null,
+      "finalizedAt": null
+    },
+    "finalSnapshot": null,
+    "artifacts": [
+      {
+        "id": "j-collect-deliverable",
+        "kind": "deliverable",
+        "status": "draft",
+        "source": "agent",
+        "origin": "derived",
+        "latestMergedRev": "j-collect-deliverable-r1",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-collect-deliverable-r1",
+        "artifactId": "j-collect-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": []
+      }
+    ]
+  },
+  "j-process": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-process-deliverable",
+      "jobId": "j-process",
+      "blocks": [],
+      "deliverableStatus": "draft",
+      "finalSnapshotId": null,
+      "finalRevisionNumber": null,
+      "finalizedAt": null
+    },
+    "finalSnapshot": null,
+    "artifacts": [
+      {
+        "id": "j-process-deliverable",
+        "kind": "deliverable",
+        "status": "draft",
+        "source": "agent",
+        "origin": "derived",
+        "latestMergedRev": "j-process-deliverable-r1",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-process-deliverable-r1",
+        "artifactId": "j-process-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": []
+      }
+    ]
+  },
+  "j-deliver": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-deliver-deliverable",
+      "jobId": "j-deliver",
+      "blocks": [
+        {
+          "id": "j-deliver-b-conclusion",
+          "type": "conclusion",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-deliver-series-1",
+              "label": "合成库存序列 1"
+            },
+            {
+              "kind": "source",
+              "ref": "j-deliver-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [
+            {
+              "threadId": "j-deliver-thread-1",
+              "blockId": "j-deliver-b-conclusion",
+              "status": "open",
+              "comments": [
+                {
+                  "id": "j-deliver-comment-1",
+                  "threadId": "j-deliver-thread-1",
+                  "parentId": null,
+                  "author": "human",
+                  "text": "请说明统计边界差异。",
+                  "createdAt": "2026-10-28T08:02:00Z"
+                }
+              ]
+            }
+          ],
+          "text": "合成两来源库存存在 4 千吨差异，需核对统计边界。"
+        },
+        {
+          "id": "j-deliver-b-chart",
+          "type": "chart",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-deliver-series-1",
+              "label": "合成库存序列 1"
+            }
+          ],
+          "comments": [],
+          "chartSpec": {
+            "templateId": "line-sample",
+            "seriesBindings": {
+              "main": "j-deliver-series-1"
+            },
+            "overrides": {
+              "title": "合成库存"
+            }
+          },
+          "seriesData": {
+            "seriesId": "j-deliver-series-1",
+            "unit": "kt",
+            "freq": "1d",
+            "semantic": "analysis",
+            "asOf": "2026-10-28T08:00:00Z",
+            "points": [
+              {
+                "ts": "2026-10-28T08:00:00Z",
+                "value": 100
+              }
+            ]
+          }
+        },
+        {
+          "id": "j-deliver-b-table",
+          "type": "table",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-deliver-series-1",
+              "label": "合成库存序列 1"
+            },
+            {
+              "kind": "source",
+              "ref": "j-deliver-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "tableId": "j-deliver-table-inventory",
+          "columns": [
+            "时间",
+            "主来源 (kt)",
+            "次来源 (kt)"
+          ],
+          "rows": [
+            [
+              "2026-10-28",
+              100,
+              104
+            ]
+          ]
+        },
+        {
+          "id": "j-deliver-b-quote",
+          "type": "quote",
+          "status": "draft",
+          "source": "external",
+          "origin": "source",
+          "anchors": [
+            {
+              "kind": "source",
+              "ref": "j-deliver-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "text": "合成材料摘录：统计口径可能不同。",
+          "sourceAnchor": {
+            "kind": "source",
+            "ref": "j-deliver-source-1",
+            "label": "合成库存来源"
+          }
+        },
+        {
+          "id": "j-deliver-b-verification",
+          "type": "verification",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [],
+          "comments": [],
+          "question": "下一期相同口径库存差异是否收敛？",
+          "conclusionBlockId": "j-deliver-b-conclusion"
+        },
+        {
+          "id": "j-deliver-b-note",
+          "type": "note",
+          "status": "draft",
+          "source": "human",
+          "origin": "derived",
+          "anchors": [],
+          "comments": [],
+          "text": "人补充：先统一统计边界，再比较库存变化。"
+        }
+      ],
+      "deliverableStatus": "draft",
+      "finalSnapshotId": null,
+      "finalRevisionNumber": null,
+      "finalizedAt": null
+    },
+    "finalSnapshot": null,
+    "artifacts": [
+      {
+        "id": "j-deliver-deliverable",
+        "kind": "deliverable",
+        "status": "draft",
+        "source": "mixed",
+        "origin": "derived",
+        "latestMergedRev": "j-deliver-deliverable-r2",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-deliver-deliverable-r1",
+        "artifactId": "j-deliver-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": [
+          {
+            "id": "j-deliver-b-conclusion",
+            "type": "conclusion",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-deliver-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-deliver-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "text": "合成两来源库存存在 4 千吨差异，需核对统计边界。"
+          },
+          {
+            "id": "j-deliver-b-chart",
+            "type": "chart",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-deliver-series-1",
+                "label": "合成库存序列 1"
+              }
+            ],
+            "comments": [],
+            "chartSpec": {
+              "templateId": "line-sample",
+              "seriesBindings": {
+                "main": "j-deliver-series-1"
+              },
+              "overrides": {
+                "title": "合成库存"
+              }
+            },
+            "seriesData": {
+              "seriesId": "j-deliver-series-1",
+              "unit": "kt",
+              "freq": "1d",
+              "semantic": "analysis",
+              "asOf": "2026-10-28T08:00:00Z",
+              "points": [
+                {
+                  "ts": "2026-10-28T08:00:00Z",
+                  "value": 100
+                }
+              ]
+            }
+          },
+          {
+            "id": "j-deliver-b-table",
+            "type": "table",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-deliver-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-deliver-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "tableId": "j-deliver-table-inventory",
+            "columns": [
+              "时间",
+              "主来源 (kt)",
+              "次来源 (kt)"
+            ],
+            "rows": [
+              [
+                "2026-10-28",
+                100,
+                104
+              ]
+            ]
+          },
+          {
+            "id": "j-deliver-b-quote",
+            "type": "quote",
+            "status": "draft",
+            "source": "external",
+            "origin": "source",
+            "anchors": [
+              {
+                "kind": "source",
+                "ref": "j-deliver-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "text": "合成材料摘录：统计口径可能不同。",
+            "sourceAnchor": {
+              "kind": "source",
+              "ref": "j-deliver-source-1",
+              "label": "合成库存来源"
+            }
+          },
+          {
+            "id": "j-deliver-b-verification",
+            "type": "verification",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "question": "下一期相同口径库存差异是否收敛？",
+            "conclusionBlockId": "j-deliver-b-conclusion"
+          },
+          {
+            "id": "j-deliver-b-note",
+            "type": "note",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "text": "合成样例，仅用于界面与契约验收。"
+          }
+        ]
+      },
+      {
+        "id": "j-deliver-deliverable-r2",
+        "artifactId": "j-deliver-deliverable",
+        "artifactKind": "deliverable",
+        "number": 2,
+        "baseRev": "j-deliver-deliverable-r1",
+        "author": "human",
+        "createdAt": "2026-10-28T08:02:00Z",
+        "summary": "合成交付 v2",
+        "changeSummary": "补充口径说明与批注",
+        "blocks": [
+          {
+            "id": "j-deliver-b-conclusion",
+            "type": "conclusion",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-deliver-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-deliver-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [
+              {
+                "threadId": "j-deliver-thread-1",
+                "blockId": "j-deliver-b-conclusion",
+                "status": "open",
+                "comments": [
+                  {
+                    "id": "j-deliver-comment-1",
+                    "threadId": "j-deliver-thread-1",
+                    "parentId": null,
+                    "author": "human",
+                    "text": "请说明统计边界差异。",
+                    "createdAt": "2026-10-28T08:02:00Z"
+                  }
+                ]
+              }
+            ],
+            "text": "合成两来源库存存在 4 千吨差异，需核对统计边界。"
+          },
+          {
+            "id": "j-deliver-b-chart",
+            "type": "chart",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-deliver-series-1",
+                "label": "合成库存序列 1"
+              }
+            ],
+            "comments": [],
+            "chartSpec": {
+              "templateId": "line-sample",
+              "seriesBindings": {
+                "main": "j-deliver-series-1"
+              },
+              "overrides": {
+                "title": "合成库存"
+              }
+            },
+            "seriesData": {
+              "seriesId": "j-deliver-series-1",
+              "unit": "kt",
+              "freq": "1d",
+              "semantic": "analysis",
+              "asOf": "2026-10-28T08:00:00Z",
+              "points": [
+                {
+                  "ts": "2026-10-28T08:00:00Z",
+                  "value": 100
+                }
+              ]
+            }
+          },
+          {
+            "id": "j-deliver-b-table",
+            "type": "table",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-deliver-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-deliver-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "tableId": "j-deliver-table-inventory",
+            "columns": [
+              "时间",
+              "主来源 (kt)",
+              "次来源 (kt)"
+            ],
+            "rows": [
+              [
+                "2026-10-28",
+                100,
+                104
+              ]
+            ]
+          },
+          {
+            "id": "j-deliver-b-quote",
+            "type": "quote",
+            "status": "draft",
+            "source": "external",
+            "origin": "source",
+            "anchors": [
+              {
+                "kind": "source",
+                "ref": "j-deliver-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "text": "合成材料摘录：统计口径可能不同。",
+            "sourceAnchor": {
+              "kind": "source",
+              "ref": "j-deliver-source-1",
+              "label": "合成库存来源"
+            }
+          },
+          {
+            "id": "j-deliver-b-verification",
+            "type": "verification",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "question": "下一期相同口径库存差异是否收敛？",
+            "conclusionBlockId": "j-deliver-b-conclusion"
+          },
+          {
+            "id": "j-deliver-b-note",
+            "type": "note",
+            "status": "draft",
+            "source": "human",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "text": "人补充：先统一统计边界，再比较库存变化。"
+          }
+        ]
+      }
+    ]
+  },
+  "j-failed": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-failed-deliverable",
+      "jobId": "j-failed",
+      "blocks": [],
+      "deliverableStatus": "draft",
+      "finalSnapshotId": null,
+      "finalRevisionNumber": null,
+      "finalizedAt": null
+    },
+    "finalSnapshot": null,
+    "artifacts": [
+      {
+        "id": "j-failed-deliverable",
+        "kind": "deliverable",
+        "status": "draft",
+        "source": "agent",
+        "origin": "derived",
+        "latestMergedRev": "j-failed-deliverable-r1",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-failed-deliverable-r1",
+        "artifactId": "j-failed-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": []
+      }
+    ]
+  },
+  "j-cancelled": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-cancelled-deliverable",
+      "jobId": "j-cancelled",
+      "blocks": [],
+      "deliverableStatus": "draft",
+      "finalSnapshotId": null,
+      "finalRevisionNumber": null,
+      "finalizedAt": null
+    },
+    "finalSnapshot": null,
+    "artifacts": [
+      {
+        "id": "j-cancelled-deliverable",
+        "kind": "deliverable",
+        "status": "draft",
+        "source": "agent",
+        "origin": "derived",
+        "latestMergedRev": "j-cancelled-deliverable-r1",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-cancelled-deliverable-r1",
+        "artifactId": "j-cancelled-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": []
+      }
+    ]
+  },
+  "j-running": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-running-deliverable",
+      "jobId": "j-running",
+      "blocks": [],
+      "deliverableStatus": "draft",
+      "finalSnapshotId": null,
+      "finalRevisionNumber": null,
+      "finalizedAt": null
+    },
+    "finalSnapshot": null,
+    "artifacts": [
+      {
+        "id": "j-running-deliverable",
+        "kind": "deliverable",
+        "status": "draft",
+        "source": "agent",
+        "origin": "derived",
+        "latestMergedRev": "j-running-deliverable-r1",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-running-deliverable-r1",
+        "artifactId": "j-running-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": []
+      }
+    ]
+  },
+  "j-human": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-human-deliverable",
+      "jobId": "j-human",
+      "blocks": [],
+      "deliverableStatus": "draft",
+      "finalSnapshotId": null,
+      "finalRevisionNumber": null,
+      "finalizedAt": null
+    },
+    "finalSnapshot": null,
+    "artifacts": [
+      {
+        "id": "j-human-deliverable",
+        "kind": "deliverable",
+        "status": "draft",
+        "source": "agent",
+        "origin": "derived",
+        "latestMergedRev": "j-human-deliverable-r1",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-human-deliverable-r1",
+        "artifactId": "j-human-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": []
+      }
+    ]
+  },
+  "j-merge": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-merge-deliverable",
+      "jobId": "j-merge",
+      "blocks": [
+        {
+          "id": "j-merge-b-conclusion",
+          "type": "conclusion",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-merge-series-1",
+              "label": "合成库存序列 1"
+            },
+            {
+              "kind": "source",
+              "ref": "j-merge-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "text": "合成两来源库存存在 4 千吨差异，需核对统计边界。"
+        },
+        {
+          "id": "j-merge-b-note",
+          "type": "note",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [],
+          "comments": [],
+          "text": "合成样例，仅用于界面与契约验收。"
+        }
+      ],
+      "deliverableStatus": "draft",
+      "finalSnapshotId": null,
+      "finalRevisionNumber": null,
+      "finalizedAt": null
+    },
+    "finalSnapshot": null,
+    "artifacts": [
+      {
+        "id": "j-merge-deliverable",
+        "kind": "deliverable",
+        "status": "draft",
+        "source": "agent",
+        "origin": "derived",
+        "latestMergedRev": "j-merge-deliverable-r1",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-merge-deliverable-r1",
+        "artifactId": "j-merge-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": [
+          {
+            "id": "j-merge-b-conclusion",
+            "type": "conclusion",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-merge-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-merge-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "text": "合成两来源库存存在 4 千吨差异，需核对统计边界。"
+          },
+          {
+            "id": "j-merge-b-note",
+            "type": "note",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "text": "合成样例，仅用于界面与契约验收。"
+          }
+        ]
+      }
+    ]
+  },
+  "j-conflict": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-conflict-deliverable",
+      "jobId": "j-conflict",
+      "blocks": [
+        {
+          "id": "j-conflict-b-conclusion",
+          "type": "conclusion",
+          "status": "conflict",
+          "source": "human",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-conflict-series-1",
+              "label": "合成库存序列 1"
+            },
+            {
+              "kind": "source",
+              "ref": "j-conflict-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "text": "人版：差异来自统计边界。"
+        },
+        {
+          "id": "j-conflict-b-note",
+          "type": "note",
+          "status": "draft",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [],
+          "comments": [],
+          "text": "合成样例，仅用于界面与契约验收。"
+        }
+      ],
+      "deliverableStatus": "draft",
+      "finalSnapshotId": null,
+      "finalRevisionNumber": null,
+      "finalizedAt": null
+    },
+    "finalSnapshot": null,
+    "artifacts": [
+      {
+        "id": "j-conflict-deliverable",
+        "kind": "deliverable",
+        "status": "conflict",
+        "source": "agent",
+        "origin": "derived",
+        "latestMergedRev": "j-conflict-deliverable-r1",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-conflict-deliverable-r1",
+        "artifactId": "j-conflict-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": [
+          {
+            "id": "j-conflict-b-conclusion",
+            "type": "conclusion",
+            "status": "provisional",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-conflict-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-conflict-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "text": "合成两来源库存存在 4 千吨差异，需核对统计边界。"
+          },
+          {
+            "id": "j-conflict-b-note",
+            "type": "note",
+            "status": "provisional",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "text": "合成样例，仅用于界面与契约验收。"
+          }
+        ]
+      },
+      {
+        "id": "j-conflict-deliverable-r2",
+        "artifactId": "j-conflict-deliverable",
+        "artifactKind": "deliverable",
+        "number": 2,
+        "baseRev": "j-conflict-deliverable-r1",
+        "author": "human",
+        "createdAt": "2026-10-28T08:02:00Z",
+        "summary": "合成交付 v2",
+        "changeSummary": "补充口径说明与批注",
+        "blocks": [
+          {
+            "id": "j-conflict-b-conclusion",
+            "type": "conclusion",
+            "status": "conflict",
+            "source": "human",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-conflict-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-conflict-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "text": "人版：差异来自统计边界。"
+          },
+          {
+            "id": "j-conflict-b-note",
+            "type": "note",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "text": "合成样例，仅用于界面与契约验收。"
+          }
+        ]
+      },
+      {
+        "id": "j-conflict-deliverable-r3",
+        "artifactId": "j-conflict-deliverable",
+        "artifactKind": "deliverable",
+        "number": 3,
+        "baseRev": "j-conflict-deliverable-r1",
+        "author": "agent",
+        "createdAt": "2026-10-28T08:03:00Z",
+        "summary": "合成交付 v3",
+        "changeSummary": "补充口径说明与批注",
+        "blocks": [
+          {
+            "id": "j-conflict-b-conclusion",
+            "type": "conclusion",
+            "status": "conflict",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-conflict-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-conflict-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "text": "agent 版：差异来自修订时点。"
+          },
+          {
+            "id": "j-conflict-b-note",
+            "type": "note",
+            "status": "draft",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "text": "合成样例，仅用于界面与契约验收。"
+          }
+        ]
+      }
+    ]
+  },
+  "j-delivered": {
+    "stage": "deliver",
+    "deliverable": {
+      "id": "j-delivered-deliverable",
+      "jobId": "j-delivered",
+      "blocks": [
+        {
+          "id": "j-delivered-b-conclusion",
+          "type": "conclusion",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-delivered-series-1",
+              "label": "合成库存序列 1"
+            },
+            {
+              "kind": "source",
+              "ref": "j-delivered-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "text": "合成两来源库存存在 4 千吨差异，需核对统计边界。"
+        },
+        {
+          "id": "j-delivered-b-chart",
+          "type": "chart",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-delivered-series-1",
+              "label": "合成库存序列 1"
+            }
+          ],
+          "comments": [],
+          "chartSpec": {
+            "templateId": "line-sample",
+            "seriesBindings": {
+              "main": "j-delivered-series-1"
+            },
+            "overrides": {
+              "title": "合成库存"
+            }
+          },
+          "seriesData": {
+            "seriesId": "j-delivered-series-1",
+            "unit": "kt",
+            "freq": "1d",
+            "semantic": "analysis",
+            "asOf": "2026-10-28T08:00:00Z",
+            "points": [
+              {
+                "ts": "2026-10-28T08:00:00Z",
+                "value": 100
+              }
+            ]
+          }
+        },
+        {
+          "id": "j-delivered-b-table",
+          "type": "table",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-delivered-series-1",
+              "label": "合成库存序列 1"
+            },
+            {
+              "kind": "source",
+              "ref": "j-delivered-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "tableId": "j-delivered-table-inventory",
+          "columns": [
+            "时间",
+            "主来源 (kt)",
+            "次来源 (kt)"
+          ],
+          "rows": [
+            [
+              "2026-10-28",
+              100,
+              104
+            ]
+          ]
+        },
+        {
+          "id": "j-delivered-b-quote",
+          "type": "quote",
+          "status": "confirmed",
+          "source": "external",
+          "origin": "source",
+          "anchors": [
+            {
+              "kind": "source",
+              "ref": "j-delivered-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "text": "合成材料摘录：统计口径可能不同。",
+          "sourceAnchor": {
+            "kind": "source",
+            "ref": "j-delivered-source-1",
+            "label": "合成库存来源"
+          }
+        },
+        {
+          "id": "j-delivered-b-verification",
+          "type": "verification",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [],
+          "comments": [],
+          "question": "下一期相同口径库存差异是否收敛？",
+          "conclusionBlockId": "j-delivered-b-conclusion"
+        },
+        {
+          "id": "j-delivered-b-note",
+          "type": "note",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [],
+          "comments": [],
+          "text": "合成样例，仅用于界面与契约验收。"
+        }
+      ],
+      "deliverableStatus": "final",
+      "finalSnapshotId": "j-delivered-final-1",
+      "finalRevisionNumber": 1,
+      "finalizedAt": "2026-10-28T08:05:00Z"
+    },
+    "finalSnapshot": {
+      "id": "j-delivered-final-1",
+      "jobId": "j-delivered",
+      "revisionId": "j-delivered-deliverable-r1",
+      "revisionNumber": 1,
+      "finalizedAt": "2026-10-28T08:05:00Z",
+      "blocks": [
+        {
+          "id": "j-delivered-b-conclusion",
+          "type": "conclusion",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-delivered-series-1",
+              "label": "合成库存序列 1"
+            },
+            {
+              "kind": "source",
+              "ref": "j-delivered-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "text": "合成两来源库存存在 4 千吨差异，需核对统计边界。"
+        },
+        {
+          "id": "j-delivered-b-chart",
+          "type": "chart",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-delivered-series-1",
+              "label": "合成库存序列 1"
+            }
+          ],
+          "comments": [],
+          "chartSpec": {
+            "templateId": "line-sample",
+            "seriesBindings": {
+              "main": "j-delivered-series-1"
+            },
+            "overrides": {
+              "title": "合成库存"
+            }
+          },
+          "seriesData": {
+            "seriesId": "j-delivered-series-1",
+            "unit": "kt",
+            "freq": "1d",
+            "semantic": "analysis",
+            "asOf": "2026-10-28T08:00:00Z",
+            "points": [
+              {
+                "ts": "2026-10-28T08:00:00Z",
+                "value": 100
+              }
+            ]
+          }
+        },
+        {
+          "id": "j-delivered-b-table",
+          "type": "table",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [
+            {
+              "kind": "series",
+              "ref": "j-delivered-series-1",
+              "label": "合成库存序列 1"
+            },
+            {
+              "kind": "source",
+              "ref": "j-delivered-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "tableId": "j-delivered-table-inventory",
+          "columns": [
+            "时间",
+            "主来源 (kt)",
+            "次来源 (kt)"
+          ],
+          "rows": [
+            [
+              "2026-10-28",
+              100,
+              104
+            ]
+          ]
+        },
+        {
+          "id": "j-delivered-b-quote",
+          "type": "quote",
+          "status": "confirmed",
+          "source": "external",
+          "origin": "source",
+          "anchors": [
+            {
+              "kind": "source",
+              "ref": "j-delivered-source-1",
+              "label": "合成库存来源"
+            }
+          ],
+          "comments": [],
+          "text": "合成材料摘录：统计口径可能不同。",
+          "sourceAnchor": {
+            "kind": "source",
+            "ref": "j-delivered-source-1",
+            "label": "合成库存来源"
+          }
+        },
+        {
+          "id": "j-delivered-b-verification",
+          "type": "verification",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [],
+          "comments": [],
+          "question": "下一期相同口径库存差异是否收敛？",
+          "conclusionBlockId": "j-delivered-b-conclusion"
+        },
+        {
+          "id": "j-delivered-b-note",
+          "type": "note",
+          "status": "confirmed",
+          "source": "agent",
+          "origin": "derived",
+          "anchors": [],
+          "comments": [],
+          "text": "合成样例，仅用于界面与契约验收。"
+        }
+      ]
+    },
+    "artifacts": [
+      {
+        "id": "j-delivered-deliverable",
+        "kind": "deliverable",
+        "status": "confirmed",
+        "source": "agent",
+        "origin": "derived",
+        "latestMergedRev": "j-delivered-deliverable-r1",
+        "overlayRev": null,
+        "pendingMerge": false,
+        "pendingRunId": null
+      }
+    ],
+    "revisions": [
+      {
+        "id": "j-delivered-deliverable-r1",
+        "artifactId": "j-delivered-deliverable",
+        "artifactKind": "deliverable",
+        "number": 1,
+        "baseRev": null,
+        "author": "agent",
+        "createdAt": "2026-10-28T08:01:00Z",
+        "summary": "合成交付 v1",
+        "changeSummary": "初稿",
+        "blocks": [
+          {
+            "id": "j-delivered-b-conclusion",
+            "type": "conclusion",
+            "status": "confirmed",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-delivered-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-delivered-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "text": "合成两来源库存存在 4 千吨差异，需核对统计边界。"
+          },
+          {
+            "id": "j-delivered-b-chart",
+            "type": "chart",
+            "status": "confirmed",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-delivered-series-1",
+                "label": "合成库存序列 1"
+              }
+            ],
+            "comments": [],
+            "chartSpec": {
+              "templateId": "line-sample",
+              "seriesBindings": {
+                "main": "j-delivered-series-1"
+              },
+              "overrides": {
+                "title": "合成库存"
+              }
+            },
+            "seriesData": {
+              "seriesId": "j-delivered-series-1",
+              "unit": "kt",
+              "freq": "1d",
+              "semantic": "analysis",
+              "asOf": "2026-10-28T08:00:00Z",
+              "points": [
+                {
+                  "ts": "2026-10-28T08:00:00Z",
+                  "value": 100
+                }
+              ]
+            }
+          },
+          {
+            "id": "j-delivered-b-table",
+            "type": "table",
+            "status": "confirmed",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [
+              {
+                "kind": "series",
+                "ref": "j-delivered-series-1",
+                "label": "合成库存序列 1"
+              },
+              {
+                "kind": "source",
+                "ref": "j-delivered-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "tableId": "j-delivered-table-inventory",
+            "columns": [
+              "时间",
+              "主来源 (kt)",
+              "次来源 (kt)"
+            ],
+            "rows": [
+              [
+                "2026-10-28",
+                100,
+                104
+              ]
+            ]
+          },
+          {
+            "id": "j-delivered-b-quote",
+            "type": "quote",
+            "status": "confirmed",
+            "source": "external",
+            "origin": "source",
+            "anchors": [
+              {
+                "kind": "source",
+                "ref": "j-delivered-source-1",
+                "label": "合成库存来源"
+              }
+            ],
+            "comments": [],
+            "text": "合成材料摘录：统计口径可能不同。",
+            "sourceAnchor": {
+              "kind": "source",
+              "ref": "j-delivered-source-1",
+              "label": "合成库存来源"
+            }
+          },
+          {
+            "id": "j-delivered-b-verification",
+            "type": "verification",
+            "status": "confirmed",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "question": "下一期相同口径库存差异是否收敛？",
+            "conclusionBlockId": "j-delivered-b-conclusion"
+          },
+          {
+            "id": "j-delivered-b-note",
+            "type": "note",
+            "status": "confirmed",
+            "source": "agent",
+            "origin": "derived",
+            "anchors": [],
+            "comments": [],
+            "text": "合成样例，仅用于界面与契约验收。"
+          }
+        ]
+      }
+    ]
+  }
+}

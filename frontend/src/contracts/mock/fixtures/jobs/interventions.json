@@ -1,0 +1,103 @@
+[
+  {
+    "id": "i-seed-1",
+    "jobId": "j-collect",
+    "stage": "collect",
+    "artifactId": "j-collect-dataset",
+    "baseRev": "j-collect-dataset-r1",
+    "kind": "ingest",
+    "payload": {
+      "action": "ingest",
+      "uploadId": "j-collect-source-1",
+      "sourceNote": {
+        "purpose": "对照合成库存口径",
+        "reliability": "medium",
+        "publishedAt": "2026-10-27",
+        "validUntil": "2026-11-03",
+        "scopeNote": "全为合成数据，不读取真实材料。"
+      }
+    },
+    "reason": null,
+    "outcome": "recorded",
+    "createdAt": "2026-10-28T08:01:00Z"
+  },
+  {
+    "id": "i-seed-2",
+    "jobId": "j-process",
+    "stage": "process",
+    "artifactId": "j-process-recipe",
+    "baseRev": "j-process-recipe-r1",
+    "kind": "approve",
+    "payload": {
+      "action": "mark_provisional",
+      "artifactId": "j-process-recipe"
+    },
+    "reason": null,
+    "outcome": "recorded",
+    "createdAt": "2026-10-28T08:02:00Z"
+  },
+  {
+    "id": "i-seed-3",
+    "jobId": "j-running",
+    "stage": "analyze",
+    "artifactId": "j-running-analysis",
+    "baseRev": "j-running-analysis-r1",
+    "kind": "ask_why",
+    "payload": {
+      "action": "ask_why",
+      "conclusionId": "j-running-c1",
+      "question": "请核对库存口径。"
+    },
+    "reason": null,
+    "outcome": "recorded",
+    "createdAt": "2026-10-28T08:03:00Z"
+  },
+  {
+    "id": "i-seed-4",
+    "jobId": "j-deliver",
+    "stage": "deliver",
+    "artifactId": "j-deliver-deliverable",
+    "baseRev": "j-deliver-deliverable-r1",
+    "kind": "rewrite",
+    "payload": {
+      "action": "edit_block",
+      "blockId": "j-deliver-b-note",
+      "text": "人补充：先统一统计边界，再比较库存变化。"
+    },
+    "reason": null,
+    "outcome": "merged",
+    "createdAt": "2026-10-28T08:02:00Z"
+  },
+  {
+    "id": "i-seed-5",
+    "jobId": "j-deliver",
+    "stage": "deliver",
+    "artifactId": "j-deliver-deliverable",
+    "baseRev": "j-deliver-deliverable-r1",
+    "kind": "framework",
+    "payload": {
+      "action": "block_comment",
+      "blockId": "j-deliver-b-conclusion",
+      "text": "请说明统计边界差异。"
+    },
+    "reason": null,
+    "outcome": "recorded",
+    "createdAt": "2026-10-28T08:02:00Z"
+  },
+  {
+    "id": "i-seed-6",
+    "jobId": "j-delivered",
+    "stage": "deliver",
+    "artifactId": "j-delivered-deliverable",
+    "baseRev": "j-delivered-deliverable-r1",
+    "kind": "finalize",
+    "payload": {
+      "action": "finalize",
+      "revisionId": "j-delivered-deliverable-r1",
+      "snapshotId": "j-delivered-final-1"
+    },
+    "reason": null,
+    "outcome": "merged",
+    "createdAt": "2026-10-28T08:05:00Z"
+  }
+]

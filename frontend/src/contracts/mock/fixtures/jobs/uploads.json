@@ -1,0 +1,87 @@
+{
+  "uploads": [
+    {
+      "id": "u-unassigned-file",
+      "jobId": null,
+      "inputKind": "file",
+      "sourceNote": {
+        "purpose": "对照合成库存口径",
+        "reliability": "medium",
+        "publishedAt": "2026-10-27",
+        "validUntil": "2026-11-03",
+        "scopeNote": "全为合成数据，不读取真实材料。"
+      },
+      "status": "pending_validation",
+      "mapping": [
+        {
+          "sourceField": "库存",
+          "targetField": "inventory",
+          "unit": "kt"
+        }
+      ],
+      "createdAt": "2026-10-28T08:00:00Z",
+      "removed": false,
+      "fileMeta": {
+        "name": "synthetic-inventory.csv",
+        "size": 128,
+        "type": "text/csv",
+        "lastModified": 1793174400000
+      }
+    },
+    {
+      "id": "u-unassigned-quarantine",
+      "jobId": null,
+      "inputKind": "text",
+      "sourceNote": {
+        "purpose": "对照合成库存口径",
+        "reliability": "medium",
+        "publishedAt": "2026-10-27",
+        "validUntil": "2026-11-03",
+        "scopeNote": "全为合成数据，不读取真实材料。"
+      },
+      "status": "quarantined",
+      "mapping": [
+        {
+          "sourceField": "库存",
+          "targetField": "inventory",
+          "unit": "kt"
+        }
+      ],
+      "createdAt": "2026-10-28T08:00:00Z",
+      "removed": false,
+      "quarantineReason": "合成隔离判定：缺少可核验的材料出处，请补充来源。"
+    }
+  ],
+  "previews": {
+    "u-unassigned-file": {
+      "detectedType": "合成时间序列表",
+      "fields": [
+        {
+          "sourceField": "库存",
+          "targetField": "inventory",
+          "unit": "kt"
+        }
+      ],
+      "unit": "kt",
+      "timeRange": {
+        "start": "2026-10-27",
+        "end": "2026-10-28"
+      }
+    },
+    "u-unassigned-quarantine": {
+      "detectedType": "合成时间序列表",
+      "fields": [
+        {
+          "sourceField": "库存",
+          "targetField": "inventory",
+          "unit": "kt"
+        }
+      ],
+      "unit": "kt",
+      "timeRange": {
+        "start": "2026-10-27",
+        "end": "2026-10-28"
+      }
+    }
+  }
+}

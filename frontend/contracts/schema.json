@@ -166,6 +166,238 @@
     }
   },
   "$defs": {
+    "DeliverableFixtures": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "deliverable": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Deliverable"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "交付物；空工作区为 null。"
+          },
+          "finalSnapshot": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/FinalSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "定稿快照；草稿 / 空工作区必须为 null。"
+          },
+          "stage": {
+            "type": "string",
+            "const": "deliver",
+            "description": "交付阶段。"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "产物唯一标识。"
+                },
+                "kind": {
+                  "type": "string",
+                  "const": "deliverable",
+                  "description": "交付物产物。"
+                },
+                "status": {
+                  "$ref": "#/$defs/ArtifactStatus"
+                },
+                "source": {
+                  "$ref": "#/$defs/Source"
+                },
+                "origin": {
+                  "$ref": "#/$defs/Origin"
+                },
+                "latestMergedRev": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "最新已合并 Revision.id；agent 只读此修订，不读 overlay。"
+                },
+                "overlayRev": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "人的旁路 Revision.id；没有 overlay 时 null。"
+                },
+                "pendingMerge": {
+                  "type": "boolean",
+                  "description": "待合并标记；true 时 overlayRev 必须非空。"
+                },
+                "pendingRunId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "待合并对应的 run；无 run 时 null，支持手动检查点。"
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "status",
+                "source",
+                "origin",
+                "latestMergedRev",
+                "overlayRev",
+                "pendingMerge",
+                "pendingRunId"
+              ],
+              "additionalProperties": false
+            },
+            "description": "交付物产物集合。"
+          },
+          "revisions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "修订唯一标识。"
+                },
+                "artifactId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "修订所属产物标识。"
+                },
+                "number": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "从 1 开始的修订版本号。"
+                },
+                "baseRev": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "基线 Revision.id；初版为 null。"
+                },
+                "author": {
+                  "type": "string",
+                  "enum": [
+                    "human",
+                    "agent"
+                  ],
+                  "description": "本次修订作者。"
+                },
+                "createdAt": {
+                  "$ref": "#/$defs/Timestamp"
+                },
+                "summary": {
+                  "type": "string",
+                  "description": "版本历史摘要。"
+                },
+                "changeSummary": {
+                  "type": "string",
+                  "description": "与基线相比的变更摘要。"
+                },
+                "artifactKind": {
+                  "type": "string",
+                  "const": "deliverable",
+                  "description": "交付物修订。"
+                },
+                "blocks": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/Block"
+                  },
+                  "description": "有序块完整快照，与 FinalSnapshot.blocks 同形。"
+                }
+              },
+              "required": [
+                "id",
+                "artifactId",
+                "number",
+                "baseRev",
+                "author",
+                "createdAt",
+                "summary",
+                "changeSummary",
+                "artifactKind",
+                "blocks"
+              ],
+              "additionalProperties": false
+            },
+            "description": "交付物修订集合。"
+          }
+        },
+        "required": [
+          "deliverable",
+          "finalSnapshot",
+          "stage",
+          "artifacts",
+          "revisions"
+        ],
+        "additionalProperties": false,
+        "description": "交付工作区：交付物、快照及产物修订；继承 S-18 三锚一致性校验。"
+      },
+      "description": "按作业 id 索引的交付工作区样例，复用 S-18 边界校验。"
+    },
+    "UploadFixtures": {
+      "type": "object",
+      "properties": {
+        "uploads": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Upload"
+          },
+          "description": "待归属投放样例，不含正文。"
+        },
+        "previews": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/ExtractionPreview"
+          },
+          "description": "按 Upload.id 索引的合成预览。"
+        }
+      },
+      "required": [
+        "uploads",
+        "previews"
+      ],
+      "additionalProperties": false,
+      "description": "全局投放池样例及预览；作业内投放在 JobDetails.collect 中。"
+    },
     "JobCollections": {
       "type": "object",
       "properties": {

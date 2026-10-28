@@ -128,6 +128,21 @@
 类型中的枚举与常量直接来自 schema；必填不等于非空，null、空列表与零的语义见字段说明。
 完整格式、范围与长度约束见 `schema.json`；AgentRun 的唯一终态、同次运行与 stepId 单调约束还须遵守通用约定，不能只依赖 JSON Schema。
 
+### `DeliverableFixtures`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 按作业 id 索引的交付工作区样例，复用 S-18 边界校验。 |
+
+### `UploadFixtures`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 全局投放池样例及预览；作业内投放在 JobDetails.collect 中。 |
+| `$.uploads` | 是 | `Upload[]` | 待归属投放样例，不含正文。 |
+| `$.uploads[]` | 是 | `Upload` | 投放持久化记录；只含元数据 / 来源语境 / 映射 / 状态，拒绝粘贴正文与完整提交参数。 |
+| `$.previews` | 是 | `object` | 按 Upload.id 索引的合成预览。 |
+
 ### `JobCollections`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
