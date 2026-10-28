@@ -1,8 +1,15 @@
 # 恢复交接 — frontend-workbench v2
 
-> **当前状态（2026-10-28，用户已明确恢复）**：已登记并合入 v1 正式 Handoff `43b6d79681a49562f41751368b2ae00c24062f56`，已落实 S10～S12；本轮没有新写 v2 实现，代码 / 权威 docs 与该 v1 SHA 一致。合并后的独立 Analyze R5 / R6 发现的文档问题已修正，R7 固定审 `217960d` 确认全部关闭、无新增 P1/P2/P3（原文 `specs/frontend-workbench/analyze-v2-r7.md`）。仍待 A 对本轮完整恢复增量的固定提交定向复核；G-02 窄窗导航形态与 S1/S2 的 H-x 实现交接仍缺，不能启动实施。
-> **工作树登记**：协调 / 串行集成 = 当前 `openai/gpt-6.1-sol` 会话；主规格树仍为 `D:/2030/Futures-AI-workbench-v2` / `spec/frontend-workbench-v2`。另已从 `43b6d79` 建立 `D:/2030/Futures-AI-workbench-v2-integration` / `integration/frontend-workbench-v2` 和 `D:/2030/Futures-AI-workbench-v2-implement` / `feat/frontend-workbench-v2-s0`，尚无 v2 实现提交。详见 tasks §1.1。建立工作树不等于放行。
+> **当前状态（2026-10-28，用户已明确恢复）**：已登记并合入 v1 正式 Handoff `43b6d79681a49562f41751368b2ae00c24062f56`，已落实 S10～S12；本轮没有新写 v2 实现，代码 / 权威 docs 与该 v1 SHA 一致。合并后的独立 Analyze R5 / R6 发现的文档问题已修正，R7 固定审 `217960d` 确认全部关闭、无新增 P1/P2/P3（原文 `specs/frontend-workbench/analyze-v2-r7.md`）。A R3（`claude-fable-5-1 via anthropic`）已在独立会话固定审 `b375b270a47d210823ae62da16438eeac17096db` 并通过，0 阻断，原样产物提交 `425c1fd6c639734b0c45ba7cf9259dbee4439074`，已登记到 tasks §1.1。G-02 窄窗导航形态与 S1/S2 的 H-x 实现交接仍缺，不能启动实施。
+> **工作树登记**：协调 / 串行集成 = 当前 `openai/gpt-6.1-sol` 会话；主规格树仍为 `D:/2030/Futures-AI-workbench-v2` / `spec/frontend-workbench-v2`。另已从 `43b6d79` 建立 `D:/2030/Futures-AI-workbench-v2-integration` / `integration/frontend-workbench-v2` 和 `D:/2030/Futures-AI-workbench-v2-implement` / `feat/frontend-workbench-v2-s0`，尚无 v2 实现提交。两树已快进到已审基线 `b375b27`，本次状态提交后可再串行快进审核登记；无 v2 实施提交。详见 tasks §1.1。建立 / 同步工作树不等于放行。
 > **模型记录（脱敏）**：Plan/Tasks / v1 文档合并 = `claude-opus-5-5 via anthropic`，由协调器派出独立会话，不是用户直接切换模型；本次恢复已最小真实探活 Opus bridge，返回额度 / 限流类失败，同模型 anthropic 返回 OK。只换通道、未改配置。下方 R3/R4 的“用户以该通道启动”属作者措辞，本段给出实际派工事实。
+
+## 当前下一步与证据边界
+
+- **仅需 Walter 裁定 G-02**：小于 980 的九项顶部导航，保留“换行”，还是改为“导航容器内部横向滚动”（页面不横滚）？推荐后者，可减少导航占高。两者都不改变冻结的 52 条 AC。保持换行按已审计划登记适配例外；改为横滚须先改 Plan / Tasks，再按已审变更流程 Analyze / A 定向复核，然后才能开启 S0。
+- **生产方仍未交接实现**：旧固定 `8af343f` 是 R6 设计快照。A 另观察到已提交 `0e37fbf9f2810ad04f1c1b3fd856b0219f9c2f0d`（补 v1 基线和 H-x 生产方设计），协调器只读核对其中仍无 `frontend/src/jobs`。不能把新的设计文字或移动工作树当成 H-x 已交付；仍按 tasks §1.2 四项登记逐切片核验，不代写生产方。
+- **非阻断建议**：A R3 新增 V2-S13（T-V2-01 超 2h 的拆分提醒）/ V2-S14（已满足前置措辞）留待开工前按规则处理，未伪称完成；V2-S15（审核 SHA / 固定对象 / 状态同步）本次已完成。
+- **验证只到文档 / Git**：52 AC、12 任务 / 22h、标准命令一一对应、依赖无环、原样 A 产物一致。代码 / design / 权威 docs 与 `43b6d79` 完全一致，冻结 spec 未改。没有安装依赖或运行 pnpm / Vitest / Playwright / 构建 / 应用，没有本轮遗留服务；本轮 pi 调用均同步返回。没有 push / PR / main 合并；没有 v2 Converge / 代码 Review / Gate 2 / 正式 Handoff。
 
 ## 暂停时历史快照（以下“当前 / 未取得 / 不启动新任务”仅指暂停时刻，不覆盖上方恢复状态）
 

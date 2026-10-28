@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| frontend-workbench | blocked（v2 已恢复；独立 Analyze R7 内部无未解决项，待 A 定向复核与窄窗导航裁定） | 无后端依赖；v1 正式 Handoff = `43b6d79`（PR #7，已在 main 且由 `eb6ebd8` 合入规格分支）。集成人及独立集成 / 实施树已登记于 tasks §1.1。S1/S2 的 H-1～H-6 / 页面切片尚无实现提交、定向测试摘要或集成 SHA；互动方 `8af343f` R6 只证明设计质量 | 2026-10-28 | 同一 feature：v1 已 Handoff（[review.md §8/§9](frontend-workbench/review.md)），11 P3 已接受未修、人工 M-01～M-08 与 H-01/H-02 处置仍待；v2 52 AC、12 任务 / 22 h，S10～S12 已落实；独立 Analyze R5 / R6 的文档问题已由 R7（审 `217960d`）确认全部关闭，无新增发现。代码与 v1 Handoff 完全一致，未启动 Implement、未 push；旧 R2 审核不自动覆盖恢复修订 |
+| frontend-workbench | blocked（v2 已恢复；Analyze R7 / A Checklist R3 通过，待窄窗导航裁定与 H-x 交接） | 无后端依赖；v1 正式 Handoff = `43b6d79`（PR #7，已在 main 且由 `eb6ebd8` 合入规格分支）。集成人及独立集成 / 实施树已登记于 tasks §1.1。S1/S2 的 H-1～H-6 / 页面切片尚无实现提交、定向测试摘要或集成 SHA；互动方 `8af343f` R6 / 后续 `0e37fbf` 为设计证据，不当作实现交接 | 2026-10-28 | 同一 feature：v1 已 Handoff（[review.md §8/§9](frontend-workbench/review.md)），11 P3 已接受未修、人工 M-01～M-08 与 H-01/H-02 处置仍待；v2 52 AC、12 任务 / 22 h，S10～S12 已落实；独立 Analyze R5 / R6 的文档问题已由 R7（审 `217960d`）确认全部关闭，无新增发现。代码与 v1 Handoff 完全一致，A R3 已独立审 `b375b27` 并通过（0 阻断），原样产物 `425c1fd` 已登记；S13/S14 为非阻断待办，S15 已完成。未启动 Implement、未 push，G-02 未代批 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。

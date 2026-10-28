@@ -15,7 +15,9 @@
 
 **结论（首轮）：通过——无阻断项（V2-B：0）；建议 9 条（V2-S01～S09，不阻断、不计入判定）。允许进入 Tasks；不授权 Implement。** Implement 开工另需：(1) Tasks 头部登记 v1 完成 Review / Gate 2 / Handoff 并合入 main 的准确 SHA；(2) 各 S1 / S2 子阶段对应的生产方交接单元（plan §7.3 H-1～H-6）按固定 commit + 定向测试摘要交付并由集成人串行集成；(3) v2 Tasks 与 Analyze 产出后由 A 新开独立会话复核并在本文件「阶段说明」对应项补勾。
 
-> **R2 当前有效结论（2026-10-28，定向复核，固定 HEAD `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`）：通过——V2-B 0 项；新增建议 V2-S10～S12（不阻断）。I-01b、V-02 由 A 补设正式复选框并勾选（见文末「R2 定向复核」）。本轮完成 Tasks / Analyze 质量复核，仍不授权 Implement：tasks §5 闸门 1（v1 Handoff SHA）与闸门 3（H-x 交接集成）全部未过。** 上方首轮（R1，审 `d2bf5a7`）全文保留为历史，其 V2-S01～S09 的落地核验见 R2-C01。
+> **R2 结论（2026-10-28，定向复核，固定 HEAD `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`）：通过——V2-B 0 项；新增建议 V2-S10～S12（不阻断）。I-01b、V-02 由 A 补设正式复选框并勾选（见文末「R2 定向复核」）。本轮完成 Tasks / Analyze 质量复核，仍不授权 Implement：tasks §5 闸门 1（v1 Handoff SHA）与闸门 3（H-x 交接集成）全部未过。** 上方首轮（R1，审 `d2bf5a7`）全文保留为历史，其 V2-S01～S09 的落地核验见 R2-C01。
+>
+> **R3 当前有效结论（2026-10-28，恢复修订定向复核，固定 HEAD `b375b270a47d210823ae62da16438eeac17096db`）：通过——V2-B 0 项；新增建议 V2-S13～S15（不阻断）。I-01b、V-02 在 R3 基线上再次确认；R3-C01～R3-C08 为正式复选框（见文末「R3 定向复核」）。本轮只解除 tasks §5 闸门 2 的「A 定向复核」子项（待集成人把本文件提交 SHA 与固定对象 `b375b27` 登记进 tasks 1.1:387）；闸门 1 的 SHA 子项已满足（`43b6d79`），G-02 窄窗导航形态仍待 Walter 裁定，闸门 3（H-x 交接）全部未过——仍不授权 Implement。** R2 全文保留为历史，其 V2-S10～S12 的落地核验见 R3-C04。
 
 ## 需求完整性
 
@@ -111,11 +113,11 @@
 
 ## 阶段说明（不设复选框；后续由 A 新开独立会话复核并补勾）
 
-- **I-01b spec / plan / tasks 无冲突（Analyze）**：v2 tasks.md 尚不存在，Analyze 未发生。Tasks 产出后由 A 复核。复核要点：v2 任务不得修改或勾选 v1 历史任务，但须**显式声明取代**与 v2 冲突的 v1 完成标准——T-08.1 / T-08 上下文「八项菜单」（tasks:115、119）、T-08.5「专题研究子项由研究列表驱动」（tasks:123）、T-13.1「八路由」（tasks:203）、T-15.2「M-01～M-08 八项」（tasks:238）、T-08 `stores/app.ts` 状态文案；旧 tasks 不得当 v2 任务生效。 **R2 确认（HEAD `949a232`）：已复核通过，正式复选框见文末「R2 定向复核」I-01b。**
-- **V-02 任务粒度与验证命令满足 tasks.md 模板要求**：Tasks 产出后由 A 复核——每条完成标准引用 AC 编号、验证命令一一对应、0.5–2 h、依赖无前向无环；S1 / S2 任务显式 `blocked_by: H-x`（指向固定交接 SHA）；头部登记 v1 Handoff SHA 与集成验证分支名；AC-002-8 / 003-7 / 005-8 集成子项不得由占位任务「完成」。 **R2 确认（HEAD `949a232`）：已复核通过，正式复选框见文末「R2 定向复核」V-02。**
+- **I-01b spec / plan / tasks 无冲突（Analyze）**：v2 tasks.md 尚不存在，Analyze 未发生。Tasks 产出后由 A 复核。复核要点：v2 任务不得修改或勾选 v1 历史任务，但须**显式声明取代**与 v2 冲突的 v1 完成标准——T-08.1 / T-08 上下文「八项菜单」（tasks:115、119）、T-08.5「专题研究子项由研究列表驱动」（tasks:123）、T-13.1「八路由」（tasks:203）、T-15.2「M-01～M-08 八项」（tasks:238）、T-08 `stores/app.ts` 状态文案；旧 tasks 不得当 v2 任务生效。 **R2 确认（HEAD `949a232`）：已复核通过，正式复选框见文末「R2 定向复核」I-01b。** **R3 确认（HEAD `b375b27`）：恢复增量（R3 / R4 合并 / R5 / R6 修正 / R7）复核后仍成立，见文末 R3-C03、R3-C06。**
+- **V-02 任务粒度与验证命令满足 tasks.md 模板要求**：Tasks 产出后由 A 复核——每条完成标准引用 AC 编号、验证命令一一对应、0.5–2 h、依赖无前向无环；S1 / S2 任务显式 `blocked_by: H-x`（指向固定交接 SHA）；头部登记 v1 Handoff SHA 与集成验证分支名；AC-002-8 / 003-7 / 005-8 集成子项不得由占位任务「完成」。 **R2 确认（HEAD `949a232`）：已复核通过，正式复选框见文末「R2 定向复核」V-02。** **R3 确认（HEAD `b375b27`）：12 任务 / 22.0 h、T-V2-01 6/6 等结构复算通过，T-V2-01 工时（R6 O-1）判定见文末 R3-C07。**
 - **P-4 主函数只写正常流程（§5.4）**：代码级准则，Review 阶段核 `JobTrack` 三态分支、`AppShell` 投放事件处理、`send` 快照与 `receive` 绑定。
 - **AC-009-1 命令输出 / AC-009-2 截图 / AC-007-5 生产方证据**：属 Implement / Handoff 证据，当前不声称。
-- **Implement 前置**：本文件当前有效复选框全部勾选，但开工另需 (1) Tasks 经 A 复核补勾；(2) Tasks 头部登记 v1 Handoff SHA；(3) 各子阶段的 H-x 交接单元以固定 commit + 定向测试摘要交付并由集成人集成；(4) 外部阻塞未解除时 Converge 必报「未收敛（外部阻塞）」，不得报全量。 **R2 补记**：(1) 已由 R2 完成（tasks §5 闸门 2 的 (b) 明确通过记录 = 文末 R2 节；(a) 以本文件被集成人提交后的 SHA 登记进 tasks 1.1:304）；(2)(3)(4) 仍未满足，12 个 v2 任务全部 blocked。
+- **Implement 前置**：本文件当前有效复选框全部勾选，但开工另需 (1) Tasks 经 A 复核补勾；(2) Tasks 头部登记 v1 Handoff SHA；(3) 各子阶段的 H-x 交接单元以固定 commit + 定向测试摘要交付并由集成人集成；(4) 外部阻塞未解除时 Converge 必报「未收敛（外部阻塞）」，不得报全量。 **R2 补记**：(1) 已由 R2 完成（tasks §5 闸门 2 的 (b) 明确通过记录 = 文末 R2 节；(a) 以本文件被集成人提交后的 SHA 登记进 tasks 1.1:304）；(2)(3)(4) 仍未满足，12 个 v2 任务全部 blocked。 **R3 补记（HEAD `b375b27`）**：(2) 已满足——v1 Handoff SHA `43b6d79` 已登记（tasks 1.1:381）且在 main 上；(1) 的恢复增量部分由文末 R3 节完成，待集成人登记本文件提交 SHA；(3) 仍未满足（tasks 1.2 八个交接单元全部「未取得 / 未交付」）；(4) 不变；另增 G-02（窄窗导航形态）待 Walter 裁定，裁定前 T-V2-01 不开工。12/12 任务仍 blocked。
 
 ## 结构核验证据（只读内存脚本 + git，未写文件、未安装依赖）
 
@@ -141,7 +143,7 @@ EXT_8bd1b31  checklist 当前轮次 = R2 通过（审 630e06f）；plan:16 所�
 
 ---
 
-# R2 定向复核（Tasks / Plan §7 细化 / Analyze F-01～F-07）——当前有效
+# R2 定向复核（Tasks / Plan §7 细化 / Analyze F-01～F-07）——R3 前有效（结论由文末 R3 延续，本节保留为历史）
 
 > **审核员**：A = `claude-fable-5-1` **via `anthropic`**（`--model anthropic/claude-fable-5-1`）。**通道原因**：同模型 `claude-bridge` 最小真实探活在本限额窗口因额度 / 限流失败，`anthropic` 探活成功；只换通道、不换模型，本窗口不重复试 bridge。失败类别 = 通道额度或限流；本记录已脱敏，不含鉴权报错。
 > **独立性**：全新会话；独占 worktree `D:/2030/Futures-AI-workbench-v2-tasks-review`，分支 `review/frontend-workbench-v2-tasks`，进入前 `git status` 干净。A 不是 Plan / Tasks / Analyze / 修正的作者（均 `claude-opus-5-5` via anthropic），不是协调集成人（`openai/gpt-6.1-sol`），不是未来实施者（`openai/gpt-6-astra` 首选）；单审，本节结论即审核结论。
@@ -212,3 +214,74 @@ EXT_8bd1b31  plan:16 所有权不含 src/pages；:55 jobs 复用 agent/store.ts�
 3. **仍不授权 Implement**：tasks §5 闸门 1（v1 Handoff SHA 登记且在 main 上）、闸门 3（各 H-x 四项登记齐全并集成）全部未过；闸门 2 的 (a) 待集成人把本文件提交后的 SHA 登记进 tasks 1.1:304。外部前置齐备前，Converge 只能报「未收敛（外部阻塞）」。
 4. 若后续对 plan §7 / tasks v2 段做实质（非编辑性）修改，回到本文件由同一模型新开独立会话再做定向复核；审核员切换只在调用失败时按 AGENTS §6 回退。
 5. 本轮只写本文件；未修改 spec / plan / tasks / analyze / 旧 checklist / docs / README / 代码，未 commit。本节勾选是设计 / 任务质量证据，不是实现验收证据。
+
+---
+
+# R3 定向复核（恢复修订：v1 Handoff 登记 / R4 合并 / V2-S10～S12 / Analyze R5～R7 修正）——当前有效
+
+> **审核员**：A = `claude-fable-5-1` **via `anthropic`**（`--model anthropic/claude-fable-5-1`）。**通道**：本会话由协调器以 `anthropic` 通道派出；本限额窗口内 `claude-bridge/claude-fable-5-1` 已有额度 / 限流类失败记录（见 R1 / R2 页首与互动方 checklist R3～R6 页首），按 AGENTS §6 第 5 条本会话未再探活 bridge、未换模型、未改任何 provider / 路由 / 配置。失败类别 = 通道额度或限流（继承记录）；本记录已脱敏。
+> **独立性**：全新独立会话；独占 worktree `D:/2030/Futures-AI-workbench-v2-resume-review`，分支 `review/frontend-workbench-v2-resume`，进入前 `git status --porcelain` 为空。A 不是 Plan / Tasks / 修正 / Analyze R3～R7 的作者（均 `claude-opus-5-5` via anthropic），不是协调集成人（`openai/gpt-6.1-sol`，同时是 A 的回退 2，本轮未触发回退），不是未来实施者（`openai/gpt-6-astra` 首选）。单审，本节结论即审核结论。本轮是设计 / 任务质量复核，不是代码 Review、不是 Gate 2。
+> **固定对象**：HEAD = `b375b270a47d210823ae62da16438eeac17096db`（`git rev-parse HEAD`）。它是 R7 报告（`analyze-v2-r7.md`，审 `217960d`）落盘的提交，即 tasks 1.1:387「A 定向复核」行定义的「复跑报告落盘的提交」；该格尚未写入具体 SHA（提交无法含自身号），由集成人在登记本产物 SHA 时一并登记 `b375b27`。`217960d` 与 `43b6d79` 均为 HEAD 祖先；`b375b27` 相对 `217960d` 只改 README 状态行、`analyze-v2.md` 索引、`analyze-v2-r7.md`（新增）与 tasks 状态行（符合 R6 O-2）。
+> **审查路径与命令（按 tasks 1.1:387 口径）**：`git diff ded7161 b375b27 -- specs/frontend-workbench/plan.md specs/frontend-workbench/tasks.md 'specs/frontend-workbench/analyze-v2*.md' specs/README.md HANDOFF.md` = 10 个文件：HANDOFF 14 +/−、README 1/1、analyze-v2 +4、analyze-v2-r3～r7 各新增（52 / 45 / 47 / 50 / 33 行）、plan 31 行（页首 +4 行记录、§7.0 / §7.2 / §7.3 / §7.4 / §7.11 / §7.13 / §7.14 共 8 个 hunk）、tasks 178 行（v2 页首 / 1.1 / §2 补充 / §4 / §5 / T-V2-01 / 02 / 04 / 07 / 09 / 矩阵 / §8 / §9）。另核 `949a232..ded7161` 对 plan / tasks / README / analyze-v2 只有 5 行暂停记账，故本轮覆盖 A R2 之后的全部增量。
+> **范围外三断言（均无输出）**：`git diff 43b6d79 b375b27 -- frontend design docs backend AGENTS.md specs/frontend-workbench/assets specs/frontend-workbench/review.md specs/frontend-workbench/converge.md specs/frontend-workbench/manual-acceptance.md specs/frontend-workbench/checklist.md`；`git diff fec3556 b375b27 -- specs/frontend-workbench/spec.md`；`git diff f1f755b b375b27 -- specs/frontend-workbench/checklist-v2.md`。附加核对：`specs/frontend-workbench/analyze.md` 与 `43b6d79` 相同（R7 O-1）；`session-artifacts/`、`v2-gate1-request.md` 在 `ded7161..b375b27` 无变化。
+> **只读参照**：v1 正式 Handoff `43b6d79`（`git show` / 工作树文件，二者一致）；互动方固定 `8bd1b31`、已提交 `8af343f`（只读 `git show`，不读其工作树）；另见 R3-O03 对 `0e37fbf` 的说明。
+> **只读审核**：未安装依赖、未运行 pnpm / vitest / playwright / 应用、未调用其他 agent、未读取凭证或全局配置、未 commit / push；唯一写入文件为本文件。结构核验用 git 只读 + 内存 Python（stdin，不落盘），结果见文末 R3 证据块。
+
+**R3 结论：通过——阻断 V2-B：0；新增建议 V2-S13～S15（不阻断、不计入判定）。I-01b、V-02 在 `b375b27` 上再次确认成立。本通过只解除 tasks §5 闸门 2 的「A 定向复核」子项；闸门 1 的 SHA 子项由 `43b6d79` 满足；G-02（窄窗导航形态）仍待 Walter 裁定，裁定前 T-V2-01 不开工；闸门 3（H-x 四项登记并集成）全部未过。不授权 Implement；外部阻塞未解除时 Converge 只能报「未收敛（外部阻塞）」。**
+
+## R3 正式复选框
+
+- [x] **R3-C01 固定对象、审查范围与范围外断言成立。** 固定对象按 tasks 1.1:387 规则唯一确定为 `b375b27`（R7 落盘提交），不是 `d1c2133` 或更早；审查命令只列 10 个文档文件；三条范围外断言均无输出，证明 v1 代码 / 截图 / review / converge / manual-acceptance / 旧 checklist 与 `43b6d79` 一致、spec 与 `fec3556` 一致、本文件与 `f1f755b` 一致（直到本轮写入前）。tasks 1.1:387 对「不带路径的 diff / `git log ded7161..` 会带入全部 v1 提交」的说明属实（合并基早于 v1 完成），本轮未以其为清单。R6 F-01 的修正达到目的。
+- [x] **R3-C02 v1 Handoff 登记与 v1 事实复核（tasks §5 闸门 1 SHA 子项）。** `43b6d79` = 「Merge PR #7: frontend-workbench v1（Gate 2 已确认，Handoff）」；`git merge-base --is-ancestor 43b6d79 main` 与 `… origin/main` 均成立（本轮实测；未调用 `gh`）。tasks 1.1:381 所述事实逐项核实：`git diff --stat 0ffa15e 43b6d79 -- frontend design` = 12 个文件、全部属 R1-01 精度修复（`contracts/{types.ts,CONTRACT.md,schema.json}`、`shared/{format.ts,components/Kpi.vue,components/BoardGrid.vue}` + 6 个测试），`design/` 无差异；plan §7.2 壳文件集合中只有 `e2e/workbench.spec.ts` 变化（+1 条 `AC-003-1 R1-01` 用例，T-V2-06 在其上追加）；`Rail.vue`:3 / :9 `useAppStore` / `app` 只服务 :70–:81 研究子列表，窄窗样式 `.rail[data-viewport-collapsed='true'] .nav-list { flex-wrap: wrap }`（:216–218）在 `Rail.vue` 而非 `AppShell.vue`（后者只有 shell 网格的 `[data-viewport-collapsed]` 选择器）；`stores/app.ts`:4 `ResearchItem` 导入、:13 `research` ref、:17 四步文案、:31 `getResearchList`；`PlaceholderPage.vue`:4 / :7–:10；`eslint.config.js` 启用 `tseslint.configs.recommended`、`tsconfig` 无 `noUnusedLocals`——与 R2 以 `0ffa15e` 核对的事实逐字一致，R2-C02 / V2-S10 的判定在 Handoff SHA 上继续有效。契约仍 `1.0.0`，新增可选 `Figure.deltaDecimals` 归契约拥有者，壳不涉。
+- [x] **R3-C03 I-01b 延伸：R4 合并带入的 v1 段 / plan §1～§6 Handoff 版本与 v2 段无冲突。** 结构核验：tasks `## 约定`→`## v2 任务` 区间与 `43b6d79:tasks.md` 同区间逐字相同（含 T-16 / T-17 与 P3 台账）；plan `## 1.`→`## 7.` 区间与 `43b6d79:plan.md` 同区间只差 `---` 分隔行；plan §7 与 `217960d` 逐字相同。语义核对：§7.1 对 §2.1「沿用」——Handoff §2.1 新增「变化量独立精度（R1-01）」只涉 `shared/format.ts` / `Kpi` / `BoardGrid`，v2 §4 写入者表与 :484「不修改」清单均不触及 `shared/**`，JobTrack 不消费 `Figure`；§7.1 对 §2.7「契约升 2.0.0 只由互动方执行」——Handoff §2.7 `Figure` 增可选 `deltaDecimals` 且仍 `1.0.0`，互动方 R6 核对基线 `8920b06` 的 `frontend` / `design` 与 `43b6d79` 相同（本轮实测 `git diff --quiet`），2.0.0 升级将在含 `deltaDecimals` 的基线上进行，无冲突。tasks §2 覆盖声明表仍逐行命中 Handoff 版 v1 段（T-08 / T-13 / T-14 / T-15 / T-06 / T-07 / T-01 条目文字未变），§2 R3 补充（:443）正确声明 T-16 / T-17 不被 v2 覆盖、P3 台账不在 v2 范围、H-02 转 G-02 处理。R4 四处冲突（`.gitignore` / README / plan 页首 / tasks 合计段）均为记录性，无语义冲突。
+- [x] **R3-C04 V2-S10～S12 落地核验（A R2 建议）。** S10：T-V2-01 修改范围 `Rail.vue` 写明「连带删除失效的导入与局部变量」并引 `43b6d79` 位置；T-V2-02 `stores/app.ts` 补 `ResearchItem` 连带清理、`PlaceholderPage.vue` 补 `useAppStore` / `app` 清理；T-V2-01 新增标准 5 / 命令 5、T-V2-02 标准 4 / 命令 4 改为 `typecheck && lint`；矩阵 AC-002-7（:823）/ AC-009-1（:861）同步 ✓。S11：T-V2-09 上下文（:708）写明窗口内提交信息 / Converge / review.md 记「已知红」，窗口由集成人在 H-3 集成时开启、T-V2-09#4 通过后关闭 ✓。S12：T-V2-04（:591）、T-V2-07（:664）blocked_by 显式写出经 T-V2-03（→T-V2-04）继承 H-3·路由切片条件依赖 ✓。§8 表 :877–:879 登记一致。
+- [x] **R3-C05 R3 自查项（非 A 建议，一并复核）。** (a) `AppShell.vue` 条件写入消解：依据 R3-C02 事实（窄窗样式在 `Rail.vue`），§4:469 改为 `AppShell.vue` 只由 T-V2-07 写、T-V2-01 修改范围删去该文件——单写者链由 01（条件）→07 简化为 07，无新增多写者，正确。(b) T-V2-02 blocked_by 改为「继承 T-V2-01 的全部 blocked_by」——T-V2-02 依赖 T-V2-01，§3「blocked_by 未全部解除不得开始」加依赖顺序使 G-02 自然传递，正确。(c) G-02 登记（tasks 1.1:389、plan §7.14:574）：两种裁定的动作各自写明且互斥——保持换行 = plan §7.4 不变、`UI_LAYOUT.md` 暗色适配段登记 `#narrow` 横向滚动「不采用 + 原因」、不重跑 Analyze；改横向滚动 = 改 §7.4 / §7.2 / T-V2-01 范围与标准 4、6，重跑 Analyze 并由 A 复核——与 AGENTS §2 第 8 步变更规则一致。A 核对：spec R-002 / AC-002-6 对两种做法都成立（AC-002-6 是文档级无横向溢出，导航容器 `overflow-x` 滚动不构成文档溢出），本轮不替 Walter 裁定；另见 R3-O01。
+- [x] **R3-C06 Analyze R5 F-01～F-05 / R6 F-01～F-02 修正语义闭环与 R7 结论（独立复核，不预设批准）。** R5 F-01（A 复核对象不一）：1.1:387、§5 闸门 2(a)（:489）、§9 第 3 步（:908）、T-V2-01 状态行（:497）、「本 Tasks 落盘」行（:388）统一指向同一规则且写明「不是 `d1c2133`」✓。R5 F-02（`design/ui` 导航条目无人负责）：本轮实测 `git grep -nE "八项|getResearchList|研究扩展|研究列表" -- design/ui` 恰命中 `README.md:16`、`UI_NAV.md:116`、`:119` 三处，均在暗色适配段 / 索引行，原文快照与 JSON 碎片无命中，故 T-V2-01#6「应无输出」可达；`design-registry.spec.ts`:65–:91 对暗色适配段只断言含「不采用 / 原因 / 为什么 / 落点」及 README 含链接 / 来源 / 迁移日期，按 T-V2-01 修改范围改写不回归；`docs/designUI.md`:198 / :213 确为把 `UI_NAV` 指为导航登记处；plan §7.2:312 / §7.4:382 / §7.11:512 / §7.13:546 / §7.14:574 与 tasks §4:468 / T-V2-01 范围·标准 6·命令 6 / 1.1:389 / 矩阵 AC-008-1（:858）互相一致 ✓。R5 F-03（闸门 4 登记）：1.1:385–:386 与 §5 闸门 4（:491）登记到 R7 ✓。R5 F-04（「未审」措辞过时）：plan 页首 R5 行、§7.0 括注、tasks 页首 R5 行、1.1:378、v2 段首均写明「A R2 已审到 `949a232`，未审增量从 `d1c2133` 起」——与本文件 R2 基线一致 ✓。R5 F-05（通道记录）：plan / tasks 页首更正行 + R3 / R4 报告页首注记（原文不改），HANDOFF 页首同步 ✓。R6 F-01：见 R3-C01 ✓。R6 F-02：T-V2-01#6 只引 AC-008-1（依据 spec:180 AC-008-1 与 :205 §4 末条「视觉决定登记为令牌与条目」，引用准确）；矩阵 AC-002-2 行（:818）不含 #6 与 `git grep`；plan §7.2 备注「验证落在 AC-008-1 registry」与 §7.11 AC-002-2 / AC-008-1 行一致；全文无「导航视觉决定登记」「AC-008-1 registry 与 AC-002-2」残留 ✓。R7 对 `217960d` 的「F-01 / F-02 关闭、无新增」经本轮独立核对成立；`217960d..b375b27` 只有状态记账。
+- [x] **R3-C07 V-02 再确认（固定 `b375b27`）+ R6 O-1（T-V2-01 工时）判定。** 12 任务，工时 2 / 2 / 2 / 2 / 2 / 2 / 2 / 1 / 2 / 2 / 1.5 / 1.5 = 22.0 h；完成标准 / 验证命令 6/6、4/4、3/3、3/3、4/4、4/4、4/4、2/2、4/4、3/3、9/9、3/3；每条标准引用 AC；标准 AC 并集 = 52（missing / extra 皆空）；矩阵 52 行唯一；`T-V2-xx#n` 引用 bad refs = []；依赖 01←∅、02←01、03←02、04←03、05←02、06←05、07←02+04、08←06+07、09←08、10←09、11←10、12←11，无前向无环；12/12 状态行 blocked。**T-V2-01 工时**：在原 2 h（nav / router / Rail / `shell.spec` 迁移 / `agent.spec`）上新增 3 处 `design/ui` 文档改写（各为一段 / 一行）、连带导入清理与 `lint`，改动量小，A 判定仍可按 2 h 登记、不拆任务、不改结构；但它已处于上限，若实施中超时须按 AGENTS §2 第 6 步拆分，建议预登记拆分规则（V2-S13）。
+- [x] **R3-C08 内部通过与外部开工阻塞分离。** 本轮通过只解除闸门 2「A 定向复核」子项（产物 SHA 待集成人登记进 1.1:387）。闸门 1：SHA 子项满足；实施树 `feat/frontend-workbench-v2-s0` 与集成树 `integration/frontend-workbench-v2` 均停在 `43b6d79`、无 v2 提交（本轮 `git worktree list` 核对），S0 开工前须快进到含本产物登记的规格提交（tasks §9 第 4 步）。闸门 3：tasks 1.2 八个交接单元四项登记全部「未取得 / 未交付」；plan §7.3:337 / §7.0:281 对互动方 `8af343f` R6 的处置（通过但不含 §7.3 新增要求，不当作依赖已就绪）本轮核对属实——`8af343f` 的 plan / tasks 中「未筛选」「open(jobId」「同一次导航」「路由切片」「ACTIVE_JOB」命中均为 0，其 checklist R6 页首所记基线 `8920b06` 的 `frontend` / `design` 与 `43b6d79` 相同。G-02 待裁定。README:24 状态行、HANDOFF 页首与此一致。本轮未因外部未交付判设计未通过，也未把任何 H-x 当作已实现。
+
+## R3 阻断项（V2-B）
+
+无。
+
+## R3 建议（V2-S13～S15；不阻断、不计入判定；均为 Tasks 文字精度 / 登记事项，不改设计、AC 或 spec）
+
+| # | 位置 | 建议 |
+|---|---|---|
+| V2-S13 | tasks T-V2-01（:516 预计 2 h）；§9 工时段 | R6 O-1 的处置：T-V2-01 已到 2 h 上限并新增 `design/ui` 三处改写。建议仿 v1 尾注（:358）预登记一句「若实施超过 2 h，把 `design/ui` 登记（修改范围前三项、标准 6 / 命令 6）拆为 T-V2-01b（0.5 h，依赖 T-V2-01，矩阵 AC-008-1 行同步）」，避免实施中临时改结构时无规则可循。拆分若真发生，属任务结构变更，按 AGENTS §2 第 8 步走定向 Analyze。 |
+| V2-S14 | tasks T-V2-03 / 04 / 05 / 07 / 09 状态行（:564 / :591 / :610 / :664 / :705）；1.2 登记规则 1 | 这些 blocked_by 仍以「v1 Handoff SHA」开头，但该前置已由 `43b6d79` 满足（T-V2-01 状态行已说明「不能再当作未取得」，其余任务未同步）。建议统一改为「v1 Handoff SHA（已满足 `43b6d79`）」或删去，使 blocked_by 只列未解除项，减少 Implement 时误读。同理 1.2 登记规则 1 只提 `8bd1b31` 旧 R2，建议补「`8af343f` R6 同样不覆盖 §7.3 新增要求」与 plan §7.3:337 对齐。 |
+| V2-S15 | tasks 1.1:387、:388；README:24；HANDOFF 页首 | 集成人登记本产物 SHA 时，在同一提交内把固定对象 `b375b27` 写入 1.1:387（该格目前只写规则、未写 SHA），并同步 README 状态行与 HANDOFF 页首为「A R3 已复核 `b375b27`，待 G-02 裁定与 H-x 交接」；该提交只放登记 / 状态行（R6 O-2 精神），不顺带改 plan / tasks 实质内容，否则超出本轮复核范围。 |
+
+## R3 观察（不计入判定、不要求修改）
+
+- **R3-O01 G-02 的事实边界（供 Walter 裁定参考，不替裁定）**：`design/ui/UI_LAYOUT.md` 的「横向滚动」只出现在原文快照 `#narrow` 规定（:54）；其暗色适配段（:259–:275）对 `shell_collapse` 只写「下方侧栏塌顶栏」，既未写滚动也未写换行，「不采用」列表也未排除滚动；`UI_NAV.md` 暗色适配段（:117）写「窄窗口塌为顶部横向导航」，同样未定形态。v1 实现为换行（`Rail.vue`:218），plan §7.4 沿用；v1 Handoff 把差异登记为 P3 H-02 并指明需 Walter 裁定。两种裁定都不触及 spec 的 52 条 AC（AC-002-6 为文档级无溢出）；tasks 1.1:389 / plan §7.14:574 已把两条路径的文档与流程动作写清。
+- **R3-O02 `UI_NAV.md` 元信息**：T-V2-01 改写暗色适配段时不要求改 front matter（`verified` / `migrated`），`design-registry.spec` 只要求日期格式且 README 含同一日期；是否顺手更新 `verified` 由实施者按 `design/ui/README.md` 的约定决定，不影响 AC-008-1。
+- **R3-O03 互动方分支已前移**：`git worktree list` 显示 `D:/2030/Futures-AI-interaction-resume` / `-review-r7` 停在 `0e37fbf`（`8af343f` 之后一个提交，「register merged v1 base and H-x producer design」，不在 main 上）。本轮只读 `git show 0e37fbf:` 的关键词计数显示其 plan / tasks 已出现「未筛选」「open(jobId」「同一次导航」「路由切片」等 §7.3 要求用语，但**本轮不把它当作任何交接证据**：按 plan §7.3 / tasks 1.2 登记规则 2，H-x 只有在「固定 commit + 已提交的有效 Checklist SHA + 定向测试摘要 + 集成 SHA」四项登记后才解除 blocked_by；tasks §9 第 5 步与 plan §7.0:281 对 `8af343f` 的描述是当时事实，不需要为此改文档。
+- **R3-O04 集成人与 A 回退 2 同模型**：tasks 1.1:384 已登记「`gpt-6.1-sol` 是 A 的回退 2」。本轮 A 未回退，无需记录；若未来触发，按该行要求在 A 产物头部与 review.md 记录。
+
+## R3 结构核验证据（只读 git + 内存脚本；未写文件、未安装依赖、未运行测试）
+
+```text
+HEAD = b375b270a47d210823ae62da16438eeac17096db（branch review/frontend-workbench-v2-resume，git status --porcelain 为空）
+LOG  b375b27 ← 217960d ← 43b97dd ← 516b520 ← 71a21ad ← d4b1853 ← 5ba40ad ← 1642216 ← eb6ebd8(merge 43b6d79) ← d1c2133 ← ded7161 ← f1f755b ← 949a232
+ANCESTOR  43b6d79 ∈ HEAD / main / origin/main ✓；217960d ∈ HEAD ✓；0e37fbf ∉ main
+REVIEW_DIFF ded7161..b375b27（限定路径）= 10 文件：HANDOFF 14 行、README 1/1、analyze-v2 +4、analyze-v2-r3 +52、r4 +45、r5 +47、r6 +50、r7 +33、plan 31 行、tasks 178 行（合计 +408/−48）
+OUT_OF_SCOPE  三断言均无输出；analyze.md == 43b6d79；session-artifacts / v2-gate1-request 在 ded7161..HEAD 无变化
+PAUSE_DIFF  949a232..ded7161 对 plan / tasks / README / analyze-v2 = 5 行记账；checklist-v2 == f1f755b（写入前）
+V1_SEG  tasks「## 约定」→「## v2 任务」== 43b6d79 同区间（逐字）；plan「## 1.」→「## 7.」== 43b6d79 同区间（仅多 `---` 分隔行）；plan §7 == 217960d
+TASKS  12 任务；标准/命令 6/6 4/4 3/3 3/3 4/4 4/4 4/4 2/2 4/4 3/3 9/9 3/3；每条标准含 AC；AC 并集 52（missing=[] extra=[]）；矩阵 52 行唯一；T-V2-xx#n bad refs=[]；依赖无前向无环；工时 22.0 h；12/12 blocked
+V1_43b6d79  0ffa15e..43b6d79 frontend/design = 12 文件（R1-01），§7.2 壳文件仅 e2e/workbench.spec.ts（+AC-003-1 R1-01 用例）；Rail.vue:3/:9 useAppStore/app、:70–:81 research 子列表、:216–:218 flex-wrap；AppShell.vue 无导航样式；stores/app.ts:4 ResearchItem、:13 research、:17 四步文案、:31 getResearchList；PlaceholderPage.vue:4/:7–:10；eslint = tseslint recommended；tsconfig 无 noUnusedLocals
+DESIGN_UI  grep 八项|getResearchList|研究扩展|研究列表 -- design/ui → README.md:16、UI_NAV.md:116、:119（仅此三处）；UI_LAYOUT.md:54 原文「横向滚动」，:259–:275 暗色适配段无「滚动 / 换行」；UI_NAV.md:117「塌为顶部横向导航」；design-registry.spec:65–:91 暗色适配段断言 = 不采用/原因/为什么/落点 + README 链接/来源/日期；designUI.md:198/:213 指 UI_NAV
+SPEC  == fec3556；:180 AC-008-1；:205 §4 末条「视觉决定登记为令牌与条目」
+EXT  8af343f checklist R6 通过（基线 8bd1b31，前端核对 8920b06）；8920b06 vs 43b6d79 frontend/design 无差异；8af343f plan/tasks 关键词 未筛选/open(jobId/同一次导航/路由切片/ACTIVE_JOB 命中 0；JobTypeLabel tasks 2、JobStatusBadge plan 2 / tasks 1、2.0.0 plan 5 / tasks 6
+b375b27 内容 = README 1/1、analyze-v2 +3/−1、analyze-v2-r7 +33、tasks 状态行 +6/−5（无实质设计改动）
+未运行：pnpm / vitest / playwright / gh / 应用；未读取任何外部 worktree 的工作树文件
+```
+
+## R3 结论与下一步
+
+1. **通过（恢复修订的设计 / 任务质量）**：V2-B 0；I-01b、V-02 在 `b375b27` 上再次成立；v1 Handoff 登记与事实复核无误；R4 合并无语义冲突；V2-S10～S12 全部落地；R5 / R6 修正语义闭环、R7 结论经独立核对成立；G-02 两条路径的文档动作完整。
+2. **新增建议 V2-S13～S15**：均为 Tasks 文字精度 / 登记事项；S15 由集成人在登记本产物时顺手完成；S13 / S14 可在 Implement 前由 Tasks 作者按变更规则补入（只改 tasks 文字，不触发 spec 或 §7 设计变更，不要求重新 A 复核）。
+3. **仍不授权 Implement**：(a) 集成人登记本产物 SHA 与固定对象 `b375b27` 进 tasks 1.1:387（闸门 2(a)）；(b) Walter 裁定 G-02（保持换行 → 登记日期后 T-V2-01 照计划执行；改横向滚动 → 改 plan §7.4 / §7.2 / T-V2-01，重跑 Analyze 并回到本文件由同一模型新开会话定向复核）；(c) 壳实施树快进到含 (a) 登记的规格提交；(d) S0 开工仍须经 §5 闸门逐项人工核对；S1 / S2 另等 H-x 四项登记与集成。外部阻塞未解除时，Converge 只能报「未收敛（外部阻塞）」。
+4. 若后续对 plan §7 / tasks v2 段做实质（非编辑性）修改，回到本文件由同一模型新开独立会话定向复核；审核员切换只在调用失败时按 AGENTS §6 回退。
+5. 本轮只写本文件；未修改 spec / plan / tasks / analyze / 旧 checklist / docs / README / HANDOFF / 代码，未 commit。本节勾选是设计 / 任务质量证据，不是实现验收证据。
