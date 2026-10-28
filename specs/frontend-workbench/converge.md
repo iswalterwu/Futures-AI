@@ -112,3 +112,14 @@
 A 亲跑 generated 对拍（exit 0）、103 项定向单元 / 组件（exit 0）、5 项定向 e2e（exit 0），并核实全量 559 / 66 与构建日志。另新增 R2-01 / R2-02 两项 P3（头部计数、六卡 e2e 覆盖强度），已加入 tasks 后续候选台账。**现在待 Gate 2 处置的 P3 合计 11 项（首轮剩余 9 + 第二轮 2），均尚未获风险接受；人工 8 项仍未验收。**
 
 此后仅落盘审核结论 / 状态 / 后续候选，不再改实现或测试，不把本更新当作 Handoff 批准。
+
+## 8. Handoff：合并主线后的复查与验收证据（2026-10-28）
+
+> 执行者：Handoff = claude-opus-5-5 via anthropic。§1 ~ §7 为历史记录，不改写。
+
+- **合并**：`8920b06` 合入 `origin/main@3bf6476`，5 处冲突的处理见 [review.md §9](review.md)。复查结论同 [analyze.md](analyze.md) 末节：`frontend/`、`design/`、spec、plan、Checklist 与 `b991059` 逐字一致；主线 backend / AGENTS / interaction / 架构 / D-016 ~ D-019 未被覆盖。
+- **自动化实测（合并后的 HEAD `8920b06`，本机 Chrome 156，端口 4173 由 Playwright 自启停）**：`pnpm -C frontend test` exit 0——`tokens:check` 156 令牌 / 5 生成物一致，六项守卫通过（colors 样例 24/24 阳性、0 阴性），typecheck / lint 通过，Vitest 14 文件 **559 passed**，Playwright **66 passed**（1.2m）；`pnpm -C frontend build` exit 0（JS 780.57 kB / gzip 263.31 kB，仅 >500 kB chunk 提示）。计数与 Review 时一致，属于本轮重新实跑，不是转抄。
+- **人工清单**：M-01 ~ M-08 已由 AI 在 Chrome 中实际执行，截图 60 张 + 采集元数据，见 [assets/handoff/](assets/handoff/README.md)；AI 视觉结论写在 manual-acceptance.md。这不是 Walter 的人工验收，勾选框保持未勾选。
+- **新发现**：H-01（图注断行）与 H-02（窄窗顶部导航中专题研究子项纵向堆叠、挤占模块区）。两项都没有违反 45 条 AC 中的自动判据，也不改变“v1 实现与自动化验证范围已收敛”的结论；已登记为后续候选，未经 Walter 处置。
+
+**结论：合并后仍收敛（v1 实现与自动化验证范围）。** 尚未完成的是 Walter 对 M-01 ~ M-08 的人工复核，以及对 H-01 / H-02 的处置。

@@ -1,6 +1,6 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **当前状态（2026-10-28，Handoff）**：独立 A 第二轮定向复核 **通过，无新增 P1/P2**，R1-01 / R1-09 已闭环（§7）。**Gate 2 已批准**：Walter 2026-10-28 回复“确认”，接受 11 项 P3（R1-02/03/04/05/06/07/08/10/11 + R2-01/02）为后续任务——接受 ≠ 已修复（§8）。Handoff 记录、实测证据、截图索引与合并说明见 §9。
+> **当前状态（2026-10-28，Handoff）**：独立 A 第二轮定向复核 **通过，无新增 P1/P2**，R1-01 / R1-09 已闭环（§7）。**Gate 2 已批准**：Walter 2026-10-28 回复“确认”，接受 11 项 P3（R1-02/03/04/05/06/07/08/10/11 + R2-01/02）为后续任务——接受 ≠ 已修复（§8）。Handoff 记录、实测证据、截图索引与合并说明见 §9：合并主线后 559 + 66 全绿、构建通过；M-01 ~ M-08 已由 AI 实际执行并附 60 张截图（不是 Walter 人工验收，人工勾选待复核）；Handoff 新发现 H-01 / H-02 已登记、未经 Walter 处置。
 > §0 ~ §6 为第一轮历史原件、§7 为第二轮原件，均保留原文，其中“Gate 2 未批准 / 未 Handoff”是当时的时点记录。
 
 > **（第二轮时点原文）最新结论（2026-10-28）**：独立 A 第二轮定向复核 **通过，无新增 P1/P2**；R1-01 / R1-09 已闭环。首轮剩余 9 项 P3 + 第二轮新增 2 项 P3 均尚待 Gate 2 处置，人工 M-01 ~ M-08 未验收。详见 §7；§0 ~ §6 保留第一轮历史原件，不代表最新结论。
@@ -243,3 +243,79 @@ R1-01 与 R1-09 已闭环，本轮判定**通过**（无 P1 / P2）。待 Walter
   2. 11 项 P3——R1-02、R1-03、R1-04、R1-05、R1-06、R1-07、R1-08、R1-10、R1-11、R2-01、R2-02——**接受为后续任务，v1 未修复**；后续归属与验证引用见 [tasks.md](tasks.md)「P3 后续台账」。
   3. 授权进入完整 Handoff（更新交接证据、PR 并 merge 到 main）。
 - **边界**：Gate 2 是对评审结论的确认，不是截图签字或人工视觉验收；M-01 ~ M-08 的执行与结论见 §9 与 [manual-acceptance.md](manual-acceptance.md)。
+
+## 9. Handoff 记录（2026-10-28）
+
+> **执行者**：Handoff = claude-opus-5-5 **via anthropic**（AGENTS §6：Handoff 首选 Opus）。本会话是本阶段唯一写入者；分支 `feat/frontend-workbench`，起点 `b991059`（干净）。
+> **通道说明（脱敏）**：claude-bridge 在当前限额窗口已明确 seven_day / monthly 用量耗尽（与 §7 记录一致），按 §6 规则 5 本窗口不重复探测；协调会话对 `anthropic/claude-opus-5-5` 做了一次最小真实调用，返回 READY，因此直接使用 Anthropic API 通道。没有改动全局 pi / provider 配置。
+> **派工**：协调会话（openai/gpt-6.1-sol）只派工、读状态，不并行写仓库。本阶段没有修改生产代码，所以没有委派 Implement（gpt-6-astra）。
+
+### 9.1 完成项
+
+1. **Gate 2 记录**（`beb5b75`）：见 §8；tasks.md 的 P3 台账改为“已接受为后续（用户 2026-10-28 确认），未修复”；Checklist 勾选与冻结 spec 未动。
+2. **合并主线**（`8920b06`，合入 `origin/main@3bf6476`）：5 处内容冲突逐一解决，处理方式见 §9.4；`frontend/` 无冲突、无改动。
+3. **只读复查**：[analyze.md](analyze.md) 末节与 [converge.md §8](converge.md)。结论：无新增冲突，合并后仍收敛（v1 实现与自动化验证范围）。
+4. **自动化实测**（§9.2）：合并后的 HEAD 上 559 单元 / 组件 + 66 e2e 全部通过，生产构建通过。
+5. **M-01 ~ M-08 截图证据**：在 Chrome 156 中实际执行全部操作，采集 60 张截图 + 元数据，见 [assets/handoff/README.md](assets/handoff/README.md)；每张都由执行者看过，AI 视觉结论写在 [manual-acceptance.md](manual-acceptance.md)。
+6. **PR 与合并**：见 §9.7。
+
+### 9.2 实测摘要（HEAD `8920b06`）
+
+| 命令 | 结果 |
+|---|---|
+| `pnpm -C frontend install --frozen-lockfile` | exit 0 |
+| `pnpm -C frontend test` | **exit 0**。`tokens:check` 156 令牌 / 5 生成物一致；`contract` 12 方法 / 10 事件；generated / colors（样例 24/24 阳性、0 阴性）/ glass / updown / grid / network 全部通过；`vue-tsc --noEmit`、`eslint --max-warnings 0` 通过；Vitest 5.0.5：14 文件 **559 passed**（2.74s）；Playwright（本机 Chrome，4173 端口自启停）**66 passed**（1.2m） |
+| `pnpm -C frontend build` | **exit 0**。JS 780.57 kB / gzip 263.31 kB，CSS 31.02 kB；仅 >500 kB chunk 提示 |
+| `git diff b991059 8920b06 -- frontend design` | 空（合并未改实现与规范资产） |
+| `git diff origin/main 8920b06 -- backend AGENTS.md` | 空（不反向覆盖主线 backend / settings；AGENTS §6 未回退） |
+
+计数与 Review 时相同，但都是本轮在合并后的代码上重新运行得到的。日志放在系统临时目录，不入库。
+
+### 9.3 Converge 结论
+
+**已收敛（v1 实现与自动化验证范围），合并主线后复查仍成立。** 45 条 AC 的自动部分全部通过；人工部分已有 AI 执行的截图证据，但还没有 Walter 的人工复核。
+
+### 9.4 合并冲突处理
+
+| 文件 | 处理 |
+|---|---|
+| `.gitignore` | 取并集：保留主线新增的用户数据 / 凭证兜底锚点与 backend 构建产物，追加本分支四行前端忽略项；没有移除任何锚点 |
+| `AGENTS.md` | 整份采用主线版本（含 §5 工程准则与 §6 模型路由）。本分支原有的“单审 A / 接入通道 / §5”改动已被主线以更新形式包含，没有需要保留的独有内容 |
+| `docs/plan.md` | §3 采用主线决策表（D-013、D-014、D-016 ~ D-019），并按主线“编号说明”第 4 步把 D-015 预留行换成正式行，追加完成记录 |
+| `docs/designUI.md` | 以主线为底（双区结构、作业轨道、介入界面、§2.4 状态与来源、§5.2 块模型、§6 新增组件、§8 登记规则），保留本分支的 §2.1 玻璃边注、§2.2 D-015 作用域、§2.3 / §6 / §8 已移植条目指针；§3.10 加注 v1 是已交付的旧导航 / 抽屉地基，新形态由 v2 / workbench-interaction 规格承载。**没有为了对齐新 docs 去改 v1 UI** |
+| `specs/README.md` | 保留主线 data-layer、settings 两行与“跨 feature 待同步事项”（含 v2 的待办），只更新本 feature 一行 |
+
+D-015 的其余同步（ADR 标题、活文档引用、`design/` 7 个文件）在合并前已经完成；`checklist.md` 等历史评审记录保留 D-013，并带“即 D-015”的勘误说明。
+
+### 9.5 截图索引与 AI / 人工区分
+
+- 索引与元数据：[assets/handoff/README.md](assets/handoff/README.md)、[capture-log.json](assets/handoff/capture-log.json)、[capture-log-supplement.json](assets/handoff/capture-log-supplement.json)。
+- 60 张截图覆盖：整体 / 模块库 / 抽屉；字族、KPI 与表格；焦点带两段与空态；七个模块与三态；success / failure / retry / long、角标、步骤详情；各断点两侧、最小 960、基准 1440×900，以及窄窗抽屉 / 模块库；ticker 正常 / 减少动态 / 空态；图表基准 / 窄窗 / 浮窗。
+- **身份限制**：浏览器操作与看图都由 AI（本 Handoff 会话）完成，不是 Walter 本人逐图验收；manual-acceptance.md 的“人工验收通过”勾选框全部保持未勾选。Gate 2 是对评审结论的确认，不等于截图签字。
+
+### 9.6 未完成项、风险与下一步
+
+**未完成项**
+
+1. **Walter 人工复核 M-01 ~ M-08**：截图与 AI 结论已提交，人工勾选待填写。
+2. **H-01 / H-02 处置**（Handoff 新发现，执行者初判 P3，未经 Walter 处置；见 tasks.md「P3 后续台账」）：
+   - H-01：样例图图注“近 60 日收盘 · 样例”断成三行（`span.num` 被全局样式设成块级）。
+   - H-02：小于 980 时顶部横向导航里专题研究子项纵向堆叠，导航区约 205 px；960 ~ 979×900 下模块区可视高度约 215 px，样例图不能一屏完整显示。与 UI_LAYOUT `#rail` 的“塌成顶栏横向滚动”不一致。两项都没有违反 45 条 AC 的自动判据，也不产生横向溢出或元素重叠，因此本阶段没有改代码、没有阻断合并。
+3. **11 项已接受 P3**（R1-02/03/04/05/06/07/08/10/11、R2-01/02）：按 tasks.md 台账归属后续 feature，v1 未修复。
+
+**风险**
+
+- 契约 `1.0.0` 含可选 `deltaDecimals`，backend `api` feature 接线时以当前 `contracts/CONTRACT.md` 为准；`real` 模式启动失败路径（R1-02）仍未处理。
+- `frontend-workbench` v2 的规格分支（`spec/frontend-workbench-v2`）此前基于 `fdaa7d8` 分叉，v1 合入 main 后，v2 要先合并 main 再继续，并会改到同一组规格文件；本阶段不动 v2 分支或工作树。
+- 本分支自 Clarify 阶段起带有 v2 交互原型草稿 `assets/workbench-v2/`（`0dc2497`，README 写明“不是已批准的正式实现”）。它随本 PR 原样进入 main，不是 v1 交付物，也不作为任何依据；本阶段没有新增或修改 v2 内容。
+- 单个 780 kB JS chunk 只有提示；chart-templates 引入更多 ECharts 组件后需要关注。
+
+**下一步**
+
+1. Walter 复核 manual-acceptance.md 的截图与 AI 结论，填写人工勾选；决定 H-01 / H-02 是修复还是接受为后续。若要修复，按 AGENTS §6 由 Implement（gpt-6-astra）在新分支上处理，引用对应 AC，修复后重采受影响的截图。
+2. v2 规格分支合并 main 后继续它自己的流程。
+3. 11 项 P3 随 `api` / `agent-runtime` / `chart-templates` / 日报等后续 feature 处理。
+
+### 9.7 PR 与合并
+
+- PR：（创建后补）

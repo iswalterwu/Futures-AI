@@ -38,3 +38,20 @@ GIT_DIFF_CHECK 通过（仅仓库既有自动换行提示）
 ## 后续
 
 T-16：先跑针对真实实现的失败回归，再修复并重生成契约；T-17：全量测试 / 构建后写 Converge 证据，再由独立 A 定向复核。**本 Analyze 不代表实现已完成、已收敛或 Review 已通过。**
+
+## Handoff 合并主线后的只读复查（2026-10-28）
+
+- 执行者：Handoff = claude-opus-5-5 via anthropic（AGENTS §6 Handoff 首选；只读复查，不改冻结 spec / Checklist）。
+- 起因：AGENTS §2 第 11 步——合并 `origin/main`（`3bf6476`）时有 5 处内容冲突（`.gitignore`、`AGENTS.md`、`docs/designUI.md`、`docs/plan.md`、`specs/README.md`），其中 designUI / plan 涉及设计语义，解决后回到 Analyze 复查。合并提交 `8920b06`。
+
+| 检查 | 结果 |
+|---|---|
+| 冻结 spec / Checklist / plan | `git diff b991059 8920b06` 对 `spec.md`、`checklist.md`、`plan.md` 均为空；45 条 AC 与 Checklist 70/70 未动 |
+| 代码与规范资产 | `git diff b991059 8920b06 -- frontend design` 为空；合并未改任何实现 |
+| 主线权威文件 | `backend/`、`AGENTS.md`、`docs/interaction.md`、`docs/architecture.md`、D-016 ~ D-019、`specs/data-layer`、`specs/settings`、`templates/` 与 `origin/main` 逐字一致（AGENTS §6 模型路由未回退） |
+| D-015 | plan §3 预留行换成正式行并记完成；ADR、spec / plan / tasks、designUI §2.2、`design/` 7 个文件均为 D-015；历史评审记录保留 D-013 + 勘误说明——与主线“编号说明”四步一致 |
+| designUI 合并结果 | 保留主线 §1 新原则、§2.4 状态与来源、§3 双区 / 作业 / 介入界面、§5.2 块模型、§6 新增组件、§8 新登记规则；保留本分支 §2.1 玻璃边注、§2.2 D-015 作用域、§2.3 / §6 / §8 指向已移植条目；§3.10 加注“v1 为已交付地基，9 项菜单 / 作业轨道等由 v2 与 workbench-interaction 规格承载” |
+| v1 spec 与新交互文档的关系 | D-016 / D-018 把菜单改为 9 项并新增作业轨道，与冻结 v1 的 R-002 / R-003 不同；按 D-016“影响”与 plan §9 的批准记录，这由 `frontend-workbench` v2（独立分支，另过 Gate 1）承载，v1 不回改——不构成 v1 的 spec / plan / tasks 冲突 |
+| 令牌来源与文档指针 | `tokens.json` 引用的 designUI §2.1 / §2.2 在合并后各唯一存在；§2.3 / §6 / §8 指针仍指向真实条目（`pnpm -C frontend test` 中 AC-008-1 / AC-008-2 通过） |
+
+**结论：无新增冲突、缺口或歧义；不需要新增 v1 实现任务。** Handoff 视觉检查新发现的 H-01 / H-02 是实现外观问题，已登记到 tasks.md「P3 后续台账」，与本次合并无关。
