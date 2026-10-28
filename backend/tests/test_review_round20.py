@@ -36,7 +36,6 @@ class TestDeadlineBusyMessage:
         Service(tmp_path).init().close()
         real_service = cli.Service
         monkeypatch.setattr(cli, "READ_WAIT_S", 0.6)
-        monkeypatch.setattr(cli, "EXTERNAL_BUSY_S", 999)  # 关闭提前失败，强制走截止分支
 
         def always_busy(root, readonly=False, **kw):
             if readonly:

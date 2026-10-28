@@ -16,6 +16,7 @@ from pathlib import Path
 
 BACKEND = Path(__file__).resolve().parent.parent
 MANIFESTS = ["data/adapters/akshare/manifest.yaml", "data/adapters/eia/manifest.yaml", "data/adapters/local_file/manifest.yaml"]
+SETTINGS_MODULES = ["settings/profile.py", "settings/onboarding.py", "settings/sources.py", "settings/cli.py"]
 
 results: list[tuple[str, bool, str]] = []
 
@@ -49,12 +50,18 @@ def main() -> int:
         with zipfile.ZipFile(wheel) as z:
             names = set(z.namelist())
             data_files = [n for n in names if n.startswith("data/") and n.endswith(".py")]
+            settings_missing = [m for m in SETTINGS_MODULES if m not in names]
             missing = [m for m in MANIFESTS if m not in names]
             entry = [n for n in names if n.endswith("entry_points.txt")]
             entry_text = z.read(entry[0]).decode("utf-8") if entry else ""
         check("wheel 含 data 包", bool(data_files), f"{len(data_files)} 个模块")
         check("wheel 含三份内置清单", not missing, f"缺：{missing}" if missing else "")
-        check("wheel 声明 CLI 入口", "futureai-data = data.cli:main" in entry_text, entry_text.strip()[:60])
+        check("wheel 含 settings 包", not settings_missing, f"缺：{settings_missing}" if settings_missing else "")
+        check(
+            "wheel 声明 CLI 入口",
+            "futureai-data = data.cli:main" in entry_text and "futureai-settings = settings.cli:main" in entry_text,
+            entry_text.strip()[:80],
+        )
         check("wheel 不含测试/临时数据", not any(n.startswith(("tests/", "dist/")) for n in names))
 
         # 3) 隔离安装（--no-deps：依赖由当前环境提供），验证不依赖仓库路径
@@ -71,8 +78,8 @@ def main() -> int:
         code = (
             "import json, importlib.metadata as md, data.catalog.descriptor as d\n"
             "print(json.dumps({'version': md.version('futuresai-data'),"
-            " 'scripts': [e.name + '=' + e.value for e in md.entry_points(group='console_scripts')"
-            " if e.name == 'futureai-data'],"
+            " 'scripts': sorted(e.name + '=' + e.value for e in md.entry_points(group='console_scripts')"
+            " if e.name in ('futureai-data', 'futureai-settings')),"
             " 'golden': d.derive_id({'asset': 'sc', 'geo': 'world', 'measure': 'close', 'contract': ''})}))\n"
         )
         r = run([sys.executable, "-c", code], work, env=env)  # 不用 -I：-I 会忽略 PYTHONPATH
@@ -83,7 +90,7 @@ def main() -> int:
         check(
             "隔离导入与元数据",
             info.get("version") == "0.1.0"
-            and info.get("scripts") == ["futureai-data=data.cli:main"]
+            and info.get("scripts") == ["futureai-data=data.cli:main", "futureai-settings=settings.cli:main"]
             and info.get("golden") == "82b6ce0c3b909b82dad25623ef47f66e",
             json.dumps(info, ensure_ascii=False),
         )
@@ -106,6 +113,19 @@ def main() -> int:
         # 6) 写命令冒烟：init 建库 + 目录编译
         r = run([sys.executable, "-m", "data.cli", "--root", str(root), "config", "disable", "eia"], work, env=env)
         check("写命令冒烟（建库+目录编译）", r.returncode == 0 and (root / "data" / "catalog.sqlite").exists(), f"rc={r.returncode} {r.stderr.strip()[:120]}")
+
+        # 7) settings 冒烟：隔离环境下档案读写与数据源状态
+        r = run([sys.executable, "-m", "settings.cli", "--root", str(root), "profile", "set", "--first-name", "Release"], work, env=env)
+        r2 = run([sys.executable, "-m", "settings.cli", "--root", str(root), "profile", "show"], work, env=env)
+        r3 = run([sys.executable, "-m", "settings.cli", "--root", str(root), "source", "list"], work, env=env)
+        ok = r.returncode == 0 and r2.returncode == 0 and r3.returncode == 0
+        detail = ""
+        if ok:
+            profile = json.loads(r2.stdout)
+            paths = {s["adapter_id"]: s["path"] for s in json.loads(r3.stdout)["sources"]}
+            ok = profile.get("first_name") == "Release" and paths.get("eia") == "offline"
+            detail = f"profile.first_name={profile.get('first_name')} eia.path={paths.get('eia')}"
+        check("settings 冒烟（档案 + 数据源状态）", ok, detail or r.stderr.strip()[:160])
     finally:
         shutil.rmtree(work, ignore_errors=True)
 

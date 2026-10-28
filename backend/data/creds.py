@@ -79,6 +79,15 @@ def exists(creds_dir: Path, name: str) -> bool:
         return False
 
 
+def remove(creds_dir: Path, name: str) -> bool:
+    """删除凭证；返回是否确实删除。路径与命名校验与 put/get 同源。"""
+    p = _path(creds_dir, name)
+    if p.exists():
+        p.unlink()
+        return True
+    return False
+
+
 def get(creds_dir: Path, name: str) -> str:
     """解密读取；读取/解密失败 → 报错，禁止返回明文或 None。"""
     p = _path(creds_dir, name)

@@ -63,25 +63,30 @@ def _like(q: str) -> str:
     return "%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
 
 
-# DuckDB 文件被其他进程占用的消息特征：带持有者 PID 的变体（already open）与
-# 持有者已退出、仅剩 Windows 共享冲突文本的变体（英/中文系统）
 def _system_sharing_messages() -> tuple[str, ...]:
-    """当前系统语言下 ERROR_SHARING_VIOLATION(32)/ERROR_LOCK_VIOLATION(33) 的消息文本（DuckDB 原样嵌入）。"""
+    """当前系统语言下 ERROR_SHARING_VIOLATION(32)/LOCK_VIOLATION(33) 的消息文本（DuckDB 原样嵌入）。
+
+    中文 Windows 下占用消息是本地化的，不靠它就只能识别带 PID 的变体。
+    """
     try:
         import ctypes
 
         return tuple(m.strip() for m in (ctypes.FormatError(32), ctypes.FormatError(33)) if m and m.strip())
-    except Exception:  # 非 Windows 或无法取得系统消息
+    except Exception:  # 非 Windows 或取不到系统消息
         return ()
 
 
-_BUSY_MARKERS = (
-    "already open",
-    "being used by another process",
-    "正在使用此文件",
-    *_system_sharing_messages(),  # 不依赖系统语言
-)
-OPEN_RETRY_S = 5.0  # 写进程开库遇占用的重试窗口（秒）：取锁后新的只读命令不再本地开库
+_BUSY_MARKERS = ("already open", "being used by another process", "正在使用此文件", *_system_sharing_messages())
+
+
+def _open_duck(path, read_only: bool) -> DuckStore:
+    """DuckDB 文件已被其他进程打开 → LockBusy（单写者冲突），不抛裸 IO 异常。"""
+    try:
+        return DuckStore(path, read_only=read_only)
+    except duckdb.IOException as e:
+        if any(m in str(e) for m in _BUSY_MARKERS):
+            raise LockBusy("数据目录被其他进程占用（观测库已被打开）") from e
+        raise
 
 
 class ServiceClosed(FetchError):
@@ -128,24 +133,6 @@ class _AccessGuard:
         return self._lock._is_owned()
 
 
-def _is_busy(e: Exception) -> bool:
-    return any(m in str(e) for m in _BUSY_MARKERS)
-
-
-def _open_duck(path, read_only: bool, retry_s: float = 0.0) -> DuckStore:
-    """DuckDB 文件被其他进程占用 → retry_s 内间隔重试；仍占用 → LockBusy（不抛裸 IO 异常）。"""
-    deadline = time.monotonic() + retry_s
-    while True:
-        try:
-            return DuckStore(path, read_only=read_only)
-        except duckdb.IOException as e:
-            if not _is_busy(e):
-                raise
-            if time.monotonic() >= deadline:
-                raise LockBusy("数据目录被其他进程占用（观测库正被打开），请稍后重试") from e
-            time.sleep(0.05)
-
-
 class Service:
     def __init__(self, root: Path, builtin_dir: Path | None = None, readonly: bool = False):
         self.dirs = ensure_layout(root)
@@ -180,7 +167,7 @@ class Service:
         if not self.readonly:
             cat = CatalogDB(cat_path)
             try:
-                return cat, _open_duck(duck_path, read_only=False, retry_s=OPEN_RETRY_S)
+                return cat, _open_duck(duck_path, read_only=False)
             except Exception:
                 cat.close()
                 raise

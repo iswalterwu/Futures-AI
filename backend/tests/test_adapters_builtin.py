@@ -77,6 +77,31 @@ class TestEia:
         rows, _ = EiaAdapter(tmp_path / "creds").fetch(m.provides[0], None, None)
         assert len(rows) == 1 and rows[0][1] == pytest.approx(120.5)
 
+    def test_api_request_redacts_key_in_logs(self, monkeypatch, caplog, tmp_path):
+        """EIA key 在查询参数里：DEBUG 日志中的 key 被脱敏（一次 Filter，不切级别）。"""
+        import logging
+
+        import requests
+
+        secret = "k-" + "api-redact-0001"
+
+        class Resp:
+            status_code = 200
+            text = "{}"
+
+            def json(self):
+                return {"response": {"data": []}}
+
+        def fake_get(url, params=None, timeout=None):
+            logging.getLogger("urllib3.connectionpool").debug("send: GET %s?api_key=%s", url, params["api_key"])
+            return Resp()
+
+        monkeypatch.setattr(requests, "get", fake_get)
+        with caplog.at_level(logging.DEBUG, logger="urllib3.connectionpool"):
+            eia_mod._request("WDISTUS1", secret, None, None)
+        joined = chr(10).join(r.getMessage() for r in caplog.records)
+        assert "api_key=***" in joined and secret not in joined
+
     def test_key_present_uses_api(self, tmp_path, monkeypatch):
         """D-014：配置了 key → 走官方 API（不触碰免凭证路径）。"""
         creds.put(tmp_path / "creds", "eia_api_key", "k-" + "api-path-0001")

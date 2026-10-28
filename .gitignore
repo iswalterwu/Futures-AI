@@ -219,3 +219,19 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 .superpowers/
+
+# 用户数据本体（每安装一套，默认在 %LOCALAPPDATA%/FuturesAI；此处兜底防误提交）
+# 注意：不要用裸 `data/`，会误伤 backend/data 源码包
+/futuresai-data/
+/profile/
+/creds/
+**/profile.bin
+**/eia_api_key.bin
+*.duckdb
+*.duckdb.wal
+*.sqlite
+
+# Python 构建产物（生成物不入库）
+backend/build/
+backend/dist/
+backend/*.egg-info/
