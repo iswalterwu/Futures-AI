@@ -20,7 +20,7 @@ specs/<feature>/
 | feature | 状态 | 依赖 | 最近更新 | 备注 |
 |---|---|---|---|---|
 | data-layer | done | 无 | 2026-10-27 | Gate 2 已确认（选项 A）；Handoff：feat/data-layer 经 PR 合并到 main；后续任务见 specs/data-layer/review.md |
-| frontend-workbench | in-progress | 无（与后端唯一接口为 R-007 契约） | 2026-10-28 | Gate 1 已批准（45 条 AC）；按新 AGENTS.md 精简（plan 218 行 / tasks 15 项 25.5 小时）→ 单审 A Checklist 通过（70/70）→ 待 Analyze / Implement |
+| frontend-workbench | in-progress（v1 实施中；v2 Clarify 草稿待 Gate 1） | 无后端依赖；v2 集成 AC 依赖 workbench-interaction 前端 | 2026-10-28 | v1：45 AC，A Checklist 通过；前端基线 fdaa7d8，T-09 等在独立 worktree 实施。v2：隔离分支 spec/frontend-workbench-v2，九项导航/固定作业轨道/全局投放/对话上下文，52 AC、Q-023～Q-030 待批准；plan/tasks/checklist 仍为 v1，不授权 v2 实施。见 specs/frontend-workbench/v2-gate1-request.md |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
