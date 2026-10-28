@@ -22,7 +22,7 @@ specs/<feature>/
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
 | frontend-workbench | in-progress（v1 实施中；v2 Clarify 草稿待 Gate 1） | 无后端依赖；v2 集成 AC 依赖 workbench-interaction 前端 | 2026-10-28 | 隔离 worktree D:/2030/Futures-AI-workbench-v2（spec/frontend-workbench-v2）：九项导航/固定作业轨道/全局投放/对话上下文，52 AC、Q-023～Q-030 待 Walter 批准；按 A 首轮 B-06 细化唯一文件所有者；未进入 v2 Plan |
-| workbench-interaction | blocked（spec v1.1 冻结；Tasks / Analyze 经 A R6 通过；Implement 待 frontend-workbench v1 Handoff 合入 main） | frontend-workbench v1 Handoff 合入 main（实现硬前置，未满足）；壳集成待 v2 Gate 1 + 交付；api 非 mock 仅后续真实集成前置 | 2026-10-28 | Phase 1.5 协作交付骨架。Tasks r5 / Analyze R5 由 claude-opus-5-5 via anthropic 产出；Checklist R6（A = claude-fable-5-1 via anthropic）通过：B-11 关闭、P-1 补勾，26/26 有效项勾选。62 个实施任务（约 96.5 h）全部未开始；46 AC 仅在文档层覆盖，非实现测试通过。implementation_base_sha = PENDING：前端 Gate 2 已确认（beb5b75），但 8920b06 非 main / origin/main 祖先，尚缺 Handoff 合入 commit；全部任务 blocked_by frontend-workbench-v1-handoff，H 组另 blocked_by v2（AC-003-1 / 005-5 / 007-4 的 v2 子项 Converge 须报未收敛）。未改代码、未实施、未验收 |
+| workbench-interaction | blocked（spec v1.1 冻结；r6 接口精化待 A 定向复核 R7；Implement 待代码授权） | frontend-workbench v1 Handoff 合入 main（**已满足**：`implementation_base_sha = 43b6d79`，PR #7 merge commit）；r6 plan / tasks / analyze / interface-handoff 的 A 新会话定向复核（Checklist R7，未开始）；Walter 代码实施授权 + 集成人 / 集成验证分支 / 实施 worktree 登记（未取得）；H 组另待 v2 壳方 S1 / S2 交付；api 仅后续真实集成前置 | 2026-10-28 | Phase 1.5 协作交付骨架。恢复轮 r6（claude-opus-5-5 via anthropic）：在 43b6d79 重核前端事实（唯一实质差异 mock.spec.ts:96-99 已落 T-A09）；与 v2（ded7161，v2.1 Gate 1 已批准）H-1～H-6 / 页面切片对拍，缺口均为既有需求内接口精度、无需求变更；Tasks r6 = 66 任务 / 约 101.5 h（新增 T-A09a / T-A22a / T-A22b / T-C01a），全部未开始；Analyze R6 内部一致。Checklist R6（26/26，8af343f）只覆盖 r5 设计。H-1～H-6 与页面切片全部**未交付**（无 commit / Checklist SHA / 测试摘要 / 集成 SHA）。未改代码、未实施、未验收 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
@@ -31,6 +31,7 @@ specs/<feature>/
 
 | 日期 | 来源 | 影响 feature | 要做什么 |
 |---|---|---|---|
+| 2026-10-28 | workbench-interaction r6（interface-handoff.md §3 / §5；tasks §2a） | `frontend-workbench` v2 | 接收方核对生产方 r6 设计的公开名称与语义（待本 feature A R7 复核后生效）：`useJobsStore()` 的 `jobs / listStatus / listError / ensureJobs / refresh / createJob`；契约常量 `ACTIVE_JOB_STATUSES`（JobStatus − delivered / cancelled）；`sessionStore.context` 只经路由守卫设置、无公开 setter（S1-ctx 条件依赖 H-3）；`main.ts` 另含守卫注册与 jobsStore 订阅（生产方文件）；H-6 角标样例在 job-running / job-conflict 场景且依赖生产方 T-A21，是否分批交接待接收方确认；`jobFixtures` 中 `jobs` 按场景集合分键、每 client 读一次；待归属池在 IntakeDrawer 内。全部切片仍未交付；生产方不代写壳文件，接收方不以本行为交接证据 |
 | 2026-10-28 | D-018 | `frontend-workbench` v2（Gate 1 待批） | R-002 / AC-002-2 / Q-023 菜单第七项"学习"→"格物致知"（路由 `/learning` 不改），在 Gate 1 前改入 |
 | 2026-10-28 | D-019（多 agent 编排、模型三档） | `settings`（后续版本） | 新增模型三档配置需求，另起 spec 修订 |
 

@@ -4,6 +4,7 @@
 > 依据：`docs/interaction.md` §3/§7、`docs/designUI.md` §2.4/§3/§5.2/§7、`specs/frontend-workbench/plan.md`（地基与约定）、D-016。
 > **2026-10-28 Checklist R1 修订**：针对 A 的 B-01～B-08 / S-01～S-10 补设计；冻结 spec 不变。以下是待 A 复核的修正，不是审核通过，不授权 Tasks / Implement。
 > **2026-10-28 Checklist R3 补正（待 A R4 复核）**：只针对 R3 阻断项做设计补全——B-09（§2.4 `SourceNote.publishedAt`、§3 日期命名）与 B-10（§2.4 `Deliverable` 定稿元数据与 `DeliverableStatusLabel`、§2.4 场景样例、§4.1 / §4.6、§5 AC-003-3 / AC-006-7 / AC-008-1 断言落点）。冻结 spec v1.1、AC 数量与需求、docs 权威均不变；B-01～B-08 已闭环的方法、场景、状态迁移、版本 / 旁路语义，六类块、产物状态与外部依赖闸门不变；S-11～S-17 仍归 Tasks。本补正待 A 新开会话做 R4 复核，**不表示 B-09 / B-10 已审核关闭**，不授权 Tasks / Implement。
+> **2026-10-28 恢复轮 r6（接口精化 + 实施基线登记；待 A 新会话定向复核 = Checklist R7）**：① 登记 `implementation_base_sha = 43b6d79681a49562f41751368b2ae00c24062f56`（PR #7 merge commit，见 §1.1）；② 与 frontend-workbench v2（只读参照 `ded7161`，v2.1 Gate 1 已批准）plan §7.3 / tasks §1.2 的 H-1～H-6 与页面切片对拍，在**既有需求与既有设计意图内**补接口机制精度：§1 文件边界（`main.ts` 作业注册内容）、§2.1（`registerJobRoutes` 与会话上下文守卫）、§2.3（jobsStore 共享未筛选缓存与统一刷新、intakeStore 公开接口、sessionStore 设置 / 清空时机、fixture 初始收件箱条目）、§2.4（`ACTIVE_JOB_STATUSES`、`JobListItem` 字段、`jobFixtures` 语义）、§6 回滚、§7。冻结 spec v1.1、46 AC、方法集、动作矩阵、九场景、样例表、rerun 迁移表、定稿语义均不变；完整对拍见 `interface-handoff.md`。本补正**不是审核通过**，不授权 Implement。阶段记录：Plan = claude-opus-5-5 via anthropic（本窗口协调器探活 `claude-bridge/claude-opus-5-5` exit 1，quota / rate / spend_limit 类；同模型 anthropic exit 0；只换通道、未改配置）。
 > **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
@@ -15,7 +16,7 @@
 - **复用**：design tokens / 三层玻璃 / `Num` / `Kpi` / 三态 / 对话抽屉 / CoT 时间线 / ECharts 暗色主题 / `check.mjs` / 契约生成器。**不新增颜色字面量与玻璃层级**
 - **状态徽与来源徽**：只用既有令牌（文字主/次、琥珀；点睛红只作图标/边，不作文字），以文案 + 图标为主，不新增色值（designUI §2.4「派生标记」用来源徽+文字）
 - **文件边界**：
-  - 本 feature 唯一修改者：`frontend/src/jobs/**`、相应 jobs 测试、`frontend/src/contracts/**` 的作业类型/方法/mock/可选 `SendMessage.jobContext`、`frontend/src/agent/events.ts` 的可选上下文、`frontend/src/main.ts` 的作业路由注册、frontend-workbench 既有 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受契约 2.0.0 影响的硬编码断言（仅 T-A09，保留 v1 语义）、`specs/workbench-interaction/**`、`specs/README.md` 本 feature 行。新增 schema 并入 `contractSchemas`，方法进 `methodSemantics`；表驱动生成器无需修改
+  - 本 feature 唯一修改者：`frontend/src/jobs/**`、相应 jobs 测试、`frontend/src/contracts/**` 的作业类型/方法/mock/可选 `SendMessage.jobContext`、`frontend/src/agent/events.ts` 的可选上下文、`frontend/src/main.ts` 的作业注册（挂载前调用 `registerJobRoutes(router, pinia)`：两条路由 + 会话上下文守卫；`jobsStore` 的应用级 agent 订阅，沿用既有 `useAgentStore(pinia).receive` 订阅写法——r6 精化）、frontend-workbench 既有 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受契约 2.0.0 影响的硬编码断言（仅 T-A09，保留 v1 语义）、`specs/workbench-interaction/**`、`specs/README.md` 本 feature 行。新增 schema 并入 `contractSchemas`，方法进 `methodSemantics`；表驱动生成器无需修改
   - `frontend-workbench` v2 唯一修改者（本 feature 不改）：`frontend/src/app/{nav.ts,router.ts,Rail.vue,TopBar.vue,AppShell.vue}`、`frontend/src/workbench/WorkbenchPage.vue` 与首页作业轨道、`frontend/src/agent/{store.ts,AgentDock.vue,AgentDrawer.vue,CotTimeline.vue}` 的上下文消费/展示；本 feature 提供组件、契约和集成测试输入。v2 的契约字段需求交由本 feature 统一写入，不重复改 schema
   - 不修改：`backend/`、`docs/` 权威内容（`interaction.md` / `architecture.md` / `designUI.md`）、冻结的 `specs/frontend-workbench/spec.md`
 
@@ -23,6 +24,7 @@
 
 - 本轮仅补正既有 Plan。**实现起点**必须是 `frontend-workbench` v1 T-01～T-15 完成、经其 Review / Gate 2 / Handoff 合入后的 commit；届时在 Tasks 头部登记 SHA，再建实现分支。`fdaa7d8` 只是本次只读审查基线，不是可开工基线（当时 T-12 `theme.ts`、T-13 对话/store 尚不存在）。此前不写实现、不靠空壳冒充依赖
 - 接线顺序：v1 地基 → 本 feature 的共享作业契约/schema/mock 和 `jobs/routes.ts` → v2 获 Gate 1 后更新其 Plan/Checklist/Tasks，再由壳方接导航/轨道/投放/上下文 → 本 feature 集成验证。v2 草稿不视为已批准接口
+- **r6 基线登记（2026-10-28）**：frontend-workbench v1 已完成 Review / Gate 2（Walter 确认）/ Handoff，并经 PR #7 合入 main；`implementation_base_sha = 43b6d79681a49562f41751368b2ae00c24062f56`（merge commit；v1 源交付提交 `eba5002`）。协调器实查 `gh pr view 7` = MERGED、`git merge-base --is-ancestor` 对 `origin/main` 成功；本会话在该 SHA 的只读目录重核前端事实（tasks §0.0）。**基线门已满足**，但实现分支尚未建立、代码未同步；Implement 另待 r6 的 A 定向复核（Checklist R7）、Walter 代码授权与集成人 / worktree 登记（tasks 页首 IMPL-GATE-R6）。v1 Handoff 遗留的 H-01 / H-02 与人工截图签字属 frontend-workbench 待办，不作为本 feature 新硬阻塞。
 - 直达作业页面与详情阶段轨道不依赖 v2 菜单。AC-003-1 的全局投放、AC-005-5 的全局抽屉上下文、AC-007-4 的**首页作业轨道**部分标 `blocked_by: frontend-workbench-v2`；列表卡/详情阶段轨道角标属本 feature。外部阻塞未解除时 Converge 必报“未收敛（外部阻塞）”，不能报全量完成
 
 ## 2. 模块设计
@@ -36,7 +38,8 @@
 | （全局抽屉） | `IntakeDrawer.vue` | 任意页面投放；由 shell 的"投放"按钮打开，携带可选 `jobId` |
 
 - 本 feature 在 `jobs/routes.ts` 导出两条记录（name=`jobs` / `job-detail`，meta 含 `title/en/navId:'jobs'`），由 `main.ts` 在挂载前对既有 router 调用 `addRoute`；**不改 `app/router.ts`**。具名 `jobs` 记录可替换壳由导航表生成的同名占位，避免 v2 接入后双路由；导航项由 v2 在 `nav.ts` 增加
-- 阶段切换用 `router.replace({ name: 'job-detail', params: { id, stage } })`；刷新保持；未知 stage 回落当前阶段
+- 阶段切换用 `router.replace({ name: 'job-detail', params: { id, stage } })`；刷新保持；未知 stage 回落当前阶段（缺省或未知 stage 时页面以 `router.replace` 补成 currentStage）
+- **r6（H-3 / H-4）**：`jobs/routes.ts` 另导出 `registerJobRoutes(router, pinia)`，对两条记录调用 `addRoute`，并注册一个 `router.afterEach`：目标为 `job-detail` 且 `stage` 合法时把 `sessionStore.context` 置为 `{jobId, stage}`，否则置 null——离开详情时在同一次导航内清空；context 只读、不提供公开 setter、不从 agent run 推导
 - 全局投放入口、工作台作业轨道、导航项均属 v2 前置变更（§7），v1 先保证路由可直达与页面内入口
 
 ### 2.2 组件与职责
@@ -60,14 +63,17 @@
 
 | store | 内容 | 持久化 |
 |---|---|---|
-| `jobsStore` | 当前作业、阶段工作区视图缓存；写回执/agent 通知后重新读取，不做轮询 | 经契约 mock 层，不在 store 内直接落盘 |
-| `intakeStore` | 投放抽屉开关、当前投放草稿、待归属池视图缓存 | 同上；原文草稿只在内存 |
+| `jobsStore` | 当前作业、阶段工作区视图缓存；写回执/agent 通知后重新读取，不做轮询。r6（H-2）：另持只读的**未筛选**作业列表 `jobs` 及其 `listStatus` / `listError`；`ensureJobs()`（仅首次加载）、`refresh()`（重读未筛选列表、当前筛选结果与已打开的详情；已有数据时不回到 loading）；`applyFilter()` 结果单独保存为 `filteredJobs`，不覆盖未筛选缓存；`createJob(input)` 为随 H-2·列表交付的可调用写 action；`receiveAgentEvent` 对带 `jobContext` 的终态事件调用 `refresh()`，由 `main.ts` 订阅 | 经契约 mock 层，不在 store 内直接落盘 |
+| `intakeStore` | 投放抽屉开关、当前投放草稿、待归属池视图缓存。r6（H-5）：`open(jobId?)` 记录打开时的 jobId 快照（之后路由变化不改写），`close()`、只读 `isOpen` / `jobId`；提交使用该快照；关闭不导航、不调用 agent | 同上；原文草稿只在内存 |
 | `inboxStore` | `listInbox` 返回的条目与 unreadCount 视图缓存，调用 `markInboxRead` 清除角标 | 已读 id 由 mock 层写 `fai.inbox.v1`，store 不直接写 |
-| `sessionStore` | 当前作业/阶段上下文（供抽屉、介入事件使用） | 内存 |
+| `sessionStore` | 当前作业/阶段上下文（供抽屉、介入事件使用）。r6（H-4）：只读 `context: JobContext \| null`，只由 §2.1 的路由守卫设置 / 清空 | 内存 |
+
+- **写后统一刷新（r6，落实本表“写回执/agent 通知后重新读取”）**：所有领域写调用（作业、投放、介入、交付、收件箱已读、重置）成功后只调用一次 `jobsStore.refresh()`；写失败不刷新；不轮询、不建事件总线、不加请求序号等竞态防护（mock 各请求同延迟、按序完成；真实 `api` 接入时再评估，AGENTS §5.1）。“进行中”只用契约常量 `ACTIVE_JOB_STATUSES`，store 不另建判定
 
 - **契约 mock 层持有唯一可变状态**（`contracts/mock/job-state.ts`），读写均经契约方法；UI store 只做视图缓存。这样 `api` feature 落地时只需替换实现，不动组件
 - 本地持久化 key：`fai.jobs.v1`（作业、产物/版本、投放的允许子集、介入事件、交付物/定稿快照、收件箱条目）；`fai.inbox.v1`（已读 id）。非 normal 场景使用 fixture + 会话内可变副本，**不读、不写、不清**这两个 key；切场景不会清空正常模式数据
 - 待处理项由 mock 契约状态层生成：阶段首次进入 `needs_human`、产物首次 `conflict`、人的 overlay 首次待合并、agent 改稿待接受/回退各生成一条 `InboxItem`（同一目标/原因不重复生成；修订号变化可产生新项）。阶段进度不由 UI 推导，计数亦由 `JobListItem.pendingCount` / 阶段 `pendingCount` 提供
+- 状态建立时对 fixture 初始状态应用同一生成规则（r6）：预置的 H 阶段 / conflict 产物各有一条未读条目，因此 job-running 的 j-human、job-conflict 的 j-conflict 初始即带角标（AC-007-4 与 v2 H-6 的角标样例）
 - `listInbox(jobId?)` 返回条目、已读/已解决状态及作业/阶段计数（只数未读且未解决项）；`markInboxRead(ids)` 将本次实际展示的 id 标已读，清除相应角标但保留条目和介入历史。打开前请求后一次标记，之后新来的条目仍未读；已读不等于已解决，冲突/待合并状态徽继续显示。阶段离开 H、冲突被裁定、overlay 合并、候选被接受/回退时由 mock 层把对应条目标 resolved，完成态不常驻角标。角标位置：列表卡、详情阶段轨道（本 feature），首页作业轨道（v2 消费同一计数）
 
 ### 2.4 契约 v2（R-008）
@@ -79,7 +85,8 @@
 | `Stage` | `collect / process / analyze / deliver` |
 | `StageState` | `not_started / running / needs_human / done / conflict` |
 | `JobType` / `JobStatus` | `daily / research / adhoc`；9 状态与 `spec.md` R-001 一致 |
-| `Job` / `JobListItem` | `id/title/type/subject/goal/createdBy(human或schedule)/status/currentStage/updatedAt/parentJobId(null可用)`；`reason:string|null`（failed/cancelled 必填原因）；`stages` 四阶段状态与计数、`pendingCount`；列表项为其摘要 |
+| `Job` / `JobListItem` | `id/title/type/subject/goal/createdBy(human或schedule)/status/currentStage/updatedAt/parentJobId(null可用)`；`reason:string|null`（failed/cancelled 必填原因）；`stages` 四阶段状态与计数、`pendingCount`；列表项为其摘要（r6 固定字段：`id/title/type/subject/status/currentStage/updatedAt/reason/stages/pendingCount`） |
+| `ActiveJobStatus`（r6，H-2 ③） | `JobStatus` 去掉 `delivered` / `cancelled`（即领域只读门封存的终结态）的 7 个值，导出同源常量 `ACTIVE_JOB_STATUSES` 并登记进 CONTRACT.md；`failed` 可经 rerunStage 继续且以 conflict 阶段呈现（S-14），计入进行中；`draft` 计入。只是对已有状态枚举的分组口径，不新增状态或行为 |
 | 契约展示映射 | 导出 `JobStatusLabel`（九状态）、`StageLabel`（四阶段）、`StageStateLabel`（五状态）、`ArtifactStatusLabel`、`DeliverableStatusLabel`（draft=草稿 / final=已定稿）与 `SourceLabel`；CONTRACT.md 登记同表，徽标只消费契约文案/图标，不另建状态映射 |
 | `Artifact` | `id/kind(dataset或recipe或analysis或deliverable)/status(draft或provisional或confirmed或conflict)/source(external或human或agent或mixed)/origin(source或derived)`；`revisions/latestMergedRev/overlayRev/pendingMerge/pendingRunId`，无 overlay/run 时为 null；人/agent 的分析产物带 derived 标记 |
 | `Intervention` | 十个必有字段：`id/jobId/stage/artifactId/baseRev/kind/payload/reason/outcome/createdAt`；作业级事件 artifactId/baseRev 可 null，reason 可 null；outcome=`recorded/pending/merged/rejected`，原动作不可改，检查点只更新 outcome。kind 13 种仍为 ingest/map_fix/recipe/framework/question/delete/rewrite/veto/approve/ask_why/pin_rule/rerun/finalize |
@@ -116,7 +123,7 @@ resetMockData()
 
 - `listJobs` 按状态/类型与标题子串组合筛选，缺省 updatedAt 倒序，清空筛选恢复全列表；`getJob` 未知 id 返回 not_found。读取历史版本不改变当前版本。写回执包含已改变的作业/产物/版本/事件与 inbox 计数，UI 以回执或重新读取消费，不自行改业务状态
 - `AgentClient.send` 增加可选 `jobContext`；`AgentEvent` 公共可选 `jobContext`（不改变十类事件/唯一终态）。mock DataClient 与 AgentClient 共享 `job-state.ts`；AgentClient 先让该状态层处理事件，再通知 UI 订阅者。runId→作业/阶段/改稿请求的关联在 mock 层，页面卸载不移除它；UI 只刷新缓存
-- mock fixture 为 `jobs.json/job-detail.json/deliverable.json/interventions.json/uploads.json`；`MockOverrides` 增加 `jobFixtures`，**不新增 `jobScript`**。作业运行统一经既有 `send({jobContext})` 的 success/failure/retry/long 脚本驱动；不因读取页面自动启动、不新造检查点事件种类
+- mock fixture 为 `jobs.json/job-detail.json/deliverable.json/interventions.json/uploads.json`；`MockOverrides` 增加 `jobFixtures`，**不新增 `jobScript`**。r6（H-6）：`jobs.json` 按场景集合分键（normal / job-running / job-pending-merge / job-conflict / job-delivered），`job-detail.json` / `deliverable.json` 以作业 id 为键；`jobFixtures` 的每个给出的键整体替换对应内置文件（不深合并，与 v1 `fixtures` 覆盖口径一致），在每个 mock DataClient 的会话状态建立时读取一次并在边界校验；覆盖集合中缺工作区样例的作业返回带阶段的空工作区；存在覆盖时会话只在内存，不读写两个本地 key。作业运行统一经既有 `send({jobContext})` 的 success/failure/retry/long 脚本驱动；不因读取页面自动启动、不新造检查点事件种类
 - 错误形态沿用 `{error:{code,message,retryable}}` 与既有 code；本 feature 的无效操作/只读写入/定稿未决项均返回 validation_error，payload 含说明；未知锚返回 not_found。方法输入/输出/参数字义写进 `methods.ts` 与生成文档
 
 #### 动作 → 契约方法 → 介入 kind（B-01）
@@ -283,7 +290,7 @@ resetMockData()
 | 阶段状态在 UI 推导造成误判 | 阶段状态只读契约 `StageState`，不在前端推导 |
 | 依赖 v2 / api 延迟 | 本 feature 页面与路由可独立验收；v2 集成任务显式 `blocked_by`；api 不阻塞 mock 验收 |
 
-**回滚**：仅回退本 feature 的 jobs/测试、contracts 新增部分、agent/events 可选字段、main.ts 路由注册、T-A09 对既有 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受契约 2.0.0 影响的硬编码断言的修改（恢复 v1 原断言）以及本 feature 规格/状态行；不回退壳方的 nav/router/TopBar/AppShell/WorkbenchPage/agent store 补丁，壳集成由 v2 自行撤销并恢复其占位接口。不得按整文件覆盖其他 feature 的变更；`docs/` 不动。
+**回滚**：仅回退本 feature 的 jobs/测试、contracts 新增部分、agent/events 可选字段、main.ts 的作业注册（路由、守卫与 jobsStore 订阅，r6）、T-A09 对既有 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受契约 2.0.0 影响的硬编码断言的修改（恢复 v1 原断言）以及本 feature 规格/状态行；不回退壳方的 nav/router/TopBar/AppShell/WorkbenchPage/agent store 补丁，壳集成由 v2 自行撤销并恢复其占位接口。不得按整文件覆盖其他 feature 的变更；`docs/` 不动。
 
 ## 7. 前置变更清单（frontend-workbench v2，需其 Clarify + Gate 1）
 
@@ -292,7 +299,8 @@ resetMockData()
 1. **导航**：`nav.ts` 8 项 → 9 项（"专题研究"升级为"作业"指向 `/jobs`，新增"格物致知"占位（路由 `/learning`）；专题研究作为作业类型保留）——影响该 feature R-002 / AC-002-2、AC-002-3
 2. **工作台**：`WorkbenchPage.vue` 焦点带与模块区之间新增**作业轨道**固定件（非模块、不可移除；含待处理介入角标）——影响 R-003
 3. **全局入口**：`TopBar.vue` 增加"投放"按钮、`AppShell.vue` 挂载 `IntakeDrawer`——影响 R-002/R-003 的 shell 结构
-4. **对话上下文**：v2 方在 agent store/抽屉消费可选 jobContext、暴露 selector；类型/events/SendMessage 的新增字段统一由本 feature 写入共享契约，壳方不再重复修改。草稿位置 `D:/2030/Futures-AI-workbench-v2/specs/frontend-workbench/spec.md`（待 Gate 1），其文件责任需与 §1 一致
+4. **对话上下文**：v2 方在 agent store/抽屉消费可选 jobContext、暴露 selector；类型/events/SendMessage 的新增字段统一由本 feature 写入共享契约，壳方不再重复修改。草稿位置 `D:/2030/Futures-AI-workbench-v2/specs/frontend-workbench/spec.md`（待 Gate 1），其文件责任需与 §1 一致。【r6 状态更新】v2 spec v2.1 已于 2026-10-28 获 Walter 批准（Gate 1）；其 plan §7 / tasks（固定只读参照 `ded7161`，A Checklist v2 R2 产物 `f1f755b`）在 §7.3 / tasks §1.2 定义了 H-1～H-6 与页面切片交接要求，文件唯一写入者与本 §1 一致（`main.ts`、`contracts/**`、`agent/events.ts`、`jobs/**` 归本 feature）
+5. **生产方交接（r6）**：H-1～H-6 / 页面切片由本 feature 的哪些任务提供、公开接口名称、定向测试与四项交接登记见 `interface-handoff.md` 与 tasks §2a；当前全部**未交付**。对拍结论：全部缺口属既有需求内的接口机制精度，无需回流 Clarify
 
 ## 8. 实施顺序（任务在 Tasks 阶段拆分，0.5–2h/项）
 
