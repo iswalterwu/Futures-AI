@@ -6702,6 +6702,10 @@
           "type": "string",
           "minLength": 1,
           "description": "用户消息；入口去除两端空白后不可为空。"
+        },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 的全部事件保留发送时 jobId / stage，不随页面或后续 send 改写；无上下文时事件不出现该键。",
+          "$ref": "#/$defs/JobContext"
         }
       },
       "required": [
@@ -6738,6 +6742,10 @@
           "type": "string",
           "const": "run.started",
           "description": "运行开始事件。"
+        },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
         },
         "runId": {
           "type": "string",
@@ -6776,6 +6784,10 @@
           "type": "string",
           "const": "step.thinking",
           "description": "思考摘要步骤。"
+        },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
         },
         "runId": {
           "type": "string",
@@ -6826,6 +6838,10 @@
           "const": "step.text",
           "description": "文本输出步骤。"
         },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
+        },
         "runId": {
           "type": "string",
           "minLength": 1,
@@ -6874,6 +6890,10 @@
           "type": "string",
           "const": "step.tool.call",
           "description": "工具调用步骤。"
+        },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
         },
         "runId": {
           "type": "string",
@@ -6934,6 +6954,10 @@
           "type": "string",
           "const": "step.tool.result",
           "description": "工具结果步骤。"
+        },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
         },
         "runId": {
           "type": "string",
@@ -6999,6 +7023,10 @@
           "const": "step.error",
           "description": "非终态错误步骤。"
         },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
+        },
         "runId": {
           "type": "string",
           "minLength": 1,
@@ -7048,6 +7076,10 @@
           "type": "string",
           "const": "hint.navigate",
           "description": "导航建议步骤。"
+        },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
         },
         "runId": {
           "type": "string",
@@ -7117,6 +7149,10 @@
           "const": "run.completed",
           "description": "运行成功终态。"
         },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
+        },
         "runId": {
           "type": "string",
           "minLength": 1,
@@ -7157,6 +7193,10 @@
           "const": "run.failed",
           "description": "运行失败终态。"
         },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
+        },
         "runId": {
           "type": "string",
           "minLength": 1,
@@ -7192,6 +7232,10 @@
           "type": "string",
           "const": "run.aborted",
           "description": "运行中止终态。"
+        },
+        "jobContext": {
+          "description": "可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。",
+          "$ref": "#/$defs/JobContext"
         },
         "runId": {
           "type": "string",

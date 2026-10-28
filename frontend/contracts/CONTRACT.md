@@ -1613,6 +1613,7 @@
 | `$` | 是 | `object` | 提交给 agent 的用户消息。 |
 | `$.sessionId` | 否 | `string` | 已有会话 ID；缺省时新建会话。 |
 | `$.message` | 是 | `string` | 用户消息；入口去除两端空白后不可为空。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 的全部事件保留发送时 jobId / stage，不随页面或后续 send 改写；无上下文时事件不出现该键。 |
 
 ### `SendReceipt`
 
@@ -1628,6 +1629,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 一次运行的首个事件。 |
 | `$.type` | 是 | `"run.started"` | 运行开始事件。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |
@@ -1639,6 +1641,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 思考摘要的增量或权威全文。 |
 | `$.type` | 是 | `"step.thinking"` | 思考摘要步骤。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |
@@ -1652,6 +1655,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 文本输出的增量或权威全文。 |
 | `$.type` | 是 | `"step.text"` | 文本输出步骤。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |
@@ -1665,6 +1669,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 工具调用开始，不是运行终态。 |
 | `$.type` | 是 | `"step.tool.call"` | 工具调用步骤。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |
@@ -1680,6 +1685,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 工具调用结果，不是运行终态。 |
 | `$.type` | 是 | `"step.tool.result"` | 工具结果步骤。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |
@@ -1696,6 +1702,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 可重试的中间失败；不会结束运行。 |
 | `$.type` | 是 | `"step.error"` | 非终态错误步骤。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |
@@ -1709,6 +1716,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 时间线中的可点击导航建议。 |
 | `$.type` | 是 | `"hint.navigate"` | 导航建议步骤。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |
@@ -1724,6 +1732,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 运行唯一终态的成功分支。 |
 | `$.type` | 是 | `"run.completed"` | 运行成功终态。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |
@@ -1736,6 +1745,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 运行唯一终态的失败分支，复用统一错误详情。 |
 | `$.type` | 是 | `"run.failed"` | 运行失败终态。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |
@@ -1747,6 +1757,7 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 运行唯一终态的中止分支；v1 不提供中止交互。 |
 | `$.type` | 是 | `"run.aborted"` | 运行中止终态。 |
+| `$.jobContext` | 否 | `JobContext` | 可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。 |
 | `$.runId` | 是 | `string` | 运行 ID，所有同次运行的事件保持一致。 |
 | `$.sessionId` | 是 | `string` | 会话 ID，所有同次运行的事件保持一致。 |
 | `$.ts` | 是 | `Timestamp` | 事件发生时间，ISO 8601 带偏移。 |

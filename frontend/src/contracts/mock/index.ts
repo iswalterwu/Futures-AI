@@ -197,6 +197,7 @@ export function createMockAgentClient(): AgentClient {
         ...receipt,
         ts: new Date(startedAt + afterMs).toISOString(),
         ...(event.type === 'run.started' ? { prompt: message.message } : {}),
+        ...(message.jobContext === undefined ? {} : { jobContext: message.jobContext }),
       })))
       script.forEach(({ afterMs }, index) => {
         setTimeout(() => {

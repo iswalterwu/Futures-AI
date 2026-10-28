@@ -150,11 +150,6 @@ export const ResearchItemSchema = z.object({
   title: z.string().min(1).describe('动态研究菜单标题。'),
 }).describe('专题研究动态菜单条目。')
 
-export const SendMessageSchema = z.object({
-  sessionId: z.string().min(1).optional().describe('已有会话 ID；缺省时新建会话。'),
-  message: z.string().trim().min(1).describe('用户消息；入口去除两端空白后不可为空。'),
-}).describe('提交给 agent 的用户消息。')
-
 export const SendReceiptSchema = z.object({
   sessionId: z.string().min(1).describe('接收消息的会话 ID。'),
   runId: z.string().min(1).describe('本次运行 ID，与后续事件一致。'),
@@ -259,6 +254,11 @@ export const JobContextSchema = z.object({
   jobId: z.string().min(1).describe('作业上下文锚；命名对照 job_id→jobId。'),
   stage: StageSchema,
 }).describe('作业上下文；契约统一 camelCase：job_id→jobId、artifact_id→artifactId、base_rev→baseRev、created_at→createdAt。')
+export const SendMessageSchema = z.object({
+  sessionId: z.string().min(1).optional().describe('已有会话 ID；缺省时新建会话。'),
+  message: z.string().trim().min(1).describe('用户消息；入口去除两端空白后不可为空。'),
+  jobContext: JobContextSchema.optional().describe('可选作业上下文；同 run 的全部事件保留发送时 jobId / stage，不随页面或后续 send 改写；无上下文时事件不出现该键。'),
+}).describe('提交给 agent 的用户消息。')
 export const InboxItemSchema = z.object({
   id: z.string().min(1).describe('收件箱条目唯一标识。'),
   jobId: z.string().min(1).describe('所属作业。'),

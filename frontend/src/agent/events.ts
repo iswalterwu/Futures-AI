@@ -1,7 +1,8 @@
 import { z } from 'zod'
-import { ContractErrorSchema, ModuleIdSchema, TimestampSchema } from '../contracts/types.ts'
+import { ContractErrorSchema, JobContextSchema, ModuleIdSchema, TimestampSchema } from '../contracts/types.ts'
 
 const eventFields = {
+  jobContext: JobContextSchema.optional().describe('可选作业上下文；同 run 全部事件保留发送时的 jobId / stage，不随页面或后续 send 改写；无上下文时不出现该键。'),
   runId: z.string().min(1).describe('运行 ID，所有同次运行的事件保持一致。'),
   sessionId: z.string().min(1).describe('会话 ID，所有同次运行的事件保持一致。'),
   ts: TimestampSchema.describe('事件发生时间，ISO 8601 带偏移。'),
