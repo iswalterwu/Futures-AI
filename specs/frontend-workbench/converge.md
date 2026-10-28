@@ -171,3 +171,7 @@ A 亲跑 generated 对拍（exit 0）、103 项定向单元 / 组件（exit 0）
 > §9.1 ~ §9.4 为 Converge 时点记录，不改写。
 
 独立 A（claude-fable-5-1 via anthropic，新会话）对固定目标 `869cb71` 定向 Review **通过**：无 P1 / P2，1 项 P3-1（1440 M-08 整图仍为修复前原件，建议补采或在 Gate 2 材料指明图注特写路径），待 Walter 裁定。A 亲跑 H-01 2 passed、相关 22 E2E passed、generated exit 0；全量 559 + 68 与 build 为查阅 Implement 日志。原件 [review-h01.md](review-h01.md)，记录 [review.md §12](review.md)。**本次修复 Gate 2 未批准，待 Walter。**
+
+### 9.6 Gate 2 与 Handoff 更新（2026-10-28，追加）
+
+Walter 2026-10-28 对本轮 Gate 2 回复“好的”：本次 H-01 修复与 A Review 结论获批，A-H01-P3-1（1440 整图补采）接受为后续、未补采。Handoff 未重跑测试（生产代码自 `869cb71` 未变），记录见 [review.md §13 ~ §14](review.md)。§9.4 的收敛限定不变：不代表 M-01 ~ M-08 人工验收通过，H-02 未修复。

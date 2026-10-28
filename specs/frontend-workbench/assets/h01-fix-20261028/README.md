@@ -63,3 +63,7 @@ H-02 未修复、留待 v2；11 项旧 P3 未扩改。该修复尚未 Converge�
 
 - 独立 A（claude-fable-5-1 via anthropic）Review **通过**；A 本会话绿跑产出的截图与本目录 `after-*` 逐字节相同，`before-*` 与归档红跑产物逐字节相同；A 原生视觉看图结论与上文一致（AI 观察，非 Walter 人工验收）。原件见 [review-h01.md](../../review-h01.md)。
 - A 的 P3-1：本目录只有图注特写，`assets/handoff/m08-chart-1440.png` 仍为修复前整图；是否补采修复后 1440 整图待 Walter 决定（tasks A-H01-P3-1）。本次修复 Gate 2 未批准。
+
+## Gate 2 / Handoff 追记（2026-10-28；以上原文不改写）
+
+- Walter 2026-10-28 对本轮 Gate 2 回复“好的”：修复获批；A-H01-P3-1（补采修复后 1440 整图）接受为后续、**尚未补采**，本目录仍只有图注特写。这不是 M-08 人工签字。Handoff 记录见 [review.md §14](../../review.md)。

@@ -1,6 +1,8 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
-> **当前状态（2026-10-28，H-01 修复 Review）**：独立审核员 A（claude-fable-5-1 via anthropic）对固定目标 `869cb71` 定向 Review **判定通过**（无 P1 / P2，1 项 P3-1 待 Walter 处置），原件见 [review-h01.md](review-h01.md)、记录见 §12；**本次修复 Gate 2 未批准，待 Walter 明确批准**；P3-1 未补采、未被接受为后续；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。未进入 Handoff。
+> **当前状态（2026-10-28，H-01 修复 Handoff）**：Walter 2026-10-28 对本轮 Gate 2 回复“好的”——**本次 H-01 修复 Gate 2 已批准**，A-H01-P3-1（1440 整图补采）接受为后续、尚未补采（§13）；Handoff 记录见 §14，PR 链接见 §14.4。M-01 ~ M-08 仍待 Walter 人工复核；H-02 留待 v2、未修复；11 项旧 P3 未修复。
+
+> **（Review 时点指针）当前状态（2026-10-28，H-01 修复 Review）**：独立审核员 A（claude-fable-5-1 via anthropic）对固定目标 `869cb71` 定向 Review **判定通过**（无 P1 / P2，1 项 P3-1 待 Walter 处置），原件见 [review-h01.md](review-h01.md)、记录见 §12；**本次修复 Gate 2 未批准，待 Walter 明确批准**；P3-1 未补采、未被接受为后续；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。未进入 Handoff。
 
 > **（Converge 时点指针）**：T-18 已实施（`771f2af`），Converge 判定 H-01 修复的实现与自动化验证范围已收敛（§11、[converge.md §9](converge.md)）；**待独立 A Review，本次修复 Gate 2 未批准**；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。以下原有状态行均为当时时点记录，不改写。
 
@@ -447,3 +449,49 @@ A 亲跑日志在本机临时目录 `reviewer-{h01-e2e,h01-related-e2e,check-gen
 3. **M-01 ~ M-08**：仍待 Walter 人工复核（8 项未勾）。
 4. **H-02**：留待 v2、未修复；11 项旧 P3 未扩改。
 5. 未进入 Handoff；未 push / PR / merge。
+
+## 13. 本轮 Gate 2 用户确认记录（2026-10-28，追加）
+
+> §0 ~ §12 为历史原件，不改写（其中“Gate 2 未批准 / 待 Walter”为当时时点记录）。
+
+- **协调会话的完整 Gate 2 问题**：「Gate 2：是否确认本轮修复，并接受“1440 整图补采”为后续任务，随后进入 PR / 合并？」
+- **Walter 原话**：「好的」（2026-10-28）。
+- **批准范围**：① 本轮 H-01 修复（T-18，代码 `771f2af`）及独立 A Review 结论（[review-h01.md](review-h01.md)，通过）；② A-H01-P3-1（原件 P3-1，1440 修复后整图补采）**接受为后续任务，尚未补采**；③ 进入 PR / 合并。
+- **不包含**：M-01 ~ M-08 人工签字（8 项仍未勾）；H-02 修复或 v2 实施授权；旧 11 项 P3 已修复（仍为已接受后续、未修复）。
+
+## 14. H-01 修复 Handoff 记录（2026-10-28，追加）
+
+> **执行者**：Handoff = claude-opus-5-5 via anthropic（AGENTS §6 首选；bridge 本窗口 account 额度耗尽，不重复探活）。本阶段只做记录与发布，未写代码 / 测试 / 截图，未重跑测试（生产代码自 A 审查目标起未变）。
+
+### 14.1 完成项
+
+- T-18：`SampleChart.vue` scoped `figcaption .num { display: inline; }`（`771f2af`），图注“近 60 日收盘 · 样例”在 1440 / 960 两档恢复单行、单位同行在右；全局数值样式、令牌、契约、冻结 spec 均未改。
+- 回归：`e2e/theme.spec.ts` 两档真实 Chrome 计算样式 + Range 几何测试（先红后绿）。
+- 证据：[assets/h01-fix-20261028/](assets/h01-fix-20261028/README.md) 修复前后图注特写 4 张 + README。
+- 流程：Plan / Tasks / Analyze（`ef11610`）→ Implement（`771f2af`、`f4ff7be`）→ Converge（`869cb71`）→ 独立 A Review 通过（`fa954fc` 归档原件）→ Gate 2 已批准（§13）→ 本 Handoff。
+
+### 14.2 验收证据摘要（引用既有实测，Handoff 未重跑）
+
+| 来源 | 内容 | 结果 |
+|---|---|---|
+| Implement（日志 `h01-*`，本机临时目录 `fw-h01-resume.fw1YK3/`，不入库） | 旧代码 + 新回归 `-g "H-01"` | 2 failed / exit 1（同行几何断言） |
+| Implement | 修复后 `-g "H-01"`；相关 `AC-006-3\|AC-006-4\|AC-001-4` | 2 passed；6 passed |
+| Implement | `pnpm -C frontend test` | exit 0：守卫 / typecheck / lint 通过，Vitest 14 文件 **559 passed**，Playwright **68 passed** |
+| Implement | `pnpm -C frontend build`；`git diff --check` | exit 0（仅 780.57 kB chunk 提示）；exit 0 |
+| 独立 A 亲跑（`869cb71`） | `-g "H-01"`；`AC-006-3\|AC-006-4\|AC-001-4\|AC-002-6`；`check --only generated` | 2 passed；22 passed；exit 0 |
+| Converge | 结论 | 已收敛（**仅限 H-01 修复的实现与自动化验证范围**），[converge.md §9](converge.md) |
+| Review 原件 | [review-h01.md](review-h01.md) sha256 `5368e34ca44b5d71223b325eabd2d28d81f307f961e966fa92fdfbe789a06908` | 通过，P1 = 0 / P2 = 0 / P3 = 1 |
+
+Handoff 核对：`frontend/` 树 `03fda1de…` 与 A 审查目标 `869cb71` 相同；`git diff --quiet 869cb71..HEAD -- frontend design spec.md checklist.md manual-acceptance.md review-h01.md assets/handoff` → exit 0；Checklist 70/70；manual-acceptance 0 checked / 8 unchecked。`origin/main` 仍为基线 `43b6d79`，无需合入主线。
+
+### 14.3 未完成项、风险与下一步
+
+1. **A-H01-P3-1**：1440 修复后整图补采——已接受为后续、未补采；当前 M-08 看图路径为 `assets/h01-fix-20261028/after-*.png`（仅图注特写），`assets/handoff/m08-chart-1440.png` 仍为修复前原件。
+2. **M-01 ~ M-08**：仍待 Walter 人工复核（8 项未勾）。
+3. **H-02**：留待 v2、未修复，未写入 v2 规格；960 下整图一屏完整性未验证。
+4. **旧 11 项 P3**：已接受为后续、未修复、未扩改。
+5. 打包体积 780.57 kB 提示未处理（既有）。
+
+### 14.4 PR 与合并
+
+- PR：待创建后补链接。
