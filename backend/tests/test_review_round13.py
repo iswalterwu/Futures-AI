@@ -27,7 +27,8 @@ from data.store.winners import asof_view, latest_obs
 from test_review_round12 import (
     BACKEND,
     EIA_DIESEL,
-    FU_STOCK,
+    FU_RECEIPT,
+    SC_RECEIPT,
     SC0,
     call_tool,
     cli_run,
@@ -199,68 +200,6 @@ class TestFetchQueueIsolation:
             svc.close()
 
 
-class TestAkshareSdkBoundary:
-    """T-50：真实 SDK 符号映射与列解析（仅在 HTTP 边界注入固定响应）。"""
-
-    @pytest.mark.parametrize("variety", ["FU", "BU", "LU"])
-    def test_inventory_through_real_sdk(self, tmp_path, monkeypatch, variety):
-        import akshare.futures.futures_inventory_em as em
-
-        code = em.futures_inventory_em_symbol_dict[variety.lower()]
-
-        class Resp:
-            def __init__(self, payload):
-                self._payload = payload
-
-            def json(self):
-                return self._payload
-
-        def fake_get(url, params=None, **kw):
-            if params["reportName"] == "RPT_FUTU_POSITIONCODE":
-                return Resp({"result": {"data": [{"TRADE_MARKET_CODE": "x", "TRADE_CODE": "ZZ", "TRADE_TYPE": "其他"}]}})
-            assert params["reportName"] == "RPT_FUTU_STOCKDATA"
-            assert f'SECURITY_CODE="{code}"' in params["filter"]
-            return Resp({"result": {"data": [
-                {"SECURITY_CODE": code, "TRADE_DATE": "2026-10-09 00:00:00", "ON_WARRANT_NUM": 15000, "ADDCHANGE": 3000},
-                {"SECURITY_CODE": code, "TRADE_DATE": "2026-10-08 00:00:00", "ON_WARRANT_NUM": 12000, "ADDCHANGE": 0},
-            ]}})
-
-        monkeypatch.setattr(em.requests, "get", fake_get)
-        freeze_today(monkeypatch)
-        sid = derive_id({"asset": variety.lower(), "geo": "cn", "measure": "stock", "contract": ""})
-        svc = Service(tmp_path).init()
-        try:
-            res = svc.fetch(sid, do_fetch=True)
-            assert [(r[0], r[1], r[2]) for r in res["rows"]] == [
-                (datetime(2026, 10, 8), 12.0, "kton"),
-                (datetime(2026, 10, 9), 15.0, "kton"),
-            ]
-        finally:
-            svc.close()
-
-    def test_receipt_default_window_is_recent(self, monkeypatch):
-        import akshare
-
-        seen = {}
-
-        def fake_get_receipt(start_date=None, end_date=None, vars_list=None):
-            seen.update(start=start_date, end=end_date, vars=vars_list)
-            return pd.DataFrame()
-
-        monkeypatch.setattr(akshare, "get_receipt", fake_get_receipt)
-        freeze_today(monkeypatch)  # 与运行日期解耦：受测 SDK 交易日历止于 2026-12-31
-        ak_mod._get_receipt("SC")
-        today = ak_mod.date.today()
-        assert today == date(2026, 10, 27)
-        assert seen == {
-            "start": (today - timedelta(days=ak_mod.RECEIPT_DEFAULT_DAYS)).strftime("%Y%m%d"),
-            "end": today.strftime("%Y%m%d"),
-            "vars": ["SC"],
-        }
-        ak_mod._get_receipt("SC", datetime(2026, 9, 1), datetime(2026, 9, 30))
-        assert (seen["start"], seen["end"]) == ("20260901", "20260930")
-
-
 class TestSearchAndSkeleton:
     """T-51：检索只匹配描述符字段值与别名；add-source 骨架对任意合法 id 可用。"""
 
@@ -269,8 +208,8 @@ class TestSearchAndSkeleton:
         try:
             for q in ("as", "geo", "measure", "contract", "{", ":"):
                 assert svc.search(q)["matches"] == [], q
-            hits = {m["series_id"] for m in svc.search("stock")["matches"]}
-            assert {FU_STOCK, EIA_DIESEL} <= hits
+            hits = {m["series_id"] for m in svc.search("receipt")["matches"]}
+            assert {FU_RECEIPT, SC_RECEIPT} <= hits
         finally:
             svc.close()
 

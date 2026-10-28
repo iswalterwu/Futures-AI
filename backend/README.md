@@ -20,6 +20,7 @@
 ## 入口
 
 - CLI：`python -m data.cli [--root <数据目录>] <子命令>`（默认数据目录 `%LOCALAPPDATA%/FuturesAI`）
+- 设置 CLI：`python -m settings.cli [--root <数据目录>] <profile|onboard|source>`（档案与数据源开通）
 - MCP：`futureai-data serve [--port 8932]`（streamable HTTP，仅 127.0.0.1；端口与令牌写入 `data/mcp_endpoint.json`，正常退出时删除）
 
 | 子命令 | 用途 |
@@ -59,5 +60,19 @@ akshare 源符号约定：`SC0` 主力连续、`SC2401` 指定合约、`SC_RECEI
 
 ```bash
 pip install -e . -c constraints.txt   # 受测版本约束（pyproject 仅声明兼容下界）
-python -m pytest tests/ -q
+python -m pytest tests/ -q            # 离线全量（默认跳过在线冒烟）
+
+# 用户档案与数据源开通（settings）
+python -m settings.cli profile set --first-name Walter --email you@example.com --sector research
+python -m settings.cli profile show              # 邮箱遮蔽展示；缺项提示
+python -m settings.cli onboard                   # 首次启动引导（可 --skip 跳过）
+python -m settings.cli source list               # 数据源与取数路径（api / offline / builtin / declaration_only）
+python -m settings.cli source open eia           # 开通向导：档案预填 → 浏览器提交 → 粘贴 key → 真实验证后保存
+python -m settings.cli source clear eia          # 清除 key，回到免凭证回退路径
+
+# 发布管线
+python tools/release_check.py                    # wheel 构建 / 包内容 / 隔离安装 / 入口点 / 首启冒烟
+FUTURESAI_ONLINE=1 python -m pytest tests/test_smoke_online.py -q -s   # 真实 akshare/EIA 在线冒烟
 ```
+
+在线冒烟会打印上游状况（如东财库存日报最新日期、仓单交易日历剩余天数）。日历余量不足 31 天时该测试失败，提示升级 akshare 并同步 `constraints.txt`。

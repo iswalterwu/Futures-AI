@@ -71,6 +71,23 @@ def put(creds_dir: Path, name: str, secret: str) -> Path:
     return out
 
 
+def exists(creds_dir: Path, name: str) -> bool:
+    """凭证文件是否存在（区别于“存在但读不出来”：前者可回退免凭证路径，后者必须报错）。"""
+    try:
+        return _path(creds_dir, name).is_file()
+    except CredsError:
+        return False
+
+
+def remove(creds_dir: Path, name: str) -> bool:
+    """删除凭证；返回是否确实删除。路径与命名校验与 put/get 同源。"""
+    p = _path(creds_dir, name)
+    if p.exists():
+        p.unlink()
+        return True
+    return False
+
+
 def get(creds_dir: Path, name: str) -> str:
     """解密读取；读取/解密失败 → 报错，禁止返回明文或 None。"""
     p = _path(creds_dir, name)

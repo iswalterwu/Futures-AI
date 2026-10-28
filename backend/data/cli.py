@@ -1,9 +1,8 @@
 """CLI（plan §2.2，AC-004-5/6、AC-005-1/2 交付入口、AC-007-3 交互向导）。
 
 - 写命令：构造写 Service（先取锁后开库，LockBusy → 报错退出）
-- 写命令执行期间提供内部只读通道（随机端口 + 端点文件），与 serve 一样不阻塞只读命令（AC-004-6）
 - 只读命令：先探测写锁——无锁直接只读 Service（空目录首启 = 内存库，不建库）；
-  有锁经持锁进程的内部只读通道路由；写进程启停过渡窗口内短暂等待
+  有锁时：serve 在跑则经其内部只读通道路由；否则等待写命令结束（≤30s）后本地读取
 - 错误：业务错误输出结构化 {error:{code,message,retryable}} 并返回 1；不抛裸异常
 - import：交互式向导（目标选择/确认 → 复用映射/改列）+ 统一批次生命周期（F-08）
 """
@@ -13,6 +12,7 @@ import argparse
 import http.client
 import json
 import re
+import socket
 import sqlite3
 import sys
 import time
@@ -44,7 +44,6 @@ _SOURCE_ID_RE = re.compile(r"^[a-z0-9-]{1,64}$")  # 同 manifest id（plan §2.1
 READ_WAIT_S = 30  # 只读命令在写进程启停过渡窗口（尚无只读通道）内的等待上限（秒）
 ROUTE_TIMEOUT_S = 10  # 单次内部路由请求超时（秒）
 ROUTE_RETRY_S = 1.0  # 端点不可达/无响应后的重试间隔（秒）
-EXTERNAL_BUSY_S = 2.0  # 无写锁但本地开库持续失败（外部进程占用观测库）的提前失败时长（秒）
 
 
 def _json_out(obj):
@@ -73,11 +72,15 @@ def _db_error(e: Exception) -> dict:
     return FetchError("internal", text).to_dict()
 
 
-def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TIMEOUT_S):
+def _route_timeout() -> TimeoutError:
+    return TimeoutError("只读通道响应超时（超出统一截止时间）")
+
+
+def internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TIMEOUT_S):
     """经持锁进程的内部只读端点查询；HTTP 400 的结构化错误还原为 FetchError。
 
     端点文件已消失、HTTP 503（关闭屏障：通道即将停止）→ ConnectionError，由调用方按“通道不可用”等待。
-    timeout 是整次请求（连接、响应头、完整响应体）的硬上限：每次读取前按剩余时间重设 socket 超时。
+    timeout 是整次请求的上限：单次 socket 超时取剩余时间，响应体逐段核对截止时间。
     """
     ep = read_endpoint(root / "data")
     if not ep:
@@ -86,19 +89,32 @@ def _internal_get(root: Path, path: str, params: dict, timeout: float = ROUTE_TI
     qs = urllib.parse.urlencode(params)
     conn = http.client.HTTPConnection("127.0.0.1", ep["port"], timeout=max(0.01, timeout))
     try:
-        conn.request("GET", path + (f"?{qs}" if qs else ""), headers={"Authorization": f"Bearer {ep['token']}"})
+        conn.connect()
+        sock = conn.sock
+        conn.request(
+            "GET", path + (f"?{qs}" if qs else ""), headers={"Authorization": f"Bearer {ep['token']}"}
+        )
         resp = conn.getresponse()
         body = bytearray()
         while True:
             remaining = deadline - time.monotonic()
             if remaining <= 0:
-                raise TimeoutError("只读通道响应超时（超出统一截止时间）")
-            if conn.sock is not None:
-                conn.sock.settimeout(remaining)
+                raise _route_timeout()
+            sock.settimeout(remaining)  # 用保存的引用：will_close 时 conn.sock 会变 None
             chunk = resp.read1(65536)  # 至多一次系统调用：每段数据之间都重新核对剩余时间
             if not chunk:
+                if time.monotonic() >= deadline:
+                    raise _route_timeout()
                 break
             body.extend(chunk)
+    except TimeoutError as e:
+        if time.monotonic() >= deadline:
+            raise _route_timeout() from e
+        raise ConnectionError(f"只读通道读取失败：{e}") from e
+    except (OSError, http.client.HTTPException) as e:
+        if time.monotonic() >= deadline:
+            raise _route_timeout() from e
+        raise ConnectionError(f"只读通道读取失败：{e}") from e
     finally:
         conn.close()
     if resp.status == 503:
@@ -120,14 +136,14 @@ def _lock_held(root: Path) -> bool:
 def _route_readonly(root: Path, args, timeout: float = ROUTE_TIMEOUT_S) -> object:
     if args.cmd == "list":
         path = {"series": "/internal/search", "sources": "/internal/sources", "jobs": "/internal/jobs"}
-        return _internal_get(root, path[args.what], {}, timeout=timeout)
+        return internal_get(root, path[args.what], {}, timeout=timeout)
     if args.cmd == "jobs":
-        return _internal_get(root, "/internal/jobs", {}, timeout=timeout)
+        return internal_get(root, "/internal/jobs", {}, timeout=timeout)
     if args.cmd == "reconcile":
-        return _internal_get(root, "/internal/reconcile", {"series_id": args.series_id}, timeout=timeout)
+        return internal_get(root, "/internal/reconcile", {"series_id": args.series_id}, timeout=timeout)
     if args.cmd == "provenance":
-        return _internal_get(root, "/internal/provenance", {"series_id": args.series_id}, timeout=timeout)
-    return _internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b}, timeout=timeout)
+        return internal_get(root, "/internal/provenance", {"series_id": args.series_id}, timeout=timeout)
+    return internal_get(root, "/internal/diff", {"a": args.run_a, "b": args.run_b}, timeout=timeout)
 
 
 def _readonly(root: Path, args) -> int:
@@ -138,10 +154,9 @@ def _readonly(root: Path, args) -> int:
     """
     deadline = time.monotonic() + READ_WAIT_S
     route_err = busy_err = None
-    retry_at, busy_since = 0.0, None
+    retry_at = 0.0
     while True:
         if _lock_held(root):
-            busy_since = None
             remaining = deadline - time.monotonic()
             if read_endpoint(root / "data") and time.monotonic() >= retry_at and remaining > 0:
                 try:
@@ -161,12 +176,7 @@ def _readonly(root: Path, args) -> int:
             try:
                 svc = Service(root, readonly=True)
             except LockBusy as e:
-                svc, busy_err = None, e  # 写进程恰在取锁开库（竞态）→ 回到等待/路由
-                busy_since = busy_since or time.monotonic()
-                if time.monotonic() - busy_since >= EXTERNAL_BUSY_S and not _lock_held(root):
-                    # 持续开库失败且始终无写锁 = 外部进程占用观测库，不再等满截止时间
-                    print(f"错误：{e}", file=sys.stderr)
-                    return 1
+                svc, busy_err = None, e  # 写进程开库中或外部进程占用 → 继续等待/重试
             except Exception as e:
                 _json_out(_err_dict(e))
                 return 1
@@ -532,13 +542,7 @@ def _dispatch(args) -> int:
         return 1
     try:
         svc.init()
-        from data import mcp_server
-
-        # 持锁期间提供内部只读通道：其他进程的只读命令经其路由，不受本写命令影响（AC-004-6）
-        with mcp_server.readonly_channel(svc, root / "data") as port:
-            if port is None:
-                print("警告：只读通道未能启动，本命令执行期间其他进程的只读命令需等待其结束", file=sys.stderr)
-            return _run_write(svc, root, args)
+        return _run_write(svc, root, args)
     except Exception as e:  # 业务错误/库错误/意外错误 → 结构化输出（不抛裸异常）
         _json_out(_err_dict(e))
         return 1
