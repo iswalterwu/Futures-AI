@@ -1,6 +1,6 @@
 # frontend-workbench v2 — Analyze 汇总
 
-> **当前独立复跑：R9**，固定审 `ee3e348459124aead80d99c4f3b9438d24450a54`，原文 [`analyze-v2-r9.md`](analyze-v2-r9.md)。R8 的 F-01（P2）/ F-02（P3）全部关闭，无新增内部 P1/P2/P3；G-02 人工选择已满足。内部分析子项满足，仍待 A R4；H-x 实现交接未取得，S1/S2 不放行。下方 R8“未经复跑”等为当时历史，不能推翻本轮固定结论。
+> **当前独立复跑：R9**，固定审 `ee3e348459124aead80d99c4f3b9438d24450a54`，原文 [`analyze-v2-r9.md`](analyze-v2-r9.md)。R8 的 F-01（P2）/ F-02（P3）全部关闭，无新增内部 P1/P2/P3；G-02 人工选择已满足。内部分析子项满足。后续 A R4 已固定审 `34ee795` 并通过（0 阻断，原样产物 `e596244fba308875152b0ce1a9c1752d6e85b6ae` 已登记），S0 待实施树同步与四闸门核对；H-x 实现交接未取得，S1/S2 不放行。下方 R8“未经复跑”等为当时历史，不能推翻本轮固定结论。
 
 > **G-02 R8 历史（2026-10-28，已由上方 R9 复跑）**：G-02 落实提交 `876ae0d` 由独立只读 Analyze R8 审查，原文 [`analyze-v2-r8.md`](analyze-v2-r8.md)，判定 1 P2（F-01：T-V2-01 标准 4 在令牌宽度下测不出 `nowrap`）/ 1 P3（F-02：M-09 在 960 观察不到横滚）。两项已由 Plan/Tasks 修正作者（`claude-opus-5-5` via `anthropic`，不是 A / Implement）按 plan 页首与 tasks v2 段首“R8 修正”行做最小修正（提交 `docs(frontend-workbench): make G-02 nowrap acceptance regression-sensitive`）。**修正未经复跑，R8 的 F-01 / F-02 在独立复跑 R9 确认前不视为已关闭**；A R4 固定对象顺延到 R9 报告落盘的提交。本索引行不是 Analyze 报告，也不是 A 结论。下行 R7 为 G-02 之前的历史轮次。
 > **历史独立复跑：R7（2026-10-28）**，固定审 `217960dafc85bbbf201fb16c4d1ec176ead2b7ec`，原文 [`analyze-v2-r7.md`](analyze-v2-r7.md)。R6 的 F-01 / F-02 全部关闭，无新增 P1/P2/P3；R5 五项已由 R6 确认关闭。R7 只解除内部分析子项。后续 A R3 已固定审 `b375b27` 并通过（0 阻断，原样产物提交 `425c1fd6c639734b0c45ba7cf9259dbee4439074`）；G-02 裁定和 H-x 实现交接仍未解除，不授权 Implement。
