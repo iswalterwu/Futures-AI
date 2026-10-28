@@ -173,11 +173,13 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "ingest"
+              "const": "ingest",
+              "description": "投放 / 归入动作。"
             },
             "uploadId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "投放锚。"
             },
             "sourceNote": {
               "$ref": "#/$defs/SourceNote"
@@ -196,11 +198,13 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "map_fix"
+              "const": "map_fix",
+              "description": "修正映射动作。"
             },
             "uploadId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "投放锚。"
             },
             "mapping": {
               "$ref": "#/$defs/FieldMapping"
@@ -219,11 +223,13 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "recipe"
+              "const": "recipe",
+              "description": "参数修正动作。"
             },
             "artifactId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "配方产物锚。"
             },
             "changes": {
               "$ref": "#/$defs/ParamChange"
@@ -242,15 +248,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "annotate"
+              "const": "annotate",
+              "description": "结论批注动作。"
             },
             "conclusionId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "结论锚。"
             },
             "note": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "批注内容。"
             }
           },
           "required": [
@@ -266,15 +275,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "ask_why"
+              "const": "ask_why",
+              "description": "追问依据动作。"
             },
             "conclusionId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "结论锚。"
             },
             "question": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "追问内容。"
             }
           },
           "required": [
@@ -290,15 +302,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "what_if"
+              "const": "what_if",
+              "description": "假设追问动作。"
             },
             "conclusionId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "结论锚。"
             },
             "question": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "假设问题。"
             }
           },
           "required": [
@@ -314,15 +329,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "deepen"
+              "const": "deepen",
+              "description": "深挖动作。"
             },
             "conclusionId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "结论锚。"
             },
             "instruction": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "深挖指令。"
             }
           },
           "required": [
@@ -338,15 +356,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "delete_conclusion"
+              "const": "delete_conclusion",
+              "description": "删除结论动作。"
             },
             "conclusionId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "结论锚。"
             },
             "reason": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "删除理由。"
             }
           },
           "required": [
@@ -362,15 +383,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "veto"
+              "const": "veto",
+              "description": "否决动作。"
             },
             "conclusionId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "结论锚。"
             },
             "reason": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "否决理由。"
             }
           },
           "required": [
@@ -386,15 +410,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "pin_rule"
+              "const": "pin_rule",
+              "description": "教规则动作。"
             },
             "ruleText": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "候选规则正文。"
             },
             "state": {
               "type": "string",
-              "const": "candidate"
+              "const": "candidate",
+              "description": "候选状态，不可写 active。"
             }
           },
           "required": [
@@ -410,15 +437,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "remove_source"
+              "const": "remove_source",
+              "description": "删除来源动作。"
             },
             "uploadId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "投放锚。"
             },
             "reason": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "删除理由。"
             }
           },
           "required": [
@@ -434,11 +464,13 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "cancel_job"
+              "const": "cancel_job",
+              "description": "取消作业动作。"
             },
             "reason": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "取消理由。"
             }
           },
           "required": [
@@ -453,14 +485,17 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "edit_block"
+              "const": "edit_block",
+              "description": "行内编辑动作。"
             },
             "blockId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "目标块锚。"
             },
             "text": {
-              "type": "string"
+              "type": "string",
+              "description": "新的块正文，可为空。"
             }
           },
           "required": [
@@ -476,7 +511,8 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "revise_blocks"
+              "const": "revise_blocks",
+              "description": "块改稿请求。"
             },
             "blockIds": {
               "minItems": 1,
@@ -484,11 +520,13 @@
               "items": {
                 "type": "string",
                 "minLength": 1
-              }
+              },
+              "description": "选中的目标块锚，至少一项。"
             },
             "instruction": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "改稿指令。"
             }
           },
           "required": [
@@ -504,15 +542,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "block_comment"
+              "const": "block_comment",
+              "description": "新建块批注动作。"
             },
             "blockId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "被批注块锚。"
             },
             "text": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "批注正文。"
             }
           },
           "required": [
@@ -528,15 +569,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "reply_comment"
+              "const": "reply_comment",
+              "description": "回复批注动作。"
             },
             "threadId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "批注线程锚。"
             },
             "text": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "回复正文。"
             }
           },
           "required": [
@@ -552,11 +596,13 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "resolve_comment"
+              "const": "resolve_comment",
+              "description": "解决批注动作。"
             },
             "threadId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "批注线程锚。"
             }
           },
           "required": [
@@ -571,11 +617,13 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "mark_provisional"
+              "const": "mark_provisional",
+              "description": "标记暂定动作。"
             },
             "artifactId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "目标产物锚。"
             }
           },
           "required": [
@@ -590,7 +638,8 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "rerun"
+              "const": "rerun",
+              "description": "阶段重跑动作。"
             },
             "stage": {
               "$ref": "#/$defs/Stage"
@@ -601,7 +650,8 @@
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Stage"
-              }
+              },
+              "description": "本阶段及下游，按固定阶段顺序列出。"
             }
           },
           "required": [
@@ -617,11 +667,13 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "accept"
+              "const": "accept",
+              "description": "接受候选动作。"
             },
             "revisionId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "被接受的候选修订锚。"
             }
           },
           "required": [
@@ -636,11 +688,13 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "revert"
+              "const": "revert",
+              "description": "回退候选动作。"
             },
             "revisionId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "被回退的候选修订锚。"
             }
           },
           "required": [
@@ -655,26 +709,31 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "resolve_conflict"
+              "const": "resolve_conflict",
+              "description": "裁定冲突动作。"
             },
             "blockId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "冲突块锚。"
             },
             "humanRevId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "人版修订锚。"
             },
             "agentRevId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "agent 版修订锚。"
             },
             "choice": {
               "type": "string",
               "enum": [
                 "human",
                 "agent"
-              ]
+              ],
+              "description": "选择人版或 agent 版。"
             }
           },
           "required": [
@@ -692,15 +751,18 @@
           "properties": {
             "action": {
               "type": "string",
-              "const": "finalize"
+              "const": "finalize",
+              "description": "显式定稿动作。"
             },
             "revisionId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "被定稿修订锚。"
             },
             "snapshotId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "新定稿快照锚。"
             }
           },
           "required": [
@@ -719,11 +781,13 @@
       "properties": {
         "id": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "介入事件唯一标识。"
         },
         "jobId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "所属作业锚。"
         },
         "stage": {
           "$ref": "#/$defs/Stage"
@@ -792,7 +856,8 @@
       "properties": {
         "id": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "产物唯一标识。"
         },
         "kind": {
           "$ref": "#/$defs/ArtifactKind"
@@ -861,11 +926,13 @@
           "properties": {
             "id": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "修订唯一标识。"
             },
             "artifactId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "修订所属产物标识。"
             },
             "number": {
               "type": "integer",
@@ -906,7 +973,8 @@
             },
             "artifactKind": {
               "type": "string",
-              "const": "dataset"
+              "const": "dataset",
+              "description": "数据集修订。"
             },
             "uploads": {
               "type": "array",
@@ -915,7 +983,8 @@
                 "properties": {
                   "uploadId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "投放记录锚。"
                   },
                   "mapping": {
                     "$ref": "#/$defs/FieldMapping"
@@ -953,11 +1022,13 @@
           "properties": {
             "id": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "修订唯一标识。"
             },
             "artifactId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "修订所属产物标识。"
             },
             "number": {
               "type": "integer",
@@ -998,7 +1069,8 @@
             },
             "artifactKind": {
               "type": "string",
-              "const": "recipe"
+              "const": "recipe",
+              "description": "配方修订。"
             },
             "params": {
               "$ref": "#/$defs/ParamSet"
@@ -1031,11 +1103,13 @@
           "properties": {
             "id": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "修订唯一标识。"
             },
             "artifactId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "修订所属产物标识。"
             },
             "number": {
               "type": "integer",
@@ -1076,7 +1150,8 @@
             },
             "artifactKind": {
               "type": "string",
-              "const": "analysis"
+              "const": "analysis",
+              "description": "分析稿修订。"
             },
             "conclusions": {
               "type": "array",
@@ -1105,11 +1180,13 @@
           "properties": {
             "id": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "修订唯一标识。"
             },
             "artifactId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "修订所属产物标识。"
             },
             "number": {
               "type": "integer",
@@ -1150,7 +1227,8 @@
             },
             "artifactKind": {
               "type": "string",
-              "const": "deliverable"
+              "const": "deliverable",
+              "description": "交付物修订。"
             },
             "blocks": {
               "type": "array",
@@ -1184,13 +1262,15 @@
           "properties": {
             "stage": {
               "type": "string",
-              "const": "collect"
+              "const": "collect",
+              "description": "采集阶段。"
             },
             "uploads": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Upload"
-              }
+              },
+              "description": "本作业的投放列表。"
             },
             "artifacts": {
               "type": "array",
@@ -1199,11 +1279,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "产物唯一标识。"
                   },
                   "kind": {
                     "type": "string",
-                    "const": "dataset"
+                    "const": "dataset",
+                    "description": "数据集产物。"
                   },
                   "status": {
                     "$ref": "#/$defs/ArtifactStatus"
@@ -1260,7 +1342,8 @@
                   "pendingRunId"
                 ],
                 "additionalProperties": false
-              }
+              },
+              "description": "数据集产物集合。"
             },
             "revisions": {
               "type": "array",
@@ -1269,11 +1352,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "修订唯一标识。"
                   },
                   "artifactId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "修订所属产物标识。"
                   },
                   "number": {
                     "type": "integer",
@@ -1314,7 +1399,8 @@
                   },
                   "artifactKind": {
                     "type": "string",
-                    "const": "dataset"
+                    "const": "dataset",
+                    "description": "数据集修订。"
                   },
                   "uploads": {
                     "type": "array",
@@ -1323,7 +1409,8 @@
                       "properties": {
                         "uploadId": {
                           "type": "string",
-                          "minLength": 1
+                          "minLength": 1,
+                          "description": "投放记录锚。"
                         },
                         "mapping": {
                           "$ref": "#/$defs/FieldMapping"
@@ -1355,7 +1442,8 @@
                   "uploads"
                 ],
                 "additionalProperties": false
-              }
+              },
+              "description": "数据集修订集合。"
             }
           },
           "required": [
@@ -1372,19 +1460,22 @@
           "properties": {
             "stage": {
               "type": "string",
-              "const": "process"
+              "const": "process",
+              "description": "处理阶段。"
             },
             "sources": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/DataSourceRef"
-              }
+              },
+              "description": "本作业数据源。"
             },
             "series": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/SeriesRef"
-              }
+              },
+              "description": "本作业序列引用。"
             },
             "artifacts": {
               "type": "array",
@@ -1393,11 +1484,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "产物唯一标识。"
                   },
                   "kind": {
                     "type": "string",
-                    "const": "recipe"
+                    "const": "recipe",
+                    "description": "配方产物。"
                   },
                   "status": {
                     "$ref": "#/$defs/ArtifactStatus"
@@ -1454,7 +1547,8 @@
                   "pendingRunId"
                 ],
                 "additionalProperties": false
-              }
+              },
+              "description": "配方产物集合。"
             },
             "revisions": {
               "type": "array",
@@ -1463,11 +1557,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "修订唯一标识。"
                   },
                   "artifactId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "修订所属产物标识。"
                   },
                   "number": {
                     "type": "integer",
@@ -1508,7 +1604,8 @@
                   },
                   "artifactKind": {
                     "type": "string",
-                    "const": "recipe"
+                    "const": "recipe",
+                    "description": "配方修订。"
                   },
                   "params": {
                     "$ref": "#/$defs/ParamSet"
@@ -1535,13 +1632,15 @@
                   "steps"
                 ],
                 "additionalProperties": false
-              }
+              },
+              "description": "配方修订集合。"
             },
             "derivedValues": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/DerivedValue"
-              }
+              },
+              "description": "可回溯的派生值集合。"
             }
           },
           "required": [
@@ -1560,7 +1659,8 @@
           "properties": {
             "stage": {
               "type": "string",
-              "const": "analyze"
+              "const": "analyze",
+              "description": "分析阶段。"
             },
             "artifacts": {
               "type": "array",
@@ -1569,11 +1669,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "产物唯一标识。"
                   },
                   "kind": {
                     "type": "string",
-                    "const": "analysis"
+                    "const": "analysis",
+                    "description": "分析稿产物。"
                   },
                   "status": {
                     "$ref": "#/$defs/ArtifactStatus"
@@ -1630,7 +1732,8 @@
                   "pendingRunId"
                 ],
                 "additionalProperties": false
-              }
+              },
+              "description": "分析稿产物集合。"
             },
             "revisions": {
               "type": "array",
@@ -1639,11 +1742,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "修订唯一标识。"
                   },
                   "artifactId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "修订所属产物标识。"
                   },
                   "number": {
                     "type": "integer",
@@ -1684,7 +1789,8 @@
                   },
                   "artifactKind": {
                     "type": "string",
-                    "const": "analysis"
+                    "const": "analysis",
+                    "description": "分析稿修订。"
                   },
                   "conclusions": {
                     "type": "array",
@@ -1707,7 +1813,8 @@
                   "conclusions"
                 ],
                 "additionalProperties": false
-              }
+              },
+              "description": "分析稿修订集合。"
             }
           },
           "required": [
@@ -1745,7 +1852,8 @@
             },
             "stage": {
               "type": "string",
-              "const": "deliver"
+              "const": "deliver",
+              "description": "交付阶段。"
             },
             "artifacts": {
               "type": "array",
@@ -1754,11 +1862,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "产物唯一标识。"
                   },
                   "kind": {
                     "type": "string",
-                    "const": "deliverable"
+                    "const": "deliverable",
+                    "description": "交付物产物。"
                   },
                   "status": {
                     "$ref": "#/$defs/ArtifactStatus"
@@ -1815,7 +1925,8 @@
                   "pendingRunId"
                 ],
                 "additionalProperties": false
-              }
+              },
+              "description": "交付物产物集合。"
             },
             "revisions": {
               "type": "array",
@@ -1824,11 +1935,13 @@
                 "properties": {
                   "id": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "修订唯一标识。"
                   },
                   "artifactId": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "修订所属产物标识。"
                   },
                   "number": {
                     "type": "integer",
@@ -1869,7 +1982,8 @@
                   },
                   "artifactKind": {
                     "type": "string",
-                    "const": "deliverable"
+                    "const": "deliverable",
+                    "description": "交付物修订。"
                   },
                   "blocks": {
                     "type": "array",
@@ -1892,7 +2006,8 @@
                   "blocks"
                 ],
                 "additionalProperties": false
-              }
+              },
+              "description": "交付物修订集合。"
             }
           },
           "required": [
@@ -1923,22 +2038,26 @@
             "collect": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 9007199254740991
+              "maximum": 9007199254740991,
+              "description": "采集阶段待处理数。"
             },
             "process": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 9007199254740991
+              "maximum": 9007199254740991,
+              "description": "处理阶段待处理数。"
             },
             "analyze": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 9007199254740991
+              "maximum": 9007199254740991,
+              "description": "分析阶段待处理数。"
             },
             "deliver": {
               "type": "integer",
               "minimum": 0,
-              "maximum": 9007199254740991
+              "maximum": 9007199254740991,
+              "description": "交付阶段待处理数。"
             }
           },
           "required": [
@@ -2023,7 +2142,8 @@
           "required": [
             "main"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "模板数据绑定，仅 main 槽位。"
         },
         "overrides": {
           "type": "object",
@@ -2033,7 +2153,8 @@
               "type": "string"
             }
           },
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "样例允许的覆盖项，不接受任意 option。"
         }
       },
       "required": [
@@ -2049,11 +2170,13 @@
       "properties": {
         "id": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "评论唯一标识。"
         },
         "threadId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "所属线程标识。"
         },
         "parentId": {
           "anyOf": [
@@ -2077,7 +2200,8 @@
         },
         "text": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "批注正文。"
         },
         "createdAt": {
           "$ref": "#/$defs/Timestamp"
@@ -2099,11 +2223,13 @@
       "properties": {
         "threadId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "线程唯一标识。"
         },
         "blockId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "被批注的块标识。"
         },
         "status": {
           "type": "string",
@@ -2165,10 +2291,12 @@
             },
             "type": {
               "type": "string",
-              "const": "conclusion"
+              "const": "conclusion",
+              "description": "结论块。"
             },
             "text": {
-              "type": "string"
+              "type": "string",
+              "description": "可编辑结论正文。"
             }
           },
           "required": [
@@ -2217,10 +2345,12 @@
             },
             "type": {
               "type": "string",
-              "const": "note"
+              "const": "note",
+              "description": "备注块。"
             },
             "text": {
-              "type": "string"
+              "type": "string",
+              "description": "可编辑备注正文。"
             }
           },
           "required": [
@@ -2269,17 +2399,20 @@
             },
             "type": {
               "type": "string",
-              "const": "quote"
+              "const": "quote",
+              "description": "引用块。"
             },
             "text": {
-              "type": "string"
+              "type": "string",
+              "description": "只读摘录正文。"
             },
             "sourceAnchor": {
               "type": "object",
               "properties": {
                 "kind": {
                   "type": "string",
-                  "const": "source"
+                  "const": "source",
+                  "description": "外部材料来源类型。"
                 },
                 "ref": {
                   "type": "string",
@@ -2297,7 +2430,8 @@
                 "ref",
                 "label"
               ],
-              "additionalProperties": false
+              "additionalProperties": false,
+              "description": "摘录对应的外部材料来源锚。"
             }
           },
           "required": [
@@ -2347,11 +2481,13 @@
             },
             "type": {
               "type": "string",
-              "const": "table"
+              "const": "table",
+              "description": "表格块。"
             },
             "tableId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "表格溯源标识。"
             },
             "columns": {
               "type": "array",
@@ -2424,15 +2560,18 @@
             },
             "type": {
               "type": "string",
-              "const": "verification"
+              "const": "verification",
+              "description": "待验证块。"
             },
             "question": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "只读待验证问题。"
             },
             "conclusionBlockId": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "关联结论块标识。"
             }
           },
           "required": [
@@ -2482,7 +2621,8 @@
             },
             "type": {
               "type": "string",
-              "const": "chart"
+              "const": "chart",
+              "description": "图表块。"
             },
             "chartSpec": {
               "$ref": "#/$defs/ChartSpec"
@@ -2532,16 +2672,20 @@
             },
             "deliverableStatus": {
               "type": "string",
-              "const": "draft"
+              "const": "draft",
+              "description": "草稿状态。"
             },
             "finalSnapshotId": {
-              "type": "null"
+              "type": "null",
+              "description": "草稿无定稿快照。"
             },
             "finalRevisionNumber": {
-              "type": "null"
+              "type": "null",
+              "description": "草稿无定稿版本号。"
             },
             "finalizedAt": {
-              "type": "null"
+              "type": "null",
+              "description": "草稿无定稿时间。"
             }
           },
           "required": [
@@ -2578,7 +2722,8 @@
             },
             "deliverableStatus": {
               "type": "string",
-              "const": "final"
+              "const": "final",
+              "description": "已定稿状态。"
             },
             "finalSnapshotId": {
               "type": "string",
@@ -2616,15 +2761,18 @@
       "properties": {
         "id": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "定稿快照唯一标识。"
         },
         "jobId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "快照所属作业。"
         },
         "revisionId": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "冻结的已合并修订标识。"
         },
         "revisionNumber": {
           "type": "integer",
@@ -2802,7 +2950,8 @@
             },
             "inputKind": {
               "type": "string",
-              "const": "file"
+              "const": "file",
+              "description": "文件投放。"
             },
             "fileMeta": {
               "$ref": "#/$defs/IntakeFileMeta"
@@ -2836,7 +2985,8 @@
             },
             "inputKind": {
               "type": "string",
-              "const": "url"
+              "const": "url",
+              "description": "URL 投放。"
             },
             "url": {
               "type": "string",
@@ -2872,7 +3022,8 @@
             },
             "inputKind": {
               "type": "string",
-              "const": "text"
+              "const": "text",
+              "description": "文本投放。"
             },
             "text": {
               "type": "string",
@@ -3018,7 +3169,8 @@
             },
             "inputKind": {
               "type": "string",
-              "const": "file"
+              "const": "file",
+              "description": "文件投放记录。"
             },
             "fileMeta": {
               "$ref": "#/$defs/IntakeFileMeta"
@@ -3080,11 +3232,13 @@
             },
             "inputKind": {
               "type": "string",
-              "const": "url"
+              "const": "url",
+              "description": "URL 投放记录。"
             },
             "url": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "来源 URL，只保存字符串。"
             }
           },
           "required": [
@@ -3143,7 +3297,8 @@
             },
             "inputKind": {
               "type": "string",
-              "const": "text"
+              "const": "text",
+              "description": "文本投放记录，不保留正文。"
             }
           },
           "required": [
@@ -3270,15 +3425,18 @@
           "properties": {
             "kind": {
               "type": "string",
-              "const": "observation"
+              "const": "observation",
+              "description": "观测来源。"
             },
             "ref": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "观测定位，如 seriesId@ts。"
             },
             "label": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "观测显示名称。"
             }
           },
           "required": [
@@ -3294,15 +3452,18 @@
           "properties": {
             "kind": {
               "type": "string",
-              "const": "tableRow"
+              "const": "tableRow",
+              "description": "表行来源。"
             },
             "ref": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "表行定位，如 tableId#row。"
             },
             "label": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "description": "表行显示名称。"
             }
           },
           "required": [
@@ -3552,7 +3713,8 @@
       "properties": {
         "id": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "结论唯一标识。"
         },
         "text": {
           "type": "string",
@@ -4046,162 +4208,189 @@
           "properties": {
             "text": {
               "type": "string",
-              "const": "草稿"
+              "const": "草稿",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "◇"
+              "const": "◇",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "draft 的文案与图标。"
         },
         "collecting": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "提取中"
+              "const": "提取中",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "↓"
+              "const": "↓",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "collecting 的文案与图标。"
         },
         "processing": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "处理中"
+              "const": "处理中",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⚙"
+              "const": "⚙",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "processing 的文案与图标。"
         },
         "analyzing": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "分析中"
+              "const": "分析中",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⌕"
+              "const": "⌕",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "analyzing 的文案与图标。"
         },
         "delivering": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "交付中"
+              "const": "交付中",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "▤"
+              "const": "▤",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "delivering 的文案与图标。"
         },
         "delivered": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "已交付"
+              "const": "已交付",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "✓"
+              "const": "✓",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "delivered 的文案与图标。"
         },
         "needs_human": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "待人工确认"
+              "const": "待人工确认",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "!"
+              "const": "!",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "needs_human 的文案与图标。"
         },
         "failed": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "失败"
+              "const": "失败",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "×"
+              "const": "×",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "failed 的文案与图标。"
         },
         "cancelled": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "已取消"
+              "const": "已取消",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⊘"
+              "const": "⊘",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "cancelled 的文案与图标。"
         }
       },
       "required": [
@@ -4226,72 +4415,84 @@
           "properties": {
             "text": {
               "type": "string",
-              "const": "提取"
+              "const": "提取",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "↓"
+              "const": "↓",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "collect 的文案与图标。"
         },
         "process": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "处理"
+              "const": "处理",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⚙"
+              "const": "⚙",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "process 的文案与图标。"
         },
         "analyze": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "分析"
+              "const": "分析",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⌕"
+              "const": "⌕",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "analyze 的文案与图标。"
         },
         "deliver": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "交付"
+              "const": "交付",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "▤"
+              "const": "▤",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "deliver 的文案与图标。"
         }
       },
       "required": [
@@ -4311,90 +4512,105 @@
           "properties": {
             "text": {
               "type": "string",
-              "const": "未开始"
+              "const": "未开始",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "○"
+              "const": "○",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "not_started 的文案与图标。"
         },
         "running": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "运行中"
+              "const": "运行中",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "↻"
+              "const": "↻",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "running 的文案与图标。"
         },
         "needs_human": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "待人工确认"
+              "const": "待人工确认",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "!"
+              "const": "!",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "needs_human 的文案与图标。"
         },
         "done": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "已完成"
+              "const": "已完成",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "✓"
+              "const": "✓",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "done 的文案与图标。"
         },
         "conflict": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "冲突"
+              "const": "冲突",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⚠"
+              "const": "⚠",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "conflict 的文案与图标。"
         }
       },
       "required": [
@@ -4415,72 +4631,84 @@
           "properties": {
             "text": {
               "type": "string",
-              "const": "草稿"
+              "const": "草稿",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "◇"
+              "const": "◇",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "draft 的文案与图标。"
         },
         "provisional": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "暂定"
+              "const": "暂定",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "◐"
+              "const": "◐",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "provisional 的文案与图标。"
         },
         "confirmed": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "已确认"
+              "const": "已确认",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "✓"
+              "const": "✓",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "confirmed 的文案与图标。"
         },
         "conflict": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "冲突"
+              "const": "冲突",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⚠"
+              "const": "⚠",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "conflict 的文案与图标。"
         }
       },
       "required": [
@@ -4500,54 +4728,63 @@
           "properties": {
             "text": {
               "type": "string",
-              "const": "待验证"
+              "const": "待验证",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "?"
+              "const": "?",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "pending_validation 的文案与图标。"
         },
         "ingested": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "已入库"
+              "const": "已入库",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "✓"
+              "const": "✓",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "ingested 的文案与图标。"
         },
         "quarantined": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "隔离"
+              "const": "隔离",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⊘"
+              "const": "⊘",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "quarantined 的文案与图标。"
         }
       },
       "required": [
@@ -4566,36 +4803,42 @@
           "properties": {
             "text": {
               "type": "string",
-              "const": "草稿"
+              "const": "草稿",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "◇"
+              "const": "◇",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "draft 的文案与图标。"
         },
         "final": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "已定稿"
+              "const": "已定稿",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "✓"
+              "const": "✓",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "final 的文案与图标。"
         }
       },
       "required": [
@@ -4613,72 +4856,84 @@
           "properties": {
             "text": {
               "type": "string",
-              "const": "外部源"
+              "const": "外部源",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "↗"
+              "const": "↗",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "external 的文案与图标。"
         },
         "human": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "人"
+              "const": "人",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "♙"
+              "const": "♙",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "human 的文案与图标。"
         },
         "agent": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "agent"
+              "const": "agent",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "✦"
+              "const": "✦",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "agent 的文案与图标。"
         },
         "mixed": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "混合"
+              "const": "混合",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⋈"
+              "const": "⋈",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "mixed 的文案与图标。"
         }
       },
       "required": [
@@ -4698,36 +4953,42 @@
           "properties": {
             "text": {
               "type": "string",
-              "const": "源材料"
+              "const": "源材料",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "↗"
+              "const": "↗",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "source 的文案与图标。"
         },
         "derived": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "内部生成"
+              "const": "内部生成",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⋈"
+              "const": "⋈",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "derived 的文案与图标。"
         }
       },
       "required": [
@@ -4745,54 +5006,63 @@
           "properties": {
             "text": {
               "type": "string",
-              "const": "日报"
+              "const": "日报",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "▤"
+              "const": "▤",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "daily 的文案与图标。"
         },
         "research": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "专题"
+              "const": "专题",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "⌕"
+              "const": "⌕",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "research 的文案与图标。"
         },
         "adhoc": {
           "type": "object",
           "properties": {
             "text": {
               "type": "string",
-              "const": "临时"
+              "const": "临时",
+              "description": "显示文案。"
             },
             "icon": {
               "type": "string",
-              "const": "◇"
+              "const": "◇",
+              "description": "非颜色状态图标。"
             }
           },
           "required": [
             "text",
             "icon"
           ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "description": "adhoc 的文案与图标。"
         }
       },
       "required": [

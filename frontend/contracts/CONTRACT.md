@@ -134,104 +134,104 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object &#124; object` | 介入 payload：按 action 判别的确定类型，覆盖动作矩阵；不接受任意 JSON 或未知 action。 |
 | `$.oneOf[0]` | 是 | `object` | kind=ingest；投放 / 归入作业，只记录来源摘要。 |
-| `$.oneOf[0].action` | 是 | `"ingest"` |  |
-| `$.oneOf[0].uploadId` | 是 | `string` |  |
+| `$.oneOf[0].action` | 是 | `"ingest"` | 投放 / 归入动作。 |
+| `$.oneOf[0].uploadId` | 是 | `string` | 投放锚。 |
 | `$.oneOf[0].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
 | `$.oneOf[1]` | 是 | `object` | kind=map_fix；修正映射与单位后确认。 |
-| `$.oneOf[1].action` | 是 | `"map_fix"` |  |
-| `$.oneOf[1].uploadId` | 是 | `string` |  |
+| `$.oneOf[1].action` | 是 | `"map_fix"` | 修正映射动作。 |
+| `$.oneOf[1].uploadId` | 是 | `string` | 投放锚。 |
 | `$.oneOf[1].mapping` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
 | `$.oneOf[2]` | 是 | `object` | kind=recipe；参数 / 口径修正。 |
-| `$.oneOf[2].action` | 是 | `"recipe"` |  |
-| `$.oneOf[2].artifactId` | 是 | `string` |  |
+| `$.oneOf[2].action` | 是 | `"recipe"` | 参数修正动作。 |
+| `$.oneOf[2].artifactId` | 是 | `string` | 配方产物锚。 |
 | `$.oneOf[2].changes` | 是 | `ParamChange` | 参数补丁：至少一项 unit / timezone / calendar / resample / aggregation，不接受其他参数。 |
 | `$.oneOf[3]` | 是 | `object` | kind=framework；结论级批注。 |
-| `$.oneOf[3].action` | 是 | `"annotate"` |  |
-| `$.oneOf[3].conclusionId` | 是 | `string` |  |
-| `$.oneOf[3].note` | 是 | `string` |  |
+| `$.oneOf[3].action` | 是 | `"annotate"` | 结论批注动作。 |
+| `$.oneOf[3].conclusionId` | 是 | `string` | 结论锚。 |
+| `$.oneOf[3].note` | 是 | `string` | 批注内容。 |
 | `$.oneOf[4]` | 是 | `object` | kind=ask_why；追问依据，send 不重复记介入。 |
-| `$.oneOf[4].action` | 是 | `"ask_why"` |  |
-| `$.oneOf[4].conclusionId` | 是 | `string` |  |
-| `$.oneOf[4].question` | 是 | `string` |  |
+| `$.oneOf[4].action` | 是 | `"ask_why"` | 追问依据动作。 |
+| `$.oneOf[4].conclusionId` | 是 | `string` | 结论锚。 |
+| `$.oneOf[4].question` | 是 | `string` | 追问内容。 |
 | `$.oneOf[5]` | 是 | `object` | kind=question；追问如果。 |
-| `$.oneOf[5].action` | 是 | `"what_if"` |  |
-| `$.oneOf[5].conclusionId` | 是 | `string` |  |
-| `$.oneOf[5].question` | 是 | `string` |  |
+| `$.oneOf[5].action` | 是 | `"what_if"` | 假设追问动作。 |
+| `$.oneOf[5].conclusionId` | 是 | `string` | 结论锚。 |
+| `$.oneOf[5].question` | 是 | `string` | 假设问题。 |
 | `$.oneOf[6]` | 是 | `object` | kind=rewrite；要求深挖。 |
-| `$.oneOf[6].action` | 是 | `"deepen"` |  |
-| `$.oneOf[6].conclusionId` | 是 | `string` |  |
-| `$.oneOf[6].instruction` | 是 | `string` |  |
+| `$.oneOf[6].action` | 是 | `"deepen"` | 深挖动作。 |
+| `$.oneOf[6].conclusionId` | 是 | `string` | 结论锚。 |
+| `$.oneOf[6].instruction` | 是 | `string` | 深挖指令。 |
 | `$.oneOf[7]` | 是 | `object` | kind=delete；删除结论，以 tombstone 保留历史。 |
-| `$.oneOf[7].action` | 是 | `"delete_conclusion"` |  |
-| `$.oneOf[7].conclusionId` | 是 | `string` |  |
-| `$.oneOf[7].reason` | 是 | `string` |  |
+| `$.oneOf[7].action` | 是 | `"delete_conclusion"` | 删除结论动作。 |
+| `$.oneOf[7].conclusionId` | 是 | `string` | 结论锚。 |
+| `$.oneOf[7].reason` | 是 | `string` | 删除理由。 |
 | `$.oneOf[8]` | 是 | `object` | kind=veto；否决结论，以 tombstone 保留历史。 |
-| `$.oneOf[8].action` | 是 | `"veto"` |  |
-| `$.oneOf[8].conclusionId` | 是 | `string` |  |
-| `$.oneOf[8].reason` | 是 | `string` |  |
+| `$.oneOf[8].action` | 是 | `"veto"` | 否决动作。 |
+| `$.oneOf[8].conclusionId` | 是 | `string` | 结论锚。 |
+| `$.oneOf[8].reason` | 是 | `string` | 否决理由。 |
 | `$.oneOf[9]` | 是 | `object` | kind=pin_rule；规则仅为 candidate，不自动激活或蒸馏。 |
-| `$.oneOf[9].action` | 是 | `"pin_rule"` |  |
-| `$.oneOf[9].ruleText` | 是 | `string` |  |
-| `$.oneOf[9].state` | 是 | `"candidate"` |  |
+| `$.oneOf[9].action` | 是 | `"pin_rule"` | 教规则动作。 |
+| `$.oneOf[9].ruleText` | 是 | `string` | 候选规则正文。 |
+| `$.oneOf[9].state` | 是 | `"candidate"` | 候选状态，不可写 active。 |
 | `$.oneOf[10]` | 是 | `object` | kind=delete；移除来源，历史锚保留。 |
-| `$.oneOf[10].action` | 是 | `"remove_source"` |  |
-| `$.oneOf[10].uploadId` | 是 | `string` |  |
-| `$.oneOf[10].reason` | 是 | `string` |  |
+| `$.oneOf[10].action` | 是 | `"remove_source"` | 删除来源动作。 |
+| `$.oneOf[10].uploadId` | 是 | `string` | 投放锚。 |
+| `$.oneOf[10].reason` | 是 | `string` | 删除理由。 |
 | `$.oneOf[11]` | 是 | `object` | kind=delete；取消作业，不 abort 已有 run。 |
-| `$.oneOf[11].action` | 是 | `"cancel_job"` |  |
-| `$.oneOf[11].reason` | 是 | `string` |  |
+| `$.oneOf[11].action` | 是 | `"cancel_job"` | 取消作业动作。 |
+| `$.oneOf[11].reason` | 是 | `string` | 取消理由。 |
 | `$.oneOf[12]` | 是 | `object` | kind=rewrite；结论 / 备注 inline 编辑。 |
-| `$.oneOf[12].action` | 是 | `"edit_block"` |  |
-| `$.oneOf[12].blockId` | 是 | `string` |  |
-| `$.oneOf[12].text` | 是 | `string` |  |
+| `$.oneOf[12].action` | 是 | `"edit_block"` | 行内编辑动作。 |
+| `$.oneOf[12].blockId` | 是 | `string` | 目标块锚。 |
+| `$.oneOf[12].text` | 是 | `string` | 新的块正文，可为空。 |
 | `$.oneOf[13]` | 是 | `object` | kind=rewrite；指定块的 agent 改稿请求。 |
-| `$.oneOf[13].action` | 是 | `"revise_blocks"` |  |
-| `$.oneOf[13].blockIds` | 是 | `string[]` |  |
+| `$.oneOf[13].action` | 是 | `"revise_blocks"` | 块改稿请求。 |
+| `$.oneOf[13].blockIds` | 是 | `string[]` | 选中的目标块锚，至少一项。 |
 | `$.oneOf[13].blockIds[]` | 是 | `string` |  |
-| `$.oneOf[13].instruction` | 是 | `string` |  |
+| `$.oneOf[13].instruction` | 是 | `string` | 改稿指令。 |
 | `$.oneOf[14]` | 是 | `object` | kind=framework；新建块批注。 |
-| `$.oneOf[14].action` | 是 | `"block_comment"` |  |
-| `$.oneOf[14].blockId` | 是 | `string` |  |
-| `$.oneOf[14].text` | 是 | `string` |  |
+| `$.oneOf[14].action` | 是 | `"block_comment"` | 新建块批注动作。 |
+| `$.oneOf[14].blockId` | 是 | `string` | 被批注块锚。 |
+| `$.oneOf[14].text` | 是 | `string` | 批注正文。 |
 | `$.oneOf[15]` | 是 | `object` | kind=framework；回复批注线程。 |
-| `$.oneOf[15].action` | 是 | `"reply_comment"` |  |
-| `$.oneOf[15].threadId` | 是 | `string` |  |
-| `$.oneOf[15].text` | 是 | `string` |  |
+| `$.oneOf[15].action` | 是 | `"reply_comment"` | 回复批注动作。 |
+| `$.oneOf[15].threadId` | 是 | `string` | 批注线程锚。 |
+| `$.oneOf[15].text` | 是 | `string` | 回复正文。 |
 | `$.oneOf[16]` | 是 | `object` | kind=framework；标记线程已解决。 |
-| `$.oneOf[16].action` | 是 | `"resolve_comment"` |  |
-| `$.oneOf[16].threadId` | 是 | `string` |  |
+| `$.oneOf[16].action` | 是 | `"resolve_comment"` | 解决批注动作。 |
+| `$.oneOf[16].threadId` | 是 | `string` | 批注线程锚。 |
 | `$.oneOf[17]` | 是 | `object` | kind=approve；标记产物暂定并向下游透传。 |
-| `$.oneOf[17].action` | 是 | `"mark_provisional"` |  |
-| `$.oneOf[17].artifactId` | 是 | `string` |  |
+| `$.oneOf[17].action` | 是 | `"mark_provisional"` | 标记暂定动作。 |
+| `$.oneOf[17].artifactId` | 是 | `string` | 目标产物锚。 |
 | `$.oneOf[18]` | 是 | `object` | kind=rerun；显式重跑本阶段及下游，affectedStages 按阶段顺序列出受影响阶段。 |
-| `$.oneOf[18].action` | 是 | `"rerun"` |  |
+| `$.oneOf[18].action` | 是 | `"rerun"` | 阶段重跑动作。 |
 | `$.oneOf[18].stage` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
-| `$.oneOf[18].affectedStages` | 是 | `Stage[]` |  |
+| `$.oneOf[18].affectedStages` | 是 | `Stage[]` | 本阶段及下游，按固定阶段顺序列出。 |
 | `$.oneOf[18].affectedStages[]` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
 | `$.oneOf[19]` | 是 | `object` | kind=approve；接受 agent 候选版本。 |
-| `$.oneOf[19].action` | 是 | `"accept"` |  |
-| `$.oneOf[19].revisionId` | 是 | `string` |  |
+| `$.oneOf[19].action` | 是 | `"accept"` | 接受候选动作。 |
+| `$.oneOf[19].revisionId` | 是 | `string` | 被接受的候选修订锚。 |
 | `$.oneOf[20]` | 是 | `object` | kind=rewrite；回退请求涉及的块，产生新 revision、不删除旧版本。 |
-| `$.oneOf[20].action` | 是 | `"revert"` |  |
-| `$.oneOf[20].revisionId` | 是 | `string` |  |
+| `$.oneOf[20].action` | 是 | `"revert"` | 回退候选动作。 |
+| `$.oneOf[20].revisionId` | 是 | `string` | 被回退的候选修订锚。 |
 | `$.oneOf[21]` | 是 | `object` | kind=approve；定稿前显式选择冲突块版本，保留两版。 |
-| `$.oneOf[21].action` | 是 | `"resolve_conflict"` |  |
-| `$.oneOf[21].blockId` | 是 | `string` |  |
-| `$.oneOf[21].humanRevId` | 是 | `string` |  |
-| `$.oneOf[21].agentRevId` | 是 | `string` |  |
-| `$.oneOf[21].choice` | 是 | `"human" &#124; "agent"` |  |
+| `$.oneOf[21].action` | 是 | `"resolve_conflict"` | 裁定冲突动作。 |
+| `$.oneOf[21].blockId` | 是 | `string` | 冲突块锚。 |
+| `$.oneOf[21].humanRevId` | 是 | `string` | 人版修订锚。 |
+| `$.oneOf[21].agentRevId` | 是 | `string` | agent 版修订锚。 |
+| `$.oneOf[21].choice` | 是 | `"human" &#124; "agent"` | 选择人版或 agent 版。 |
 | `$.oneOf[22]` | 是 | `object` | kind=finalize；一次显式定稿只产生一条事件。 |
-| `$.oneOf[22].action` | 是 | `"finalize"` |  |
-| `$.oneOf[22].revisionId` | 是 | `string` |  |
-| `$.oneOf[22].snapshotId` | 是 | `string` |  |
+| `$.oneOf[22].action` | 是 | `"finalize"` | 显式定稿动作。 |
+| `$.oneOf[22].revisionId` | 是 | `string` | 被定稿修订锚。 |
+| `$.oneOf[22].snapshotId` | 是 | `string` | 新定稿快照锚。 |
 
 ### `Intervention`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 介入事件十个必有字段，camelCase；原动作不可改，检查点仅更新 outcome。action↔kind 对应关系由 zod 边界校验，见各 payload 分支的 kind 说明。 |
-| `$.id` | 是 | `string` |  |
-| `$.jobId` | 是 | `string` |  |
+| `$.id` | 是 | `string` | 介入事件唯一标识。 |
+| `$.jobId` | 是 | `string` | 所属作业锚。 |
 | `$.stage` | 是 | `Stage` | 固定阶段顺序：提取 → 处理 → 分析 → 交付。 |
 | `$.artifactId` | 是 | `string &#124; null` | 产物锚；作业级事件可为 null。 |
 | `$.artifactId.anyOf[0]` | 是 | `string` |  |
@@ -250,7 +250,7 @@
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 阶段产物与修订锚；修订内容另由 Revision 保存。 |
-| `$.id` | 是 | `string` |  |
+| `$.id` | 是 | `string` | 产物唯一标识。 |
 | `$.kind` | 是 | `ArtifactKind` | 阶段产物类型：数据集、配方、分析稿、交付物。 |
 | `$.status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
 | `$.source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
@@ -270,8 +270,8 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object &#124; object &#124; object &#124; object` | 四种产物修订的判别联合；提交深拷贝，读 API 返回副本，历史不可变。 |
 | `$.oneOf[0]` | 是 | `object` |  |
-| `$.oneOf[0].id` | 是 | `string` |  |
-| `$.oneOf[0].artifactId` | 是 | `string` |  |
+| `$.oneOf[0].id` | 是 | `string` | 修订唯一标识。 |
+| `$.oneOf[0].artifactId` | 是 | `string` | 修订所属产物标识。 |
 | `$.oneOf[0].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
 | `$.oneOf[0].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
 | `$.oneOf[0].baseRev.anyOf[0]` | 是 | `string` |  |
@@ -280,15 +280,15 @@
 | `$.oneOf[0].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[0].summary` | 是 | `string` | 版本历史摘要。 |
 | `$.oneOf[0].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
-| `$.oneOf[0].artifactKind` | 是 | `"dataset"` |  |
+| `$.oneOf[0].artifactKind` | 是 | `"dataset"` | 数据集修订。 |
 | `$.oneOf[0].uploads` | 是 | `object[]` | 入库摘要，不含投放原文。 |
 | `$.oneOf[0].uploads[]` | 是 | `object` |  |
-| `$.oneOf[0].uploads[].uploadId` | 是 | `string` |  |
+| `$.oneOf[0].uploads[].uploadId` | 是 | `string` | 投放记录锚。 |
 | `$.oneOf[0].uploads[].mapping` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
 | `$.oneOf[0].uploads[].status` | 是 | `UploadStatus` | 抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。 |
 | `$.oneOf[1]` | 是 | `object` |  |
-| `$.oneOf[1].id` | 是 | `string` |  |
-| `$.oneOf[1].artifactId` | 是 | `string` |  |
+| `$.oneOf[1].id` | 是 | `string` | 修订唯一标识。 |
+| `$.oneOf[1].artifactId` | 是 | `string` | 修订所属产物标识。 |
 | `$.oneOf[1].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
 | `$.oneOf[1].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
 | `$.oneOf[1].baseRev.anyOf[0]` | 是 | `string` |  |
@@ -297,13 +297,13 @@
 | `$.oneOf[1].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[1].summary` | 是 | `string` | 版本历史摘要。 |
 | `$.oneOf[1].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
-| `$.oneOf[1].artifactKind` | 是 | `"recipe"` |  |
+| `$.oneOf[1].artifactKind` | 是 | `"recipe"` | 配方修订。 |
 | `$.oneOf[1].params` | 是 | `ParamSet` | 加工参数；v1 保存口径字符串，不执行真实数据处理。 |
 | `$.oneOf[1].steps` | 是 | `RecipeStep[]` | 按执行顺序排列的只读单链配方；空列表为无配方。 |
 | `$.oneOf[1].steps[]` | 是 | `RecipeStep` | 按列表顺序呈现的单链配方步骤；只读，不提供 DAG 编辑。 |
 | `$.oneOf[2]` | 是 | `object` |  |
-| `$.oneOf[2].id` | 是 | `string` |  |
-| `$.oneOf[2].artifactId` | 是 | `string` |  |
+| `$.oneOf[2].id` | 是 | `string` | 修订唯一标识。 |
+| `$.oneOf[2].artifactId` | 是 | `string` | 修订所属产物标识。 |
 | `$.oneOf[2].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
 | `$.oneOf[2].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
 | `$.oneOf[2].baseRev.anyOf[0]` | 是 | `string` |  |
@@ -312,12 +312,12 @@
 | `$.oneOf[2].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[2].summary` | 是 | `string` | 版本历史摘要。 |
 | `$.oneOf[2].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
-| `$.oneOf[2].artifactKind` | 是 | `"analysis"` |  |
+| `$.oneOf[2].artifactKind` | 是 | `"analysis"` | 分析稿修订。 |
 | `$.oneOf[2].conclusions` | 是 | `Conclusion[]` | 分析稿完整快照，删除 / 否决用 tombstone 保留内容。 |
 | `$.oneOf[2].conclusions[]` | 是 | `Conclusion` | 分析结论卡及其证据链、状态和来源。 |
 | `$.oneOf[3]` | 是 | `object` |  |
-| `$.oneOf[3].id` | 是 | `string` |  |
-| `$.oneOf[3].artifactId` | 是 | `string` |  |
+| `$.oneOf[3].id` | 是 | `string` | 修订唯一标识。 |
+| `$.oneOf[3].artifactId` | 是 | `string` | 修订所属产物标识。 |
 | `$.oneOf[3].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
 | `$.oneOf[3].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
 | `$.oneOf[3].baseRev.anyOf[0]` | 是 | `string` |  |
@@ -326,7 +326,7 @@
 | `$.oneOf[3].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[3].summary` | 是 | `string` | 版本历史摘要。 |
 | `$.oneOf[3].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
-| `$.oneOf[3].artifactKind` | 是 | `"deliverable"` |  |
+| `$.oneOf[3].artifactKind` | 是 | `"deliverable"` | 交付物修订。 |
 | `$.oneOf[3].blocks` | 是 | `Block[]` | 有序块完整快照，与 FinalSnapshot.blocks 同形。 |
 | `$.oneOf[3].blocks[]` | 是 | `Block` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
 
@@ -336,13 +336,13 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object &#124; object &#124; object &#124; object` | 按 stage 判别的工作区结果；各阶段只携带对应类型的产物与修订，不混用内容。 |
 | `$.oneOf[0]` | 是 | `object` | 采集工作区：投放、dataset 产物与其修订；空态使用空集合。 |
-| `$.oneOf[0].stage` | 是 | `"collect"` |  |
-| `$.oneOf[0].uploads` | 是 | `Upload[]` |  |
+| `$.oneOf[0].stage` | 是 | `"collect"` | 采集阶段。 |
+| `$.oneOf[0].uploads` | 是 | `Upload[]` | 本作业的投放列表。 |
 | `$.oneOf[0].uploads[]` | 是 | `Upload` | 投放持久化记录；只含元数据 / 来源语境 / 映射 / 状态，拒绝粘贴正文与完整提交参数。 |
-| `$.oneOf[0].artifacts` | 是 | `object[]` |  |
+| `$.oneOf[0].artifacts` | 是 | `object[]` | 数据集产物集合。 |
 | `$.oneOf[0].artifacts[]` | 是 | `object` |  |
-| `$.oneOf[0].artifacts[].id` | 是 | `string` |  |
-| `$.oneOf[0].artifacts[].kind` | 是 | `"dataset"` |  |
+| `$.oneOf[0].artifacts[].id` | 是 | `string` | 产物唯一标识。 |
+| `$.oneOf[0].artifacts[].kind` | 是 | `"dataset"` | 数据集产物。 |
 | `$.oneOf[0].artifacts[].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
 | `$.oneOf[0].artifacts[].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
 | `$.oneOf[0].artifacts[].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
@@ -354,10 +354,10 @@
 | `$.oneOf[0].artifacts[].pendingRunId` | 是 | `string &#124; null` | 待合并对应的 run；无 run 时 null，支持手动检查点。 |
 | `$.oneOf[0].artifacts[].pendingRunId.anyOf[0]` | 是 | `string` |  |
 | `$.oneOf[0].artifacts[].pendingRunId.anyOf[1]` | 是 | `null` |  |
-| `$.oneOf[0].revisions` | 是 | `object[]` |  |
+| `$.oneOf[0].revisions` | 是 | `object[]` | 数据集修订集合。 |
 | `$.oneOf[0].revisions[]` | 是 | `object` |  |
-| `$.oneOf[0].revisions[].id` | 是 | `string` |  |
-| `$.oneOf[0].revisions[].artifactId` | 是 | `string` |  |
+| `$.oneOf[0].revisions[].id` | 是 | `string` | 修订唯一标识。 |
+| `$.oneOf[0].revisions[].artifactId` | 是 | `string` | 修订所属产物标识。 |
 | `$.oneOf[0].revisions[].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
 | `$.oneOf[0].revisions[].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
 | `$.oneOf[0].revisions[].baseRev.anyOf[0]` | 是 | `string` |  |
@@ -366,22 +366,22 @@
 | `$.oneOf[0].revisions[].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[0].revisions[].summary` | 是 | `string` | 版本历史摘要。 |
 | `$.oneOf[0].revisions[].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
-| `$.oneOf[0].revisions[].artifactKind` | 是 | `"dataset"` |  |
+| `$.oneOf[0].revisions[].artifactKind` | 是 | `"dataset"` | 数据集修订。 |
 | `$.oneOf[0].revisions[].uploads` | 是 | `object[]` | 入库摘要，不含投放原文。 |
 | `$.oneOf[0].revisions[].uploads[]` | 是 | `object` |  |
-| `$.oneOf[0].revisions[].uploads[].uploadId` | 是 | `string` |  |
+| `$.oneOf[0].revisions[].uploads[].uploadId` | 是 | `string` | 投放记录锚。 |
 | `$.oneOf[0].revisions[].uploads[].mapping` | 是 | `FieldMapping` | 字段映射列表；空列表表示没有结构化字段。 |
 | `$.oneOf[0].revisions[].uploads[].status` | 是 | `UploadStatus` | 抽取结果：待验证、已入库、隔离；本 feature 不实现真实闸门。 |
 | `$.oneOf[1]` | 是 | `object` | 处理工作区：来源 / 序列 / recipe 产物与修订 / 派生值；空集合不等于错误。 |
-| `$.oneOf[1].stage` | 是 | `"process"` |  |
-| `$.oneOf[1].sources` | 是 | `DataSourceRef[]` |  |
+| `$.oneOf[1].stage` | 是 | `"process"` | 处理阶段。 |
+| `$.oneOf[1].sources` | 是 | `DataSourceRef[]` | 本作业数据源。 |
 | `$.oneOf[1].sources[]` | 是 | `DataSourceRef` | 处理台数据源引用，不复制源数据。 |
-| `$.oneOf[1].series` | 是 | `SeriesRef[]` |  |
+| `$.oneOf[1].series` | 是 | `SeriesRef[]` | 本作业序列引用。 |
 | `$.oneOf[1].series[]` | 是 | `SeriesRef` | 处理台序列引用及元数据，不含观测点。 |
-| `$.oneOf[1].artifacts` | 是 | `object[]` |  |
+| `$.oneOf[1].artifacts` | 是 | `object[]` | 配方产物集合。 |
 | `$.oneOf[1].artifacts[]` | 是 | `object` |  |
-| `$.oneOf[1].artifacts[].id` | 是 | `string` |  |
-| `$.oneOf[1].artifacts[].kind` | 是 | `"recipe"` |  |
+| `$.oneOf[1].artifacts[].id` | 是 | `string` | 产物唯一标识。 |
+| `$.oneOf[1].artifacts[].kind` | 是 | `"recipe"` | 配方产物。 |
 | `$.oneOf[1].artifacts[].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
 | `$.oneOf[1].artifacts[].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
 | `$.oneOf[1].artifacts[].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
@@ -393,10 +393,10 @@
 | `$.oneOf[1].artifacts[].pendingRunId` | 是 | `string &#124; null` | 待合并对应的 run；无 run 时 null，支持手动检查点。 |
 | `$.oneOf[1].artifacts[].pendingRunId.anyOf[0]` | 是 | `string` |  |
 | `$.oneOf[1].artifacts[].pendingRunId.anyOf[1]` | 是 | `null` |  |
-| `$.oneOf[1].revisions` | 是 | `object[]` |  |
+| `$.oneOf[1].revisions` | 是 | `object[]` | 配方修订集合。 |
 | `$.oneOf[1].revisions[]` | 是 | `object` |  |
-| `$.oneOf[1].revisions[].id` | 是 | `string` |  |
-| `$.oneOf[1].revisions[].artifactId` | 是 | `string` |  |
+| `$.oneOf[1].revisions[].id` | 是 | `string` | 修订唯一标识。 |
+| `$.oneOf[1].revisions[].artifactId` | 是 | `string` | 修订所属产物标识。 |
 | `$.oneOf[1].revisions[].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
 | `$.oneOf[1].revisions[].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
 | `$.oneOf[1].revisions[].baseRev.anyOf[0]` | 是 | `string` |  |
@@ -405,18 +405,18 @@
 | `$.oneOf[1].revisions[].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[1].revisions[].summary` | 是 | `string` | 版本历史摘要。 |
 | `$.oneOf[1].revisions[].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
-| `$.oneOf[1].revisions[].artifactKind` | 是 | `"recipe"` |  |
+| `$.oneOf[1].revisions[].artifactKind` | 是 | `"recipe"` | 配方修订。 |
 | `$.oneOf[1].revisions[].params` | 是 | `ParamSet` | 加工参数；v1 保存口径字符串，不执行真实数据处理。 |
 | `$.oneOf[1].revisions[].steps` | 是 | `RecipeStep[]` | 按执行顺序排列的只读单链配方；空列表为无配方。 |
 | `$.oneOf[1].revisions[].steps[]` | 是 | `RecipeStep` | 按列表顺序呈现的单链配方步骤；只读，不提供 DAG 编辑。 |
-| `$.oneOf[1].derivedValues` | 是 | `DerivedValue[]` |  |
+| `$.oneOf[1].derivedValues` | 是 | `DerivedValue[]` | 可回溯的派生值集合。 |
 | `$.oneOf[1].derivedValues[]` | 是 | `DerivedValue` | 可回溯来源的派生值。 |
 | `$.oneOf[2]` | 是 | `object` | 分析工作区：analysis 产物及含结论的修订。 |
-| `$.oneOf[2].stage` | 是 | `"analyze"` |  |
-| `$.oneOf[2].artifacts` | 是 | `object[]` |  |
+| `$.oneOf[2].stage` | 是 | `"analyze"` | 分析阶段。 |
+| `$.oneOf[2].artifacts` | 是 | `object[]` | 分析稿产物集合。 |
 | `$.oneOf[2].artifacts[]` | 是 | `object` |  |
-| `$.oneOf[2].artifacts[].id` | 是 | `string` |  |
-| `$.oneOf[2].artifacts[].kind` | 是 | `"analysis"` |  |
+| `$.oneOf[2].artifacts[].id` | 是 | `string` | 产物唯一标识。 |
+| `$.oneOf[2].artifacts[].kind` | 是 | `"analysis"` | 分析稿产物。 |
 | `$.oneOf[2].artifacts[].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
 | `$.oneOf[2].artifacts[].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
 | `$.oneOf[2].artifacts[].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
@@ -428,10 +428,10 @@
 | `$.oneOf[2].artifacts[].pendingRunId` | 是 | `string &#124; null` | 待合并对应的 run；无 run 时 null，支持手动检查点。 |
 | `$.oneOf[2].artifacts[].pendingRunId.anyOf[0]` | 是 | `string` |  |
 | `$.oneOf[2].artifacts[].pendingRunId.anyOf[1]` | 是 | `null` |  |
-| `$.oneOf[2].revisions` | 是 | `object[]` |  |
+| `$.oneOf[2].revisions` | 是 | `object[]` | 分析稿修订集合。 |
 | `$.oneOf[2].revisions[]` | 是 | `object` |  |
-| `$.oneOf[2].revisions[].id` | 是 | `string` |  |
-| `$.oneOf[2].revisions[].artifactId` | 是 | `string` |  |
+| `$.oneOf[2].revisions[].id` | 是 | `string` | 修订唯一标识。 |
+| `$.oneOf[2].revisions[].artifactId` | 是 | `string` | 修订所属产物标识。 |
 | `$.oneOf[2].revisions[].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
 | `$.oneOf[2].revisions[].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
 | `$.oneOf[2].revisions[].baseRev.anyOf[0]` | 是 | `string` |  |
@@ -440,7 +440,7 @@
 | `$.oneOf[2].revisions[].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[2].revisions[].summary` | 是 | `string` | 版本历史摘要。 |
 | `$.oneOf[2].revisions[].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
-| `$.oneOf[2].revisions[].artifactKind` | 是 | `"analysis"` |  |
+| `$.oneOf[2].revisions[].artifactKind` | 是 | `"analysis"` | 分析稿修订。 |
 | `$.oneOf[2].revisions[].conclusions` | 是 | `Conclusion[]` | 分析稿完整快照，删除 / 否决用 tombstone 保留内容。 |
 | `$.oneOf[2].revisions[].conclusions[]` | 是 | `Conclusion` | 分析结论卡及其证据链、状态和来源。 |
 | `$.oneOf[3]` | 是 | `object` | 交付工作区：交付物、快照及产物修订；继承 S-18 三锚一致性校验。 |
@@ -450,11 +450,11 @@
 | `$.oneOf[3].finalSnapshot` | 是 | `FinalSnapshot &#124; null` | 定稿快照；草稿 / 空工作区必须为 null。 |
 | `$.oneOf[3].finalSnapshot.anyOf[0]` | 是 | `FinalSnapshot` | 不可变定稿快照；修订 id 与版本号同时保留。 |
 | `$.oneOf[3].finalSnapshot.anyOf[1]` | 是 | `null` |  |
-| `$.oneOf[3].stage` | 是 | `"deliver"` |  |
-| `$.oneOf[3].artifacts` | 是 | `object[]` |  |
+| `$.oneOf[3].stage` | 是 | `"deliver"` | 交付阶段。 |
+| `$.oneOf[3].artifacts` | 是 | `object[]` | 交付物产物集合。 |
 | `$.oneOf[3].artifacts[]` | 是 | `object` |  |
-| `$.oneOf[3].artifacts[].id` | 是 | `string` |  |
-| `$.oneOf[3].artifacts[].kind` | 是 | `"deliverable"` |  |
+| `$.oneOf[3].artifacts[].id` | 是 | `string` | 产物唯一标识。 |
+| `$.oneOf[3].artifacts[].kind` | 是 | `"deliverable"` | 交付物产物。 |
 | `$.oneOf[3].artifacts[].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
 | `$.oneOf[3].artifacts[].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
 | `$.oneOf[3].artifacts[].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
@@ -466,10 +466,10 @@
 | `$.oneOf[3].artifacts[].pendingRunId` | 是 | `string &#124; null` | 待合并对应的 run；无 run 时 null，支持手动检查点。 |
 | `$.oneOf[3].artifacts[].pendingRunId.anyOf[0]` | 是 | `string` |  |
 | `$.oneOf[3].artifacts[].pendingRunId.anyOf[1]` | 是 | `null` |  |
-| `$.oneOf[3].revisions` | 是 | `object[]` |  |
+| `$.oneOf[3].revisions` | 是 | `object[]` | 交付物修订集合。 |
 | `$.oneOf[3].revisions[]` | 是 | `object` |  |
-| `$.oneOf[3].revisions[].id` | 是 | `string` |  |
-| `$.oneOf[3].revisions[].artifactId` | 是 | `string` |  |
+| `$.oneOf[3].revisions[].id` | 是 | `string` | 修订唯一标识。 |
+| `$.oneOf[3].revisions[].artifactId` | 是 | `string` | 修订所属产物标识。 |
 | `$.oneOf[3].revisions[].number` | 是 | `integer` | 从 1 开始的修订版本号。 |
 | `$.oneOf[3].revisions[].baseRev` | 是 | `string &#124; null` | 基线 Revision.id；初版为 null。 |
 | `$.oneOf[3].revisions[].baseRev.anyOf[0]` | 是 | `string` |  |
@@ -478,7 +478,7 @@
 | `$.oneOf[3].revisions[].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[3].revisions[].summary` | 是 | `string` | 版本历史摘要。 |
 | `$.oneOf[3].revisions[].changeSummary` | 是 | `string` | 与基线相比的变更摘要。 |
-| `$.oneOf[3].revisions[].artifactKind` | 是 | `"deliverable"` |  |
+| `$.oneOf[3].revisions[].artifactKind` | 是 | `"deliverable"` | 交付物修订。 |
 | `$.oneOf[3].revisions[].blocks` | 是 | `Block[]` | 有序块完整快照，与 FinalSnapshot.blocks 同形。 |
 | `$.oneOf[3].revisions[].blocks[]` | 是 | `Block` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
 
@@ -489,10 +489,10 @@
 | `$` | 是 | `object` | 契约提供的收件箱计数，不由 UI 从状态推导。 |
 | `$.unread` | 是 | `integer` | 未读且未解决条目总数。 |
 | `$.byStage` | 是 | `object` | 固定四阶段的未读且未解决条目计数。 |
-| `$.byStage.collect` | 是 | `integer` |  |
-| `$.byStage.process` | 是 | `integer` |  |
-| `$.byStage.analyze` | 是 | `integer` |  |
-| `$.byStage.deliver` | 是 | `integer` |  |
+| `$.byStage.collect` | 是 | `integer` | 采集阶段待处理数。 |
+| `$.byStage.process` | 是 | `integer` | 处理阶段待处理数。 |
+| `$.byStage.analyze` | 是 | `integer` | 分析阶段待处理数。 |
+| `$.byStage.deliver` | 是 | `integer` | 交付阶段待处理数。 |
 
 ### `WriteReceipt`
 
@@ -515,9 +515,9 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 声明式图表输入；template_id→templateId、series_bindings→seriesBindings；拒绝任意 ECharts option。 |
 | `$.templateId` | 是 | `"line-sample"` | v1 唯一样例模板，不实现完整模板库。 |
-| `$.seriesBindings` | 是 | `object` |  |
+| `$.seriesBindings` | 是 | `object` | 模板数据绑定，仅 main 槽位。 |
 | `$.seriesBindings.main` | 是 | `string` | 绑定的规范序列 ID。 |
-| `$.overrides` | 是 | `object` |  |
+| `$.overrides` | 是 | `object` | 样例允许的覆盖项，不接受任意 option。 |
 | `$.overrides.title` | 否 | `string` | 可选标题覆盖。 |
 
 ### `BlockComment`
@@ -525,13 +525,13 @@
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 块批注；回复保留 threadId 与 parentId。 |
-| `$.id` | 是 | `string` |  |
-| `$.threadId` | 是 | `string` |  |
+| `$.id` | 是 | `string` | 评论唯一标识。 |
+| `$.threadId` | 是 | `string` | 所属线程标识。 |
 | `$.parentId` | 是 | `string &#124; null` | 根评论为 null，回复指向根评论 id。 |
 | `$.parentId.anyOf[0]` | 是 | `string` |  |
 | `$.parentId.anyOf[1]` | 是 | `null` |  |
 | `$.author` | 是 | `"human" &#124; "agent"` | 批注作者；不改变块正文来源。 |
-| `$.text` | 是 | `string` |  |
+| `$.text` | 是 | `string` | 批注正文。 |
 | `$.createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 
 ### `BlockCommentThread`
@@ -539,8 +539,8 @@
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 块批注线程；解决动作只改当前新修订，历史不变。 |
-| `$.threadId` | 是 | `string` |  |
-| `$.blockId` | 是 | `string` |  |
+| `$.threadId` | 是 | `string` | 线程唯一标识。 |
+| `$.blockId` | 是 | `string` | 被批注的块标识。 |
 | `$.status` | 是 | `"open" &#124; "resolved"` | 线程未解决 / 已解决状态。 |
 | `$.comments` | 是 | `BlockComment[]` | 按时间排列的根评论与回复。 |
 | `$.comments[]` | 是 | `BlockComment` | 块批注；回复保留 threadId 与 parentId。 |
@@ -559,8 +559,8 @@
 | `$.oneOf[0].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
 | `$.oneOf[0].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
 | `$.oneOf[0].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
-| `$.oneOf[0].type` | 是 | `"conclusion"` |  |
-| `$.oneOf[0].text` | 是 | `string` |  |
+| `$.oneOf[0].type` | 是 | `"conclusion"` | 结论块。 |
+| `$.oneOf[0].text` | 是 | `string` | 可编辑结论正文。 |
 | `$.oneOf[1]` | 是 | `object` | 备注文本块，可 inline 编辑，不进结论。 |
 | `$.oneOf[1].id` | 是 | `string` | 跨修订稳定的块标识。 |
 | `$.oneOf[1].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
@@ -570,8 +570,8 @@
 | `$.oneOf[1].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
 | `$.oneOf[1].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
 | `$.oneOf[1].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
-| `$.oneOf[1].type` | 是 | `"note"` |  |
-| `$.oneOf[1].text` | 是 | `string` |  |
+| `$.oneOf[1].type` | 是 | `"note"` | 备注块。 |
+| `$.oneOf[1].text` | 是 | `string` | 可编辑备注正文。 |
 | `$.oneOf[2]` | 是 | `object` | 只读引用块，sourceAnchor 为外部材料来源定位。 |
 | `$.oneOf[2].id` | 是 | `string` | 跨修订稳定的块标识。 |
 | `$.oneOf[2].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
@@ -581,10 +581,10 @@
 | `$.oneOf[2].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
 | `$.oneOf[2].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
 | `$.oneOf[2].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
-| `$.oneOf[2].type` | 是 | `"quote"` |  |
-| `$.oneOf[2].text` | 是 | `string` |  |
-| `$.oneOf[2].sourceAnchor` | 是 | `object` |  |
-| `$.oneOf[2].sourceAnchor.kind` | 是 | `"source"` |  |
+| `$.oneOf[2].type` | 是 | `"quote"` | 引用块。 |
+| `$.oneOf[2].text` | 是 | `string` | 只读摘录正文。 |
+| `$.oneOf[2].sourceAnchor` | 是 | `object` | 摘录对应的外部材料来源锚。 |
+| `$.oneOf[2].sourceAnchor.kind` | 是 | `"source"` | 外部材料来源类型。 |
 | `$.oneOf[2].sourceAnchor.ref` | 是 | `string` | 目标引用，供来源跳转使用。 |
 | `$.oneOf[2].sourceAnchor.label` | 是 | `string` | 证据显示名称。 |
 | `$.oneOf[3]` | 是 | `object` | 只读表格块，带 tableId 溯源。 |
@@ -596,8 +596,8 @@
 | `$.oneOf[3].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
 | `$.oneOf[3].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
 | `$.oneOf[3].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
-| `$.oneOf[3].type` | 是 | `"table"` |  |
-| `$.oneOf[3].tableId` | 是 | `string` |  |
+| `$.oneOf[3].type` | 是 | `"table"` | 表格块。 |
+| `$.oneOf[3].tableId` | 是 | `string` | 表格溯源标识。 |
 | `$.oneOf[3].columns` | 是 | `string[]` | 按展示顺序排列的表头。 |
 | `$.oneOf[3].columns[]` | 是 | `string` |  |
 | `$.oneOf[3].rows` | 是 | `string &#124; number &#124; null[][]` | 按列顺序排列的只读单元格；null 为缺数。 |
@@ -612,9 +612,9 @@
 | `$.oneOf[4].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
 | `$.oneOf[4].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
 | `$.oneOf[4].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
-| `$.oneOf[4].type` | 是 | `"verification"` |  |
-| `$.oneOf[4].question` | 是 | `string` |  |
-| `$.oneOf[4].conclusionBlockId` | 是 | `string` |  |
+| `$.oneOf[4].type` | 是 | `"verification"` | 待验证块。 |
+| `$.oneOf[4].question` | 是 | `string` | 只读待验证问题。 |
+| `$.oneOf[4].conclusionBlockId` | 是 | `string` | 关联结论块标识。 |
 | `$.oneOf[5]` | 是 | `object` | 只读图表块；声明式样例与绑定序列数据，渲染用既有暗色主题。 |
 | `$.oneOf[5].id` | 是 | `string` | 跨修订稳定的块标识。 |
 | `$.oneOf[5].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
@@ -624,7 +624,7 @@
 | `$.oneOf[5].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
 | `$.oneOf[5].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
 | `$.oneOf[5].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
-| `$.oneOf[5].type` | 是 | `"chart"` |  |
+| `$.oneOf[5].type` | 是 | `"chart"` | 图表块。 |
 | `$.oneOf[5].chartSpec` | 是 | `ChartSpec` | 声明式图表输入；template_id→templateId、series_bindings→seriesBindings；拒绝任意 ECharts option。 |
 | `$.oneOf[5].seriesData` | 是 | `SparkSeries` | 迷你折线与样例图的序列；元数据在序列层声明，不逐点重复。 |
 
@@ -638,16 +638,16 @@
 | `$.oneOf[0].jobId` | 是 | `string` | 所属作业。 |
 | `$.oneOf[0].blocks` | 是 | `Block[]` | 当前版本按契约顺序排列的块。 |
 | `$.oneOf[0].blocks[]` | 是 | `Block` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
-| `$.oneOf[0].deliverableStatus` | 是 | `"draft"` |  |
-| `$.oneOf[0].finalSnapshotId` | 是 | `null` |  |
-| `$.oneOf[0].finalRevisionNumber` | 是 | `null` |  |
-| `$.oneOf[0].finalizedAt` | 是 | `null` |  |
+| `$.oneOf[0].deliverableStatus` | 是 | `"draft"` | 草稿状态。 |
+| `$.oneOf[0].finalSnapshotId` | 是 | `null` | 草稿无定稿快照。 |
+| `$.oneOf[0].finalRevisionNumber` | 是 | `null` | 草稿无定稿版本号。 |
+| `$.oneOf[0].finalizedAt` | 是 | `null` | 草稿无定稿时间。 |
 | `$.oneOf[1]` | 是 | `object` | 已定稿：三个定稿锚非空，必须与工作区定稿快照一致。 |
 | `$.oneOf[1].id` | 是 | `string` | 交付物标识，也作为 deliverable 产物锚。 |
 | `$.oneOf[1].jobId` | 是 | `string` | 所属作业。 |
 | `$.oneOf[1].blocks` | 是 | `Block[]` | 当前版本按契约顺序排列的块。 |
 | `$.oneOf[1].blocks[]` | 是 | `Block` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
-| `$.oneOf[1].deliverableStatus` | 是 | `"final"` |  |
+| `$.oneOf[1].deliverableStatus` | 是 | `"final"` | 已定稿状态。 |
 | `$.oneOf[1].finalSnapshotId` | 是 | `string` | 不可变定稿快照 id。 |
 | `$.oneOf[1].finalRevisionNumber` | 是 | `integer` | 定稿修订版本号 N。 |
 | `$.oneOf[1].finalizedAt` | 是 | `Timestamp` | 定稿时间，带偏移时间戳；不是材料 publishedAt。 |
@@ -657,9 +657,9 @@
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 不可变定稿快照；修订 id 与版本号同时保留。 |
-| `$.id` | 是 | `string` |  |
-| `$.jobId` | 是 | `string` |  |
-| `$.revisionId` | 是 | `string` |  |
+| `$.id` | 是 | `string` | 定稿快照唯一标识。 |
+| `$.jobId` | 是 | `string` | 快照所属作业。 |
+| `$.revisionId` | 是 | `string` | 冻结的已合并修订标识。 |
 | `$.revisionNumber` | 是 | `integer` | revisionId 对应已合并修订的 number，用于 S-18 版本号锚校验。 |
 | `$.finalizedAt` | 是 | `Timestamp` | 显式定稿时间，与 Deliverable.finalizedAt 一致。 |
 | `$.blocks` | 是 | `Block[]` | 定稿时已合并 revision 的块集合深拷贝，读取返回副本。 |
@@ -712,21 +712,21 @@
 | `$.oneOf[0].jobId.anyOf[0]` | 是 | `string` |  |
 | `$.oneOf[0].jobId.anyOf[1]` | 是 | `null` |  |
 | `$.oneOf[0].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
-| `$.oneOf[0].inputKind` | 是 | `"file"` |  |
+| `$.oneOf[0].inputKind` | 是 | `"file"` | 文件投放。 |
 | `$.oneOf[0].fileMeta` | 是 | `IntakeFileMeta` | 文件元数据，不包含 File 对象、正文或字节。 |
 | `$.oneOf[1]` | 是 | `object` |  |
 | `$.oneOf[1].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
 | `$.oneOf[1].jobId.anyOf[0]` | 是 | `string` |  |
 | `$.oneOf[1].jobId.anyOf[1]` | 是 | `null` |  |
 | `$.oneOf[1].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
-| `$.oneOf[1].inputKind` | 是 | `"url"` |  |
+| `$.oneOf[1].inputKind` | 是 | `"url"` | URL 投放。 |
 | `$.oneOf[1].url` | 是 | `string` | URL 字符串；仅保存，不发起抓取。 |
 | `$.oneOf[2]` | 是 | `object` |  |
 | `$.oneOf[2].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
 | `$.oneOf[2].jobId.anyOf[0]` | 是 | `string` |  |
 | `$.oneOf[2].jobId.anyOf[1]` | 是 | `null` |  |
 | `$.oneOf[2].sourceNote` | 是 | `SourceNote` | 投放来源语境，不改变序列身份。 |
-| `$.oneOf[2].inputKind` | 是 | `"text"` |  |
+| `$.oneOf[2].inputKind` | 是 | `"text"` | 文本投放。 |
 | `$.oneOf[2].text` | 是 | `string` | 粘贴正文，只存在于提交参数与内存草稿，不进入 Upload 或持久化。 |
 
 ### `FieldMapping`
@@ -769,7 +769,7 @@
 | `$.oneOf[0].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[0].removed` | 是 | `boolean` | 仅从当前视图移除，历史锚保留。 |
 | `$.oneOf[0].quarantineReason` | 否 | `string` | 隔离样例的模拟判定原因。 |
-| `$.oneOf[0].inputKind` | 是 | `"file"` |  |
+| `$.oneOf[0].inputKind` | 是 | `"file"` | 文件投放记录。 |
 | `$.oneOf[0].fileMeta` | 是 | `IntakeFileMeta` | 文件元数据，不包含 File 对象、正文或字节。 |
 | `$.oneOf[1]` | 是 | `object` |  |
 | `$.oneOf[1].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
@@ -782,8 +782,8 @@
 | `$.oneOf[1].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[1].removed` | 是 | `boolean` | 仅从当前视图移除，历史锚保留。 |
 | `$.oneOf[1].quarantineReason` | 否 | `string` | 隔离样例的模拟判定原因。 |
-| `$.oneOf[1].inputKind` | 是 | `"url"` |  |
-| `$.oneOf[1].url` | 是 | `string` |  |
+| `$.oneOf[1].inputKind` | 是 | `"url"` | URL 投放记录。 |
+| `$.oneOf[1].url` | 是 | `string` | 来源 URL，只保存字符串。 |
 | `$.oneOf[2]` | 是 | `object` |  |
 | `$.oneOf[2].jobId` | 是 | `string &#124; null` | 目标作业；null 表示进入待归属池。 |
 | `$.oneOf[2].jobId.anyOf[0]` | 是 | `string` |  |
@@ -795,7 +795,7 @@
 | `$.oneOf[2].createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
 | `$.oneOf[2].removed` | 是 | `boolean` | 仅从当前视图移除，历史锚保留。 |
 | `$.oneOf[2].quarantineReason` | 否 | `string` | 隔离样例的模拟判定原因。 |
-| `$.oneOf[2].inputKind` | 是 | `"text"` |  |
+| `$.oneOf[2].inputKind` | 是 | `"text"` | 文本投放记录，不保留正文。 |
 
 ### `DataSourceRef`
 
@@ -834,13 +834,13 @@
 | --- | --- | --- | --- |
 | `$` | 是 | `object &#124; object` | 派生值根来源定位；只引用、不复制原文。 |
 | `$.oneOf[0]` | 是 | `object` | 观测锚：ref 定位观测（如 seriesId@ts）。 |
-| `$.oneOf[0].kind` | 是 | `"observation"` |  |
-| `$.oneOf[0].ref` | 是 | `string` |  |
-| `$.oneOf[0].label` | 是 | `string` |  |
+| `$.oneOf[0].kind` | 是 | `"observation"` | 观测来源。 |
+| `$.oneOf[0].ref` | 是 | `string` | 观测定位，如 seriesId@ts。 |
+| `$.oneOf[0].label` | 是 | `string` | 观测显示名称。 |
 | `$.oneOf[1]` | 是 | `object` | 表行锚：ref 定位表行（如 tableId#row）。 |
-| `$.oneOf[1].kind` | 是 | `"tableRow"` |  |
-| `$.oneOf[1].ref` | 是 | `string` |  |
-| `$.oneOf[1].label` | 是 | `string` |  |
+| `$.oneOf[1].kind` | 是 | `"tableRow"` | 表行来源。 |
+| `$.oneOf[1].ref` | 是 | `string` | 表行定位，如 tableId#row。 |
+| `$.oneOf[1].label` | 是 | `string` | 表行显示名称。 |
 
 ### `DerivedValue`
 
@@ -909,7 +909,7 @@
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 分析结论卡及其证据链、状态和来源。 |
-| `$.id` | 是 | `string` |  |
+| `$.id` | 是 | `string` | 结论唯一标识。 |
 | `$.text` | 是 | `string` | 结论正文，删除 / 否决后仍保留。 |
 | `$.status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
 | `$.source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
@@ -1080,162 +1080,162 @@
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 作业状态展示映射：文案与图标同源。 |
-| `$.draft` | 是 | `object` |  |
-| `$.draft.text` | 是 | `"草稿"` |  |
-| `$.draft.icon` | 是 | `"◇"` |  |
-| `$.collecting` | 是 | `object` |  |
-| `$.collecting.text` | 是 | `"提取中"` |  |
-| `$.collecting.icon` | 是 | `"↓"` |  |
-| `$.processing` | 是 | `object` |  |
-| `$.processing.text` | 是 | `"处理中"` |  |
-| `$.processing.icon` | 是 | `"⚙"` |  |
-| `$.analyzing` | 是 | `object` |  |
-| `$.analyzing.text` | 是 | `"分析中"` |  |
-| `$.analyzing.icon` | 是 | `"⌕"` |  |
-| `$.delivering` | 是 | `object` |  |
-| `$.delivering.text` | 是 | `"交付中"` |  |
-| `$.delivering.icon` | 是 | `"▤"` |  |
-| `$.delivered` | 是 | `object` |  |
-| `$.delivered.text` | 是 | `"已交付"` |  |
-| `$.delivered.icon` | 是 | `"✓"` |  |
-| `$.needs_human` | 是 | `object` |  |
-| `$.needs_human.text` | 是 | `"待人工确认"` |  |
-| `$.needs_human.icon` | 是 | `"!"` |  |
-| `$.failed` | 是 | `object` |  |
-| `$.failed.text` | 是 | `"失败"` |  |
-| `$.failed.icon` | 是 | `"×"` |  |
-| `$.cancelled` | 是 | `object` |  |
-| `$.cancelled.text` | 是 | `"已取消"` |  |
-| `$.cancelled.icon` | 是 | `"⊘"` |  |
+| `$.draft` | 是 | `object` | draft 的文案与图标。 |
+| `$.draft.text` | 是 | `"草稿"` | 显示文案。 |
+| `$.draft.icon` | 是 | `"◇"` | 非颜色状态图标。 |
+| `$.collecting` | 是 | `object` | collecting 的文案与图标。 |
+| `$.collecting.text` | 是 | `"提取中"` | 显示文案。 |
+| `$.collecting.icon` | 是 | `"↓"` | 非颜色状态图标。 |
+| `$.processing` | 是 | `object` | processing 的文案与图标。 |
+| `$.processing.text` | 是 | `"处理中"` | 显示文案。 |
+| `$.processing.icon` | 是 | `"⚙"` | 非颜色状态图标。 |
+| `$.analyzing` | 是 | `object` | analyzing 的文案与图标。 |
+| `$.analyzing.text` | 是 | `"分析中"` | 显示文案。 |
+| `$.analyzing.icon` | 是 | `"⌕"` | 非颜色状态图标。 |
+| `$.delivering` | 是 | `object` | delivering 的文案与图标。 |
+| `$.delivering.text` | 是 | `"交付中"` | 显示文案。 |
+| `$.delivering.icon` | 是 | `"▤"` | 非颜色状态图标。 |
+| `$.delivered` | 是 | `object` | delivered 的文案与图标。 |
+| `$.delivered.text` | 是 | `"已交付"` | 显示文案。 |
+| `$.delivered.icon` | 是 | `"✓"` | 非颜色状态图标。 |
+| `$.needs_human` | 是 | `object` | needs_human 的文案与图标。 |
+| `$.needs_human.text` | 是 | `"待人工确认"` | 显示文案。 |
+| `$.needs_human.icon` | 是 | `"!"` | 非颜色状态图标。 |
+| `$.failed` | 是 | `object` | failed 的文案与图标。 |
+| `$.failed.text` | 是 | `"失败"` | 显示文案。 |
+| `$.failed.icon` | 是 | `"×"` | 非颜色状态图标。 |
+| `$.cancelled` | 是 | `object` | cancelled 的文案与图标。 |
+| `$.cancelled.text` | 是 | `"已取消"` | 显示文案。 |
+| `$.cancelled.icon` | 是 | `"⊘"` | 非颜色状态图标。 |
 
 ### `StageLabel`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 阶段展示映射，顺序同 Stage。 |
-| `$.collect` | 是 | `object` |  |
-| `$.collect.text` | 是 | `"提取"` |  |
-| `$.collect.icon` | 是 | `"↓"` |  |
-| `$.process` | 是 | `object` |  |
-| `$.process.text` | 是 | `"处理"` |  |
-| `$.process.icon` | 是 | `"⚙"` |  |
-| `$.analyze` | 是 | `object` |  |
-| `$.analyze.text` | 是 | `"分析"` |  |
-| `$.analyze.icon` | 是 | `"⌕"` |  |
-| `$.deliver` | 是 | `object` |  |
-| `$.deliver.text` | 是 | `"交付"` |  |
-| `$.deliver.icon` | 是 | `"▤"` |  |
+| `$.collect` | 是 | `object` | collect 的文案与图标。 |
+| `$.collect.text` | 是 | `"提取"` | 显示文案。 |
+| `$.collect.icon` | 是 | `"↓"` | 非颜色状态图标。 |
+| `$.process` | 是 | `object` | process 的文案与图标。 |
+| `$.process.text` | 是 | `"处理"` | 显示文案。 |
+| `$.process.icon` | 是 | `"⚙"` | 非颜色状态图标。 |
+| `$.analyze` | 是 | `object` | analyze 的文案与图标。 |
+| `$.analyze.text` | 是 | `"分析"` | 显示文案。 |
+| `$.analyze.icon` | 是 | `"⌕"` | 非颜色状态图标。 |
+| `$.deliver` | 是 | `object` | deliver 的文案与图标。 |
+| `$.deliver.text` | 是 | `"交付"` | 显示文案。 |
+| `$.deliver.icon` | 是 | `"▤"` | 非颜色状态图标。 |
 
 ### `StageStateLabel`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 阶段态展示映射；conflict 也用于运行失败，原因见 Job.reason。 |
-| `$.not_started` | 是 | `object` |  |
-| `$.not_started.text` | 是 | `"未开始"` |  |
-| `$.not_started.icon` | 是 | `"○"` |  |
-| `$.running` | 是 | `object` |  |
-| `$.running.text` | 是 | `"运行中"` |  |
-| `$.running.icon` | 是 | `"↻"` |  |
-| `$.needs_human` | 是 | `object` |  |
-| `$.needs_human.text` | 是 | `"待人工确认"` |  |
-| `$.needs_human.icon` | 是 | `"!"` |  |
-| `$.done` | 是 | `object` |  |
-| `$.done.text` | 是 | `"已完成"` |  |
-| `$.done.icon` | 是 | `"✓"` |  |
-| `$.conflict` | 是 | `object` |  |
-| `$.conflict.text` | 是 | `"冲突"` |  |
-| `$.conflict.icon` | 是 | `"⚠"` |  |
+| `$.not_started` | 是 | `object` | not_started 的文案与图标。 |
+| `$.not_started.text` | 是 | `"未开始"` | 显示文案。 |
+| `$.not_started.icon` | 是 | `"○"` | 非颜色状态图标。 |
+| `$.running` | 是 | `object` | running 的文案与图标。 |
+| `$.running.text` | 是 | `"运行中"` | 显示文案。 |
+| `$.running.icon` | 是 | `"↻"` | 非颜色状态图标。 |
+| `$.needs_human` | 是 | `object` | needs_human 的文案与图标。 |
+| `$.needs_human.text` | 是 | `"待人工确认"` | 显示文案。 |
+| `$.needs_human.icon` | 是 | `"!"` | 非颜色状态图标。 |
+| `$.done` | 是 | `object` | done 的文案与图标。 |
+| `$.done.text` | 是 | `"已完成"` | 显示文案。 |
+| `$.done.icon` | 是 | `"✓"` | 非颜色状态图标。 |
+| `$.conflict` | 是 | `object` | conflict 的文案与图标。 |
+| `$.conflict.text` | 是 | `"冲突"` | 显示文案。 |
+| `$.conflict.icon` | 是 | `"⚠"` | 非颜色状态图标。 |
 
 ### `ArtifactStatusLabel`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 产物与块状态展示映射。 |
-| `$.draft` | 是 | `object` |  |
-| `$.draft.text` | 是 | `"草稿"` |  |
-| `$.draft.icon` | 是 | `"◇"` |  |
-| `$.provisional` | 是 | `object` |  |
-| `$.provisional.text` | 是 | `"暂定"` |  |
-| `$.provisional.icon` | 是 | `"◐"` |  |
-| `$.confirmed` | 是 | `object` |  |
-| `$.confirmed.text` | 是 | `"已确认"` |  |
-| `$.confirmed.icon` | 是 | `"✓"` |  |
-| `$.conflict` | 是 | `object` |  |
-| `$.conflict.text` | 是 | `"冲突"` |  |
-| `$.conflict.icon` | 是 | `"⚠"` |  |
+| `$.draft` | 是 | `object` | draft 的文案与图标。 |
+| `$.draft.text` | 是 | `"草稿"` | 显示文案。 |
+| `$.draft.icon` | 是 | `"◇"` | 非颜色状态图标。 |
+| `$.provisional` | 是 | `object` | provisional 的文案与图标。 |
+| `$.provisional.text` | 是 | `"暂定"` | 显示文案。 |
+| `$.provisional.icon` | 是 | `"◐"` | 非颜色状态图标。 |
+| `$.confirmed` | 是 | `object` | confirmed 的文案与图标。 |
+| `$.confirmed.text` | 是 | `"已确认"` | 显示文案。 |
+| `$.confirmed.icon` | 是 | `"✓"` | 非颜色状态图标。 |
+| `$.conflict` | 是 | `object` | conflict 的文案与图标。 |
+| `$.conflict.text` | 是 | `"冲突"` | 显示文案。 |
+| `$.conflict.icon` | 是 | `"⚠"` | 非颜色状态图标。 |
 
 ### `UploadStatusLabel`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 抽取结果展示映射。 |
-| `$.pending_validation` | 是 | `object` |  |
-| `$.pending_validation.text` | 是 | `"待验证"` |  |
-| `$.pending_validation.icon` | 是 | `"?"` |  |
-| `$.ingested` | 是 | `object` |  |
-| `$.ingested.text` | 是 | `"已入库"` |  |
-| `$.ingested.icon` | 是 | `"✓"` |  |
-| `$.quarantined` | 是 | `object` |  |
-| `$.quarantined.text` | 是 | `"隔离"` |  |
-| `$.quarantined.icon` | 是 | `"⊘"` |  |
+| `$.pending_validation` | 是 | `object` | pending_validation 的文案与图标。 |
+| `$.pending_validation.text` | 是 | `"待验证"` | 显示文案。 |
+| `$.pending_validation.icon` | 是 | `"?"` | 非颜色状态图标。 |
+| `$.ingested` | 是 | `object` | ingested 的文案与图标。 |
+| `$.ingested.text` | 是 | `"已入库"` | 显示文案。 |
+| `$.ingested.icon` | 是 | `"✓"` | 非颜色状态图标。 |
+| `$.quarantined` | 是 | `object` | quarantined 的文案与图标。 |
+| `$.quarantined.text` | 是 | `"隔离"` | 显示文案。 |
+| `$.quarantined.icon` | 是 | `"⊘"` | 非颜色状态图标。 |
 
 ### `DeliverableStatusLabel`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 交付物定稿状态展示映射：草稿 / 已定稿。 |
-| `$.draft` | 是 | `object` |  |
-| `$.draft.text` | 是 | `"草稿"` |  |
-| `$.draft.icon` | 是 | `"◇"` |  |
-| `$.final` | 是 | `object` |  |
-| `$.final.text` | 是 | `"已定稿"` |  |
-| `$.final.icon` | 是 | `"✓"` |  |
+| `$.draft` | 是 | `object` | draft 的文案与图标。 |
+| `$.draft.text` | 是 | `"草稿"` | 显示文案。 |
+| `$.draft.icon` | 是 | `"◇"` | 非颜色状态图标。 |
+| `$.final` | 是 | `object` | final 的文案与图标。 |
+| `$.final.text` | 是 | `"已定稿"` | 显示文案。 |
+| `$.final.icon` | 是 | `"✓"` | 非颜色状态图标。 |
 
 ### `SourceLabel`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 来源展示映射；derived 时保留为次文案。 |
-| `$.external` | 是 | `object` |  |
-| `$.external.text` | 是 | `"外部源"` |  |
-| `$.external.icon` | 是 | `"↗"` |  |
-| `$.human` | 是 | `object` |  |
-| `$.human.text` | 是 | `"人"` |  |
-| `$.human.icon` | 是 | `"♙"` |  |
-| `$.agent` | 是 | `object` |  |
-| `$.agent.text` | 是 | `"agent"` |  |
-| `$.agent.icon` | 是 | `"✦"` |  |
-| `$.mixed` | 是 | `object` |  |
-| `$.mixed.text` | 是 | `"混合"` |  |
-| `$.mixed.icon` | 是 | `"⋈"` |  |
+| `$.external` | 是 | `object` | external 的文案与图标。 |
+| `$.external.text` | 是 | `"外部源"` | 显示文案。 |
+| `$.external.icon` | 是 | `"↗"` | 非颜色状态图标。 |
+| `$.human` | 是 | `object` | human 的文案与图标。 |
+| `$.human.text` | 是 | `"人"` | 显示文案。 |
+| `$.human.icon` | 是 | `"♙"` | 非颜色状态图标。 |
+| `$.agent` | 是 | `object` | agent 的文案与图标。 |
+| `$.agent.text` | 是 | `"agent"` | 显示文案。 |
+| `$.agent.icon` | 是 | `"✦"` | 非颜色状态图标。 |
+| `$.mixed` | 是 | `object` | mixed 的文案与图标。 |
+| `$.mixed.text` | 是 | `"混合"` | 显示文案。 |
+| `$.mixed.icon` | 是 | `"⋈"` | 非颜色状态图标。 |
 
 ### `OriginLabel`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 派生来源展示映射：内部生成；根来源索引与推断标记归后续知识库 feature。 |
-| `$.source` | 是 | `object` |  |
-| `$.source.text` | 是 | `"源材料"` |  |
-| `$.source.icon` | 是 | `"↗"` |  |
-| `$.derived` | 是 | `object` |  |
-| `$.derived.text` | 是 | `"内部生成"` |  |
-| `$.derived.icon` | 是 | `"⋈"` |  |
+| `$.source` | 是 | `object` | source 的文案与图标。 |
+| `$.source.text` | 是 | `"源材料"` | 显示文案。 |
+| `$.source.icon` | 是 | `"↗"` | 非颜色状态图标。 |
+| `$.derived` | 是 | `object` | derived 的文案与图标。 |
+| `$.derived.text` | 是 | `"内部生成"` | 显示文案。 |
+| `$.derived.icon` | 是 | `"⋈"` | 非颜色状态图标。 |
 
 ### `JobTypeLabel`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
 | --- | --- | --- | --- |
 | `$` | 是 | `object` | 作业类型展示映射。 |
-| `$.daily` | 是 | `object` |  |
-| `$.daily.text` | 是 | `"日报"` |  |
-| `$.daily.icon` | 是 | `"▤"` |  |
-| `$.research` | 是 | `object` |  |
-| `$.research.text` | 是 | `"专题"` |  |
-| `$.research.icon` | 是 | `"⌕"` |  |
-| `$.adhoc` | 是 | `object` |  |
-| `$.adhoc.text` | 是 | `"临时"` |  |
-| `$.adhoc.icon` | 是 | `"◇"` |  |
+| `$.daily` | 是 | `object` | daily 的文案与图标。 |
+| `$.daily.text` | 是 | `"日报"` | 显示文案。 |
+| `$.daily.icon` | 是 | `"▤"` | 非颜色状态图标。 |
+| `$.research` | 是 | `object` | research 的文案与图标。 |
+| `$.research.text` | 是 | `"专题"` | 显示文案。 |
+| `$.research.icon` | 是 | `"⌕"` | 非颜色状态图标。 |
+| `$.adhoc` | 是 | `object` | adhoc 的文案与图标。 |
+| `$.adhoc.text` | 是 | `"临时"` | 显示文案。 |
+| `$.adhoc.icon` | 是 | `"◇"` | 非颜色状态图标。 |
 
 ### `TradingDate`
 

@@ -220,7 +220,7 @@ export const JobTypeLabelSchema = labelSchema(JobTypeLabel).describe('作业类�
 // 九张展示映射共用同一转换，literal 值直接来自运行时常量，供文档生成器展开。
 function labelSchema<const T extends Record<string, { readonly text: string; readonly icon: string }>>(labels: T) {
   const shape = Object.fromEntries(Object.entries(labels).map(([key, value]) => [key,
-    z.object({ text: z.literal(value.text), icon: z.literal(value.icon) }),
+    z.object({ text: z.literal(value.text).describe('显示文案。'), icon: z.literal(value.icon).describe('非颜色状态图标。') }).describe(`${key} 的文案与图标。`),
   ])) as { [K in keyof T]: z.ZodObject<{ text: z.ZodLiteral<T[K]['text']>; icon: z.ZodLiteral<T[K]['icon']> }> }
   return z.object(shape)
 }
@@ -296,9 +296,9 @@ const intakeFields = {
   sourceNote: SourceNoteSchema,
 }
 export const IntakeInputSchema = z.discriminatedUnion('inputKind', [
-  z.strictObject({ ...intakeFields, inputKind: z.literal('file'), fileMeta: IntakeFileMetaSchema }),
-  z.strictObject({ ...intakeFields, inputKind: z.literal('url'), url: z.string().trim().min(1).describe('URL 字符串；仅保存，不发起抓取。') }),
-  z.strictObject({ ...intakeFields, inputKind: z.literal('text'), text: z.string().trim().min(1).describe('粘贴正文，只存在于提交参数与内存草稿，不进入 Upload 或持久化。') }),
+  z.strictObject({ ...intakeFields, inputKind: z.literal('file').describe('文件投放。'), fileMeta: IntakeFileMetaSchema }),
+  z.strictObject({ ...intakeFields, inputKind: z.literal('url').describe('URL 投放。'), url: z.string().trim().min(1).describe('URL 字符串；仅保存，不发起抓取。') }),
+  z.strictObject({ ...intakeFields, inputKind: z.literal('text').describe('文本投放。'), text: z.string().trim().min(1).describe('粘贴正文，只存在于提交参数与内存草稿，不进入 Upload 或持久化。') }),
 ]).describe('三种投放输入，必须选择一种；只校验元数据，不解析原文。')
 export const FieldMappingSchema = z.array(z.strictObject({
   sourceField: z.string().min(1).describe('抽取的源字段 / 列名。'),
@@ -321,9 +321,9 @@ const uploadFields = {
   quarantineReason: z.string().min(1).optional().describe('隔离样例的模拟判定原因。'),
 }
 export const UploadSchema = z.discriminatedUnion('inputKind', [
-  z.strictObject({ ...uploadFields, inputKind: z.literal('file'), fileMeta: IntakeFileMetaSchema }),
-  z.strictObject({ ...uploadFields, inputKind: z.literal('url'), url: z.string().min(1) }),
-  z.strictObject({ ...uploadFields, inputKind: z.literal('text') }),
+  z.strictObject({ ...uploadFields, inputKind: z.literal('file').describe('文件投放记录。'), fileMeta: IntakeFileMetaSchema }),
+  z.strictObject({ ...uploadFields, inputKind: z.literal('url').describe('URL 投放记录。'), url: z.string().min(1).describe('来源 URL，只保存字符串。') }),
+  z.strictObject({ ...uploadFields, inputKind: z.literal('text').describe('文本投放记录，不保留正文。') }),
 ]).describe('投放持久化记录；只含元数据 / 来源语境 / 映射 / 状态，拒绝粘贴正文与完整提交参数。')
 export const DataSourceRefSchema = z.strictObject({
   id: z.string().min(1).describe('数据源锚。'), name: z.string().min(1).describe('来源名称。'),
@@ -339,8 +339,8 @@ export const RecipeStepSchema = z.strictObject({
   output: z.string().min(1).describe('本步骤输出锚，供下一步输入引用。'),
 }).describe('按列表顺序呈现的单链配方步骤；只读，不提供 DAG 编辑。')
 export const LineageAnchorSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('observation'), ref: z.string().min(1), label: z.string().min(1) }).describe('观测锚：ref 定位观测（如 seriesId@ts）。'),
-  z.strictObject({ kind: z.literal('tableRow'), ref: z.string().min(1), label: z.string().min(1) }).describe('表行锚：ref 定位表行（如 tableId#row）。'),
+  z.strictObject({ kind: z.literal('observation').describe('观测来源。'), ref: z.string().min(1).describe('观测定位，如 seriesId@ts。'), label: z.string().min(1).describe('观测显示名称。') }).describe('观测锚：ref 定位观测（如 seriesId@ts）。'),
+  z.strictObject({ kind: z.literal('tableRow').describe('表行来源。'), ref: z.string().min(1).describe('表行定位，如 tableId#row。'), label: z.string().min(1).describe('表行显示名称。') }).describe('表行锚：ref 定位表行（如 tableId#row）。'),
 ]).describe('派生值根来源定位；只引用、不复制原文。')
 export const DerivedValueSchema = z.strictObject({
   value: z.number().nullable().describe('派生值，null 表示缺数，不等于零。'),
@@ -371,7 +371,7 @@ export const EvidenceAnchorSchema = z.strictObject({
   label: z.string().min(1).describe('证据显示名称。'),
 }).describe('结论证据链锚，不计算独立证据权重。')
 export const ConclusionSchema = z.strictObject({
-  id: z.string().min(1), text: z.string().min(1).describe('结论正文，删除 / 否决后仍保留。'),
+  id: z.string().min(1).describe('结论唯一标识。'), text: z.string().min(1).describe('结论正文，删除 / 否决后仍保留。'),
   status: ArtifactStatusSchema, source: SourceSchema, origin: OriginSchema,
   evidence: z.array(EvidenceAnchorSchema).describe('证据链，显示数量直接取数组长度；允许空链，不另存数字字段。'),
   deleted: z.boolean().optional().describe('删除 tombstone；旧内容与旧版本保留。'),
@@ -380,17 +380,17 @@ export const ConclusionSchema = z.strictObject({
 
 export const ChartSpecSchema = z.strictObject({
   templateId: z.literal('line-sample').describe('v1 唯一样例模板，不实现完整模板库。'),
-  seriesBindings: z.strictObject({ main: z.string().min(1).describe('绑定的规范序列 ID。') }),
-  overrides: z.strictObject({ title: z.string().optional().describe('可选标题覆盖。') }),
+  seriesBindings: z.strictObject({ main: z.string().min(1).describe('绑定的规范序列 ID。') }).describe('模板数据绑定，仅 main 槽位。'),
+  overrides: z.strictObject({ title: z.string().optional().describe('可选标题覆盖。') }).describe('样例允许的覆盖项，不接受任意 option。'),
 }).describe('声明式图表输入；template_id→templateId、series_bindings→seriesBindings；拒绝任意 ECharts option。')
 export const BlockCommentSchema = z.strictObject({
-  id: z.string().min(1), threadId: z.string().min(1),
+  id: z.string().min(1).describe('评论唯一标识。'), threadId: z.string().min(1).describe('所属线程标识。'),
   parentId: z.string().min(1).nullable().describe('根评论为 null，回复指向根评论 id。'),
   author: z.enum(['human', 'agent']).describe('批注作者；不改变块正文来源。'),
-  text: z.string().trim().min(1), createdAt: TimestampSchema,
+  text: z.string().trim().min(1).describe('批注正文。'), createdAt: TimestampSchema,
 }).describe('块批注；回复保留 threadId 与 parentId。')
 export const BlockCommentThreadSchema = z.strictObject({
-  threadId: z.string().min(1), blockId: z.string().min(1),
+  threadId: z.string().min(1).describe('线程唯一标识。'), blockId: z.string().min(1).describe('被批注的块标识。'),
   status: z.enum(['open', 'resolved']).describe('线程未解决 / 已解决状态。'),
   comments: z.array(BlockCommentSchema).describe('按时间排列的根评论与回复。'),
 }).describe('块批注线程；解决动作只改当前新修订，历史不变。')
@@ -401,16 +401,16 @@ const blockFields = {
   comments: z.array(BlockCommentThreadSchema).describe('块批注线程，所有块均可批注。'),
 }
 export const BlockSchema = z.discriminatedUnion('type', [
-  z.strictObject({ ...blockFields, type: z.literal('conclusion'), text: z.string() }).describe('结论文本块，可 inline 编辑。'),
-  z.strictObject({ ...blockFields, type: z.literal('note'), text: z.string() }).describe('备注文本块，可 inline 编辑，不进结论。'),
-  z.strictObject({ ...blockFields, type: z.literal('quote'), text: z.string(), sourceAnchor: EvidenceAnchorSchema.extend({ kind: z.literal('source') }) }).describe('只读引用块，sourceAnchor 为外部材料来源定位。'),
+  z.strictObject({ ...blockFields, type: z.literal('conclusion').describe('结论块。'), text: z.string().describe('可编辑结论正文。') }).describe('结论文本块，可 inline 编辑。'),
+  z.strictObject({ ...blockFields, type: z.literal('note').describe('备注块。'), text: z.string().describe('可编辑备注正文。') }).describe('备注文本块，可 inline 编辑，不进结论。'),
+  z.strictObject({ ...blockFields, type: z.literal('quote').describe('引用块。'), text: z.string().describe('只读摘录正文。'), sourceAnchor: EvidenceAnchorSchema.extend({ kind: z.literal('source').describe('外部材料来源类型。') }).describe('摘录对应的外部材料来源锚。') }).describe('只读引用块，sourceAnchor 为外部材料来源定位。'),
   z.strictObject({
-    ...blockFields, type: z.literal('table'), tableId: z.string().min(1),
+    ...blockFields, type: z.literal('table').describe('表格块。'), tableId: z.string().min(1).describe('表格溯源标识。'),
     columns: z.array(z.string().min(1)).describe('按展示顺序排列的表头。'),
     rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))).describe('按列顺序排列的只读单元格；null 为缺数。'),
   }).describe('只读表格块，带 tableId 溯源。'),
-  z.strictObject({ ...blockFields, type: z.literal('verification'), question: z.string().min(1), conclusionBlockId: z.string().min(1) }).describe('只读待验证文本，回链结论块；不建立验证队列。'),
-  z.strictObject({ ...blockFields, type: z.literal('chart'), chartSpec: ChartSpecSchema, seriesData: SparkSeriesSchema }).describe('只读图表块；声明式样例与绑定序列数据，渲染用既有暗色主题。'),
+  z.strictObject({ ...blockFields, type: z.literal('verification').describe('待验证块。'), question: z.string().min(1).describe('只读待验证问题。'), conclusionBlockId: z.string().min(1).describe('关联结论块标识。') }).describe('只读待验证文本，回链结论块；不建立验证队列。'),
+  z.strictObject({ ...blockFields, type: z.literal('chart').describe('图表块。'), chartSpec: ChartSpecSchema, seriesData: SparkSeriesSchema }).describe('只读图表块；声明式样例与绑定序列数据，渲染用既有暗色主题。'),
 ]).describe('六类有序交付块；块状态与定稿状态独立。块顺序只读。')
 const deliverableFields = {
   id: z.string().min(1).describe('交付物标识，也作为 deliverable 产物锚。'),
@@ -419,18 +419,22 @@ const deliverableFields = {
 }
 export const DeliverableSchema = z.discriminatedUnion('deliverableStatus', [
   z.strictObject({
-    ...deliverableFields, deliverableStatus: z.literal('draft'),
-    finalSnapshotId: z.null(), finalRevisionNumber: z.null(), finalizedAt: z.null(),
+    ...deliverableFields, deliverableStatus: z.literal('draft').describe('草稿状态。'),
+    finalSnapshotId: z.null().describe('草稿无定稿快照。'),
+    finalRevisionNumber: z.null().describe('草稿无定稿版本号。'),
+    finalizedAt: z.null().describe('草稿无定稿时间。'),
   }).describe('草稿：三个定稿锚必须为 null；confirmed 块不意味着交付物已定稿。'),
   z.strictObject({
-    ...deliverableFields, deliverableStatus: z.literal('final'),
+    ...deliverableFields, deliverableStatus: z.literal('final').describe('已定稿状态。'),
     finalSnapshotId: z.string().min(1).describe('不可变定稿快照 id。'),
     finalRevisionNumber: z.int().positive().describe('定稿修订版本号 N。'),
     finalizedAt: TimestampSchema.describe('定稿时间，带偏移时间戳；不是材料 publishedAt。'),
   }).describe('已定稿：三个定稿锚非空，必须与工作区定稿快照一致。'),
 ]).describe('交付物定稿状态为独立判别联合；只由 finalizeDeliverable 显式改变，不从 job.status 或快照存在推导。')
 export const FinalSnapshotSchema = z.strictObject({
-  id: z.string().min(1), jobId: z.string().min(1), revisionId: z.string().min(1),
+  id: z.string().min(1).describe('定稿快照唯一标识。'),
+  jobId: z.string().min(1).describe('快照所属作业。'),
+  revisionId: z.string().min(1).describe('冻结的已合并修订标识。'),
   revisionNumber: z.int().positive().describe('revisionId 对应已合并修订的 number，用于 S-18 版本号锚校验。'),
   finalizedAt: TimestampSchema.describe('显式定稿时间，与 Deliverable.finalizedAt 一致。'),
   blocks: z.array(BlockSchema).describe('定稿时已合并 revision 的块集合深拷贝，读取返回副本。'),
@@ -451,7 +455,7 @@ export const DeliverWorkspaceSchema = z.strictObject({
 }).describe('交付工作区边界：一次 zod 校验三锚与快照一致；draft / 空工作区不带快照。JSON Schema 不表达跨字段相等约束。')
 
 export const ArtifactSchema = z.strictObject({
-  id: z.string().min(1), kind: ArtifactKindSchema, status: ArtifactStatusSchema,
+  id: z.string().min(1).describe('产物唯一标识。'), kind: ArtifactKindSchema, status: ArtifactStatusSchema,
   source: SourceSchema, origin: OriginSchema,
   latestMergedRev: z.string().min(1).describe('最新已合并 Revision.id；agent 只读此修订，不读 overlay。'),
   overlayRev: z.string().min(1).nullable().describe('人的旁路 Revision.id；没有 overlay 时 null。'),
@@ -461,7 +465,7 @@ export const ArtifactSchema = z.strictObject({
   path: ['overlayRev'], message: 'pendingMerge=true 时必须有 overlayRev',
 }).describe('阶段产物与修订锚；修订内容另由 Revision 保存。')
 const revisionFields = {
-  id: z.string().min(1), artifactId: z.string().min(1),
+  id: z.string().min(1).describe('修订唯一标识。'), artifactId: z.string().min(1).describe('修订所属产物标识。'),
   number: z.int().positive().describe('从 1 开始的修订版本号。'),
   baseRev: z.string().min(1).nullable().describe('基线 Revision.id；初版为 null。'),
   author: z.enum(['human', 'agent']).describe('本次修订作者。'),
@@ -470,73 +474,74 @@ const revisionFields = {
   changeSummary: z.string().describe('与基线相比的变更摘要。'),
 }
 const datasetRevisionSchema = z.strictObject({
-  ...revisionFields, artifactKind: z.literal('dataset'),
-  uploads: z.array(z.strictObject({ uploadId: z.string().min(1), mapping: FieldMappingSchema, status: UploadStatusSchema })).describe('入库摘要，不含投放原文。'),
+  ...revisionFields, artifactKind: z.literal('dataset').describe('数据集修订。'),
+  uploads: z.array(z.strictObject({ uploadId: z.string().min(1).describe('投放记录锚。'), mapping: FieldMappingSchema, status: UploadStatusSchema })).describe('入库摘要，不含投放原文。'),
 })
 const recipeRevisionSchema = z.strictObject({
-  ...revisionFields, artifactKind: z.literal('recipe'), params: ParamSetSchema,
+  ...revisionFields, artifactKind: z.literal('recipe').describe('配方修订。'), params: ParamSetSchema,
   steps: z.array(RecipeStepSchema).describe('按执行顺序排列的只读单链配方；空列表为无配方。'),
 })
 const analysisRevisionSchema = z.strictObject({
-  ...revisionFields, artifactKind: z.literal('analysis'),
+  ...revisionFields, artifactKind: z.literal('analysis').describe('分析稿修订。'),
   conclusions: z.array(ConclusionSchema).describe('分析稿完整快照，删除 / 否决用 tombstone 保留内容。'),
 })
 const deliverableRevisionSchema = z.strictObject({
-  ...revisionFields, artifactKind: z.literal('deliverable'), blocks: z.array(BlockSchema).describe('有序块完整快照，与 FinalSnapshot.blocks 同形。'),
+  ...revisionFields, artifactKind: z.literal('deliverable').describe('交付物修订。'), blocks: z.array(BlockSchema).describe('有序块完整快照，与 FinalSnapshot.blocks 同形。'),
 })
 export const RevisionSchema = z.discriminatedUnion('artifactKind', [
   datasetRevisionSchema, recipeRevisionSchema, analysisRevisionSchema, deliverableRevisionSchema,
 ]).describe('四种产物修订的判别联合；提交深拷贝，读 API 返回副本，历史不可变。')
 export const StageWorkspaceSchema = z.discriminatedUnion('stage', [
   z.strictObject({
-    stage: z.literal('collect'), uploads: z.array(UploadSchema),
-    artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('dataset') })),
-    revisions: z.array(datasetRevisionSchema),
+    stage: z.literal('collect').describe('采集阶段。'), uploads: z.array(UploadSchema).describe('本作业的投放列表。'),
+    artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('dataset').describe('数据集产物。') })).describe('数据集产物集合。'),
+    revisions: z.array(datasetRevisionSchema).describe('数据集修订集合。'),
   }).describe('采集工作区：投放、dataset 产物与其修订；空态使用空集合。'),
   z.strictObject({
-    stage: z.literal('process'), sources: z.array(DataSourceRefSchema), series: z.array(SeriesRefSchema),
-    artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('recipe') })),
-    revisions: z.array(recipeRevisionSchema), derivedValues: z.array(DerivedValueSchema),
+    stage: z.literal('process').describe('处理阶段。'), sources: z.array(DataSourceRefSchema).describe('本作业数据源。'), series: z.array(SeriesRefSchema).describe('本作业序列引用。'),
+    artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('recipe').describe('配方产物。') })).describe('配方产物集合。'),
+    revisions: z.array(recipeRevisionSchema).describe('配方修订集合。'), derivedValues: z.array(DerivedValueSchema).describe('可回溯的派生值集合。'),
   }).describe('处理工作区：来源 / 序列 / recipe 产物与修订 / 派生值；空集合不等于错误。'),
   z.strictObject({
-    stage: z.literal('analyze'), artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('analysis') })),
-    revisions: z.array(analysisRevisionSchema),
+    stage: z.literal('analyze').describe('分析阶段。'), artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('analysis').describe('分析稿产物。') })).describe('分析稿产物集合。'),
+    revisions: z.array(analysisRevisionSchema).describe('分析稿修订集合。'),
   }).describe('分析工作区：analysis 产物及含结论的修订。'),
   DeliverWorkspaceSchema.safeExtend({
-    stage: z.literal('deliver'), artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('deliverable') })),
-    revisions: z.array(deliverableRevisionSchema),
+    stage: z.literal('deliver').describe('交付阶段。'), artifacts: z.array(ArtifactSchema.safeExtend({ kind: z.literal('deliverable').describe('交付物产物。') })).describe('交付物产物集合。'),
+    revisions: z.array(deliverableRevisionSchema).describe('交付物修订集合。'),
   }).describe('交付工作区：交付物、快照及产物修订；继承 S-18 三锚一致性校验。'),
 ]).describe('按 stage 判别的工作区结果；各阶段只携带对应类型的产物与修订，不混用内容。')
 export const InboxCountsSchema = z.strictObject({
   unread: z.int().nonnegative().describe('未读且未解决条目总数。'),
   byStage: z.strictObject({
-    collect: z.int().nonnegative(), process: z.int().nonnegative(), analyze: z.int().nonnegative(), deliver: z.int().nonnegative(),
+    collect: z.int().nonnegative().describe('采集阶段待处理数。'), process: z.int().nonnegative().describe('处理阶段待处理数。'),
+    analyze: z.int().nonnegative().describe('分析阶段待处理数。'), deliver: z.int().nonnegative().describe('交付阶段待处理数。'),
   }).describe('固定四阶段的未读且未解决条目计数。'),
 }).describe('契约提供的收件箱计数，不由 UI 从状态推导。')
 export const InterventionPayloadSchema = z.discriminatedUnion('action', [
-  z.strictObject({ action: z.literal('ingest'), uploadId: z.string().min(1), sourceNote: SourceNoteSchema }).describe('kind=ingest；投放 / 归入作业，只记录来源摘要。'),
-  z.strictObject({ action: z.literal('map_fix'), uploadId: z.string().min(1), mapping: FieldMappingSchema }).describe('kind=map_fix；修正映射与单位后确认。'),
-  z.strictObject({ action: z.literal('recipe'), artifactId: z.string().min(1), changes: ParamChangeSchema }).describe('kind=recipe；参数 / 口径修正。'),
-  z.strictObject({ action: z.literal('annotate'), conclusionId: z.string().min(1), note: z.string().trim().min(1) }).describe('kind=framework；结论级批注。'),
-  z.strictObject({ action: z.literal('ask_why'), conclusionId: z.string().min(1), question: z.string().trim().min(1) }).describe('kind=ask_why；追问依据，send 不重复记介入。'),
-  z.strictObject({ action: z.literal('what_if'), conclusionId: z.string().min(1), question: z.string().trim().min(1) }).describe('kind=question；追问如果。'),
-  z.strictObject({ action: z.literal('deepen'), conclusionId: z.string().min(1), instruction: z.string().trim().min(1) }).describe('kind=rewrite；要求深挖。'),
-  z.strictObject({ action: z.literal('delete_conclusion'), conclusionId: z.string().min(1), reason: z.string().trim().min(1) }).describe('kind=delete；删除结论，以 tombstone 保留历史。'),
-  z.strictObject({ action: z.literal('veto'), conclusionId: z.string().min(1), reason: z.string().trim().min(1) }).describe('kind=veto；否决结论，以 tombstone 保留历史。'),
-  z.strictObject({ action: z.literal('pin_rule'), ruleText: z.string().trim().min(1), state: z.literal('candidate') }).describe('kind=pin_rule；规则仅为 candidate，不自动激活或蒸馏。'),
-  z.strictObject({ action: z.literal('remove_source'), uploadId: z.string().min(1), reason: z.string().trim().min(1) }).describe('kind=delete；移除来源，历史锚保留。'),
-  z.strictObject({ action: z.literal('cancel_job'), reason: z.string().trim().min(1) }).describe('kind=delete；取消作业，不 abort 已有 run。'),
-  z.strictObject({ action: z.literal('edit_block'), blockId: z.string().min(1), text: z.string() }).describe('kind=rewrite；结论 / 备注 inline 编辑。'),
-  z.strictObject({ action: z.literal('revise_blocks'), blockIds: z.array(z.string().min(1)).min(1), instruction: z.string().trim().min(1) }).describe('kind=rewrite；指定块的 agent 改稿请求。'),
-  z.strictObject({ action: z.literal('block_comment'), blockId: z.string().min(1), text: z.string().trim().min(1) }).describe('kind=framework；新建块批注。'),
-  z.strictObject({ action: z.literal('reply_comment'), threadId: z.string().min(1), text: z.string().trim().min(1) }).describe('kind=framework；回复批注线程。'),
-  z.strictObject({ action: z.literal('resolve_comment'), threadId: z.string().min(1) }).describe('kind=framework；标记线程已解决。'),
-  z.strictObject({ action: z.literal('mark_provisional'), artifactId: z.string().min(1) }).describe('kind=approve；标记产物暂定并向下游透传。'),
-  z.strictObject({ action: z.literal('rerun'), stage: StageSchema, affectedStages: z.array(StageSchema).min(1).max(4) }).describe('kind=rerun；显式重跑本阶段及下游，affectedStages 按阶段顺序列出受影响阶段。'),
-  z.strictObject({ action: z.literal('accept'), revisionId: z.string().min(1) }).describe('kind=approve；接受 agent 候选版本。'),
-  z.strictObject({ action: z.literal('revert'), revisionId: z.string().min(1) }).describe('kind=rewrite；回退请求涉及的块，产生新 revision、不删除旧版本。'),
-  z.strictObject({ action: z.literal('resolve_conflict'), blockId: z.string().min(1), humanRevId: z.string().min(1), agentRevId: z.string().min(1), choice: z.enum(['human', 'agent']) }).describe('kind=approve；定稿前显式选择冲突块版本，保留两版。'),
-  z.strictObject({ action: z.literal('finalize'), revisionId: z.string().min(1), snapshotId: z.string().min(1) }).describe('kind=finalize；一次显式定稿只产生一条事件。'),
+  z.strictObject({ action: z.literal('ingest').describe('投放 / 归入动作。'), uploadId: z.string().min(1).describe('投放锚。'), sourceNote: SourceNoteSchema }).describe('kind=ingest；投放 / 归入作业，只记录来源摘要。'),
+  z.strictObject({ action: z.literal('map_fix').describe('修正映射动作。'), uploadId: z.string().min(1).describe('投放锚。'), mapping: FieldMappingSchema }).describe('kind=map_fix；修正映射与单位后确认。'),
+  z.strictObject({ action: z.literal('recipe').describe('参数修正动作。'), artifactId: z.string().min(1).describe('配方产物锚。'), changes: ParamChangeSchema }).describe('kind=recipe；参数 / 口径修正。'),
+  z.strictObject({ action: z.literal('annotate').describe('结论批注动作。'), conclusionId: z.string().min(1).describe('结论锚。'), note: z.string().trim().min(1).describe('批注内容。') }).describe('kind=framework；结论级批注。'),
+  z.strictObject({ action: z.literal('ask_why').describe('追问依据动作。'), conclusionId: z.string().min(1).describe('结论锚。'), question: z.string().trim().min(1).describe('追问内容。') }).describe('kind=ask_why；追问依据，send 不重复记介入。'),
+  z.strictObject({ action: z.literal('what_if').describe('假设追问动作。'), conclusionId: z.string().min(1).describe('结论锚。'), question: z.string().trim().min(1).describe('假设问题。') }).describe('kind=question；追问如果。'),
+  z.strictObject({ action: z.literal('deepen').describe('深挖动作。'), conclusionId: z.string().min(1).describe('结论锚。'), instruction: z.string().trim().min(1).describe('深挖指令。') }).describe('kind=rewrite；要求深挖。'),
+  z.strictObject({ action: z.literal('delete_conclusion').describe('删除结论动作。'), conclusionId: z.string().min(1).describe('结论锚。'), reason: z.string().trim().min(1).describe('删除理由。') }).describe('kind=delete；删除结论，以 tombstone 保留历史。'),
+  z.strictObject({ action: z.literal('veto').describe('否决动作。'), conclusionId: z.string().min(1).describe('结论锚。'), reason: z.string().trim().min(1).describe('否决理由。') }).describe('kind=veto；否决结论，以 tombstone 保留历史。'),
+  z.strictObject({ action: z.literal('pin_rule').describe('教规则动作。'), ruleText: z.string().trim().min(1).describe('候选规则正文。'), state: z.literal('candidate').describe('候选状态，不可写 active。') }).describe('kind=pin_rule；规则仅为 candidate，不自动激活或蒸馏。'),
+  z.strictObject({ action: z.literal('remove_source').describe('删除来源动作。'), uploadId: z.string().min(1).describe('投放锚。'), reason: z.string().trim().min(1).describe('删除理由。') }).describe('kind=delete；移除来源，历史锚保留。'),
+  z.strictObject({ action: z.literal('cancel_job').describe('取消作业动作。'), reason: z.string().trim().min(1).describe('取消理由。') }).describe('kind=delete；取消作业，不 abort 已有 run。'),
+  z.strictObject({ action: z.literal('edit_block').describe('行内编辑动作。'), blockId: z.string().min(1).describe('目标块锚。'), text: z.string().describe('新的块正文，可为空。') }).describe('kind=rewrite；结论 / 备注 inline 编辑。'),
+  z.strictObject({ action: z.literal('revise_blocks').describe('块改稿请求。'), blockIds: z.array(z.string().min(1)).min(1).describe('选中的目标块锚，至少一项。'), instruction: z.string().trim().min(1).describe('改稿指令。') }).describe('kind=rewrite；指定块的 agent 改稿请求。'),
+  z.strictObject({ action: z.literal('block_comment').describe('新建块批注动作。'), blockId: z.string().min(1).describe('被批注块锚。'), text: z.string().trim().min(1).describe('批注正文。') }).describe('kind=framework；新建块批注。'),
+  z.strictObject({ action: z.literal('reply_comment').describe('回复批注动作。'), threadId: z.string().min(1).describe('批注线程锚。'), text: z.string().trim().min(1).describe('回复正文。') }).describe('kind=framework；回复批注线程。'),
+  z.strictObject({ action: z.literal('resolve_comment').describe('解决批注动作。'), threadId: z.string().min(1).describe('批注线程锚。') }).describe('kind=framework；标记线程已解决。'),
+  z.strictObject({ action: z.literal('mark_provisional').describe('标记暂定动作。'), artifactId: z.string().min(1).describe('目标产物锚。') }).describe('kind=approve；标记产物暂定并向下游透传。'),
+  z.strictObject({ action: z.literal('rerun').describe('阶段重跑动作。'), stage: StageSchema, affectedStages: z.array(StageSchema).min(1).max(4).describe('本阶段及下游，按固定阶段顺序列出。') }).describe('kind=rerun；显式重跑本阶段及下游，affectedStages 按阶段顺序列出受影响阶段。'),
+  z.strictObject({ action: z.literal('accept').describe('接受候选动作。'), revisionId: z.string().min(1).describe('被接受的候选修订锚。') }).describe('kind=approve；接受 agent 候选版本。'),
+  z.strictObject({ action: z.literal('revert').describe('回退候选动作。'), revisionId: z.string().min(1).describe('被回退的候选修订锚。') }).describe('kind=rewrite；回退请求涉及的块，产生新 revision、不删除旧版本。'),
+  z.strictObject({ action: z.literal('resolve_conflict').describe('裁定冲突动作。'), blockId: z.string().min(1).describe('冲突块锚。'), humanRevId: z.string().min(1).describe('人版修订锚。'), agentRevId: z.string().min(1).describe('agent 版修订锚。'), choice: z.enum(['human', 'agent']).describe('选择人版或 agent 版。') }).describe('kind=approve；定稿前显式选择冲突块版本，保留两版。'),
+  z.strictObject({ action: z.literal('finalize').describe('显式定稿动作。'), revisionId: z.string().min(1).describe('被定稿修订锚。'), snapshotId: z.string().min(1).describe('新定稿快照锚。') }).describe('kind=finalize；一次显式定稿只产生一条事件。'),
 ]).describe('介入 payload：按 action 判别的确定类型，覆盖动作矩阵；不接受任意 JSON 或未知 action。')
 const interventionKindByAction = {
   ingest: 'ingest', map_fix: 'map_fix', recipe: 'recipe', annotate: 'framework', ask_why: 'ask_why', what_if: 'question',
@@ -545,7 +550,7 @@ const interventionKindByAction = {
   mark_provisional: 'approve', rerun: 'rerun', accept: 'approve', revert: 'rewrite', resolve_conflict: 'approve', finalize: 'finalize',
 } as const satisfies Record<z.infer<typeof InterventionPayloadSchema>['action'], InterventionKind>
 export const InterventionSchema = z.strictObject({
-  id: z.string().min(1), jobId: z.string().min(1), stage: StageSchema,
+  id: z.string().min(1).describe('介入事件唯一标识。'), jobId: z.string().min(1).describe('所属作业锚。'), stage: StageSchema,
   artifactId: z.string().min(1).nullable().describe('产物锚；作业级事件可为 null。'),
   baseRev: z.string().min(1).nullable().describe('基线 Revision.id；作业级事件 / 初版可为 null。'),
   kind: InterventionKindSchema, payload: InterventionPayloadSchema,
