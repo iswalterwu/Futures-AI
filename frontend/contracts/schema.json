@@ -166,6 +166,691 @@
     }
   },
   "$defs": {
+    "ChartSpec": {
+      "type": "object",
+      "properties": {
+        "templateId": {
+          "type": "string",
+          "const": "line-sample",
+          "description": "v1 唯一样例模板，不实现完整模板库。"
+        },
+        "seriesBindings": {
+          "type": "object",
+          "properties": {
+            "main": {
+              "type": "string",
+              "minLength": 1,
+              "description": "绑定的规范序列 ID。"
+            }
+          },
+          "required": [
+            "main"
+          ],
+          "additionalProperties": false
+        },
+        "overrides": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "description": "可选标题覆盖。",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "templateId",
+        "seriesBindings",
+        "overrides"
+      ],
+      "additionalProperties": false,
+      "description": "声明式图表输入；template_id→templateId、series_bindings→seriesBindings；拒绝任意 ECharts option。"
+    },
+    "BlockComment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "threadId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "根评论为 null，回复指向根评论 id。"
+        },
+        "author": {
+          "type": "string",
+          "enum": [
+            "human",
+            "agent"
+          ],
+          "description": "批注作者；不改变块正文来源。"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      },
+      "required": [
+        "id",
+        "threadId",
+        "parentId",
+        "author",
+        "text",
+        "createdAt"
+      ],
+      "additionalProperties": false,
+      "description": "块批注；回复保留 threadId 与 parentId。"
+    },
+    "BlockCommentThread": {
+      "type": "object",
+      "properties": {
+        "threadId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blockId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "resolved"
+          ],
+          "description": "线程未解决 / 已解决状态。"
+        },
+        "comments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BlockComment"
+          },
+          "description": "按时间排列的根评论与回复。"
+        }
+      },
+      "required": [
+        "threadId",
+        "blockId",
+        "status",
+        "comments"
+      ],
+      "additionalProperties": false,
+      "description": "块批注线程；解决动作只改当前新修订，历史不变。"
+    },
+    "Block": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "跨修订稳定的块标识。"
+            },
+            "status": {
+              "$ref": "#/$defs/ArtifactStatus"
+            },
+            "source": {
+              "$ref": "#/$defs/Source"
+            },
+            "origin": {
+              "$ref": "#/$defs/Origin"
+            },
+            "anchors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/EvidenceAnchor"
+              },
+              "description": "块的溯源锚。"
+            },
+            "comments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/BlockCommentThread"
+              },
+              "description": "块批注线程，所有块均可批注。"
+            },
+            "type": {
+              "type": "string",
+              "const": "conclusion"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "status",
+            "source",
+            "origin",
+            "anchors",
+            "comments",
+            "type",
+            "text"
+          ],
+          "additionalProperties": false,
+          "description": "结论文本块，可 inline 编辑。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "跨修订稳定的块标识。"
+            },
+            "status": {
+              "$ref": "#/$defs/ArtifactStatus"
+            },
+            "source": {
+              "$ref": "#/$defs/Source"
+            },
+            "origin": {
+              "$ref": "#/$defs/Origin"
+            },
+            "anchors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/EvidenceAnchor"
+              },
+              "description": "块的溯源锚。"
+            },
+            "comments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/BlockCommentThread"
+              },
+              "description": "块批注线程，所有块均可批注。"
+            },
+            "type": {
+              "type": "string",
+              "const": "note"
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "status",
+            "source",
+            "origin",
+            "anchors",
+            "comments",
+            "type",
+            "text"
+          ],
+          "additionalProperties": false,
+          "description": "备注文本块，可 inline 编辑，不进结论。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "跨修订稳定的块标识。"
+            },
+            "status": {
+              "$ref": "#/$defs/ArtifactStatus"
+            },
+            "source": {
+              "$ref": "#/$defs/Source"
+            },
+            "origin": {
+              "$ref": "#/$defs/Origin"
+            },
+            "anchors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/EvidenceAnchor"
+              },
+              "description": "块的溯源锚。"
+            },
+            "comments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/BlockCommentThread"
+              },
+              "description": "块批注线程，所有块均可批注。"
+            },
+            "type": {
+              "type": "string",
+              "const": "quote"
+            },
+            "text": {
+              "type": "string"
+            },
+            "sourceAnchor": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "const": "source"
+                },
+                "ref": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "目标引用，供来源跳转使用。"
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "证据显示名称。"
+                }
+              },
+              "required": [
+                "kind",
+                "ref",
+                "label"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "id",
+            "status",
+            "source",
+            "origin",
+            "anchors",
+            "comments",
+            "type",
+            "text",
+            "sourceAnchor"
+          ],
+          "additionalProperties": false,
+          "description": "只读引用块，sourceAnchor 为外部材料来源定位。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "跨修订稳定的块标识。"
+            },
+            "status": {
+              "$ref": "#/$defs/ArtifactStatus"
+            },
+            "source": {
+              "$ref": "#/$defs/Source"
+            },
+            "origin": {
+              "$ref": "#/$defs/Origin"
+            },
+            "anchors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/EvidenceAnchor"
+              },
+              "description": "块的溯源锚。"
+            },
+            "comments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/BlockCommentThread"
+              },
+              "description": "块批注线程，所有块均可批注。"
+            },
+            "type": {
+              "type": "string",
+              "const": "table"
+            },
+            "tableId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "按展示顺序排列的表头。"
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": [
+                    "string",
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "description": "按列顺序排列的只读单元格；null 为缺数。"
+            }
+          },
+          "required": [
+            "id",
+            "status",
+            "source",
+            "origin",
+            "anchors",
+            "comments",
+            "type",
+            "tableId",
+            "columns",
+            "rows"
+          ],
+          "additionalProperties": false,
+          "description": "只读表格块，带 tableId 溯源。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "跨修订稳定的块标识。"
+            },
+            "status": {
+              "$ref": "#/$defs/ArtifactStatus"
+            },
+            "source": {
+              "$ref": "#/$defs/Source"
+            },
+            "origin": {
+              "$ref": "#/$defs/Origin"
+            },
+            "anchors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/EvidenceAnchor"
+              },
+              "description": "块的溯源锚。"
+            },
+            "comments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/BlockCommentThread"
+              },
+              "description": "块批注线程，所有块均可批注。"
+            },
+            "type": {
+              "type": "string",
+              "const": "verification"
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1
+            },
+            "conclusionBlockId": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "id",
+            "status",
+            "source",
+            "origin",
+            "anchors",
+            "comments",
+            "type",
+            "question",
+            "conclusionBlockId"
+          ],
+          "additionalProperties": false,
+          "description": "只读待验证文本，回链结论块；不建立验证队列。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "跨修订稳定的块标识。"
+            },
+            "status": {
+              "$ref": "#/$defs/ArtifactStatus"
+            },
+            "source": {
+              "$ref": "#/$defs/Source"
+            },
+            "origin": {
+              "$ref": "#/$defs/Origin"
+            },
+            "anchors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/EvidenceAnchor"
+              },
+              "description": "块的溯源锚。"
+            },
+            "comments": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/BlockCommentThread"
+              },
+              "description": "块批注线程，所有块均可批注。"
+            },
+            "type": {
+              "type": "string",
+              "const": "chart"
+            },
+            "chartSpec": {
+              "$ref": "#/$defs/ChartSpec"
+            },
+            "seriesData": {
+              "$ref": "#/$defs/SparkSeries"
+            }
+          },
+          "required": [
+            "id",
+            "status",
+            "source",
+            "origin",
+            "anchors",
+            "comments",
+            "type",
+            "chartSpec",
+            "seriesData"
+          ],
+          "additionalProperties": false,
+          "description": "只读图表块；声明式样例与绑定序列数据，渲染用既有暗色主题。"
+        }
+      ],
+      "description": "六类有序交付块；块状态与定稿状态独立。块顺序只读。"
+    },
+    "Deliverable": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "交付物标识，也作为 deliverable 产物锚。"
+            },
+            "jobId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "所属作业。"
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Block"
+              },
+              "description": "当前版本按契约顺序排列的块。"
+            },
+            "deliverableStatus": {
+              "type": "string",
+              "const": "draft"
+            },
+            "finalSnapshotId": {
+              "type": "null"
+            },
+            "finalRevisionNumber": {
+              "type": "null"
+            },
+            "finalizedAt": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "id",
+            "jobId",
+            "blocks",
+            "deliverableStatus",
+            "finalSnapshotId",
+            "finalRevisionNumber",
+            "finalizedAt"
+          ],
+          "additionalProperties": false,
+          "description": "草稿：三个定稿锚必须为 null；confirmed 块不意味着交付物已定稿。"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "交付物标识，也作为 deliverable 产物锚。"
+            },
+            "jobId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "所属作业。"
+            },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Block"
+              },
+              "description": "当前版本按契约顺序排列的块。"
+            },
+            "deliverableStatus": {
+              "type": "string",
+              "const": "final"
+            },
+            "finalSnapshotId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "不可变定稿快照 id。"
+            },
+            "finalRevisionNumber": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "description": "定稿修订版本号 N。"
+            },
+            "finalizedAt": {
+              "description": "定稿时间，带偏移时间戳；不是材料 publishedAt。",
+              "$ref": "#/$defs/Timestamp"
+            }
+          },
+          "required": [
+            "id",
+            "jobId",
+            "blocks",
+            "deliverableStatus",
+            "finalSnapshotId",
+            "finalRevisionNumber",
+            "finalizedAt"
+          ],
+          "additionalProperties": false,
+          "description": "已定稿：三个定稿锚非空，必须与工作区定稿快照一致。"
+        }
+      ],
+      "description": "交付物定稿状态为独立判别联合；只由 finalizeDeliverable 显式改变，不从 job.status 或快照存在推导。"
+    },
+    "FinalSnapshot": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "jobId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revisionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revisionNumber": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "description": "revisionId 对应已合并修订的 number，用于 S-18 版本号锚校验。"
+        },
+        "finalizedAt": {
+          "description": "显式定稿时间，与 Deliverable.finalizedAt 一致。",
+          "$ref": "#/$defs/Timestamp"
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Block"
+          },
+          "description": "定稿时已合并 revision 的块集合深拷贝，读取返回副本。"
+        }
+      },
+      "required": [
+        "id",
+        "jobId",
+        "revisionId",
+        "revisionNumber",
+        "finalizedAt",
+        "blocks"
+      ],
+      "additionalProperties": false,
+      "description": "不可变定稿快照；修订 id 与版本号同时保留。"
+    },
+    "DeliverWorkspace": {
+      "type": "object",
+      "properties": {
+        "deliverable": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Deliverable"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "交付物；空工作区为 null。"
+        },
+        "finalSnapshot": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FinalSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "定稿快照；草稿 / 空工作区必须为 null。"
+        }
+      },
+      "required": [
+        "deliverable",
+        "finalSnapshot"
+      ],
+      "additionalProperties": false,
+      "description": "交付工作区边界：一次 zod 校验三锚与快照一致；draft / 空工作区不带快照。JSON Schema 不表达跨字段相等约束。"
+    },
     "SourceNote": {
       "type": "object",
       "properties": {

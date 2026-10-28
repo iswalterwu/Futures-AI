@@ -378,7 +378,86 @@ export const ConclusionSchema = z.strictObject({
   vetoed: z.boolean().optional().describe('否决 tombstone；旧内容与旧版本保留。'),
 }).describe('分析结论卡及其证据链、状态和来源。')
 
+export const ChartSpecSchema = z.strictObject({
+  templateId: z.literal('line-sample').describe('v1 唯一样例模板，不实现完整模板库。'),
+  seriesBindings: z.strictObject({ main: z.string().min(1).describe('绑定的规范序列 ID。') }),
+  overrides: z.strictObject({ title: z.string().optional().describe('可选标题覆盖。') }),
+}).describe('声明式图表输入；template_id→templateId、series_bindings→seriesBindings；拒绝任意 ECharts option。')
+export const BlockCommentSchema = z.strictObject({
+  id: z.string().min(1), threadId: z.string().min(1),
+  parentId: z.string().min(1).nullable().describe('根评论为 null，回复指向根评论 id。'),
+  author: z.enum(['human', 'agent']).describe('批注作者；不改变块正文来源。'),
+  text: z.string().trim().min(1), createdAt: TimestampSchema,
+}).describe('块批注；回复保留 threadId 与 parentId。')
+export const BlockCommentThreadSchema = z.strictObject({
+  threadId: z.string().min(1), blockId: z.string().min(1),
+  status: z.enum(['open', 'resolved']).describe('线程未解决 / 已解决状态。'),
+  comments: z.array(BlockCommentSchema).describe('按时间排列的根评论与回复。'),
+}).describe('块批注线程；解决动作只改当前新修订，历史不变。')
+const blockFields = {
+  id: z.string().min(1).describe('跨修订稳定的块标识。'),
+  status: ArtifactStatusSchema, source: SourceSchema, origin: OriginSchema,
+  anchors: z.array(EvidenceAnchorSchema).describe('块的溯源锚。'),
+  comments: z.array(BlockCommentThreadSchema).describe('块批注线程，所有块均可批注。'),
+}
+export const BlockSchema = z.discriminatedUnion('type', [
+  z.strictObject({ ...blockFields, type: z.literal('conclusion'), text: z.string() }).describe('结论文本块，可 inline 编辑。'),
+  z.strictObject({ ...blockFields, type: z.literal('note'), text: z.string() }).describe('备注文本块，可 inline 编辑，不进结论。'),
+  z.strictObject({ ...blockFields, type: z.literal('quote'), text: z.string(), sourceAnchor: EvidenceAnchorSchema.extend({ kind: z.literal('source') }) }).describe('只读引用块，sourceAnchor 为外部材料来源定位。'),
+  z.strictObject({
+    ...blockFields, type: z.literal('table'), tableId: z.string().min(1),
+    columns: z.array(z.string().min(1)).describe('按展示顺序排列的表头。'),
+    rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))).describe('按列顺序排列的只读单元格；null 为缺数。'),
+  }).describe('只读表格块，带 tableId 溯源。'),
+  z.strictObject({ ...blockFields, type: z.literal('verification'), question: z.string().min(1), conclusionBlockId: z.string().min(1) }).describe('只读待验证文本，回链结论块；不建立验证队列。'),
+  z.strictObject({ ...blockFields, type: z.literal('chart'), chartSpec: ChartSpecSchema, seriesData: SparkSeriesSchema }).describe('只读图表块；声明式样例与绑定序列数据，渲染用既有暗色主题。'),
+]).describe('六类有序交付块；块状态与定稿状态独立。块顺序只读。')
+const deliverableFields = {
+  id: z.string().min(1).describe('交付物标识，也作为 deliverable 产物锚。'),
+  jobId: z.string().min(1).describe('所属作业。'),
+  blocks: z.array(BlockSchema).describe('当前版本按契约顺序排列的块。'),
+}
+export const DeliverableSchema = z.discriminatedUnion('deliverableStatus', [
+  z.strictObject({
+    ...deliverableFields, deliverableStatus: z.literal('draft'),
+    finalSnapshotId: z.null(), finalRevisionNumber: z.null(), finalizedAt: z.null(),
+  }).describe('草稿：三个定稿锚必须为 null；confirmed 块不意味着交付物已定稿。'),
+  z.strictObject({
+    ...deliverableFields, deliverableStatus: z.literal('final'),
+    finalSnapshotId: z.string().min(1).describe('不可变定稿快照 id。'),
+    finalRevisionNumber: z.int().positive().describe('定稿修订版本号 N。'),
+    finalizedAt: TimestampSchema.describe('定稿时间，带偏移时间戳；不是材料 publishedAt。'),
+  }).describe('已定稿：三个定稿锚非空，必须与工作区定稿快照一致。'),
+]).describe('交付物定稿状态为独立判别联合；只由 finalizeDeliverable 显式改变，不从 job.status 或快照存在推导。')
+export const FinalSnapshotSchema = z.strictObject({
+  id: z.string().min(1), jobId: z.string().min(1), revisionId: z.string().min(1),
+  revisionNumber: z.int().positive().describe('revisionId 对应已合并修订的 number，用于 S-18 版本号锚校验。'),
+  finalizedAt: TimestampSchema.describe('显式定稿时间，与 Deliverable.finalizedAt 一致。'),
+  blocks: z.array(BlockSchema).describe('定稿时已合并 revision 的块集合深拷贝，读取返回副本。'),
+}).describe('不可变定稿快照；修订 id 与版本号同时保留。')
+export const DeliverWorkspaceSchema = z.strictObject({
+  deliverable: DeliverableSchema.nullable().describe('交付物；空工作区为 null。'),
+  finalSnapshot: FinalSnapshotSchema.nullable().describe('定稿快照；草稿 / 空工作区必须为 null。'),
+}).superRefine((workspace, ctx) => {
+  const { deliverable, finalSnapshot } = workspace
+  if (deliverable?.deliverableStatus !== 'final') {
+    if (finalSnapshot !== null) ctx.addIssue({ code: 'custom', path: ['finalSnapshot'], message: '草稿 / 空工作区不能携带定稿快照' })
+    return
+  }
+  if (finalSnapshot === null || deliverable.finalSnapshotId !== finalSnapshot.id
+    || deliverable.finalRevisionNumber !== finalSnapshot.revisionNumber || deliverable.finalizedAt !== finalSnapshot.finalizedAt) {
+    ctx.addIssue({ code: 'custom', path: ['finalSnapshot'], message: 'final 的三个定稿锚必须与快照 id / revisionNumber / finalizedAt 一致' })
+  }
+}).describe('交付工作区边界：一次 zod 校验三锚与快照一致；draft / 空工作区不带快照。JSON Schema 不表达跨字段相等约束。')
+
 export const contractSchemas = {
+  ChartSpec: ChartSpecSchema,
+  BlockComment: BlockCommentSchema,
+  BlockCommentThread: BlockCommentThreadSchema,
+  Block: BlockSchema,
+  Deliverable: DeliverableSchema,
+  FinalSnapshot: FinalSnapshotSchema,
+  DeliverWorkspace: DeliverWorkspaceSchema,
   SourceNote: SourceNoteSchema,
   IntakeFileMeta: IntakeFileMetaSchema,
   IntakeInput: IntakeInputSchema,
@@ -503,3 +582,10 @@ export type ParamChange = z.infer<typeof ParamChangeSchema>
 export type ReconciliationDiff = z.infer<typeof ReconciliationDiffSchema>
 export type EvidenceAnchor = z.infer<typeof EvidenceAnchorSchema>
 export type Conclusion = z.infer<typeof ConclusionSchema>
+export type ChartSpec = z.infer<typeof ChartSpecSchema>
+export type BlockComment = z.infer<typeof BlockCommentSchema>
+export type BlockCommentThread = z.infer<typeof BlockCommentThreadSchema>
+export type Block = z.infer<typeof BlockSchema>
+export type Deliverable = z.infer<typeof DeliverableSchema>
+export type FinalSnapshot = z.infer<typeof FinalSnapshotSchema>
+export type DeliverWorkspace = z.infer<typeof DeliverWorkspaceSchema>

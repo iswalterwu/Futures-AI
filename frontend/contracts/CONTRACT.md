@@ -128,6 +128,174 @@
 类型中的枚举与常量直接来自 schema；必填不等于非空，null、空列表与零的语义见字段说明。
 完整格式、范围与长度约束见 `schema.json`；AgentRun 的唯一终态、同次运行与 stepId 单调约束还须遵守通用约定，不能只依赖 JSON Schema。
 
+### `ChartSpec`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 声明式图表输入；template_id→templateId、series_bindings→seriesBindings；拒绝任意 ECharts option。 |
+| `$.templateId` | 是 | `"line-sample"` | v1 唯一样例模板，不实现完整模板库。 |
+| `$.seriesBindings` | 是 | `object` |  |
+| `$.seriesBindings.main` | 是 | `string` | 绑定的规范序列 ID。 |
+| `$.overrides` | 是 | `object` |  |
+| `$.overrides.title` | 否 | `string` | 可选标题覆盖。 |
+
+### `BlockComment`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 块批注；回复保留 threadId 与 parentId。 |
+| `$.id` | 是 | `string` |  |
+| `$.threadId` | 是 | `string` |  |
+| `$.parentId` | 是 | `string &#124; null` | 根评论为 null，回复指向根评论 id。 |
+| `$.parentId.anyOf[0]` | 是 | `string` |  |
+| `$.parentId.anyOf[1]` | 是 | `null` |  |
+| `$.author` | 是 | `"human" &#124; "agent"` | 批注作者；不改变块正文来源。 |
+| `$.text` | 是 | `string` |  |
+| `$.createdAt` | 是 | `Timestamp` | ISO 8601 时间，必须带时区偏移；Z 表示 UTC。 |
+
+### `BlockCommentThread`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 块批注线程；解决动作只改当前新修订，历史不变。 |
+| `$.threadId` | 是 | `string` |  |
+| `$.blockId` | 是 | `string` |  |
+| `$.status` | 是 | `"open" &#124; "resolved"` | 线程未解决 / 已解决状态。 |
+| `$.comments` | 是 | `BlockComment[]` | 按时间排列的根评论与回复。 |
+| `$.comments[]` | 是 | `BlockComment` | 块批注；回复保留 threadId 与 parentId。 |
+
+### `Block`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object &#124; object &#124; object &#124; object &#124; object &#124; object` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
+| `$.oneOf[0]` | 是 | `object` | 结论文本块，可 inline 编辑。 |
+| `$.oneOf[0].id` | 是 | `string` | 跨修订稳定的块标识。 |
+| `$.oneOf[0].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[0].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[0].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[0].anchors` | 是 | `EvidenceAnchor[]` | 块的溯源锚。 |
+| `$.oneOf[0].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
+| `$.oneOf[0].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
+| `$.oneOf[0].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
+| `$.oneOf[0].type` | 是 | `"conclusion"` |  |
+| `$.oneOf[0].text` | 是 | `string` |  |
+| `$.oneOf[1]` | 是 | `object` | 备注文本块，可 inline 编辑，不进结论。 |
+| `$.oneOf[1].id` | 是 | `string` | 跨修订稳定的块标识。 |
+| `$.oneOf[1].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[1].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[1].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[1].anchors` | 是 | `EvidenceAnchor[]` | 块的溯源锚。 |
+| `$.oneOf[1].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
+| `$.oneOf[1].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
+| `$.oneOf[1].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
+| `$.oneOf[1].type` | 是 | `"note"` |  |
+| `$.oneOf[1].text` | 是 | `string` |  |
+| `$.oneOf[2]` | 是 | `object` | 只读引用块，sourceAnchor 为外部材料来源定位。 |
+| `$.oneOf[2].id` | 是 | `string` | 跨修订稳定的块标识。 |
+| `$.oneOf[2].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[2].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[2].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[2].anchors` | 是 | `EvidenceAnchor[]` | 块的溯源锚。 |
+| `$.oneOf[2].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
+| `$.oneOf[2].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
+| `$.oneOf[2].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
+| `$.oneOf[2].type` | 是 | `"quote"` |  |
+| `$.oneOf[2].text` | 是 | `string` |  |
+| `$.oneOf[2].sourceAnchor` | 是 | `object` |  |
+| `$.oneOf[2].sourceAnchor.kind` | 是 | `"source"` |  |
+| `$.oneOf[2].sourceAnchor.ref` | 是 | `string` | 目标引用，供来源跳转使用。 |
+| `$.oneOf[2].sourceAnchor.label` | 是 | `string` | 证据显示名称。 |
+| `$.oneOf[3]` | 是 | `object` | 只读表格块，带 tableId 溯源。 |
+| `$.oneOf[3].id` | 是 | `string` | 跨修订稳定的块标识。 |
+| `$.oneOf[3].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[3].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[3].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[3].anchors` | 是 | `EvidenceAnchor[]` | 块的溯源锚。 |
+| `$.oneOf[3].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
+| `$.oneOf[3].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
+| `$.oneOf[3].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
+| `$.oneOf[3].type` | 是 | `"table"` |  |
+| `$.oneOf[3].tableId` | 是 | `string` |  |
+| `$.oneOf[3].columns` | 是 | `string[]` | 按展示顺序排列的表头。 |
+| `$.oneOf[3].columns[]` | 是 | `string` |  |
+| `$.oneOf[3].rows` | 是 | `string &#124; number &#124; null[][]` | 按列顺序排列的只读单元格；null 为缺数。 |
+| `$.oneOf[3].rows[]` | 是 | `string &#124; number &#124; null[]` |  |
+| `$.oneOf[3].rows[][]` | 是 | `string &#124; number &#124; null` |  |
+| `$.oneOf[4]` | 是 | `object` | 只读待验证文本，回链结论块；不建立验证队列。 |
+| `$.oneOf[4].id` | 是 | `string` | 跨修订稳定的块标识。 |
+| `$.oneOf[4].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[4].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[4].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[4].anchors` | 是 | `EvidenceAnchor[]` | 块的溯源锚。 |
+| `$.oneOf[4].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
+| `$.oneOf[4].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
+| `$.oneOf[4].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
+| `$.oneOf[4].type` | 是 | `"verification"` |  |
+| `$.oneOf[4].question` | 是 | `string` |  |
+| `$.oneOf[4].conclusionBlockId` | 是 | `string` |  |
+| `$.oneOf[5]` | 是 | `object` | 只读图表块；声明式样例与绑定序列数据，渲染用既有暗色主题。 |
+| `$.oneOf[5].id` | 是 | `string` | 跨修订稳定的块标识。 |
+| `$.oneOf[5].status` | 是 | `ArtifactStatus` | 产物 / 块状态，独立于交付物定稿状态；confirmed 不等于 final。 |
+| `$.oneOf[5].source` | 是 | `Source` | 内容来源；派生内容保留人 / agent / 混合来源与作者信息。 |
+| `$.oneOf[5].origin` | 是 | `Origin` | source 为源材料，derived 为派生内容；派生徽显示内部生成，source 作为次文案保留。 |
+| `$.oneOf[5].anchors` | 是 | `EvidenceAnchor[]` | 块的溯源锚。 |
+| `$.oneOf[5].anchors[]` | 是 | `EvidenceAnchor` | 结论证据链锚，不计算独立证据权重。 |
+| `$.oneOf[5].comments` | 是 | `BlockCommentThread[]` | 块批注线程，所有块均可批注。 |
+| `$.oneOf[5].comments[]` | 是 | `BlockCommentThread` | 块批注线程；解决动作只改当前新修订，历史不变。 |
+| `$.oneOf[5].type` | 是 | `"chart"` |  |
+| `$.oneOf[5].chartSpec` | 是 | `ChartSpec` | 声明式图表输入；template_id→templateId、series_bindings→seriesBindings；拒绝任意 ECharts option。 |
+| `$.oneOf[5].seriesData` | 是 | `SparkSeries` | 迷你折线与样例图的序列；元数据在序列层声明，不逐点重复。 |
+
+### `Deliverable`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object &#124; object` | 交付物定稿状态为独立判别联合；只由 finalizeDeliverable 显式改变，不从 job.status 或快照存在推导。 |
+| `$.oneOf[0]` | 是 | `object` | 草稿：三个定稿锚必须为 null；confirmed 块不意味着交付物已定稿。 |
+| `$.oneOf[0].id` | 是 | `string` | 交付物标识，也作为 deliverable 产物锚。 |
+| `$.oneOf[0].jobId` | 是 | `string` | 所属作业。 |
+| `$.oneOf[0].blocks` | 是 | `Block[]` | 当前版本按契约顺序排列的块。 |
+| `$.oneOf[0].blocks[]` | 是 | `Block` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
+| `$.oneOf[0].deliverableStatus` | 是 | `"draft"` |  |
+| `$.oneOf[0].finalSnapshotId` | 是 | `null` |  |
+| `$.oneOf[0].finalRevisionNumber` | 是 | `null` |  |
+| `$.oneOf[0].finalizedAt` | 是 | `null` |  |
+| `$.oneOf[1]` | 是 | `object` | 已定稿：三个定稿锚非空，必须与工作区定稿快照一致。 |
+| `$.oneOf[1].id` | 是 | `string` | 交付物标识，也作为 deliverable 产物锚。 |
+| `$.oneOf[1].jobId` | 是 | `string` | 所属作业。 |
+| `$.oneOf[1].blocks` | 是 | `Block[]` | 当前版本按契约顺序排列的块。 |
+| `$.oneOf[1].blocks[]` | 是 | `Block` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
+| `$.oneOf[1].deliverableStatus` | 是 | `"final"` |  |
+| `$.oneOf[1].finalSnapshotId` | 是 | `string` | 不可变定稿快照 id。 |
+| `$.oneOf[1].finalRevisionNumber` | 是 | `integer` | 定稿修订版本号 N。 |
+| `$.oneOf[1].finalizedAt` | 是 | `Timestamp` | 定稿时间，带偏移时间戳；不是材料 publishedAt。 |
+
+### `FinalSnapshot`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 不可变定稿快照；修订 id 与版本号同时保留。 |
+| `$.id` | 是 | `string` |  |
+| `$.jobId` | 是 | `string` |  |
+| `$.revisionId` | 是 | `string` |  |
+| `$.revisionNumber` | 是 | `integer` | revisionId 对应已合并修订的 number，用于 S-18 版本号锚校验。 |
+| `$.finalizedAt` | 是 | `Timestamp` | 显式定稿时间，与 Deliverable.finalizedAt 一致。 |
+| `$.blocks` | 是 | `Block[]` | 定稿时已合并 revision 的块集合深拷贝，读取返回副本。 |
+| `$.blocks[]` | 是 | `Block` | 六类有序交付块；块状态与定稿状态独立。块顺序只读。 |
+
+### `DeliverWorkspace`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 交付工作区边界：一次 zod 校验三锚与快照一致；draft / 空工作区不带快照。JSON Schema 不表达跨字段相等约束。 |
+| `$.deliverable` | 是 | `Deliverable &#124; null` | 交付物；空工作区为 null。 |
+| `$.deliverable.anyOf[0]` | 是 | `Deliverable` | 交付物定稿状态为独立判别联合；只由 finalizeDeliverable 显式改变，不从 job.status 或快照存在推导。 |
+| `$.deliverable.anyOf[1]` | 是 | `null` |  |
+| `$.finalSnapshot` | 是 | `FinalSnapshot &#124; null` | 定稿快照；草稿 / 空工作区必须为 null。 |
+| `$.finalSnapshot.anyOf[0]` | 是 | `FinalSnapshot` | 不可变定稿快照；修订 id 与版本号同时保留。 |
+| `$.finalSnapshot.anyOf[1]` | 是 | `null` |  |
+
 ### `SourceNote`
 
 | 字段 | 必填 | 类型 / 值域 | 语义 |
