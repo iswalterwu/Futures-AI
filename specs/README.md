@@ -20,7 +20,7 @@ specs/<feature>/
 | feature | 状态 | 依赖 | 最近更新 | 备注 |
 |---|---|---|---|---|
 | data-layer | done | 无 | 2026-10-27 | Gate 2 已确认（选项 A）；Handoff：feat/data-layer 经 PR 合并到 main；后续任务见 specs/data-layer/review.md |
-| frontend-workbench | 暂停于 Clarify，等待 D-018 术语同步 | 无（与后端唯一接口为 R-007 契约） | 2026-10-28 | 首版实施完成（15 任务，538 单测 + 65 e2e 通过）；v2 交互原型草稿已保存并推送，尚未启动或浏览器验证；按用户要求暂停，不继续修改。 |
+| frontend-workbench | in-progress | 无（与后端唯一接口为 R-007 契约） | 2026-10-28 | v1 T-16 / T-17 已实施，559 单元 / 组件 + 66 e2e、构建通过；[Converge](frontend-workbench/converge.md) 结论：实现与自动验证范围已收敛，待独立 A 定向 Review 复核（[首轮报告](frontend-workbench/review.md)）。其余 9 项 P3 已登记、未风险接受，人工 M-01 ~ M-08 待验，Gate 2 未批准。v2 仍暂停于 Clarify、等待 D-018 术语同步，不纳入本轮 v1 整改。 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
