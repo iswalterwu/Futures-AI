@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount } from 'vue'
 import type { ContractError, ModuleDef } from '../contracts/types.ts'
+import { useBadgesStore } from '../stores/badges.ts'
 import Badge from '../shared/components/Badge.vue'
 import EmptyState from '../shared/components/EmptyState.vue'
 import ErrorState from '../shared/components/ErrorState.vue'
 import Loading from '../shared/components/Loading.vue'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   module: ModuleDef
   state?: 'ready' | 'loading' | 'empty' | 'error'
   right?: string
@@ -20,23 +21,22 @@ withDefaults(defineProps<{
   state: 'ready',
   right: '–',
   badge: 'sample',
-  ai: 'none',
+  ai: undefined,
   emptyMessage: '暂无数据。',
   error: undefined,
   canMoveUp: true,
   canMoveDown: true,
 })
 defineEmits<{ moveUp: []; moveDown: []; remove: []; retry: []; viewed: [] }>()
-const highlighted = ref(false)
-let highlightTimer: ReturnType<typeof setTimeout> | undefined
+const badges = useBadgesStore()
+const aiState = computed(() => props.ai ?? badges.modules[props.module.id]?.state ?? 'none')
+const highlighted = computed(() => badges.highlightedId === props.module.id)
 
 function highlight() {
-  clearTimeout(highlightTimer)
-  highlighted.value = true
-  highlightTimer = setTimeout(() => { highlighted.value = false }, 1500)
+  badges.highlight(props.module.id)
 }
 
-onBeforeUnmount(() => clearTimeout(highlightTimer))
+onBeforeUnmount(() => badges.clearHighlight(props.module.id))
 defineExpose({ highlight })
 </script>
 
@@ -49,7 +49,7 @@ defineExpose({ highlight })
     :aria-labelledby="`module-title-${module.id}`"
     :aria-busy="state === 'loading'"
     tabindex="-1"
-    @click="$emit('viewed')"
+    @click="badges.clear(module.id); $emit('viewed')"
   >
     <header>
       <h3
@@ -63,9 +63,9 @@ defineExpose({ highlight })
       <Badge :state="badge" />
       <span
         class="ai"
-        :data-ai="ai"
+        :data-ai="aiState"
         aria-live="polite"
-      >{{ ai === 'running' ? 'AI 运行中' : ai === 'done' ? 'AI 已完成' : '' }}</span>
+      >{{ aiState === 'running' ? 'AI 运行中' : aiState === 'done' ? 'AI 已完成' : '' }}</span>
       <nav
         class="actions"
         :aria-label="`${module.zh}布局操作`"
