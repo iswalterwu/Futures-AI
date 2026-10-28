@@ -1,0 +1,9 @@
+[
+  { "id": "market-board", "zh": "行情价格", "en": "MARKET BOARD", "description": "油品合约盘面与样例价格走势。", "defaultSpan": 2, "order": 1 },
+  { "id": "supply-demand", "zh": "库存/供需指标", "en": "SUPPLY & DEMAND", "description": "库存与供需指标示例，内容随 supply-demand feature 交付。", "defaultSpan": 1, "order": 2 },
+  { "id": "logistics-onwater", "zh": "物流在途", "en": "ON WATER", "description": "物流在途示例，内容随 logistics feature 交付。", "defaultSpan": 1, "order": 3 },
+  { "id": "positions", "zh": "当前头寸", "en": "POSITIONS", "description": "头寸模块占位，不含真实用户头寸。", "defaultSpan": 1, "order": 4 },
+  { "id": "doc-catalog", "zh": "文档目录", "en": "DOCUMENTS", "description": "文档目录占位，不读取私有文档。", "defaultSpan": 1, "order": 5 },
+  { "id": "watchlist", "zh": "关注列表", "en": "WATCHLIST", "description": "关注合约的最新价、涨跌、涨跌幅与迷你折线。", "defaultSpan": 1, "order": 6 },
+  { "id": "release-calendar", "zh": "数据发布日历", "en": "RELEASE CALENDAR", "description": "公开数据发布日程与待更新状态示例。", "defaultSpan": 1, "order": 7 }
+]

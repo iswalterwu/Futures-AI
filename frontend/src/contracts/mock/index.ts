@@ -1,0 +1,217 @@
+import { z } from 'zod'
+import { version as appVersion } from '../../../package.json'
+import { AgentRunSchema, type AgentEvent } from '../../agent/events.ts'
+import type { AgentClient, AgentEventCallback, DataClient } from '../client.ts'
+import { agentMethods, dataMethods } from '../methods.ts'
+import {
+  BootstrapSchema,
+  CONTRACT_VERSION,
+  ModuleIdSchema,
+  ModuleSummarySchema,
+  type Bootstrap,
+  type ContractError,
+  type ErrorResponse,
+} from '../types.ts'
+import success from './agent/success.ts'
+import failure from './agent/failure.ts'
+import retry from './agent/retry.ts'
+import long from './agent/long.ts'
+import moduleCatalog from './fixtures/module-catalog.json'
+import dailyBrief from './fixtures/daily-brief.json'
+import marketBoard from './fixtures/market-board.json'
+import watchlist from './fixtures/watchlist.json'
+import releaseCalendar from './fixtures/release-calendar.json'
+import moduleSummaries from './fixtures/module-summaries.json'
+import news from './fixtures/news.json'
+import sources from './fixtures/sources.json'
+import research from './fixtures/research.json'
+
+const fixtures = {
+  'module-catalog': moduleCatalog,
+  'daily-brief': dailyBrief,
+  'market-board': marketBoard,
+  watchlist,
+  'release-calendar': releaseCalendar,
+  'module-summaries': moduleSummaries,
+  news,
+  sources,
+  research,
+}
+
+export const fixtureSchemas = {
+  'module-catalog': dataMethods.getModuleCatalog.result,
+  'daily-brief': dataMethods.getDailyBrief.result,
+  'market-board': dataMethods.getMarketBoard.result,
+  watchlist: dataMethods.getWatchlist.result,
+  'release-calendar': dataMethods.getReleaseCalendar.result,
+  'module-summaries': z.partialRecord(ModuleIdSchema, ModuleSummarySchema),
+  news: dataMethods.getNewsTicker.result,
+  sources: dataMethods.getSourceStatus.result,
+  research: dataMethods.getResearchList.result,
+}
+
+export type AgentScript = ReadonlyArray<{ afterMs: number; event: AgentEvent }>
+export const agentScripts = { success, failure, retry, long } satisfies Record<string, AgentScript>
+export type AgentScriptName = keyof typeof agentScripts
+export interface MockOverrides {
+  fixtures?: Partial<Record<keyof typeof fixtures, unknown>>
+  agentScript?: AgentScriptName
+}
+
+declare global {
+  interface Window {
+    __FAI_MOCK__?: MockOverrides
+  }
+}
+
+const moduleFixtures = new Set<keyof typeof fixtures>([
+  'daily-brief', 'market-board', 'watchlist', 'release-calendar', 'module-summaries',
+])
+
+export function createMockDataClient(): DataClient {
+  const scenario = readScenario()
+  let bootstrapFailed = false
+
+  async function readFixture<T>(name: keyof typeof fixtures, schema: z.ZodType<T>): Promise<T> {
+    await delayScenario(scenario)
+    if (scenario === 'error' && moduleFixtures.has(name)) {
+      throw mockError('adapter_error', '样例数据源暂不可用，请重试。', true)
+    }
+    const overrides = window.__FAI_MOCK__?.fixtures
+    const value = overrides && Object.hasOwn(overrides, name) ? overrides[name] : fixtures[name]
+    return parseBoundary(schema, value)
+  }
+
+  return {
+    async bootstrap() {
+      await delayScenario(scenario)
+      if (scenario === 'boot-error' && !bootstrapFailed) {
+        bootstrapFailed = true
+        throw mockError('internal', '样例启动首次失败，请重试。', true)
+      }
+      return parseBoundary(dataMethods.bootstrap.result, {
+        appVersion,
+        contractVersion: CONTRACT_VERSION,
+        mode: 'mock',
+        scenario,
+        notice: '演示模式：数据均为合成样例，不读取私有文档或真实头寸。',
+      })
+    },
+    async getModuleCatalog() {
+      const catalog = await readFixture('module-catalog', fixtureSchemas['module-catalog'])
+      return catalog.sort((a, b) => a.order - b.order)
+    },
+    async getDailyBrief(date) {
+      const [day] = parseBoundary(dataMethods.getDailyBrief.params, [date])
+      const result = await readFixture('daily-brief', fixtureSchemas['daily-brief'])
+      if (scenario === 'empty') return { brief: null, reason: '今日日报尚未生成。' }
+      if (day && result.brief && day !== result.brief.date) {
+        return { brief: null, reason: `${day} 的日报尚未生成。` }
+      }
+      return result
+    },
+    async getMarketBoard() {
+      const board = await readFixture('market-board', fixtureSchemas['market-board'])
+      return scenario === 'empty' ? { ...board, rows: [], series: { ...board.series, points: [] } } : board
+    },
+    async getWatchlist() {
+      const table = await readFixture('watchlist', fixtureSchemas.watchlist)
+      return scenario === 'empty' ? { ...table, rows: [] } : table
+    },
+    async getReleaseCalendar(from, to) {
+      const [start, end] = readCalendarRange(from, to)
+      const entries = await readFixture('release-calendar', fixtureSchemas['release-calendar'])
+      return scenario === 'empty' ? [] : entries
+        .filter(entry => entry.ts.slice(0, 10) >= start && entry.ts.slice(0, 10) <= end)
+        .sort((a, b) => Date.parse(a.ts) - Date.parse(b.ts))
+    },
+    async getModuleSummary(moduleId) {
+      const [id] = parseBoundary(dataMethods.getModuleSummary.params, [moduleId])
+      const summaries = await readFixture('module-summaries', fixtureSchemas['module-summaries'])
+      const summary = summaries[id]
+      if (!summary) throw mockError('not_found', `模块 ${id} 没有示例摘要。`, false)
+      return scenario === 'empty' ? { ...summary, text: '', figures: [] } : summary
+    },
+    async getNewsTicker() {
+      const items = await readFixture('news', fixtureSchemas.news)
+      return scenario === 'empty' ? [] : items
+    },
+    async getSourceStatus() {
+      const items = await readFixture('sources', fixtureSchemas.sources)
+      return scenario === 'empty' ? [] : items
+    },
+    async getResearchList() {
+      const items = await readFixture('research', fixtureSchemas.research)
+      return scenario === 'empty' ? [] : items
+    },
+  }
+}
+
+export function createMockAgentClient(): AgentClient {
+  const scenario = readScenario()
+  const listeners = new Set<AgentEventCallback>()
+
+  return {
+    async send(input) {
+      const [message] = parseBoundary(agentMethods.send.params, [input])
+      const script = agentScripts[readAgentScript()]
+      await delayScenario(scenario)
+      const receipt = parseBoundary(agentMethods.send.result, {
+        sessionId: message.sessionId ?? `mock-session-${crypto.randomUUID()}`,
+        runId: `mock-run-${crypto.randomUUID()}`,
+      })
+      const startedAt = Date.now()
+      const events = parseBoundary(AgentRunSchema, script.map(({ afterMs, event }) => ({
+        ...event,
+        ...receipt,
+        ts: new Date(startedAt + afterMs).toISOString(),
+        ...(event.type === 'run.started' ? { prompt: message.message } : {}),
+      })))
+      script.forEach(({ afterMs }, index) => {
+        setTimeout(() => {
+          for (const listener of listeners) listener(events[index])
+        }, afterMs)
+      })
+      return receipt
+    },
+    subscribe(cb) {
+      listeners.add(cb)
+      return () => { listeners.delete(cb) }
+    },
+  }
+}
+
+function readScenario(): Bootstrap['scenario'] {
+  const query = new URLSearchParams(window.location.search)
+  return parseBoundary(BootstrapSchema.shape.scenario,
+    query.get('scenario') ?? import.meta.env.VITE_MOCK_SCENARIO ?? 'normal')
+}
+
+function readAgentScript(): AgentScriptName {
+  const query = new URLSearchParams(window.location.search)
+  return parseBoundary(z.enum(['success', 'failure', 'retry', 'long']),
+    query.get('agentScript') ?? window.__FAI_MOCK__?.agentScript ?? 'success')
+}
+
+async function delayScenario(scenario: Bootstrap['scenario']): Promise<void> {
+  if (scenario === 'slow') await new Promise(resolve => setTimeout(resolve, 1500))
+}
+
+function readCalendarRange(from: string, to: string): [string, string] {
+  const range = parseBoundary(dataMethods.getReleaseCalendar.params, [from, to])
+  if (range[0] > range[1]) throw mockError('validation_error', 'from 不得晚于 to。', false)
+  return range
+}
+
+function parseBoundary<T>(schema: z.ZodType<T>, value: unknown): T {
+  try {
+    return schema.parse(value)
+  } catch (error) {
+    if (!(error instanceof z.ZodError)) throw error
+    throw mockError('validation_error', error.issues.map(issue => `${issue.path.join('.') || 'input'}: ${issue.message}`).join('; '), false)
+  }
+}
+
+function mockError(code: ContractError['code'], message: string, retryable: boolean): ErrorResponse {
+  return { error: { code, message, retryable } }
+}
