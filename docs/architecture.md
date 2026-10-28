@@ -6,35 +6,35 @@
 ## 1. 总体架构
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│ Shell 桌面外壳（Electron）                                  │
-│ 窗口/托盘/通知/自动更新/打包/激活窗口                         │
-├──────────────────────────────────────────────────────────┤
-│ Frontend Web 前端（Vue 3 + TS + ECharts）                   │
-│ 工作台(焦点带/作业轨道/模块) · 作业四阶段 · 交付台 · 格物致知    │
-│ 知识库 · 设置 · 对话                                          │
-│      ↕ localhost HTTP / WebSocket                          │
-├──────────────────────────────────────────────────────────┤
-│ Backend Python 核心（FastAPI，仅 localhost）                 │
-│  ┌───────────┬──────────────┬────────────────────┐          │
-│  │ 统一数据层  │ 知识层        │ Agent 层(pi RPC)    │          │
-│  │ adapters   │ ingest/gate  │ 角色会话池/三档路由  │          │
-│  │ catalog    │ index/memory │ 工具集              │          │
-│  └───────────┴──────────────┴────────────────────┘          │
-│  ┌──────────────┬───────────────┬───────────────┐          │
-│  │ 作业引擎       │ 交付管线        │ 学习/协议       │          │
-│  │ 状态机/版本/介入│ 块模型/复核/定稿 │ 蒸馏/校准/复盘  │          │
-│  └──────────────┴───────────────┴───────────────┘          │
-│  ┌───────────┐                                              │
-│  │ 授权模块   │                                              │
-│  └───────────┘                                              │
-├──────────────────────────────────────────────────────────┤
-│ Storage                                                    │
-│ DuckDB(时序/分析/断言台账/世界模型槽位) + SQLite + LanceDB    │
-│ 用户数据目录：docs_in/ knowledge/ works/ claims/ playbook/    │
-│              learning/ clips/ memory/ calibration/ agenda/  │
-│              creds/ log                                     │
-└──────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│ Shell 桌面外壳（Electron）                                     │
+│ 窗口/托盘/通知/自动更新/打包/激活窗口                          │
+├────────────────────────────────────────────────────────────────┤
+│ Frontend Web 前端（Vue 3 + TS + ECharts）                      │
+│ 工作台(焦点带/作业轨道/模块) · 作业四阶段 · 交付台 · 格物致知  │
+│ 知识库 · 设置 · 对话                                           │
+│      ↕ localhost HTTP / WebSocket                              │
+├────────────────────────────────────────────────────────────────┤
+│ Backend Python 核心（FastAPI，仅 localhost）                   │
+│  ┌──────────────┬────────────────┬──────────────────────┐      │
+│  │ 统一数据层   │ 知识层         │ Agent 层(pi RPC)     │      │
+│  │ adapters     │ ingest/gate    │ 角色会话池/三档路由  │      │
+│  │ catalog      │ index/memory   │ 工具集               │      │
+│  └──────────────┴────────────────┴──────────────────────┘      │
+│  ┌──────────────────┬──────────────────┬────────────────┐      │
+│  │ 作业引擎         │ 交付管线         │ 学习/协议      │      │
+│  │ 状态机/版本/介入 │ 块模型/复核/定稿 │ 蒸馏/校准/复盘 │      │
+│  └──────────────────┴──────────────────┴────────────────┘      │
+│  ┌──────────────┐                                              │
+│  │ 授权模块     │                                              │
+│  └──────────────┘                                              │
+├────────────────────────────────────────────────────────────────┤
+│ Storage                                                        │
+│ DuckDB(时序/分析/断言台账/世界模型槽位) + SQLite + LanceDB     │
+│ 用户数据目录：docs_in/ knowledge/ works/ claims/ playbook/     │
+│               learning/ clips/ memory/ calibration/ agenda/    │
+│               creds/ log                                       │
+└────────────────────────────────────────────────────────────────┘
 pi coding agent（子进程，`pi --mode rpc`）
    ↑ Backend 驱动（JSONL）
    └ 工具经本地 MCP server 指回 Backend
@@ -167,7 +167,7 @@ tables/      规范化 Parquet/DuckDB 表
 memory/      agent 记忆状态：profile/（用户画像）focus/（关注点）；分析逻辑只在 playbook/（D-018 §7）；首启访谈经 `profile_write` 回写（D-024）
 ```
 
-数据层目录（data/catalog.sqlite、data/observations.duckdb、data/.lock、adapters/、creds/）以 `specs/data-layer/plan.md` §3.3 为权威布局；本节新增的 `claims/`、`works/`、`playbook/`、`learning/` 与 `data/` 平级，属知识层/作业层，schema 由对应 feature spec 冻结。
+数据层目录（data/catalog.sqlite、data/observations.duckdb、data/.lock、adapters/、creds/）以 `specs/data-layer/plan.md` §3.3 为权威布局；本节新增的 `claims/`、`works/`、`playbook/`、`learning/`、`calibration/`、`agenda/` 与 `data/` 平级，属知识层/作业层，schema 由对应 feature spec 冻结。
 
 派生内容（`origin=derived`）不单独建目录：文本存 `knowledge/notes/` 或交付物块，谱系记入断言台账的派生谱系（DAG，§4.7）。
 
@@ -195,14 +195,14 @@ memory/      agent 记忆状态：profile/（用户画像）focus/（关注点�
 - **存储**：源材料索引（catalog + 文件）、断言台账（DuckDB：`claims` / `claim_anchors` / `claim_edges` / `claim_revisions` / `conflicts`）、派生内容谱系（DAG）、闸门审计日志；断言与派生向量进 LanceDB
 - **接口**：`kb_write` 必须提交来源定位与作者类型，返回 `{inserted, merged, linked, conflict, quarantined}`；禁止绕过闸门直接写入索引
 - **检索衔接**：检索期去重与派生内容标注降权在 §4.2 管线末端执行；来源校准（D-020）作为检索权重的新输入，与互证计数并列
-- **L3.5 模型一致性门（D-021）**：断言落入世界模型槽位时由 `knowledge/worldmodel/` 检查品种包恒等式与同槽位冲突；违反不拒绝 → 标冲突 + 冲突队列 + 验证性需求（§4.8）
+- **L3.5 模型一致性门（D-021）**：断言落入世界模型槽位时由 `backend/knowledge/worldmodel/` 检查品种包恒等式与同槽位冲突；违反不拒绝 → 标冲突 + 冲突队列 + 验证性需求（§4.8）
 - **成本分级**：按 `interaction.md` §5.7 执行；v1 落 L0–L2 + 派生标记，L3 台账在知识库 v1 后接入
 
 ### 4.8 世界模型（D-021）
 
 规则权威在 `interaction.md` §10；本节只定系统落点。
 
-- **不是新存储**：`knowledge/worldmodel/` 持有品种包 schema（槽位 key、单位、恒等式与允差、两视图归属）与投影逻辑；槽位值为 DuckDB 视图 / 物化表，投影自断言台账（§4.7）与观测（§3.3，只引用 `series_id@asof` 不复制）
+- **不是新存储**：`backend/knowledge/worldmodel/` 持有品种包 schema（槽位 key、单位、恒等式与允差、两视图归属）与投影逻辑；槽位值为 DuckDB 视图 / 物化表，投影自断言台账（§4.7）与观测（§3.3，只引用 `series_id@asof` 不复制）
 - **一致性门 L3.5**：代码实现，在 `kb_write` / `model_update` 落槽位时执行；违反不拒绝，标冲突 + 冲突队列 + 验证性需求；对账员角色只做解释与建议
 - **人填槽位**：介入事件 `slot_fix` → 新版本（作者 = 人）；agent 不得覆盖，可标冲突
 - **求解器 / 敏感性 / 情景**：Phase 2D；敏感性输出供议程排序（§5.6）
