@@ -1,5 +1,7 @@
 # Feature: frontend-workbench v1 评审记录（review.md）
 
+> **最新指针（2026-10-28，H-01 修复）**：T-18 已实施（`771f2af`），Converge 判定 H-01 修复的实现与自动化验证范围已收敛（§11、[converge.md §9](converge.md)）；**待独立 A Review，本次修复 Gate 2 未批准**；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。以下原有状态行均为当时时点记录，不改写。
+
 > **当前状态（2026-10-28，Handoff）**：独立 A 第二轮定向复核 **通过，无新增 P1/P2**，R1-01 / R1-09 已闭环（§7）。**Gate 2 已批准**：Walter 2026-10-28 回复“确认”，接受 11 项 P3（R1-02/03/04/05/06/07/08/10/11 + R2-01/02）为后续任务——接受 ≠ 已修复（§8）。Handoff 记录、实测证据、截图索引与合并说明见 §9：合并主线后 559 + 66 全绿、构建通过；M-01 ~ M-08 已由 AI 实际执行并附 60 张截图（不是 Walter 人工验收，人工勾选待复核）；Handoff 新发现 H-01 / H-02 已登记、未经 Walter 处置。
 > §0 ~ §6 为第一轮历史原件、§7 为第二轮原件，均保留原文，其中“Gate 2 未批准 / 未 Handoff”是当时的时点记录。
 
@@ -365,3 +367,37 @@ D-015 的其余同步（ADR 标题、活文档引用、`design/` 7 个文件）�
 
 - **本次修复的 Gate 2：未批准。** 需要在 Implement → Converge → 独立 A Review 之后，由 Walter 确认。
 - 下一步：① 协调会话按 §6 派 Implement 执行 T-18（先红后绿、全量测试、构建、截图证据）；② Converge 追加记录；③ 独立 A 定向 Review；④ Walter Gate 2；⑤ 再按流程 PR / merge。M-01 ~ M-08 的人工复核与 H-02 的 v2 承接各自独立进行。
+
+## 11. H-01 修复（T-18）实施与收敛记录（2026-10-28，追加）
+
+> §0 ~ §10 为历史原件，不改写（§10 中“未实施 / 未开始”是规划时点记录）。**本节不是 Review 结论**：独立 A 尚未开始，本次修复 Gate 2 未批准。
+
+### 11.1 实施（Implement）
+
+- 执行者：Implement = **openai/gpt-6-astra via openai**（AGENTS §6 首选，无回退；实施会话自报经 `PI_PROVIDER` / `PI_MODEL` 核实）。前置：Checklist 70 checked / 0 unchecked，Analyze 允许实施。
+- 提交：`771f2af`（`SampleChart.vue` scoped `figcaption .num { display: inline; }` + `e2e/theme.spec.ts` 两档回归 + tasks 实施记录）、`f4ff7be`（`assets/h01-fix-20261028/` 4 张图注特写 + README）。目标代码 = `771f2af9d3254c3b2596554f53216e4be9732320`。
+- 实测（日志与 exit 留本机临时目录，不入库）：旧生产代码 + 新回归 `-g "H-01"` **2 failed / exit 1**（两档均失败于同行几何断言）→ 修复后 **2 passed / exit 0**；相关 `-g "AC-006-3|AC-006-4|AC-001-4"` **6 passed**；`pnpm -C frontend test` **559 单元 / 组件 + 68 E2E passed，exit 0**；`build` exit 0（仅既知 780.57 kB 提示）；`git diff --check` exit 0。
+- 截图口径：图注 `figcaption` 特写（960 下 H-02 使整图被模块区裁切），plan §7.6 已校准，analyze 末节确认与 T-18 一致。
+
+### 11.2 收敛（Converge）
+
+- 执行者：Converge = **claude-opus-5-5 via anthropic**（bridge 本窗口额度耗尽，不重复试；官方探活 READY）。未重跑测试，以真实代码 / git 元数据 / 文件边界 / 日志静态对拍；本会话原生视觉读 4 张图：修复前两档三行、修复后两档同行且单位在右（AI 观察，非人工验收）。
+- 结论：**已收敛（H-01 修复的实现与自动化验证范围）**；T-18 五条完成标准均有真实证据，无新增任务。细节与限定见 [converge.md §9](converge.md)。
+
+### 11.3 派工 / 模型记录（脱敏）
+
+| 角色 | 任务 | 基线 / 输入 | provider / model | 状态 / 失败类别 |
+|---|---|---|---|---|
+| Plan / Tasks / Analyze | plan §7、T-18、analyze、§10 | `43b6d79` | anthropic / claude-opus-5-5 | 完成（`ef11610`）；bridge：额度耗尽 |
+| Implement | T-18 | `43b6d79` → `771f2af` / `f4ff7be` | openai / gpt-6-astra | 完成；无回退 |
+| Converge | converge §9、plan §7.6、analyze 末节、本节、tasks / 状态表、证据 README 追记 | `f4ff7be`（代码 `771f2af`） | anthropic / claude-opus-5-5 | 完成（本文档提交）；bridge：额度耗尽，本窗口不重试 |
+| 审核员 A | 定向 Review `43b6d79..771f2af` frontend diff + 本轮文档 | 本文档提交 | claude-fable-5-1（先 bridge 后 anthropic；anthropic 通道已最小探活 READY），回退按 §6 | **未开始**；须新会话，与实施模型不同 |
+
+### 11.4 未完成 / 风险
+
+1. **独立 A Review**：未开始；Converge 不替代审核。
+2. **本次修复 Gate 2**：未批准；用户“继续”只授权 H-01 最小修复范围，不是 Gate 2 或人工签字。
+3. **M-01 ~ M-08**：8 项人工勾选仍未勾（含 M-08）；新截图只是图注特写，`assets/handoff/` M-08 整图仍为修复前原件。
+4. **H-02**：留待 v2、未修复，未写入 v2 规格、未转交；960 下整图一屏完整性未验证。
+5. **11 项已接受 P3**：未修复、未扩改。
+6. 日志产生于提交前工作树（行号与提交逐一一致、之后未改 `frontend/`）；未 push / PR / merge。

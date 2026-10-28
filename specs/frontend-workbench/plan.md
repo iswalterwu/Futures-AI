@@ -295,3 +295,11 @@ send({sessionId?, message}) / subscribe(cb)
 - 不做：H-02、v2 导航、其他 11 项已接受 P3（含 R2-01 头部计数）、拆包优化、令牌 / 契约 / 主题 / 全局样式 / 其他组件改动。
 - v2 规格分支会改同一组 `specs/frontend-workbench/*.md`；本修复只追加章节，合并冲突由集成人串行解决，不改别的 worktree。
 - 960×900 下样例图需滚动可见（H-02 现状）；几何断言不依赖可见性，截图前显式滚动到位。
+
+### 7.6 实施证据口径校准（Converge 追加，2026-10-28）
+
+> Converge = claude-opus-5-5 via anthropic（claude-bridge 在本限额窗口已实测额度耗尽，按 AGENTS §6 规则 5 不重复试）。§7.1 ~ §7.5 是规划历史，保留原文；本段只校准截图口径，**不改变任何 AC、判据、实现范围或 T-18 完成标准**。
+
+- §7.3 步骤 1 / 2 写的是对 `[data-chart-id="market-board"]` 滚动、对 `figure` 截图。实际实施（`771f2af`）改为对 `figcaption` 执行 `scrollIntoViewIfNeeded()` 并对 `figcaption` 截图（**图注特写**），理由：960×900 下 H-02 仍占据约 205 px 导航高度，模块区可视高度不足，整张 figure 截图会被模块区边界裁切；H-01 的缺陷只在图注一行，特写更准确覆盖 H-01。宽档同取图注特写，便于对照。
+- 自此 H-01 的截图证据口径以本段为准，取代 §7.3 步骤 2 中的 “`figure` 元素截图” 描述；`before-*` / `after-*` 文件名、视口（`T.window.width` / `T.window.min_width` × `T.window.height`）、先截图后断言、红跑后 / 绿跑前复制的时机均不变。几何与计算样式断言本来就读 `figcaption` 及其子节点，与截图口径无关。
+- 边界：这批截图**只证明图注一行**（文字与数字同行、单位在右），不证明整张样例图在 960 下一屏完整（这是 H-02，留待 v2、未修复）；整图的主题 / 透明 / 浮窗视觉仍以 `assets/handoff/` 的 M-08 原截图与 Walter 人工复核为准。

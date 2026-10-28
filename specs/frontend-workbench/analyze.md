@@ -96,3 +96,18 @@ HISTORY        plan.md / review.md 相对基线只有新增行；tasks.md 只改
 ```
 
 首次分析未发现需要回修的 plan / tasks 问题，因此没有重复运行。
+
+## Converge 时的只读一致性复查：H-01 截图证据口径（2026-10-28）
+
+- 执行者：Converge = claude-opus-5-5 via anthropic（bridge 本窗口额度耗尽，不重复试）；只读复查，不改 spec / Checklist / manual-acceptance / 上节历史。
+- 起因：plan §7.3 步骤 2 规划的是 `figure` 截图，实施实际取 `figcaption` 特写（960 下 H-02 使整图被模块区裁切）。plan 已追加 §7.6 校准截图口径。
+
+| 检查 | 结果 |
+|---|---|
+| 与 T-18 完成标准 5 是否一致 | 标准 5 只要求四个文件名、宽窄均滚动到位、仅 mock normal、README 元数据与“AI 视觉非人工验收”声明，未限定 figure / figcaption；图注特写满足其全部条款 |
+| 与 T-18 验证命令是否一致 | 命令 1 / 2 复制的是 `test-results/**/sample-chart-*.png`，与实际产物名一致；口径校准不改命令 |
+| 与 plan §7.4 / AC 是否冲突 | 不冲突：AC-001-4 / AC-006-3 的自动判据是浏览器计算样式与 Range 几何，截图只是 M-08 / AC-009-2 的辅助证据；未改 AC 文字或判据，不需回流 Clarify / Gate 1 |
+| 是否越过 H-02 边界 | 否：§7.6 明确特写不证明 960 下整图一屏完整；H-02 仍留待 v2、未修复 |
+| 冻结件 | `git diff --exit-code 43b6d79 -- specs/frontend-workbench/{spec,checklist,manual-acceptance}.md specs/frontend-workbench/assets/handoff` → exit 0；Checklist 70/70、人工 0/8 勾选未动 |
+
+**结论：证据口径与 T-18 一致，无新增冲突、缺口或歧义；不需新增任务。**

@@ -51,3 +51,10 @@
 自动化读取真实计算 display / mono / tabular / 右对齐及文本节点 Range 几何（各一矩形、竖向共同交集、水平顺序），校验单位同一行、不重叠、页面与图注无横向溢出；图注以外的所有 `span.num` 保持 block（集合含盘面、关注列表与焦点带）。这些自动断言不替代看图与人工验收。
 
 H-02 未修复、留待 v2；11 项旧 P3 未扩改。该修复尚未 Converge、独立 Review 或 Gate 2。未 push / PR / merge。Playwright 自行启停 4173 测试服务，运行后已确认无监听者；没有启动额外服务或其他 agent。
+
+## Converge 追记（2026-10-28；以上为 Implement 原文，不改写）
+
+- 执行者：Converge = claude-opus-5-5 via anthropic。**AI 观察，不是 Walter 人工验收。**
+- 溯源核对：`before-1440x900.png`（sha256 `125977fa…`）与 `before-960x900.png`（`c4c722da…`）与本机红跑产物 `h01-red-results/**/sample-chart-*.png` 逐字节相同；PNG 尺寸 before 764×51 / 882×50、after 764×19 / 882×18（元素截图尺寸）。Playwright 1.64.1 由 `frontend/package.json` 与已安装包版本核实，Chrome 156.0.8078.49 由测试日志核实。
+- 原生视觉读 4 张图：修复前两档均为三行——“近” / 右推的 “60” / “日收盘 · 样例”，单位“元/桶”在首行右端；修复后两档均为单行“近 60 日收盘 · 样例”，单位“元/桶”同行在右、不重叠。
+- 限定：图注特写只证明图注一行；不证明整张样例图在 960 下一屏完整（H-02 留待 v2、未修复）。截图口径校准见 [plan §7.6](../../plan.md)；收敛记录见 [converge §9](../../converge.md)。

@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| frontend-workbench | in-progress（v1 已合并；H-01 修复） | 无（与后端唯一接口为 R-007 契约） | 2026-10-28 | v1 已经 [PR #7](https://github.com/iswalterwu/Futures-AI/pull/7) 合并到 main（`43b6d79`），Gate 2 已确认（11 项 P3 接受为后续、未修复），证据见 [review.md §9](frontend-workbench/review.md#9-handoff-记录2026-10-28)。**H-01 修复 in-progress**：用户 2026-10-28 回复“继续”，按建议仅做最小样式修复，已登记 T-18（分支 `fix/frontend-workbench-visual`），待 Implement，本次修复 Gate 2 未批准（[review.md §10](frontend-workbench/review.md)）。H-02 留待 v2、未修复。M-01 ~ M-08 仍待 Walter 人工复核。v2 在独立规格分支推进，不属 v1。 |
+| frontend-workbench | in-progress（v1 已合并；H-01 实现已收敛，待独立 Review / Gate 2） | 无（与后端唯一接口为 R-007 契约） | 2026-10-28 | v1 已经 [PR #7](https://github.com/iswalterwu/Futures-AI/pull/7) 合并到 main（`43b6d79`），Gate 2 已确认（11 项 P3 接受为后续、未修复），证据见 [review.md §9](frontend-workbench/review.md#9-handoff-记录2026-10-28)。**H-01 修复 in-progress**：用户 2026-10-28 回复“继续”，按建议仅做最小样式修复，T-18 已实施（分支 `fix/frontend-workbench-visual`，代码 `771f2af`），Converge 判定 H-01 修复的实现与自动化验证范围已收敛（[converge.md §9](frontend-workbench/converge.md)、[review.md §11](frontend-workbench/review.md)）；待独立 A Review，本次修复 Gate 2 未批准。H-02 留待 v2、未修复。M-01 ~ M-08 仍待 Walter 人工复核。v2 在独立规格分支推进，不属 v1。 |
 
 状态取值：`in-progress` / `blocked` / `done`。feature 开始、阻塞、完成时必须更新本表；
 依赖未满足的 feature 不得进入 Plan。
