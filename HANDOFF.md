@@ -1,19 +1,20 @@
-# HANDOFF — agent 工作流重塑（第三轮文档同步待独立 Review）
+# HANDOFF — agent 工作流重塑（文档已本地提交，Review 通过 / Gate 2 待确认）
 
 > 文档同步（Plan / Converge）= openai/gpt-6.1-sol via openai；前作者 anthropic/claude-opus-5-5 正式调用超时后接续，真实路由见 `docs/plan.md` §9。
 
 - 本轮：恢复会话同步记录（沿用 2026-10-28 任务背景，不另推断批准时间）
-- 工作树：`D:/2030/Futures-AI-docs-agent`（分支 `docs/agent-workflow-reshape`，WIP，**未 push**）
+- 工作树：`D:/2030/Futures-AI-docs-agent`（分支 `docs/agent-workflow-reshape`，文档已本地提交，**未 push / merge**）
 - 分支来源基线：`docs/interaction-v2` @ `4ebb76b`（第二轮 docs 分支，本分支叠在它之上；跨分支集成本轮未做）
-- 本轮接续基线 / 当前 HEAD：`88ff28b`；协调者已停止前作者超时进程树，交接时仅 AGENTS / designUI / architecture 三份未提交改动，无其他写入者。
-- 本作者未派生 agent、未启动服务或后台任务，未修改 provider / 全局配置；**未 commit / push / merge**。
+- 本轮接续基线：`88ff28b`；协调者停止前作者超时进程树后，回退作者核查并接续其 AGENTS / designUI / architecture 三份 partial。
+- 文档受审提交：`f20fdfb`；审核工作树 `D:/2030/Futures-AI-docs-reshape-review`（detached 于该提交，干净只读）。最新提交记录用 `git log -2 --oneline` 查看，受审提交之后只补审核 / 验证记录。
+- 本轮未启动产品服务，未修改 provider / 全局配置；作者不提交，协调者创建本地受审快照并另记审核结果。**未 push / merge，Gate 2 待 Walter 确认**。
 
 ## 1. 任务目标与当前进度
 
 **目标**：把 Walter 对 brainstorm 七问的裁决转成 ADR + 同步 docs，其余想法进候选池。拆分（Walter "按建议来"）：
 六项裁决 → 5 份 ADR（D-020～D-024）+ 同步 `interaction.md` / `plan.md` / `architecture.md` / `designUI.md` / `AGENTS.md`；未决想法 → `docs/agent/candidates.md`。
 
-**进度：本轮 A–H 文档同步与作者自查完成，待独立 Review。** Walter 已回复 **“以上按建议全部接受”**：原 §6 四组问题均已接受（见现 §6 与 `docs/plan.md` §9），不再请求重复裁决。设计批准不替代其他 feature Gate 1 / Gate 2，不表示功能已实现。
+**进度：文档补齐与一致性对照已收敛，已本地提交；独立 Review 通过（0 个 P1/P2，9 个 P3），Gate 2 待 Walter 确认。** Walter 已回复 **“以上按建议全部接受”**：原 §6 四组设计问题均已接受（见现 §6 与 `docs/plan.md` §9），不再请求重复裁决。该设计批准早于独立审核，不冒充评审后的 Gate 2，也不替代其他 feature Gate，不表示功能已实现。
 
 | 项 | 状态 |
 |---|---|
@@ -31,13 +32,13 @@
 | `specs/README.md` 跨 feature 待同步表 | ✅ 加 D-024 冷启动、D-022/023 settings 后续版、D-020 新块与 D-022 日报入口 / 命名待办；不改变冻结 spec / AC 或替其他树批准 Gate |
 | `docs/interaction.md` 本轮小修 | ✅ 区分用户显式定稿与 agent call 自动登记（不等于用户认可），澄清新分析作业确认；修正指标方向为 Brier ↓ / 命中率 ↑ |
 | `docs/plan.md` 本轮补记 | ✅ §9 记录四组全部接受及实际路由 / 超时回退，§3 区分 D-016 原始三层与 D-020 当前四层口径 |
-| 一致性复查 / commit / PR | ✅ 作者文档自查完成（§2）；❌ 独立 Review、本地提交与跨分支集成未做，不 push / merge |
+| 一致性复查 / commit / PR | ✅ 作者自查与协调者复跑完成（§2）、本地受审提交 `f20fdfb`、独立 A 审核通过（§8）；❌ Gate 2 待确认，跨分支集成与 PR / 合并未做，不 push / merge |
 
 ## 2. 已完成：改动文件、基线与真实验证
 
 - `88ff28b` 已含五份 ADR 与 interaction / plan / architecture 第三轮设计，本轮历史 ADR 不改。
-- 相对 `88ff28b` 的未提交文件：`AGENTS.md`、`HANDOFF.md`、`docs/architecture.md`、`docs/designUI.md`、`docs/plan.md`、`docs/interaction.md`、`specs/README.md`；新增 `docs/agent/candidates.md`。仅在授权清单内写文档。
-- 本轮无新 commit；HEAD 仍为 `88ff28b`，未 push / merge，不预写最终 hash。
+- 相对 `88ff28b` 的受审提交 `f20fdfb` 包含：`AGENTS.md`、`HANDOFF.md`、`docs/architecture.md`、`docs/designUI.md`、`docs/plan.md`、`docs/interaction.md`、`specs/README.md`；新增 `docs/agent/candidates.md`。仅在授权清单内写文档。
+- `f20fdfb`：`docs: 补齐 agent 工作流重塑文档与候选池（D-020～D-024）`；审核后仅补本文件与 `docs/plan.md` 的记录，不修改受审产品规则。未 push / merge。
 
 实际执行的文档验证（作者自查，不是独立 Review / Gate 2）：
 
@@ -52,19 +53,19 @@
 | `rg` 分期 / Brier / 核心边界复核 | Phase 1 冷启动、1.5 协作骨架、2A 槽位投影、2B 值班与 calls、2C 复盘校准、2D 多主体求解、4 A3 保持；Brier ↓ / 命中率 ↑；定稿 / call、议程不回流、两视图 / L3.5 / 人填保护、自主度预算、主体来源、bootstrap 门槛已对照权威段落 |
 | 内联脚本比对 `git show 88ff28b:AGENTS.md` §6；`git diff --name-only 88ff28b -- 'specs/*/' docs/decisions/` | §6 原样保留；冻结 spec / checklist 与历史 ADR 无改动 |
 
-第一次图宽诊断因 Windows Python 默认 GBK 无法输出 ↕ 字符而中止；后续命令设 `PYTHONIOENCODING=utf-8` 后完成全部断言。未新增脚本 / 工具 / 包，纯 docs 未运行无关后端测试，不声称业务测试通过。
+第一次图宽诊断因 Windows Python 默认 GBK 无法输出 ↕ 字符而中止；后续命令设 `PYTHONIOENCODING=utf-8` 后完成全部断言。协调者再次独立运行 Python 内联断言，复核八份修改范围、26 项候选、五份 ADR、四文档章节、29×66 架构图与内框、AGENTS §6 原样、活文档无旧术语、Brier 方向，全部通过。A 另运行 `git diff --check 4ebb76b..f20fdfb`，rc=0。未新增脚本 / 工具 / 包，纯 docs 未运行后端业务测试，不声称业务测试通过。
 
 ## 3. 已执行顺序与剩余工作
 
 本轮按原交接顺序执行：A 复读架构补丁并实测图宽 → B 核查 UI → C 核查 AGENTS 最小同步 → D 建 26 项候选池 → E 补跨 feature 待同步表 → F 一致性复查与必要小修 → G 总方案批准 / 路由记录 → H 更新本交接。候选原清单全部迁入 `docs/agent/candidates.md`，不再复制维护；原清单中 A3 / 情景的高层已决与细节候选已明确区分。
 
-剩余工作由协调者处理，本作者不继续派工、提交或集成：
+协调者已完成本地受审提交与独立审核，剩余事项如下：
 
-1. **独立 Review**：按 AGENTS §6 新开隔离只读审核会话，固定受审基线与真实 diff（新建 candidates 为未跟踪文件，须显式纳入审查，不可只看 `git diff`）；本轮作者自查不是 A 的审核结论。发现 P1/P2 仍须修复与复查，不因验证失败换模型求通过。
-2. **本地提交**：独立 Review 与所需人工确认完成后，由协调者按授权决定本地提交，补最终 hash。本作者未 commit，不用 `git add -A` 混入其他工作；本轮仍不 push / merge。
+1. **独立 Review 已完成**：A = `claude-fable-5-1 via anthropic`，新会话、独立 detached 工作树只读检查固定提交 `f20fdfb`（包含已跟踪候选池）；结论通过，无 P1/P2，九个 P3 见 §8。作者自查与 A 结论分开记录。
+2. **Gate 2 待 Walter 确认**：本轮仅创建本地受审快照与审核记录提交，不 push / merge，不把原设计批准或本地 commit 当作评审后批准。P3 当前只登记，不擅自确定涉及自主度、call 生命周期、冷启动生效等产品行为。
 3. **后续跨分支集成**：Walter 已接受由协调者负责，先 `docs/interaction-v2` 再本分支；本轮未查询或修改其他工作树，也未开 PR / 解决冲突。AGENTS §2.1 / §6 最终统一成一份规范，不丢既定纪律；语义冲突解决后回 Analyze / Converge 复核。
 4. **feature 承接**：按 `specs/README.md` 待办进入各自 Clarify / Gate 流程。settings 默认档、日报菜单是否改名等仍由相应 spec 确认，不把本次文档设计批准冒充 feature Gate。
-5. **范围外既存问题（只报告）**：`docs/plan.md` §6 写“五层”但箭头只列 Shell / Frontend / Backend / Storage 四层；这是既存表述问题，本轮不改层次设计，留后续确认措辞。
+5. **P3 后续线索**：九项均已登记到 §8；其中 `docs/plan.md` §6 “五层”实列四层是基线既存问题，本轮不改层次设计。其余进入对应后续 feature Clarify / 任务，不追加当前冻结 AC。
 
 ## 4. 需要重启的命令 / 端口 / 日志
 
@@ -90,4 +91,28 @@ Walter 本轮回复 **“以上按建议全部接受”**。保留原四组问�
 
 ## 7. 下次恢复后的第一句话
 
-“第三轮文档同步和作者自查已完成，未提交，HEAD 仍为 `88ff28b`；你已接受原四组建议，不再重复提问。接下来由协调者安排独立 Review，重点检查已决 / 候选边界、分期与冻结 spec 保护、定稿 / call / 议程生命周期；本轮不 push / merge，跨分支集成尚未做。”
+“第三轮文档补齐已本地提交 `f20fdfb`，独立 A 审核通过（0 个 P1/P2、9 个 P3），结果见 HANDOFF §8；原四组设计建议已批准，不再重复提问。当前只补审核记录，未 push / merge；下一步请确认评审结论（Gate 2），随后再按已批准顺序做跨分支集成。”
+
+## 8. 独立 Review 结果与后续线索
+
+- **A = claude-fable-5-1 via anthropic**；与文档作者不同模型、新会话，独立 detached 工作树只读。
+- 路由：bridge 本窗口已确认额度耗尽，不重复尝试；Fable 的同模型 API 最小探活与正式审核均成功，无审核模型回退。
+- 固定基线 `4ebb76b` / 接续基线 `88ff28b` / 受审 `f20fdfb`。A 审查整轮 13 文件真实 diff、接续八文件 diff、五份新 ADR 与 D-018 / D-019、最终四份 docs、AGENTS、候选池、specs README 与交接；不审其他工作树的功能实现。
+- **结论：通过，仅 P3，无 P1/P2。** 已批准项均已落文，未发现实质矛盾、越权、冻结 spec 追加 AC 或历史 ADR 改写。本轮文档与已批准项的对照已收敛；不等于后续 feature 已实现或 Gate 2 已批准。
+- A 实际验证：`git diff --check 4ebb76b..f20fdfb` rc=0，冻结 spec / AC / checklist 与历史 ADR 的保护 diff 为空、AGENTS §6 未动；未运行业务测试或全仓库链接检查。
+
+以下是 A 原结论的摘要与最小建议，不表示 Walter 已接受风险或已批准新的行为。九项全保留为后续线索；涉及产品语义的选项回相应 feature Clarify，不静默补设计。
+
+| 编号 | 级别 | 位置与问题 | 后续线索（未实施） |
+|---|---|---|---|
+| A-P3-1 | P3 | `docs/interaction.md` §4.1 / §11.2 称教练生成复盘草稿，§9.6 与 `architecture.md` §8-11 是教练排程、格物生成 | 后续统一生成者与排程者措辞，勿据此扩大值班员写学习笔记权限 |
+| A-P3-2 | P3 | `docs/architecture.md` §5.2 新增 `call_propose` / `decision_log`，§5.5 未明确分配调用角色 | workflow / 交付物 spec 明确定稿节点的调用方与权限；不在本轮选定角色或扩权 |
+| A-P3-3 | P3 | `docs/interaction.md` §11.4 未明确定义 A1 下常驻职责是否运行、超预算降级后的产物去向 | settings / standing-desk Clarify 明确 A1 行为；不能把“建议默认 A1”自行解释成自动运行授权 |
+| A-P3-4 | P3 | `docs/plan.md` §8 Phase 1 角色骨架未列 bootstrap 蒸馏员，冷启动确认规则的注入生效时点与 Phase 2A 协议 v1 边界不清 | playbook-bootstrap spec 确认蒸馏员访谈角色与最小注入范围 / 时点；不将 Phase 1 proposed 等同已执行协议 |
+| A-P3-5 | P3 | `docs/interaction.md` §3.6 / §9.2 / §12.3 crux 可直接登记 call，而主路径从定稿起算 | Phase 2D spec 明确 crux-call 登记时机、作者与校准归属；不在此补未经批准的生命周期 |
+| A-P3-6 | P3 | D-022 / `docs/interaction.md` §11.2 写“共识地图后置”，`docs/agent/candidates.md` C-07 为未决 candidate | 后续注明“后置提及”不代表已冻结范围，仍按候选晋升流程；历史 ADR 不改 |
+| A-P3-7 | P3 | D-023 影响清单提及 `architecture.md` §5.2 persona 配置暴露，实际只在 §2 / §5.5 有落点 | 后续明确主体配置是否经 MCP，避免误读影响清单；不擅自新增工具或改 ADR |
+| A-P3-8 | P3 | `docs/designUI.md` §3.4 平衡表为 Phase 2A 世界模型视图，现行 / 目标分隔及跨 feature 导航不如焦点带明确 | frontend-workbench Clarify 核实既有平衡表范围；以待办说明未来目标，不追加冻结 AC |
+| A-P3-9 | P3（既存） | `docs/plan.md` §6 “五层”实列四层，`4ebb76b` 已存在 | 后续措辞修正，不改层次设计 |
+
+其他仍待 spec 确认：自主度档位名与默认档、每日 / 每台预算、常驻职责集与议程排序、状态枚举、满意度护栏阈值、校准入口；候选池不是实施入口。本轮不新建 feature spec 目录，不勾 checklist，不代替任何 feature Gate。
