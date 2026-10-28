@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **最新检查点：T-04b 后端范围已完成，原测试数据目录扫描阻塞解除（2026-10-28）**。Plan 修订 4 / Analyze 7 / A 独立复查 41/41 后，由 Astra 实施并验证：聚焦 **3 passed**、全量 **454 passed / 5 online skips**、真实干净重建成功、未修改冒烟 **12/12**；文件清单仅移除目标测试资产 **17** 个，新增 **0**、其他移除 **0**。源码修复已本地保存为实施提交 **`c1e33e0`**；黑名单未改，未开 T-05。
-> Plan = `anthropic/claude-opus-5-5`，A = `anthropic/claude-fable-5-1`（均独立会话/工作树）；实施继续 `openai/gpt-6-astra`，协调 = `openai/gpt-6.1-sol`。**先读 §11 和当前 Checklist 的第 3 轮复查，再读 §10 / `implementation-evidence.md`**。A 同时登记了 PYZ 中既存的 `pyarrow.conftest` / `pyarrow.tests` / `pyarrow.tests.util` 残余，本轮不剔除、不宣称包内没有任何测试代码。Gate 2 未批准，仍不 push / PR / merge。
+> **最新检查点：T-05b/c/d/m/e/f 六项外壳基础任务已完成自动化复验，下一项 T-05g（2026-10-28）**。Astra 从 `83b91db` 串行实施，最终真实 `npm ci` 成功、单测 **34 passed / 0 skipped**、真实 Electron **2 场景 / 37/37 断言通过**；单实例后端始终只启动一次。实施源码已本地保存为 **`a643f81`**，未开始 T-05g / T-07。
+> 实施 = `openai/gpt-6-astra`，协调 = `openai/gpt-6.1-sol`；**先读最新 §12 与 `implementation-evidence.md` §7**。本批进程/场景临时目录已清理，无后台 worker；真实 Windows 前台焦点仍待 M-09，不把夹具/基础设施当作真实作业或全 feature 通过。Checklist 41/41 不变，Gate 2 未批准，仍不 push / PR / merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -196,7 +196,7 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 2. 明确构建修补的文件所有权后，走 Plan/Tasks 修补与 Analyze、A 独立复查相应质量项，再由 Astra 生成新产物、复跑测试和完整冒烟。若要改变需求本身则必须重新 Clarify / Gate 1；不能把黑名单放宽当作普通修复。
 3. T-04b 真实通过、写入 checkpoint 后，从 **T-05b** 按原顺序推进。未取得的前端/真实作业/干净机/15s/通知观感/真实 key 等边界不变；不 push / PR / merge，Gate 2 仍待用户批准。
 
-## 11. 2026-10-28 窄范围修补（当前已验证检查点）
+## 11. 2026-10-28 窄范围修补（前序已验证后端检查点）
 
 ### 批准、角色与固定输入
 
@@ -231,3 +231,32 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 ### 下一步
 
 在**同一实施工作树/分支**按既定任务从 **T-05b 路径/偏好纯模块**开始，随后 T-05c/d/m/e/f 等串行推进，不跳到 T-07。本次停在已验证的后端检查点，无后台 worker；开始下一批前按 AGENTS 重读相应文档与完整 Checklist（含本轮批准），首选 Implement 仍为 `openai/gpt-6-astra`，不因测试失败换模型。不要重复修复已解除的 T-04b，也不要未经批准连带剔除 PYZ 纯模块或放宽黑名单。
+
+## 12. 2026-10-28 外壳基础六任务（当前已验证检查点）
+
+### 输入、交付与提交
+
+- 用户再次指示“继续”。主树输入 `68f1d46` / 实施树输入 **`83b91dba7d2d0ef86e65d40e5878f496ed80651f`**，开始时均干净、相关内容一致。Checklist **41 checked / 0 unchecked**：未变 shell 任务沿用第 2 轮批准，第 3 轮只局部修订 T-04b。本批未改需求/Plan/Checklist。
+- Implement = **`openai/gpt-6-astra` via openai**，新 session **`01a18415-9390-7773-9dad-5f1ad7456cd2`**（19:56～20:19 UTC），元数据实核；同一实施树/分支唯一 writer，无回退。协调者仅派工、记录、串行集成，未代写实现或跑产品测试。
+- 严格依序完成 **T-05b/c/d/m/e/f**：路径/偏好、bootstrap、诚实运行器、Python 协议夹具、旗标限定 hooks/控制通道、真实 Electron 单实例；改动为 shell 4 个既有文件 + 21 个新源/测试文件，实施证据只追加。backend、preload、renderer、既有规划与审核、全局配置均未改，未重建 backend 或打包。
+- 结束后协调者核对冻结 diff 与 **26 文件 SHA-256 全部一致**，将本批源/测试/证据本地保存为实施提交 **`a643f812307cbd571e80d8c551a51a562585b638`**，原样收回主树。当前主集成检查点 = 本文件所在 HEAD；实施分支若后续同步进度文档，以 git log 查询最新 HEAD，源码提交仍为 a643f81。
+
+### 最终真实验证（最后源码编辑之后）
+
+| 命令 / 范围 | 结果 |
+|---|---|
+| npm 生成 lock、真实 `npm ci` | **退出 0**，70 packages；Electron 精确 33.4.11，无新依赖，未手改 lock |
+| `npm run test:unit` | **34 passed / 0 failed / 0 skipped（3325.59ms）**，含真实 FS/ACL、真实 runner 正负子进程及 fake_backend 协议子进程 |
+| 默认 `npm run check` | **2 场景 / 37/37 断言 / 0 failures / 退出 0** = harness-selftest 18 + single-instance 19 |
+| 实际 Electron runtime | **Electron 33.4.11 / Node 20.18.3 / Chrome 130.0.6723.191**；不以构建机 Node25 单测替代 |
+| 单实例与清理 | 第二实例 10s 内退出 0、secondInstance 恰 1、后端 spawn 恰 1、首后端 PID/port 不变；自有进程 0、两场景 temp 实际删除 |
+| 静态与冻结 | diff/新路径检查通过；setPath/锁只在 paths 模块、hooks 仅精确旗标分支加载；backend/冻结文件零差异 |
+
+中间失败完整保留：ACL 核查时机 18/19 后修复；两次 Electron Notification 只读导出异常，改为系统出口记录器；三次可见性超时定位为 runner 的 `windowsHide:true`，改为 GUI `windowsHide:false`，未改生产显示/CSP/renderer。最终删除一条冗余旧快照断言后完整复跑 34 单测 + 两场景。未隐藏失败、不以 taskkill 兜底当成功、不换模型。npm 仍有既有 boolean@3.2.0 deprecated 提示，未升级依赖。
+
+### 证据与后续
+
+- 详细证据 **`specs/desktop-shell/implementation-evidence.md` §7**；最终报告、分派范围、unit/e2e/npm 原始简短输出与 26 文件指纹保存在 **`specs/desktop-shell/handoff-artifacts/20261028-foundation/`**。完整 session、diff、临时夹具/失败日志仍留 Git 外。
+- 原始 run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-foundation-uvOXqTBv/`；完整测试日志 `C:/Users/iswal/AppData/Local/Temp/fai-foundation-01a18415/`。本批 agent 已结束，CIM owned 进程 **0**，无需保留服务或端口。旧后端 454/5 与 12/12 在本批未重跑，只保留为前序证据。
+- **下一项 T-05g 生命周期状态机纯模块**，之后 T-05h/i/j/k/l 等依序推进；其余 27 项与人工批次未完成。本批没有提前修旧重启缺陷、stdin 接线、host.json 迁移、启动错误页、设置业务、托盘/通知/日志/更新/打包，不把 null 的 tray/activity 快照假装成实现。
+- 真实 Windows 前台焦点 **M-09 未执行**；真实前端/作业/agent、干净机、15s、系统通知/托盘、真实 key、满盘 GUI、整体 Converge、独立代码 Review、Gate 2 等均未取得。后续如触发 CORS/权限/设计停止规则，仍停报，不自行放宽。已知 PYZ P3 不连带处理；不 push / PR / merge。

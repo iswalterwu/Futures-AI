@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前阶段：**T-04b 后端范围已完成，原 pyarrow 测试数据黑名单阻塞解除，下一项 T-05b**。Plan 修订 4 / Analyze 7 / 独立 A 复查 41/41 后，由 Astra 从 `3a9ec35` 实施：聚焦 **3 passed**、全量 **454 passed / 5 online skips**、真实干净重建成功、未修改冒烟 **12/12**、文件清单仅移除目标测试资产 **17**（新增 0 / 其他移除 0）。源码修复本地实施提交 **c1e33e0**；黑名单未改，未开 T-05，已核实 PYZ 测试辅助模块 P3 仍保留。不是 feature 完成、代码 Review 或 Gate 2。
+> 当前阶段：**T-05b/c/d/m/e/f 六项基础任务自动化检查点完成，下一项 T-05g**。Astra 从 `83b91db` 串行实现后，最后源码上 `npm ci` 成功、**34 单测通过 / 0 skip**、真实 Electron **2 场景 / 37/37 断言通过**；实施源码提交 **a643f81**。进程/场景 temp 已清理，未开 T-05g / T-07。Checklist 41/41 与冻结需求不变；真实前台焦点 M-09、真实业务与后续 27 项仍待，不是 Converge、代码 Review 或 Gate 2。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -140,6 +140,32 @@ A 新增 P3 跟踪：**R4-01** 确认旧 `PYZ-00.toc` 中已有 `pyarrow.conftes
 证据位置：`implementation-evidence.md` **§6**；三角色最终报告、批准输入、审阅指纹和真实路径差集在 `handoff-artifacts/20261028-build-assets/`。完整会话、构建日志和 manifests 留仓库外；未将用户数据/凭证/测试数据库/构建产物入库。
 
 **本批结论仅为 T-04b 后端范围完成、文件系统测试数据扫描阻塞解除**。R4-01 已知 PYZ `pyarrow.conftest` / `pyarrow.tests` / `pyarrow.tests.util` 仍保留，未来 Review/Gate 2 继续跟踪；不夸大成包内无任何测试代码。下一项 **T-05b**，其余 33 项 shell/后续任务及人工/外部验收未完成。未作整体 Converge、独立代码 Review 或 Gate 2，不 push / PR / merge。
+
+## 2026-10-28 19:56～20:19 UTC 外壳基础批次 Implement（本批已验证完成）
+
+| 角色 / 范围 | 固定输入 | 实际模型 / 会话 | 状态 |
+|---|---|---|---|
+| Implement：T-05b/c/d/m/e/f，按 tasks 顺序 | 实施树 **83b91db** / `feat/desktop-shell-astra`，主树 **68f1d46**；相关源码与交接/feature 文档一致，启动前均干净 | **openai/gpt-6-astra via openai**；新聚焦 session **01a18415-9390-7773-9dad-5f1ad7456cd2** 元数据已确认 | 原独立实施树唯一 writer，已完成本批；只改授权 shell 4 个既有文件 + 21 个新源/测试文件和证据追加；最终 34 unit / 37 e2e 断言通过，backend/renderer/preload/规划审核零改动；结束后协调者以 **a643f81** 本地保存源码与证据，并逐字节集成 |
+| 协调 / 后续串行集成 | 同上 | `openai/gpt-6.1-sol`（PI 环境实核） | 只记录进度、派工和集成，不代写实现或跑产品测试；本批不进入 Plan / Converge / Review |
+
+质量前置条件：Checklist **41 checked / 0 unchecked**；未变的 shell 任务沿用第 2 轮批准，第 3 轮只局部复查 T-04b，未改本批任务或撤销原批准。要求实施者重读完整 Checklist；本次不改 spec/Plan/Checklist，无需求变更或新 ADR。
+
+执行/证据边界：每个真实 Electron 场景使用新的仓库外隔离目录并核对实际 SMOKE paths，旧真实用户目录 smoke 禁用；只替换系统边界，清理仅自己 PID/临时目录。完成后必须在最后源码上重跑全 unit、harness-selftest 与 single-instance 两场景，缺工具或零断言直接 FAIL，不 skip；真实前台聚焦仍留 M-09。六项结束先交协调者核对，不在同调用开始 T-05g 及后续任务。
+
+仓库外 run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-foundation-uvOXqTBv/`；完整测试/失败日志 `C:/Users/iswal/AppData/Local/Temp/fai-foundation-01a18415/`。本批最终结果如下，不把历史 backend 454/5 或 12/12 写成新复跑。
+
+| 本批最终验证 | 实际结果 |
+|---|---|
+| npm 生成 lock / 真实 npm ci | 退出 0；70 packages，约 4s；Electron 精确 33.4.11，无新依赖，lock 未手改 |
+| 全 unit（最后源码上） | **34 passed / 0 failed / 0 cancelled / 0 skipped，3325.59ms** |
+| 默认 npm run check（两登记场景联合） | **37/37 断言 / 2 场景 / 0 failures / 退出 0**；harness-selftest 18 + single-instance 19 |
+| 真 Electron runtime | **33.4.11 / 内嵌 Node 20.18.3 / Chrome 130.0.6723.191** |
+| 单实例核心子句 | 第二实例 10s 内退出 0；secondInstance 恰 1，restore/show/focus 为生产调用；backend spawn 恰 1，首后端 PID/port 不变 |
+| 冻结、复制与清理 | 26 文件 SHA-256 全部核对一致；backend/其他只读文件零差异；owned 进程 0，最终两场景 temp 已删；无后台服务保留 |
+
+失败历史保留于 `implementation-evidence.md` §7.4：一次 ACL 检查时机不当；两次 Notification 导出不可重定义导致启动异常，改为出口记录器；三次 `windowsHide:true` 导致真实 GUI 隐藏，修正为 false。没有弱化必要断言、改 renderer/安全配置、清理后伪称成功或切模型。单实例单独 20/20 后仅删除一条读取旧快照的冗余断言，最后完整复跑 unit 和两场景，最终 37/37；static no-index / EOF 检查小失败和 edit 修正同样记录。npm 既有 boolean@3.2.0 deprecated 提示未被伪称零警告。
+
+本批实施最终报告、明确派工范围、unit/e2e/npm 最终原始简短输出与源码指纹保存于 `handoff-artifacts/20261028-foundation/`（本批没有新 Plan 或 A 评审）；源码实际实现者为 Astra，协调者只复制/核对/保存。**本批六项完成；T-05g 及后续 27 项未开始**，基础设施/协议夹具不等于真实作业或设置业务。M-09 真实前台焦点未执行；未做整体 Converge、独立代码 Review 或 Gate 2，不 push / PR / merge。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 

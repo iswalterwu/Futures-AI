@@ -1,0 +1,49 @@
+# Implement desktop-shell shell foundation — T-05b/c/d/m/e/f
+
+Walter has explicitly said 继续 after validated T-04b checkpoint. Continue EXISTING approved implementation, not new Plan or feature. You ARE Implement = openai/gpt-6-astra via openai. Coordinator = openai/gpt-6.1-sol (dispatch/progress/integration only). No model changes or agents, no global pi/provider/auth/config modifications, no push/PR/merge/reset and NO COMMITS by you. Test failures are ordinary work, not model fallback reasons.
+
+Private tree: D:/2030/Futures-AI-desktop-implement, branch feat/desktop-shell-astra. Fixed INPUT HEAD = 83b91db (verify full HEAD at start); coordinator main=68f1d46. Both trees were clean and relevant content identical at dispatch. Same private branch/tree used serially; old worker stopped, sole writer now. T04b source fix c1e33e0 is DONE: full454/5 online skips, clean backend build,12/12 packaged smoke,only17 PyArrow test data paths removed. Historical evidence only, not this batch's validation. Do NOT reopen PyArrow/data packaging or strip known PYZ helper modules.
+
+Mandatory preflight: print only PI_PROVIDER/PI_MODEL/PI_SESSION_ID and HEAD. Read AGENTS.md, HANDOFF.md (latest section over historical snapshots), docs/plan.md, architecture.md, interaction.md, designUI.md, Electron ADR; specs/desktop-shell/{spec,plan,tasks,checklist,analyze,review,implementation-evidence}.md in FULL (continue offsets if truncated). Confirm all41 checklist boxes checked/0unchecked; NEVER edit checklist. Original independent A revision3 approval still covers unchanged shell tasks; latest revision4/A3 only amended T04b, did not revoke original approvals. Frozen spec/Plan4/Tasks are authoritative. Re-read relevant task/plan sections at boundaries. Read actual shell source, not summary alone.
+
+## This invocation's EXACT order, first SIX shell units
+1 T-05b paths/prefs pure modules, precise Electron33.4.11 and test:unit script.
+2 T-05c bootstrap(app,env) and main first-step wiring/direct unit tests.
+3 T-05d honest e2e runner + direct runner negative/positive tests/fixtures.
+4 T-05m fake backend protocol fixture + direct subprocess tests.
+5 T-05e test hooks/control channel/harness-selftest, retire old --smoke/--ui-smoke/UI_ASSERTIONS.
+6 T-05f true single-instance e2e with exact counts and real process observations.
+STOP after six-task checkpoint. Do not start T-05g lifecycle machine, later shell/UI/tray/logging/update/packaging tasks. Do not implement later features to make earlier tests pass. If real design/scope/security change is needed, STOP affected unit, preserve WIP/evidence and report, no silent broadening.
+
+## Writable ownership (union ONLY)
+- shell/package.json, shell/package-lock.json (lockfile GENERATED via npm, never hand edit)
+- shell/main.js, shell/check.js
+- NEW shell/src/paths.js, prefs.js, test-hooks.js
+- NEW shell/test/unit/paths.test.js, prefs.test.js, bootstrap.test.js, check-runner.test.js, fake-backend.test.js
+- NEW shell/test/e2e/index.js, harness-selftest.js, single-instance.js
+- NEW shell/test/fixtures/fake_backend.py
+- NEW shell/test/fixtures/runner/{ok,unknown-marker,mismatch,zero-assert,missing-tool}/**
+- specs/desktop-shell/implementation-evidence.md APPEND dated foundation evidence only; preserve all old sections/failures/warnings.
+All other files READ ONLY: backend/** including accepted T04b; shell/preload.js, renderer/**, frozen specs/plan/tasks/checklist/analyze/review/README/HANDOFF, docs/**, .gitignore, other feature trees. Coordinator owns progress metadata. Generated node_modules allowed; no other dependencies/frameworks, electron-builder waits T10a. No Jest/Playwright/new runner frameworks, real credentials/EIA/live tests/user documents.
+
+## Full contracts are in actual Plan/Tasks; key guards
+- paths default LOCALAPPDATA/FuturesAI, state LOCALAPPDATA/FuturesAI-Shell. Missing LOCALAPPDATA => localappdata_missing, NO fallback. FAI_DATA_ROOT and FAI_SHELL_STATE_DIR overrides ONLY !app.isPackaged || FAI_TEST_HOOKS===1. New files shell/src NOT ignored shell/lib.
+- prefs schema exactly plan3.6, atomic tmp+rename, corrupt file => prefs_invalid and FILE UNCHANGED, no automatic reset/default-root loss. pending writable => applied/cleared, unwritable => data_root_invalid and old root preserved. Map real filesystem errors at boundary, no arbitrary generic wrappers/new safety scaffolding. Probe temp user roots only in tests; no actual user prefs/creds.
+- bootstrap actual setPath userData/sessionData/crashDumps BEFORE requestSingleInstanceLock. Lock loser must NOT touch DATA directory. Recording Electron app boundary only; real prefs/temp filesystem. main only gets paths/lock via production bootstrap. Error UI remains later T05k; do not build new startup page now. No dependency on later harness for direct acceptance.
+- runner registry EXACT matching files; unknown scene => exit2 before ANY scene, mismatch exit2, zero assertions/missing tools => FAIL not skip. Assertions explicit expected values, no single-boolean or vacuous a||b. Direct Node unit tests spawn REAL check.js with FAI_CHECK_E2E_DIR fixture registries. Only ctx.launch starts Electron. Reject isolation paths outside owned temp root.
+- every real Electron scene gets NEW external temp LOCALAPPDATA and FAI_SHELL_STATE_DIR, FAI_TEST_HOOKS=1, FAI_TEST_SCENARIO; validate actual SMOKE paths are within temp BEFORE scene actions. No actual user Electron userData/session/cache. Avoid old main's real default while test isolation/bootstrap isn't wired. Never run npm start/old smoke against real user dirs.
+- cleanup on success AND failure/timeouts: production request-quit over control channel first, wait <=10s, owned taskkill if required, verify snapshot/registry backend PIDs dead; leaked backend => FAIL even if killed; remove own temp with bounded3 retries. Never broad taskkill node/python/electron or delete unrelated dirs. Missing external tool => explicit FAIL not skip. Fixture unit processes also owned/PID-cleaned in finally.
+- fake backend ONLY actual protocol fixture: CLI/root/port-file/token/optionalport/stdinEOF/FAI_HOST exit3, modes in plan8.3, only health/shutdown/profile-onboarding endpoints, registry spawns.jsonl append PER actual spawn. No business logic. Direct tests genuinely verify ok,health503,marker/exit3,EOF,registry, no mirrored production implementation in tests.
+- hooks ONLY loaded when FAI_TEST_HOOKS==='1'; no control server/module load without flag. Title contains ［测试钩子］, log FIRST line TEST HOOKS ENABLED, stdout first SMOKE paths valid. In FAI_TEST_SCENARIO replace ONLY system outlets (dialogs/Notification/openExternal/openPath/showItemInFolder), not production handlers; do NOT log tokens/argv/request payloads. Control server127.0.0.1:0, NO extra token, fixed command set plan8.3; unknown400, invoke production functions. Do not pretend absent tray/activity/lifecycle later features exist; foundation scenes only need currently implemented seam. No stdin Electron control.
+- FAI_BACKEND_CMD JSON array only under hooks, genuine system-boundary process replacement. Existing normal lifecycle sufficient for harness per approved plan; don't prematurely implement T05g/h. If current lifecycle exposes a true out-of-scope blocker report rather than silently migrate later units.
+- harness-selftest: real Electron + fake ok; actual paths/default root/window/backend alive/exactly1 spawn/title/log marker, production request-quit => code0/backend dead/temp gone. This proves infrastructure not real business jobs.
+- single-instance: second instance SAME isolated dirs exits0 within10s; first records.secondInstance EXACTLY1 restore/show/focus record; spawns.jsonl EXACTLY1; first backend PID+port unchanged. Actual Windows foreground focus left M09, don't claim it.
+- package scripts test:unit=node --test "test/unit/*.test.js", check=node check.js, remove smoke. Pin electron33.4.11, regenerate lockfile through npm, npm ci. No new runtime dependency or electron-builder. Record network/install failures honestly, do not change global npm/provider configuration.
+- Stop on plan10 CORS/permission/design boundary if encountered; don't weaken CSP/CORS/scanner or modify backend/renderer to get green. Known later missing capabilities remain honest boundaries.
+
+## Required validation/evidence
+Run all prescribed named unit tests from tasks and all static bootstrap/hooks checks, REAL npm ci, npm run check -- harness-selftest and single-instance. After final SOURCE edit rerun COMPLETE npm run test:unit and BOTH registered Electron scenes together (default npm run check if only these2 registered). Keep full long outputs outside Git; concise exact counts/commands/results/failure history and owned cleanup in new evidence section, actual Node+Electron runtime versions where available. Run git diff --check, status --short --ignored and freeze diff relative83b91db. Backend source remains byte-identical; prior454/5 result is historical unless actually rerun. No backend rebuild/npm dist in this batch.
+
+No commits by you. Return concise Chinese final actual model/session, input HEAD, six tasks completed/partial with AC/fixture boundaries, exact actual tests/Electron results and cleanup (failures retained), changed paths, scope/stop rules, next T05g if all pass. Do not claim whole feature/Converge/code Review/Gate2/real frontend/jobs/manual Windows focus/toast/clean-machine acceptance. Stop after checkpoint, no background services to retain.
+
+Strict tools: read files with read, not cat/sed/head/tail or Python/PowerShell reader substitutes. Existing targeted edits via edit, minimal unique oldText, single nonoverlapping multi-edit call per file where possible. On mismatch re-read/retry, never shell/Python/PowerShell text splicing/patch helpers. write only new files or true complete rewrites. Generated files not hand edited. No speculative races/security complexity or global config changes.

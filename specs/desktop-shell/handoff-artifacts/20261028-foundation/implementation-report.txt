@@ -1,0 +1,45 @@
+**六任务检查点已完成并停止，未开始 T-05g。没有提交。**
+
+- 实际模型：`openai/gpt-6-astra via openai`
+- Session：`01a18415-9390-7773-9dad-5f1ad7456cd2`
+- 输入及结束 HEAD：`83b91dba7d2d0ef86e65d40e5878f496ed80651f`
+- Checklist：**41 checked / 0 unchecked**，未修改。
+
+### 完成范围
+
+| 任务 | 结果与边界 |
+|---|---|
+| T-05b | 路径/偏好模块、原子保存、错误映射、pending 生效规则；Electron 精确锁定 33.4.11 |
+| T-05c | bootstrap 先设置三项 Electron 路径再取锁；锁失败不触碰数据目录；真实文件系统与 ACL 测试 |
+| T-05d | 场景登记校验、显式断言、隔离与清理；真实 check.js 正负子进程测试 |
+| T-05m | Python 协议夹具及直接子进程测试；**不含业务实现** |
+| T-05e | 条件加载 hooks、回环控制通道、诚实标记、系统出口记录器；退役旧 smoke 分支 |
+| T-05f | 第二实例 10 秒内退出 0；事件、后端 spawn 均恰 1；首后端 PID/端口不变。真实前台焦点仍待 M-09 |
+
+### 最终验证
+
+最后一次源码编辑后完整执行：
+
+- `npm ci`：**成功，70 packages**
+- `npm run test:unit`：**34 passed，0 failed，0 skipped**
+- `npm run check`：**2 场景、37/37 断言通过**
+  - harness-selftest：18/18
+  - single-instance：19/19
+- 真实运行时：**Electron 33.4.11 / Node 20.18.3 / Chrome 130.0.6723.191**
+- `git diff --check`、只读文件差异核查通过；backend 零改动。
+- 最终 **owned 进程数 0**，场景临时目录已删除，无后台服务保留。
+
+失败历史均保留：一次 ACL 测试核查时机错误、两次 hooks 启动异常、三次运行器隐藏 GUI 导致的可见性超时；均已修复并完整复跑。早期异常仅定向清理自有 Electron，其余走生产退出入口。
+
+### 文件与证据
+
+修改限于：
+- `shell/{main.js,check.js,package.json,package-lock.json}`
+- `shell/src/{paths,prefs,test-hooks}.js`
+- 指定的 `shell/test/unit/`、`test/e2e/`、协议及 runner fixtures
+- **仅追加** `specs/desktop-shell/implementation-evidence.md` §7
+
+完整日志、冻结 diff 和 SHA-256 清单：
+`C:/Users/iswal/AppData/Local/Temp/fai-foundation-01a18415/`
+
+未改 backend、preload、renderer、冻结规格或全局配置；未重建后端、未打包。此结论**不是**整 feature 完成、Converge、代码 Review 或 Gate 2，也不代表真实前端/作业、通知、干净机或人工焦点验收。下一项为 **T-05g**。
