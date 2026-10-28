@@ -1,5 +1,9 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
+> **当前实施进度（首批独立 Review 后记账，2026-10-29；以本块为准，下方 Converge batch-a09a 块中“待独立 Review”为当时原文）**：**10 / 66 已完成**——T-A01～T-A09、T-A09a（openai/gpt-6-astra；代码 `8753fa9..13a3373`，12 个提交，固定于 `13a3373f7ebd2075fb8bcfe32033127a916fa6b9`）。独立审核员 A（claude-fable-5-1 via anthropic，新会话、独立 worktree `D:/2030/Futures-AI-interaction-review-a09a`，固定审文档 `b0b065f` + 代码 `13a3373`）判**本批通过：0 P1 / P2，6 项 P3（R-A～R-F）**；审核原件 `review-batch-a09a.md` 由集成人提交于 `af95b66505875609f7ed3f823e047cd16226a1c5`（只引用、不改写）。A 亲跑：`install --frozen-lockfile`、`contract --check`、`check` 六守卫、typecheck、lint、全量 `test:unit` 21 文件 722 pass / 0 fail、三份既有契约测试 88 pass、本批 28 条 `-t` 标题命令全部匹配通过、另 `test:e2e e2e/agent.spec.ts` 8 pass；未跑全量 `pnpm test` / 全部 E2E。各任务状态行的“已完成”= **本批代码 Review 通过，不表示任何 AC 最终验收**：46 AC 最终验收仍 **0**；其余 **56 项未开始**；feature 整体**未收敛**（尚未实施 + H 组 `blocked_by: frontend-workbench-v2`）。这不是全 feature Review、不是 Gate 2 / Handoff。下一批可开工入口仍按 §6 DAG：**T-A10、T-A22、T-A23、T-A24**（本记账不开新代码任务）。Walter 的代码实施授权（原话“允许”）与集成人指定在既有 tasks 范围内持续有效，后续批次无需重复授权。**P3 后续观察**（未经 Walter 风险接受、本批不修、不新增标准 / 命令 / 机制，只在对应任务状态行加阅读指引）：R-A → T-A16 / T-A19 开工前先定 `Deliverable.blocks`“当前视图”不变量（T-F01 / T-F06 消费）；R-B → T-A10 消费工作区时核对未开始阶段 fixture 语义；R-C → T-G06 复核契约文档前瞻文案；R-D → 接管写入的 T-A10 / T-A12 / T-A14 / T-A17 / T-A20 决定入口 refine 还是“由状态层保证”（补校验前须按 AGENTS §5.1 先报 Walter 同意）；R-E → T-A17；R-F → T-A21 同时改写两处计数。详见 `implementation-log.md` §8。任务数 66、约 101.5 h、220 条标准 ↔ 220 条命令、46 AC、依赖均未变；checklist（R7 `9acf3de`，blob `7c219c07…`）未改、未勾。
+
+> **当前实施进度（Converge batch-a09a，2026-10-29；以本块为准，取代下方 r6.1 块中“66 个任务全部仍为‘未开始’”一句——该句为开工时历史记录）**：**10 / 66 已实施**——T-A01～T-A09 与 T-A09a（openai/gpt-6-astra，新会话、独立实施树 `feat/workbench-interaction-astra`，未回退；授权规格种子 `8753fa9f65dae685f765f316b00e6287750f0cf7`，代码 diff `8753fa9..13a3373`；集成人 ff-only 集成到生产方集成树 `integration/workbench-interaction` @ `13a3373f7ebd2075fb8bcfe32033127a916fa6b9`）。各任务状态行登记固定 commit 与验证依据；验证结果均为**实施者执行、Converge 会话未重跑**。Converge（claude-opus-5-5 via anthropic）判定：本批范围**已收口、待独立 Review**，未新增任务；feature 整体**未收敛（尚未实施 + H 组外部阻塞）**——其余 **56 项未开始**，依赖按 §6 DAG（依赖已满足、可起步：T-A10、T-A22、T-A23、T-A24），H 组仍 `blocked_by: frontend-workbench-v2`；46 AC 最终验收 0 条（本批全为“部分前置”）。实施中的字段定形已按精度同步到 T-A03 / T-A04 / T-A05 / T-A07 / T-A08 / T-A09 修改范围（标【r6.2 精度】，不改完成标准 / 命令 / 编号 / 依赖 / 预估）。详见 `converge-batch-a09a.md`、analyze.md「Analyze R8」、`implementation-log.md` §6。H-x 无一已交付（H-1 具备 ①②③、缺 ④）。checklist（R7 `9acf3de`，blob `7c219c07…`）未改、未勾。
+
 > **当前开工状态（r6.1，2026-10-28；以本块为准，取代下方 r6 块中的“待 R7 / 未取得 / 未登记”）**：IMPL-GATE-R6 三项**均已满足**——(1) A 定向复核 = Checklist R7 **通过**（A = claude-fable-5-1 via anthropic，固定审 `0e37fbf`，26/26 当前有效项、0 P1/P2；审核原件提交 `9acf3de661187840ea5be6f6d6f78205872ac356`，`checklist.md` Git blob `7c219c071607596c813af6a3ebc1b651e25cd8d0`，本轮未改）；(2) **Walter 代码实施授权已取得**：协调会话问“是否允许开始代码实施，并由本会话担任集成人？”，Walter 回复原话“**允许**”——授权范围 = 本 feature 已审 tasks 内的代码实施 + 指定该协调会话为集成人；不代其他 feature 的 Gate 1 / Gate 2，不授权扩范围、不改冻结 spec / AC；(3) **集成人与工作树已登记**：集成人 = 协调会话 `PI_SESSION_ID=01a18388-a371-7746-8158-9fb15d55d819`（`openai/gpt-6.1-sol`），唯一串行写生产方集成验证树 `D:/2030/Futures-AI-interaction-integration` / `integration/workbench-interaction`；实施树 `D:/2030/Futures-AI-interaction-implement` / `feat/workbench-interaction-astra`。两树均从 `43b6d79` 创建，随后 ff-only 同步到 main `90187f7d8907316e554d2441d846827468c5371f`（PR #8 H-01 修复 + PR #9 D-020～D-024 文档），clean、无本 feature 代码、尚无 `specs/workbench-interaction/**`。
 > **基线口径**：`implementation_base_sha` **仍为 `43b6d79`**（v1 正式 Handoff，不以移动的 main 替代）；另登记 `upstream_start_sha = 90187f7`（实施 / 集成树实际起点）。`43b6d79..90187f7` 的前端差异只有 `src/modules/market-board/SampleChart.vue` 与 `e2e/theme.spec.ts`（H-01），契约 / types / mock / events / `main.ts` / `app/**` / 脚本 / 锁文件 / 配置 / 既有测试均零差异，§0.0 事实不失效（见 §0.0 末“r6.1 upstream 复核”）。
 > **开码前置（集成人执行，未完成前不写代码）**：把包含本 r6.1 修订的规格文档提交带入实施分支（只导入 `specs/workbench-interaction/**`，不整文件覆盖 main 的 `docs/**`、`specs/README.md` 或其他 feature 规格）。首批 = **T-A01～T-A09 与 T-A09a**，按 §6 DAG 推进；Implement 首选 `openai/gpt-6-astra`（AGENTS §6）。
@@ -129,7 +133,7 @@
 
 ### T-A01 契约枚举与展示映射（S-11 / S-14 / S-16 / S-17）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收）**｜commit `07ef7ccc3c889400dfb2354ceec22c94317c8813`（+ describe 回归修复 `1ed6ec15e5c4b8dfce51c0bf9f10b812c0c87cd1`）；验证（实施者执行）：命令 1～3 `WI enums` 2 / `WI labels` 10 / `WI contract notes` 1 pass，命令 4 contract `--check` / typecheck / lint 过｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1.5 h｜**依赖**：无
 - **上下文**：plan §2.4 的枚举和“契约展示映射”；徽标只消费契约的文案 / 图标（AC-001-5“映射由契约声明”）。
 - **修改范围**：`frontend/src/contracts/types.ts`（新增“作业契约 v2”段：`Stage`、`StageState`、`JobType`、`JobStatus`、`ArtifactKind`、`ArtifactStatus`、`Source`、`Origin`、`InterventionKind`、`InterventionOutcome`、`UploadStatus`、`DeliverableStatus` 枚举；按 §2 S-11 定义九张映射 schema 和同源常量；另定义 `ActiveJobStatusSchema = JobStatusSchema.exclude(['delivered','cancelled'])`（describe：“进行中 = 非终结；终结 = 领域只读门封存的 delivered / cancelled；failed 可经 rerunStage 继续、以 conflict 阶段呈现（S-14），计入进行中；draft 计入”）并导出同源常量 `ACTIVE_JOB_STATUSES`（r6，H-2·列表 ③）；全部并入 `contractSchemas`）；生成 `frontend/contracts/{CONTRACT.md,schema.json}`；新建 `frontend/tests/unit/jobs/contract-labels.spec.ts`。
@@ -146,7 +150,7 @@
 
 ### T-A02 作业、阶段摘要、上下文与收件箱 schema（S-13 / S-14）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收；P3 R-D⑤ 后续由接管写入的状态层任务处理）**｜commit `ad4a8309d3e3a69d09a2b4745ce3e41e433a9b31`（+ `1ed6ec1`）；验证（实施者执行）：`WI job schema` 9 / `WI naming` 1 pass，工程门过｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1 h｜**依赖**：T-A01
 - **上下文**：plan §2.4 的 Job / JobListItem / JobContext / InboxItem；camelCase 命名对照。
 - **修改范围**：`types.ts`（`StageSummary{stage,state,pendingCount}`；`Job`：id/title/type/subject/goal/createdBy(human|schedule)/status/currentStage/updatedAt/parentJobId(null)/reason(string|null)/stages(四项)/pendingCount，refine 约束“stages 按固定顺序且四项各一”和“failed / cancelled 时 reason 非空”；`JobListItem`（摘要；字段固定为 `id/title/type/subject/status/currentStage/updatedAt/reason/stages(四项 StageSummary)/pendingCount`，r6 为 H-2·列表登记，不改语义）；`JobContext{jobId,stage}`；`InboxItem`（plan 字段，不适用的锚可为 null）；describe 写明 `getJob` 的 null 语义（S-13）与 snake_case → camelCase 对照）；生成物；新建 `tests/unit/jobs/contract-entities.spec.ts`。
@@ -161,10 +165,10 @@
 
 ### T-A03 采集 / 处理 / 分析内容 schema（文件白名单在契约）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收；P3 R-D② 后续由接管写入的状态层任务处理）**｜commit `8e81063a2102fe121069148347b9714601cb59ab`（+ `1ed6ec1`）；验证（实施者执行）：`WI intake schema` 12 / `WI process schema` 3 / `WI analysis schema` 1 pass，工程门过｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1.5 h｜**依赖**：T-A01
 - **上下文**：plan §2.4 的 Upload / SourceNote / ExtractionPreview / FieldMapping / RecipeStep / ParamChange / ReconciliationDiff；分析台结论卡与证据链（spec R-005）。plan 类型表没有单列 Conclusion，这里按 spec R-005 与 interaction §3.2 定义最小形态，不加行为。
-- **修改范围**：`types.ts`：`SourceNote`（purpose 非空、reliability 四档、`publishedAt` / `validUntil` 为 TradingDate|null、scopeNote 为 string|null）；`IntakeInput` 判别联合（file：`fileMeta{name,size,type,lastModified}`，扩展名白名单 pdf / docx / xlsx / md / csv 由 refine 约束并导出常量 `INTAKE_FILE_EXTENSIONS`；url：字符串；text：非空正文，只在提交参数中出现）；`Upload`（plan 字段 + removed + quarantineReason?）；`FieldMapping`、`ExtractionPreview`；`DataSourceRef` / `SeriesRef`；`RecipeStep`（输入 / 输出锚、单链）；`DerivedValue{value,unit,lineage:[observation 或 tableRow 锚]}`；`ParamSet` / `ParamChange`（unit / timezone / calendar / resample / aggregation）；`ReconciliationDiff`（两个来源，行含原值 / 差值 / differs，元数据复用 Figure 字段，空差异 = 空行集）；`EvidenceAnchor{kind:assertion|series|source,ref,label}`、`Conclusion{id,text,status,source,origin,evidence[],deleted?,vetoed?}`；生成物；新建 `tests/unit/jobs/contract-intake-process.spec.ts`。
+- **修改范围**：`types.ts`：`SourceNote`（purpose 非空、reliability 四档、`publishedAt` / `validUntil` 为 TradingDate|null、scopeNote 为 string|null）；`IntakeInput` 判别联合（file：`fileMeta{name,size,type,lastModified}`，扩展名白名单 pdf / docx / xlsx / md / csv 由 refine 约束并导出常量 `INTAKE_FILE_EXTENSIONS`；url：字符串；text：非空正文，只在提交参数中出现）；`Upload`（plan 字段 + removed + quarantineReason?）；`FieldMapping`、`ExtractionPreview`；`DataSourceRef` / `SeriesRef`；`RecipeStep`（输入 / 输出锚、单链；【r6.2 精度】实现为 `{id,label,input,output}`，input / output 为单个字符串锚）；`DerivedValue{value,unit,lineage:[observation 或 tableRow 锚]}`；`ParamSet` / `ParamChange`（unit / timezone / calendar / resample / aggregation）；`ReconciliationDiff`（两个来源，行含原值 / 差值 / differs，元数据复用 Figure 字段，空差异 = 空行集）；`EvidenceAnchor{kind:assertion|series|source,ref,label}`、`Conclusion{id,text,status,source,origin,evidence[],deleted?,vetoed?}`；生成物；新建 `tests/unit/jobs/contract-intake-process.spec.ts`。
 - **完成标准**：
   1. 白名单外的扩展名（如 `.exe`、`.png`、无扩展名）、空 purpose、非法 reliability、`publishedAt` 用时间戳（而非日期）都被拒；五种合法扩展名和三种输入都能通过（AC-003-2、AC-003-3 部分前置）。
   2. `ReconciliationDiff` 接受空行集；`DerivedValue` 的 lineage 至少一项（AC-004-1、AC-004-3 部分前置）。
@@ -178,10 +182,10 @@
 
 ### T-A04 交付物、块、批注与定稿快照 schema（S-18）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收；P3 R-D③ 后续由接管写入的状态层任务处理）**｜commit `112c2838a4fb6b3b499928e28d9ff947acadf677`（+ `1ed6ec1`）；验证（实施者执行）：`WI blocks` 9 / `WI S-18` 5 / `WI generated deliverable` 1 pass，工程门过｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1.5 h｜**依赖**：T-A01、T-A03
 - **上下文**：plan §2.4 的 Deliverable / Block / ChartSpec / BlockComment / FinalSnapshot；designUI §5.1 / §5.2。
-- **修改范围**：`types.ts`：`Block` 以 type 为判别的六分支（conclusion / note 带 text；quote 带 text 和 source 锚；table 带 columns / rows / tableId；verification 带 question 和结论块锚；chart 带 chartSpec 和 seriesData，seriesData 复用 `SparkSeriesSchema`），共同字段 id / status / source / origin / anchors / comments；`ChartSpec{templateId:'line-sample',seriesBindings:{main},overrides:{title?}}`；`BlockCommentThread{threadId,blockId,status:open|resolved,comments[]}` 与 `BlockComment{id,threadId,parentId,author,text,createdAt}`；`Deliverable` 判别联合（S-18）；`FinalSnapshot{id,jobId,revisionId,finalizedAt,blocks}`；`DeliverWorkspace{deliverable,finalSnapshot|null,…}` 加一次 superRefine（S-18）；生成物；新建 `tests/unit/jobs/contract-deliverable.spec.ts`。
+- **修改范围**：`types.ts`：`Block` 以 type 为判别的六分支（conclusion / note 带 text；quote 带 text 和 source 锚；table 带 columns / rows / tableId；verification 带 question 和结论块锚；chart 带 chartSpec 和 seriesData，seriesData 复用 `SparkSeriesSchema`），共同字段 id / status / source / origin / anchors / comments；`ChartSpec{templateId:'line-sample',seriesBindings:{main},overrides:{title?}}`；`BlockCommentThread{threadId,blockId,status:open|resolved,comments[]}` 与 `BlockComment{id,threadId,parentId,author,text,createdAt}`；`Deliverable` 判别联合（S-18）；`FinalSnapshot{id,jobId,revisionId,finalizedAt,blocks}`；`DeliverWorkspace{deliverable,finalSnapshot|null,…}` 加一次 superRefine（S-18）；生成物；新建 `tests/unit/jobs/contract-deliverable.spec.ts`。【r6.2 精度（Converge batch-a09a 登记，不改标准）】`FinalSnapshot` 另含必填 `revisionNumber`（正整数，= revisionId 对应已合并修订的 number），即 §2 S-18 “快照的 revision number” 的承载字段；`DeliverWorkspace.deliverable` 可为 null（空工作区，此时 finalSnapshot 亦为 null）；表格块 `columns: string[]`、`rows: (string|number|null)[][]`。
 - **完成标准**：
   1. 六类块正例全部通过；chartSpec 的 templateId 不是 `line-sample`、或传入任意 ECharts option 时被拒（AC-006-1 部分前置）。
   2. S-18 正例（draft 三锚为 null、final 三锚非空且与快照一致）通过；四个反例被拒（AC-006-7、AC-008-1 部分前置）。
@@ -195,10 +199,10 @@
 
 ### T-A05 产物、版本（S-12）、阶段工作区结果与写回执
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收；P3 R-D① 后续由接管写入的状态层任务处理）**｜commit `581f434fcf9e167fd014dd21b533c98c71ea4e25`（+ `1ed6ec1`）；验证（实施者执行）：`WI revision` 6 / `WI artifact` 1 / `WI workspace` 7 pass，工程门过｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1.5 h｜**依赖**：T-A02、T-A03、T-A04
 - **上下文**：plan §2.4 的 Artifact / Revision；“写回执包含已改变的作业 / 产物 / 版本 / 事件与 inbox 计数”。
-- **修改范围**：`types.ts`：`Artifact`（id / kind / status / source / origin / latestMergedRev / overlayRev / pendingMerge / pendingRunId，无 overlay / run 时为 null；refine：`pendingMerge=true` 时 overlayRev 非空）；`Revision` 判别联合（S-12）；`StageWorkspace` 以 stage 为判别（collect：uploads + dataset 产物；process：sources / series / recipe 产物 / derivedValues；analyze：analysis 产物；deliver：`DeliverWorkspace`）；`WriteReceipt{jobs,artifacts,revisions,inbox:{unread,byStage}}`（`interventions` 字段在 T-A06 定义 Intervention 后补入）；生成物；扩充 `contract-entities.spec.ts`。
+- **修改范围**：`types.ts`：`Artifact`（id / kind / status / source / origin / latestMergedRev / overlayRev / pendingMerge / pendingRunId，无 overlay / run 时为 null；refine：`pendingMerge=true` 时 overlayRev 非空）；`Revision` 判别联合（S-12）；`StageWorkspace` 以 stage 为判别（collect：uploads + dataset 产物；process：sources / series / recipe 产物 / derivedValues；analyze：analysis 产物；deliver：`DeliverWorkspace`；【r6.2 精度】四个分支各带限定本阶段 kind 的 `artifacts[]` 与对应分支的 `revisions[]`，空态为空集合，deliver 空态 `deliverable=null`；`latestMergedRev` / `overlayRev` / `baseRev` 取值为 `Revision.id`，修订列表在工作区 `revisions[]`、不内嵌于 Artifact）；`WriteReceipt{jobs,artifacts,revisions,inbox:{unread,byStage}}`（`interventions` 字段在 T-A06 定义 Intervention 后补入）；生成物；扩充 `contract-entities.spec.ts`。
 - **完成标准**：
   1. Revision 四分支正例通过；分支与内容不匹配时被拒（如 recipe 分支带 blocks）（AC-004-2、AC-006-4 部分前置；S-12）。
   2. Artifact 的 `pendingMerge=true` 而 overlayRev 为空时被拒（AC-004-2、AC-007-2 部分前置）。
@@ -212,7 +216,7 @@
 
 ### T-A06 介入事件与 payload 联合（动作矩阵）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收；P3 R-D④ 后续由接管写入的状态层任务处理）**｜commit `e66ecd4e58f823466542f57dddca4a89990a63cd`；首次 A01～A06 联合回归 183 pass / 1 fail（新字段缺 `.describe()`，触发既有描述守卫）→ 修复 `1ed6ec15e5c4b8dfce51c0bf9f10b812c0c87cd1`（只补 describe、改源重生成，未改既有测试 / 生成器）后 7 文件 184 pass / 0 fail；验证（实施者执行）：`WI intervention kinds` 24 / `WI pin_rule candidate` 1 / `WI intervention fields` 3 pass，工程门过｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1 h｜**依赖**：T-A05
 - **上下文**：plan §2.4 Intervention 十字段与“动作 → 方法 → kind”19 行矩阵；从 T-A05 拆出的独立增量（Analyze R1 TF-1）。
 - **修改范围**：`types.ts`：`InterventionPayload` 以 action 为判别，覆盖矩阵全部 action（ingest、map_fix、recipe、annotate、ask_why、what_if、deepen、delete_conclusion、veto、pin_rule(state='candidate')、remove_source、cancel_job、edit_block、revise_blocks、block_comment、reply_comment、resolve_comment、mark_provisional、rerun、accept、revert、resolve_conflict、finalize）；`Intervention`（十个必有字段；作业级事件 artifactId / baseRev 可为 null；refine 约束 action 与 kind 的对应关系和矩阵一致）；给 `WriteReceipt` 补 `interventions: Intervention[]`；生成物；扩充 `contract-entities.spec.ts`。
@@ -229,10 +233,10 @@
 
 ### T-A07 作业 fixtures（一）：jobs / job-detail
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收；fixture P3 R-B / R-F 后续见 T-A10 / T-A21）**｜commit `0f604480816c6372e847d29cf05bdc63e88371a3`（+ 场景集合字段 describe 修复 `7bb83f98da4d874542f5ad37fdd5a2b57bbf2826`）；验证（实施者执行）：`WI jobs fixtures` 14 / `WI list coverage` 1 pass，typecheck / lint 过｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：2 h｜**依赖**：T-A06
 - **上下文**：plan §2.4 的场景样例表（normal：j-collect / j-process / j-deliver / j-failed / j-cancelled；job-running：j-running / j-human；job-pending-merge：j-merge；job-conflict：j-conflict；job-delivered：j-delivered）。
-- **修改范围**：新建 `frontend/src/contracts/mock/fixtures/jobs/jobs.json`（按场景集合分键：`normal` / `job-running` / `job-pending-merge` / `job-conflict` / `job-delivered`，empty / error / slow / boot-error 取 `normal` 集合再按场景规则处理——r6 精化，是 H-6 整文件替换的前提；共十个作业，status / currentStage / 四阶段状态与 plan 表逐行一致；j-failed、j-cancelled 带 reason；j-failed 的 describe / 备注写明 S-14；j-failed 的分析产物 `status=draft`——只有分析**阶段态**为 conflict（运行失败的呈现）并带 reason，产物不写成 conflict，故 normal 场景不预置收件箱条目（r6.1，R7 S-29））、`fixtures/jobs/job-detail.json`（以作业 id 为键；collect / process / analyze 工作区：上传与预览、两个数据源两条序列、单链配方 ≥3 步、派生值 lineage、一条有差异和一条空差异的对账、分析结论 ≥3 条且证据锚三种都有；j-conflict 有 conflict 结论和可用的 provisional 快照）。放在 `fixtures/jobs/` 子目录，**不改变** `fixtures/*.json` 的 9 文件计数；新建 `tests/unit/jobs/fixtures.spec.ts`。合成样例，不含私有数据。
+- **修改范围**：新建 `frontend/src/contracts/mock/fixtures/jobs/jobs.json`（按场景集合分键：`normal` / `job-running` / `job-pending-merge` / `job-conflict` / `job-delivered`，empty / error / slow / boot-error 取 `normal` 集合再按场景规则处理——r6 精化，是 H-6 整文件替换的前提；共十个作业，status / currentStage / 四阶段状态与 plan 表逐行一致；j-failed、j-cancelled 带 reason；j-failed 的 describe / 备注写明 S-14；j-failed 的分析产物 `status=draft`——只有分析**阶段态**为 conflict（运行失败的呈现）并带 reason，产物不写成 conflict，故 normal 场景不预置收件箱条目（r6.1，R7 S-29））、`fixtures/jobs/job-detail.json`（以作业 id 为键；collect / process / analyze 工作区：上传与预览、两个数据源两条序列、单链配方 ≥3 步、派生值 lineage、一条有差异和一条空差异的对账、分析结论 ≥3 条且证据锚三种都有；j-conflict 有 conflict 结论和可用的 provisional 快照）。放在 `fixtures/jobs/` 子目录，**不改变** `fixtures/*.json` 的 9 文件计数；新建 `tests/unit/jobs/fixtures.spec.ts`。合成样例，不含私有数据。【r6.2 精度】`jobs.json` 边界 schema = `JobCollections`（五集合各为 `Job[]`）；`job-detail.json` = 以作业 id 为键的 `{collect, process, analyze, previews（以 Upload.id 为键的 ExtractionPreview）, reconciliations（ReconciliationDiff[]）}`，三个工作区即 `StageWorkspace` 对应分支。
 - **完成标准**：
   1. 两个文件全部通过对应的边界 schema；十个作业的 status / currentStage / 阶段状态与 plan 样例表一一相符（AC-008-2、AC-002-3、AC-002-5、AC-005-6 部分前置）。
   2. 列表样例覆盖三种类型和多种状态，updatedAt 互不相同，可以检验倒序（AC-001-1、AC-001-2 部分前置）。
@@ -244,10 +248,10 @@
 
 ### T-A08 作业 fixtures（二）：deliverable / interventions / uploads
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收；fixture P3 R-A / R-B / R-E 后续见 T-A16 / T-A19、T-A10、T-A17）**｜commit `320277af618d75d15ec3e5fefec13cb4291cdf5e`；验证（实施者执行）：`WI deliverable fixtures` 5 / `WI final only delivered` 1 / `WI interventions fixtures` 1 pass，工程门过｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：2 h｜**依赖**：T-A07
 - **上下文**：交付台、介入历史、待归属池的样例；S-18 的正例。
-- **修改范围**：新建 `fixtures/jobs/deliverable.json`（j-deliver：六类块按 结论 / 图表 / 表格 / 引用 / 待验证 / 备注 排列，两个历史版本（agent v1、human v2），一个 open 批注线程，deliverableStatus=draft；j-merge：结论块 + 至少一个备注块，初始无 overlay；j-conflict：一个 conflict 块，带人版和 agent 版修订；j-delivered：final，三锚与 FinalSnapshot 一致）、`fixtures/jobs/interventions.json`（跨阶段、跨 kind，供筛选测试）、`fixtures/jobs/uploads.json`（两条待归属、一条 quarantined 并附原因）；扩充 `fixtures.spec.ts`。
+- **修改范围**：新建 `fixtures/jobs/deliverable.json`（j-deliver：六类块按 结论 / 图表 / 表格 / 引用 / 待验证 / 备注 排列，两个历史版本（agent v1、human v2），一个 open 批注线程，deliverableStatus=draft；j-merge：结论块 + 至少一个备注块，初始无 overlay；j-conflict：一个 conflict 块，带人版和 agent 版修订；j-delivered：final，三锚与 FinalSnapshot 一致）、`fixtures/jobs/interventions.json`（跨阶段、跨 kind，供筛选测试）、`fixtures/jobs/uploads.json`（两条待归属、一条 quarantined 并附原因）；扩充 `fixtures.spec.ts`。【r6.2 精度】`deliverable.json` = 以作业 id 为键的 deliver 分支 `StageWorkspace`（含 artifacts / revisions，S-18 同一次边界校验）；`interventions.json` = `Intervention[]`；`uploads.json` = `{uploads: Upload[], previews: 以 Upload.id 为键的 ExtractionPreview}`（实现为两条待归属、其中一条 quarantined 附原因；与“三条”读法的取舍留独立 Review，见 converge-batch-a09a §4 O-1）。
 - **完成标准**：
   1. 三个文件全部过边界 schema；j-deliver 和 j-delivered 各过一次 S-18 parse（AC-006-7、AC-008-1 部分前置）。
   2. 只有 j-delivered 为 final，其余都是 draft（AC-006-7 部分前置）。
@@ -261,10 +265,10 @@
 
 ### T-A09 契约版本 2.0.0、九场景、变更说明与既有契约测试对齐
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收；文案 P3 R-C 后续见 T-G06）**｜commit `82c36e7b05ce286ebc0f9650e466695e394612ee`；验证（实施者执行）：`WI scenarios` 15 / `WI change note` 1 / 三份既有契约测试 88 / `WI jobFixtures` 14 pass，工程门过；全量单测 20 文件 707 pass / 0 fail。`readJobFixtures()` 边界解析已交付、尚未被状态层调用（接入归 T-A10）｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：2 h（r6：+jobFixtures 解析）｜**依赖**：T-A08
 - **上下文**：plan §1 的契约版本、§2.4“场景与驱动”。生成器的 §4 是静态文案，因此场景和变更说明要经 describe / `contractSemantics` 进入文档。
-- **修改范围**：`types.ts`（`CONTRACT_VERSION='2.0.0'`；`BootstrapSchema.scenario` 扩成九个值，describe 写明四个 job-* 场景，并说明 v1 的十个方法在 job-* 场景下按 normal 行为）；`methods.ts` 的 `contractSemantics` 增加字符串项 `contractChange`（2.0.0 变更说明：新增作业方法、封闭场景枚举扩展、可选 jobContext、为何升 MAJOR、旧 bootstrap 不兼容）和 `jobScenarios`（九场景行为摘要、作业样例 id；并明写声明句“CONTRACT.md §4 所列为 v1 五场景与 fixture 键；job-* 场景及 `window.__FAI_MOCK__.jobFixtures` 以本条为准”（S-19，不改生成器））；`mock/index.ts` 的 `MockOverrides.jobFixtures` 与其解析（键为 `fixtures/jobs` 的文件名；**每个给出的键整体替换对应内置文件、不深合并**，`jobs` 与文件同形（按场景集合分键），因此“新增一项”= 原集合加该项后整体替换，“只含非进行中作业”= 以该集合整体替换；在每个 mock DataClient 的会话状态建立时读取一次并在边界校验，非法值 validation_error；`jobScenarios` 同时写明该语义及“切换覆盖值须新建 client，沿用 v1 测试在系统边界 spy 委托的做法”；不新增 `jobScript`——r6，H-6）；**只**修改既有契约测试 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受 v2 影响的硬编码断言（版本字面量改为引用 `CONTRACT_VERSION`；方法数与键列表改为“包含 v1 十个方法、总数等于 methodSemantics”；`mock.spec.ts:96-99` 把 `Object.values(dataMethods)` 与十个 `dataRequests` 结果按索引配对的循环改为只遍历 v1 十个方法键——r6 基线审计 B-7）。保留全部 v1 断言语义，不删 v1 用例。生成物；新建 `tests/unit/jobs/contract-version.spec.ts`。
+- **修改范围**：`types.ts`（`CONTRACT_VERSION='2.0.0'`；`BootstrapSchema.scenario` 扩成九个值，describe 写明四个 job-* 场景，并说明 v1 的十个方法在 job-* 场景下按 normal 行为）；`methods.ts` 的 `contractSemantics` 增加字符串项 `contractChange`（2.0.0 变更说明：新增作业方法、封闭场景枚举扩展、可选 jobContext、为何升 MAJOR、旧 bootstrap 不兼容）和 `jobScenarios`（九场景行为摘要、作业样例 id；并明写声明句“CONTRACT.md §4 所列为 v1 五场景与 fixture 键；job-* 场景及 `window.__FAI_MOCK__.jobFixtures` 以本条为准”（S-19，不改生成器））；`mock/index.ts` 的 `MockOverrides.jobFixtures` 与其解析（键为 `fixtures/jobs` 的文件名；**每个给出的键整体替换对应内置文件、不深合并**，`jobs` 与文件同形（按场景集合分键），因此“新增一项”= 原集合加该项后整体替换，“只含非进行中作业”= 以该集合整体替换；在每个 mock DataClient 的会话状态建立时读取一次并在边界校验，非法值 validation_error；`jobScenarios` 同时写明该语义及“切换覆盖值须新建 client，沿用 v1 测试在系统边界 spy 委托的做法”；不新增 `jobScript`——r6，H-6）；**只**修改既有契约测试 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受 v2 影响的硬编码断言（版本字面量改为引用 `CONTRACT_VERSION`；方法数与键列表改为“包含 v1 十个方法、总数等于 methodSemantics”；`mock.spec.ts:96-99` 把 `Object.values(dataMethods)` 与十个 `dataRequests` 结果按索引配对的循环改为只遍历 v1 十个方法键——r6 基线审计 B-7）。保留全部 v1 断言语义，不删 v1 用例。生成物；新建 `tests/unit/jobs/contract-version.spec.ts`。【r6.2 精度】`jobFixtures` 边界解析导出为 `readJobFixtures()`（按文件键浅合并到内置文件后以 strict 对象校验，未知键 / 非法值 validation_error）与 `jobFixtureSchemas`；为让未改的生成器展开 record 字段，`JobDetails` 的值提为具名 `JobDetailFixture` 并与 `JobCollections` / `JobDetails` / `DeliverableFixtures` / `UploadFixtures` 一并注册进 `contractSchemas`（不改生成器）。
 - **完成标准**：
   1. bootstrap 返回 2.0.0；九个场景均可解析，未知场景返回 validation_error；`?scenario=` > `VITE_MOCK_SCENARIO` > normal 的优先级不变（AC-008-2、AC-008-4 部分前置）。
   2. CONTRACT.md 标题为 v2.0.0，§1 含变更说明和 job 场景说明，job 场景说明含 S-19 声明句（AC-008-4 部分前置）。
@@ -280,7 +284,7 @@
 
 ### T-A09a H-1：jobContext 契约字段与 mock 事件透传（r6 新增）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch-a09a；本批代码 Review 通过 `af95b66`，不表示 AC 最终验收）**｜commit `13a3373f7ebd2075fb8bcfe32033127a916fa6b9`；验证（实施者执行）：`WI H-1 schema` 3 / `WI H-1 legacy` 5 / `WI H-1 passthrough` 7 pass，命令 4 过；末轮全量单测 21 文件 722 pass / 0 fail，`check` 六守卫、`contract --check`、typecheck、lint、`git diff --check` 过。H-1 生产方 ①②③ 具备、④ 未取得（未交付）｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1 h｜**依赖**：T-A02、T-A09
 - **上下文**：plan §2.4（`SendMessage.jobContext?` 与十类 AgentEvent 的公共可选字段，同 run 事件保留发送时上下文）；v2 plan §7.3 H-1。r6 从 T-A18 拆出（即 S-22 当初建议的拆法），使 H-1 不再等待 mock 状态层（T-A10～T-A17）；作业运行关联（activeRunId / overlay）仍在 T-A18。
 - **修改范围**：`types.ts`：`SendMessageSchema` 增 `jobContext: JobContextSchema.optional()`（describe）；`frontend/src/agent/events.ts`：共享的 `eventFields` 增公共可选 `jobContext`（十类事件同得；不改事件种类与唯一终态）；`mock/index.ts` 的 `createMockAgentClient.send`：payload 带 `jobContext` 时把同一值写入该 run 的全部事件，不带时事件**不出现**该键；生成物；新建 `tests/unit/jobs/agent-context-contract.spec.ts`。
@@ -297,7 +301,7 @@
 
 ### T-A10 mock 状态层核心与读方法（S-13）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-B、R-D（P3 后续观察，非新增标准）
 - **预计**：2 h｜**依赖**：T-A09
 - **上下文**：plan §2.3“契约 mock 层持有唯一可变状态”，§2.4 九场景 × 读方法表。
 - **修改范围**：新建 `frontend/src/contracts/mock/job-state.ts`（按场景从 fixture——或 T-A09 解析出的 `jobFixtures` 覆盖——建会话状态；该状态是**模块级唯一共享会话状态**：每次调用 `createMockDataClient()` 时建立 / 重建（读 scenario 与 `jobFixtures` 各一次），`createMockAgentClient()`（T-A18 接入）与所有 DataClient 实例共用当前这一份，不各持一份；因此 `jobFixtures` 为“建状态时读一次”，与既有 v1 `fixtures` 的“每次请求读取”时机不同（r6.1，R7 S-27，只定语义、无新机制）；单一 `commit(mutator)`：在深拷贝上修改 → 边界校验 → 整体替换，失败时不留部分修改；读 API 返回副本）；实现 `listJobs(filter?)`（状态 / 类型 / 标题子串组合筛选，缺省 updatedAt 倒序）、`getJob`（S-13）、`getStageWorkspace`；empty / error（业务读方法返回 adapter_error，bootstrap / 目录仍然成功）/ slow（每次调用延迟 1500ms）/ boot-error / job-* 的读行为；`client.ts` 的 `DataClient` 接口、`methods.ts` 的 `dataMethods` 语义、`real/index.ts` 的 NotImplementedError 桩（无网络）、`mock/index.ts` 接线。生成物；新建 `tests/unit/jobs/job-state-read.spec.ts`、`tests/unit/jobs/real-stubs.spec.ts`。
@@ -335,7 +339,7 @@
 
 ### T-A12 写方法：createJob 与投放主流程
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-D（P3 后续观察，非新增标准）
 - **预计**：2 h｜**依赖**：T-A11
 - **上下文**：plan §4.1 / §4.2；矩阵中的 ingest / map_fix。
 - **修改范围**：`job-state.ts` + 接口 / 方法表 / real 桩 / mock 接线：`createJob(input)`（写入 collecting / collect，阶段为 R,N,N,N；初始空产物；交付物 draft，定稿锚为 null）、`submitIntake(input)`（jobId 在提交时确定，没有作业则进入待归属；返回 pending_validation 的预览；有作业时写 ingest 事件）、`getIntakePreview(uploadId)`、`confirmIntake(uploadId, mapping)`（默认 ingested；fixture 判定的样例为 quarantined 并附原因；写 map_fix 事件，保留修正前的 mapping）。error 场景不产生部分修改；slow 在提交前延迟。生成物；新建 `tests/unit/jobs/job-state-intake.spec.ts`。
@@ -371,7 +375,7 @@
 
 ### T-A14 写方法：处理台（参数、无 run 手动合并、对账、暂定）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-D（P3 后续观察，非新增标准）
 - **预计**：1.5 h｜**依赖**：T-A11
 - **上下文**：plan §4.7“无 activeRunId 的参数修正仍先返回 pendingMerge=true”；矩阵中的 recipe / mark_provisional。
 - **修改范围**：`updateParams(jobId, changes)`（产生 overlay recipe 修订和 kind=recipe、outcome=pending 的事件，pendingMerge=true，pendingRunId=null）、`mergePending(jobId, artifactId)`（没有 run 时生成合并修订、把原事件 outcome 改为 merged、清除 pendingMerge；pendingRunId 非空时返回 validation_error“等待本 run 检查点”）、`getReconciliation(jobId, seriesId)`、`markProvisional(jobId, artifactId)`（kind=approve，新修订，状态向下游产物透传为 provisional）；接口 / 方法表 / real 桩；生成物；新建 `tests/unit/jobs/job-state-process.spec.ts`。
@@ -407,7 +411,7 @@
 
 ### T-A16 写方法：块编辑、批注、版本读取（历史不可变）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前须先定案 `review-batch-a09a.md` R-A（`Deliverable.blocks` 当前视图规则；P3，非新增标准）
 - **预计**：2 h｜**依赖**：T-A11
 - **上下文**：plan §4.5；矩阵中的 edit_block / block_comment / reply_comment / resolve_comment。
 - **修改范围**：`saveBlockText(jobId, blockId, text)`（只允许 conclusion / note，其他块返回 validation_error；没有 run 时直接合并成作者为 human 的新修订，块来源改为 human；有 run 时的 overlay 由 T-A18 接入）、`createBlockComment` / `replyBlockComment` / `resolveBlockComment`（kind=framework，产生新修订，块正文的来源不变）、`listRevisions(jobId)`、`getRevision(jobId, revisionId)`（深拷贝，读取历史不改变当前版本）；接口 / 方法表 / real 桩；生成物；新建 `tests/unit/jobs/job-state-deliverable.spec.ts`。
@@ -424,7 +428,7 @@
 
 ### T-A17 写方法：定稿（原子、未决项拒绝）与领域只读门
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-D、R-E（P3 后续观察，非新增标准）
 - **预计**：1.5 h｜**依赖**：T-A12、T-A13、T-A14、T-A15、T-A16
 - **上下文**：plan §4.6；D-018 §1（显式、不可撤销、v1 只做①）。
 - **修改范围**：`finalizeDeliverable(jobId)`（先检查当前的 conflict / pendingMerge / 未接受的 agent 候选；有未决项则返回 validation_error 并列出目标块；成功时在**同一次 commit** 内完成：从 latestMergedRev 深拷贝出 FinalSnapshot → deliverableStatus 从 draft 变为 final 并写入三锚 → job.status=delivered → 写入唯一一条 finalize 事件）；`job-state.ts` 的领域写入口统一检查 delivered / cancelled → validation_error（覆盖目前已有的全部领域写方法；后续 T-A18～T-A20 新增的方法也须接入并各自测试）；读 / 历史 / diff / markInboxRead 不受影响；接口 / 方法表 / real 桩；生成物；新建 `tests/unit/jobs/job-state-finalize.spec.ts`。
@@ -462,7 +466,7 @@
 
 ### T-A19 改稿请求、候选接受 / 回退与冲突裁定
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前须先定案 `review-batch-a09a.md` R-A（同 T-A16；P3，非新增标准）
 - **预计**：2 h｜**依赖**：T-A18
 - **上下文**：plan §4.5；矩阵中的 revise_blocks / accept / revert / resolve_conflict。
 - **修改范围**：`requestRevision(jobId, blockIds, instruction)`（记录 baseRev / blockIds / 指令，写 rewrite 事件，再调用 `send({jobContext})`；成功终态时先处理人的 overlay，再以最新已合并快照为底，从该 run 的权威 step.text 只对指定块生成作者为 agent 的候选修订；同一块在 baseRev 之后被人改过 → 保留两版并标 conflict）、`resolveRevision(jobId, revisionId, action)`（accept：涉及的块确认为新修订；revert：只把涉及的块恢复到 baseRev，其他块的后续人工改动保留，候选和原版本都不删除；冲突候选不能直接 accept）、`submitIntervention(action='resolve_conflict')`（选人版或 agent 版，产生新的 confirmed 修订，正文来源沿用选中版）；新方法接入领域只读门；接口 / 方法表 / real 桩；生成物；新建 `tests/unit/jobs/job-state-revision.spec.ts`。
@@ -481,7 +485,7 @@
 
 ### T-A20 阶段重跑状态迁移与排队（S-14）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-D（P3 后续观察，非新增标准）
 - **预计**：2 h｜**依赖**：T-A18
 - **上下文**：plan §4“rerunStage 状态迁移”表与串行排队规则。
 - **修改范围**：`rerunStage(jobId, stage)`（无 activeRunId 时：上游不变，s 置 running、下游置 not_started，currentStage / status 按映射，s 与下游各生成以旧已合并版为底的 draft 修订，写一条 rerun 事件，再调用 `send({jobContext})`；成功终态：s 与下游 done，status=delivering、currentStage=deliver，**不自动 delivered**；failed：job=failed + reason，当前运行阶段置 conflict（S-14）；aborted：保留阶段快照并说明；已有 activeRunId 时：请求先 pending，等当前 run 终态后按提交顺序串行启动，失败或中止时把人的 overlay 的 pendingRunId 转交给后继 run，原 baseRev 和介入 id 不变）；接入领域只读门；接口 / 方法表 / real 桩；生成物；新建 `tests/unit/jobs/job-state-rerun.spec.ts`。
@@ -500,7 +504,7 @@
 
 ### T-A21 收件箱：生成、已读与已解决
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-F（P3 后续观察，非新增标准）
 - **预计**：2 h（r6：+初始条目）｜**依赖**：T-A19、T-A20
 - **上下文**：plan §2.3 的待处理项规则。
 - **修改范围**：`job-state.ts`：在已有的状态迁移处生成 InboxItem（阶段首次 needs_human、产物首次 conflict、overlay 首次待合并、agent 候选待处理；同一目标、同一原因不重复，修订号变化时可以新生成）；在离开 H、冲突裁定、overlay 合并、候选 accept / revert 时标记 resolved；`JobListItem.pendingCount` / 阶段 `pendingCount` 只计未读且未解决的条目；状态建立时对 fixture 初始状态应用同一生成规则（预置的 H 阶段 / conflict 产物各生成一条未读条目），使 job-running 的 j-human、job-conflict 的 j-conflict 初始 pendingCount>0（r6：H-6 角标样例，亦是 T-G02 的前提）；`listInbox(jobId?)`、`markInboxRead(ids)`（normal 下已读 id 写入 `fai.inbox.v1`）；接口 / 方法表 / real 桩；生成物；新建 `tests/unit/jobs/job-state-inbox.spec.ts`。
@@ -1064,7 +1068,7 @@
 
 ### T-G06 静态守卫与契约文档对拍收口
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜收口时复核 `review-batch-a09a.md` R-C（P3 后续观察，非新增标准）
 - **预计**：1.5 h｜**依赖**：T-G03、T-G04、T-G05、T-B02、T-C04、T-D03
 - **上下文**：AC-007-5 / AC-008-1 / AC-008-3 / AC-008-4；S-11 / S-14 / S-16 / S-18 在文档中的落点。
 - **修改范围**：新建 `tests/unit/jobs/contract-doc.spec.ts`（逐个 job schema 对拍 schema.json 与 zod，CONTRACT.md 含每个 job 方法的小节、每条 Label 文案、S-14 / S-16 注记、Deliverable 的两个分支、`SourceNote.publishedAt`、2.0.0 变更说明，以及 `jobScenarios` 中 S-19 声明句“CONTRACT.md §4 所列为 v1 五场景与 fixture 键；job-* 场景及 `window.__FAI_MOCK__.jobFixtures` 以本条为准”）。

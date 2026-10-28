@@ -1,7 +1,7 @@
 # 暂停交接 — workbench-interaction
 
 > ⚠️ **恢复更新见 §9（2026-10-28 22:20 +04:00）；下方 §1～§8 的旧暂停状态已被 §9 新记录替代，仅作历史保留。**
-> 🔖 **最新：§10 开工登记（2026-10-28，r6.1）**——Walter 原话“允许”代码实施并指定协调会话为集成人；IMPL-GATE-R6 三项已满足；实施树 / 生产方集成树已建立（`43b6d79` 起、ff-only 到 main `90187f7`）；r6.1 只吸收 R7 S-27～S-32 精度；**尚未开码**（待集成人把规格带入实施分支），66 任务全部未开始；H 组仍待外部 v2；H-x 全部未交付。§9 及以前为历史。
+> 🔖 **最新：§11 首批实施与独立批次 Review（2026-10-29）**——T-A01～T-A09、T-A09a 已完成（10/66），独立 A 本批通过（0 P1/P2、6 P3）；全量单元／组件 722 passed，Agent E2E 8 passed。代码与集成树当前 `0920004`（受审代码 `13a3373`）；本规格树只同步文档、不含实现。授权持续有效，下一批按既有 DAG 推进；其余 56 项未开始，feature 未收敛，H-1 仍缺 v2 消费方集成 SHA。§10 及以前是相应时点历史。
 > 【§9 时点原文】当前要点：v1 基线已合入 main（`43b6d79`）并登记；r6 设计经独立 A Checklist R7 通过（`9acf3de`）；**仍 BLOCKED 于 Walter 代码实施授权 + 集成人 / 集成验证分支 / 实施 worktree 登记**；H 组仍待外部 v2。本文件仍不是正式 feature Handoff，不表示实现完成或 Gate 2 通过。
 
 > 用户暂停指令下的会话存档，不是 AGENTS.md 工作流里的正式 feature Handoff，不表示实现完成或 Gate 2 通过。
@@ -308,3 +308,53 @@ fi
 ### 10.8 下次恢复后发给用户的第一句话（取代 §9.9）
 
 > 已读取交接记录：代码实施已获授权、本会话为集成人，工作树已建；r6.1 精度修订已落文档，下一步由集成人把规格带入实施分支后派 Implement 做首批 T-A01～T-A09 / T-A09a，此前不写代码。
+
+## 11. 首批实施 + 独立批次 Review（2026-10-29；替代 §10 的实施前状态）
+
+> 本节由 Opus 恢复记账会话起草、协调器据实际集成结果补记。Plan / Converge / 记账 = claude-opus-5-5 via anthropic；Implement = openai/gpt-6-astra；独立 A = claude-fable-5-1 via anthropic。Claude bridge 在本 session 限额窗口已有 quota / rate / spend_limit 类真实失败，未重复探活；官方同模型调用成功，未改配置。**不是正式 feature Handoff、不是 Gate 2；本轮在首批安全点汇报，不是用户暂停。**
+
+### 11.1 授权与当前进度
+
+- Walter 原话“**允许**”代码实施及指定协调会话 `01a18388-a371-7746-8158-9fb15d55d819`（openai/gpt-6.1-sol）为集成人，**在本 feature 既有 tasks 范围内持续有效，不再重复请求授权**。
+- 首批 **T-A01～T-A09、T-A09a：10/66 已完成**（本批代码 Review 通过，不表示产品 AC 最终验收）。内容：契约枚举 / 展示映射 / 作业与产物 schema / 六类交付块与定稿元数据 / 介入事件 / 五份场景 fixtures / 版本 2.0.0 / `jobContext` 透传。
+- **其余 56 项未开始；46 条 AC 最终验收仍为 0；feature 未收敛（尚未实施 + H 组外部阻塞）。** 不改冻结 spec、不扩 D-020～D-024 范围、不代其他 feature Gate 或 v2 签收。
+
+### 11.2 固定提交与证据
+
+| 项 | 固定引用 / 结论 |
+|---|---|
+| 正式 v1 Handoff / 上游同步 | `implementation_base_sha = 43b6d79681a49562f41751368b2ae00c24062f56`；`upstream_start_sha = 90187f7d8907316e554d2441d846827468c5371f` |
+| 授权规格来源 / 种子 | 来源 `1ad796330997d3d4990ac513428ad7b2427d0422`；实施种子 `8753fa9f65dae685f765f316b00e6287750f0cf7` |
+| 本批代码 | `8753fa9..13a3373`（12 提交、21 文件），受审代码头 `13a3373f7ebd2075fb8bcfe32033127a916fa6b9`；逐任务 SHA 与两次 describe 回归修复见 `implementation-log.md` §6 |
+| 本批 Converge | `b0b065fb799c52ae729c9bd6d45335b5e165a4d0`；`converge-batch-a09a.md`：仅本批范围收口，整体未收敛 |
+| 独立代码 Review | A 新会话、独立工作树固定审 `b0b065f` / 代码 `13a3373`；**本批通过，0 P1/P2，6 项 P3（R-A～R-F）**；原样产物 `review-batch-a09a.md` 提交 `af95b66505875609f7ed3f823e047cd16226a1c5` |
+| 批次最终记账 | `0920004b1daed2721f81834de76c067931ab2350`；代码、实施树和生产方集成树均已同步至此，代码仍与受审 `13a3373` 相同 |
+| 本规格树同步提交 | 本文件不硬编码自身提交号；用 `git log -1 --format="%H %s" -- HANDOFF.md` 查询 |
+
+**审核员亲跑（不是仅引用实施者）**：`pnpm -C frontend install --frozen-lockfile`、`contract --check`、`check` 六守卫、`typecheck`、`lint` 均通过；全量 `test:unit` **21 files / 722 passed / 0 failed**；三份既有契约测试 **88 passed**；首批 **28 条 `-t` 标题命令全部匹配通过**；额外 `test:e2e e2e/agent.spec.ts` **8 passed**（4173 由测试 webServer 自管）。**未跑全量 `pnpm test` / 全部 E2E，无人工截图，无 Gate 2。**
+
+### 11.3 工作树与文件位置
+
+- **实施代码**：`D:/2030/Futures-AI-interaction-implement`，`feat/workbench-interaction-astra`，已 ff-only 到 `0920004`。
+- **生产方集成**：`D:/2030/Futures-AI-interaction-integration`，`integration/workbench-interaction`，已 ff-only 到 `0920004`，仅本协调 session 串行写；它**不是 v2 接收方集成树**。
+- **Converge / 记账**：`D:/2030/Futures-AI-interaction-converge-a09a`，`docs/workbench-interaction-batch-a09a`，`0920004`。
+- **审核原件**：`D:/2030/Futures-AI-interaction-review-a09a`，`review/workbench-interaction-batch-a09a`，`af95b66`；审核已结束。
+- **当前规格树**：`D:/2030/Futures-AI-interaction`，`spec/workbench-interaction`；只定向同步 `specs/workbench-interaction/**`、本 feature README 状态及本 HANDOFF，不把实现写到此树，不覆盖 main 分支的根 HANDOFF / 权威 docs / 其他 feature 文件。
+- 恢复时优先读本 §11、tasks 页首、`implementation-log.md` 当前块和 `review-batch-a09a.md`；旧 Converge / Analyze 的“待 Review”是当时原文。
+
+### 11.4 H-x 与后续
+
+- **H-1 已具备生产方 3/4 证据**：① `13a3373`；② Checklist R7 `9acf3de`；③ H-1 定向测试及 A 亲跑结果（schema 3 / legacy 5 / passthrough 7、scenarios 15）。**④ v2 消费方集成 SHA 未取得 → 未交付**；只能由 `integration/frontend-workbench-v2` 所有者真正集成后登记，本 session 不代写。
+- 其余 H-x 未交付：H-2·标签缺 `JobStatusBadge`，H-6 缺实际状态层等。原设计 Checklist blob `7c219c071607596c813af6a3ebc1b651e25cd8d0` 全程未改、未手勾。
+- 下一批可开工入口：**T-A10 / T-A22 / T-A23 / T-A24**，仍用独立 Implement（首选 openai/gpt-6-astra），按既有 DAG 推进，再做批次 Converge / 独立 A Review。
+- 六项 P3 只登记后续定位，**未修复、未经 Walter 风险接受**：R-A（冲突态 `Deliverable.blocks` 当前视图规则，须 T-A16 / T-A19 前定案）；R-B（未开始阶段 fixture 产物语义，T-A10 消费时核对）；R-C（前瞻契约文案，T-G06）；R-D（跨字段不变量，相关状态层任务先定保证位置，若补防御性校验须按 AGENTS §5.1 先报 Walter 同意，不悄加机制）；R-E（finalize outcome，T-A17）；R-F（投放样例、T-A21 同时更新作业与阶段计数）。细节以审核原件 §4 与实施日志 §8 为准。
+
+### 11.5 验证与进程
+
+- 协调器最终文档结构复核：**66 项 / 101.5 h，10 已完成 + 56 未开始，220 条标准 ↔ 220 条命令，46 AC 集合一致，依赖无环**；Markdown 状态行加粗已正确剥离后计数。`git diff --check` 通过，源码、冻结 spec 与 A Checklist 原件不因状态回写而变化。
+- 全部模型调用均同步返回，无待续跑子会话；A 的 E2E webServer 由测试自管，不保留常驻服务。临时目录 `C:/Users/iswal/AppData/Local/Temp/wi-implement-01a18388-72nsu9xh/` 保留提示、会话和日志；核心结论已进规格文档，恢复不依赖临时目录；不清理共享 `/tmp`。
+- **未 push、未开 PR、未 merge main**。正式全 feature Review / Gate 2 / Handoff 仍在后续。
+
+### 11.6 下次开场（取代 §10.8）
+
+> workbench-interaction 首批 10 项已实施并通过独立 A 批次 Review，下一批按既有授权从 T-A10 / T-A22 / T-A23 / T-A24 推进；H-1 仍待 v2 所有者集成，整体尚未收敛。
