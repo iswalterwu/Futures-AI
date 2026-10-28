@@ -1,32 +1,13 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { T } from '../design/generated/tokens.ts'
 import { moduleComponents } from '../modules/registry.ts'
 import EmptyState from '../shared/components/EmptyState.vue'
 import ErrorState from '../shared/components/ErrorState.vue'
 import Loading from '../shared/components/Loading.vue'
 import { useLayoutStore } from '../stores/layout.ts'
+import { useUiStore } from '../stores/ui.ts'
 
 const layout = useLayoutStore()
-const columns = ref<number>(T.layout.grid_narrow)
-const breakpoints = [
-  { query: matchMedia(`(min-width: ${T.breakpoint.shell_collapse}px)`), columns: T.layout.grid_default },
-  { query: matchMedia(`(min-width: ${T.breakpoint.grid_three}px)`), columns: T.layout.grid_three },
-  { query: matchMedia(`(min-width: ${T.breakpoint.grid_four}px)`), columns: T.layout.grid_four },
-]
-
-onMounted(() => {
-  updateColumns()
-  for (const { query } of breakpoints) query.addEventListener('change', updateColumns)
-})
-onBeforeUnmount(() => {
-  for (const { query } of breakpoints) query.removeEventListener('change', updateColumns)
-})
-
-function updateColumns() {
-  columns.value = breakpoints.reduce<number>((count, breakpoint) =>
-    breakpoint.query.matches ? breakpoint.columns : count, T.layout.grid_narrow)
-}
+const ui = useUiStore()
 </script>
 
 <template>
@@ -51,14 +32,14 @@ function updateColumns() {
     <div
       v-else
       class="module-grid"
-      :style="{ '--fai-grid-cols': columns }"
+      :style="{ '--fai-grid-cols': ui.viewport.cols }"
     >
       <component
         :is="moduleComponents[module.id]"
         v-for="(module, index) in layout.modules"
         :key="module.id"
         :module="module"
-        :style="{ gridColumn: `span ${Math.min(module.defaultSpan, columns)}` }"
+        :style="{ gridColumn: `span ${Math.min(module.defaultSpan, ui.viewport.cols)}` }"
         :can-move-up="index > 0"
         :can-move-down="index < layout.order.length - 1"
         @move-up="layout.moveUp(module.id)"
