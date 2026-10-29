@@ -7,6 +7,9 @@ import {
 import JobStatusBadge from '../../../src/jobs/components/JobStatusBadge.vue'
 import ArtifactStatusBadge from '../../../src/jobs/components/ArtifactStatusBadge.vue'
 import SourceBadge from '../../../src/jobs/components/SourceBadge.vue'
+import jobSource from '../../../src/jobs/components/JobStatusBadge.vue?raw'
+import artifactSource from '../../../src/jobs/components/ArtifactStatusBadge.vue?raw'
+import sourceSource from '../../../src/jobs/components/SourceBadge.vue?raw'
 
 enableAutoUnmount(afterEach)
 
@@ -83,5 +86,60 @@ describe('WI source badge — AC-005-1 / AC-006-8 partial / S-17', () => {
     expect(wrapper.text()).not.toContain(OriginLabel.derived.text)
     expect(wrapper.text()).not.toContain(SourceLabel.agent.text)
     expect(wrapper.find('.source-secondary').exists()).toBe(false)
+  })
+})
+
+describe('WI badge tone — R2-C / AC-001-5 partial', () => {
+  function styleRules(source: string) {
+    const sheet = new CSSStyleSheet()
+    sheet.replaceSync(source.split('<style scoped>')[1]!.split('</style>')[0]!)
+    return Array.from(sheet.cssRules).filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule)
+  }
+
+  function styleRule(source: string, selector: string) {
+    return styleRules(source).find(rule => rule.selectorText.split(',').some(part => part.trim() === selector))?.style
+  }
+
+  test.each([
+    ['draft', null], ['collecting', 'ok'], ['processing', 'ok'], ['analyzing', 'ok'],
+    ['delivering', 'ok'], ['delivered', 'ok'], ['needs_human', 'warn'], ['failed', 'bad'], ['cancelled', null],
+  ] as const)('job %s exposes its status and the specified border tone', (status, tone) => {
+    const wrapper = mount(JobStatusBadge, { props: { status } })
+    expect(wrapper.attributes('data-status')).toBe(status)
+    const style = styleRule(jobSource, `.job-status-badge[data-status='${status}']`)
+    if (tone === null) expect(style).toBeUndefined()
+    else expect(style?.getPropertyValue('border-color')).toBe(`var(--fai-status-${tone})`)
+  })
+
+  test.each([
+    ['draft', null], ['provisional', 'warn'], ['confirmed', 'ok'], ['conflict', 'bad'],
+    ['pending_validation', 'warn'], ['ingested', 'ok'], ['quarantined', 'bad'],
+  ] as const)('artifact/upload %s exposes its status and the specified border tone', (status, tone) => {
+    const wrapper = mount(ArtifactStatusBadge, { props: { status } })
+    expect(wrapper.attributes('data-status')).toBe(status)
+    const style = styleRule(artifactSource, `.artifact-status-badge[data-status='${status}']`)
+    if (tone === null) expect(style).toBeUndefined()
+    else expect(style?.getPropertyValue('border-color')).toBe(`var(--fai-status-${tone})`)
+  })
+
+  test.each(SourceSchema.options)('source %s has no status attribute for either origin', source => {
+    for (const origin of ['source', 'derived'] as const) {
+      expect(mount(SourceBadge, { props: { source, origin } }).attributes('data-status')).toBeUndefined()
+    }
+  })
+
+  test('all bases are neutral; status/red tokens never color text and sample is unused', () => {
+    for (const [source, selector] of [
+      [jobSource, '.job-status-badge'], [artifactSource, '.artifact-status-badge'], [sourceSource, '.source-badge'],
+    ] as const) {
+      // happy-dom expands var() in border shorthands; inspect the parsed color and real declaration.
+      expect(styleRule(source, selector)?.getPropertyValue('border-color')).toBe('var(--fai-glass-module-border)')
+      expect(source.split(`${selector} {`)[1]!.split('}')[0]).toContain('border: thin solid var(--fai-glass-module-border);')
+      expect(source).not.toContain('--fai-status-sample')
+      for (const rule of styleRules(source)) {
+        expect(rule.style.getPropertyValue('color')).not.toMatch(/--fai-status-|--fai-accent-red/)
+      }
+    }
+    expect(sourceSource).not.toContain('--fai-status-')
   })
 })

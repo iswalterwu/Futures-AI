@@ -23,7 +23,7 @@ const label = computed(() => props.origin === 'derived' ? OriginLabel.derived : 
   align-items: center;
   gap: calc(var(--fai-space-grid-gap) / 2);
   padding: 0 calc(var(--fai-space-grid-gap) / 2);
-  border: thin solid var(--fai-status-ok);
+  border: thin solid var(--fai-glass-module-border);
   border-radius: var(--fai-radius-base);
   color: var(--fai-text-primary);
   font-size: var(--fai-type-tag);
