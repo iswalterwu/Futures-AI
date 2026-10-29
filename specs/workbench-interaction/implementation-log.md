@@ -1,6 +1,15 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
+> **当前状态（2026-10-29 第三批派工准备 r6.6；以本块为准。下一块为第二批 Review 后记账原文，其进度数字仍然有效）**：
+> - **进度**：仍为 **16 / 67 已完成**、**51 未开始**；46 AC 最终验收 0；feature **未收敛**。
+> - **第三批**：**T-A11 → T-A12 → T-A13 → T-A22a**（4 项，约 7 h），开码前精度已补（plan §2.3 / §2.4 / §3【r6.6】，tasks 四个任务的【r6.6 精度】，analyze.md「Analyze R12」），**全部待实施**；完成后预计 20 / 67，不预写成功。派工范围、写权限与口径见 §10。
+> - **结构**：67 任务 / 约 102 h / 224 ↔ 224 / 依赖不变；唯一改字的完成标准 = T-A11 标准 1（持久化白名单补列既有字段 `quarantineReason`）。
+> - **需第三批 Review 明确核对**：持久化白名单补列 + 内部 `mappingHistory`（实质隐私边界不变）。开码前是否另做 A 定向复核，由 Walter / 集成人裁量。
+> - **Checklist**：当前有效仍为 R8.1 `34d339e`（blob `99e096ad…`，未改）。
+> - **上游**：main `072bb12` 仍不在祖先，继续 pin `90187f7`，不自动同步。R2-D 流程不变，不是本批的新人工门。
+> - **H-x**：消费分支 `integration/frontend-workbench-v2` 仍 `3f63273`，四项 ④ 仍缺；本 feature 不写 v2 树。
+>
 > **当前状态（2026-10-29 第二批独立 Review 后记账；以本块为准，下列各“当前状态”块 / 行均为当时原文）**：
 > - **进度**：**16 / 67 已完成**，**51 未开始**。“已完成”= 所在批次代码 Review 通过，**不表示 AC 最终验收**（46 AC 最终 0）。首批 10 项经 `af95b66`；第二批 6 项（T-A09b `75a1159`、T-A10 `1841029`、T-A22 `cc59e94`、T-A22b `b38cf43`、T-A23 `ebce4c8`、T-A24 `27e59e6`；代码固定 `27e59e610e2ab8c14e7c3db554609e52e40f5f76`）经独立 A 判**本批通过：0 P1 / P2，5 项 P3 R2-A～R2-E**。
 > - **审核 artifact**：`review-batch2.md`，A = claude-fable-5-1 via anthropic（新会话、独立 worktree，固定审文档 `858025d` + 代码 `27e59e6`）；集成人原样提交于 `f72a1a187405e9f9dcba5bb22f47ad840141702d`，已 ff 到本文档树与生产方集成树 `integration/workbench-interaction`；只引用、不改写。A 亲跑证据见 §6 第二批补记。
@@ -178,6 +187,7 @@
 | 2026-10-29 | 审核员 A（新会话、独立 worktree `D:/2030/Futures-AI-interaction-review-batch2`，只读审查） | 第二批 T-A09b / A10 / A22 / A22b / A23 / A24 批次代码 Review | 文档 `858025d`、代码 `27e59e6`（diff `34d339e..27e59e6`） | `anthropic/claude-fable-5-1`（PI_SESSION_ID `01a18636-553d-77ae-afbd-b5a736447a7a`；协调器对 `claude-bridge/claude-fable-5-1` 最小调用 exit 1 = **provider / invocation error，未确认 quota**；同模型官方通道成功；只换通道、未改配置；与 Implement 异模型、与 Converge 隔离） | **本批通过**：0 P1 / P2，5 P3（R2-A～R2-E）；亲跑见 §6 补记；只写审核原件，未改代码 / checklist |
 | 2026-10-29 | 集成人 | 原样提交审核原件并 ff | `858025d` | — | 提交 `f72a1a187405e9f9dcba5bb22f47ad840141702d`；ff 到本文档树与生产方集成树 `integration/workbench-interaction`；实施树仍 `27e59e6`（代码相同） |
 | 2026-10-29 | 计划 / 分析类（第二批 Review 后纯文档记账，非 Handoff、非 Gate 2） | tasks 六项状态 + 页首、本日志、interface-handoff、plan §2.4 R2-E 一句精度、README 本 feature 两行；临时目录交接摘要 | 文档树 HEAD `f72a1a1` | `anthropic/claude-opus-5-5`（PI_SESSION_ID `01a18647-6186-7141-8ea5-ad1a1da07c72`；协调器对 `claude-bridge/claude-opus-5-5` 最小调用 exit 1 = provider / invocation error，未确认 quota；同模型官方通道成功；只换通道、未改配置） | 文档完成；未改代码 / 测试 / spec / checklist / 旧 Review / converge / analyze / 审核原件 / 根 HANDOFF / docs；未跑产品测试；未 commit（由集成人提交） |
+| 2026-10-29 | 计划 / 分析类（第三批开工前精度澄清 r6.6 + Analyze R12，非实施） | 第三批 T-A11 / A12 / A13 / A22a 派工准备：持久化语义与 API、写方法签名 / 回执 / 时机、投放写入规则与 `mappingHistory`、当前列表投影、jobsStore 精度；plan / tasks / analyze / 本日志 / interface-handoff / README 本 feature 行 | 文档树 `docs/workbench-interaction-batch3-plan` @ `f1b7c06`（代码 = `27e59e6`） | `anthropic/claude-opus-5-5`（本轮协调器对 `claude-bridge/claude-opus-5-5` 最小真实调用 exit 1 = **quota / rate / spend_limit 类**；同模型官方通道 exit 0；本窗口不重试已明确限额通道；未改配置） | 文档完成；未改代码 / fixture / 测试 / spec / checklist / 旧 Review / 根 HANDOFF / 权威 docs；未跑产品测试；未 commit（由集成人提交） |
 
 ## 8. 首批 Review P3 后续定位（只登记，不改规范机制；**均未经 Walter 风险接受**，本批不修代码）
 
@@ -248,3 +258,57 @@
 - **复核与实施状态（batch2，以本句为准）**：R8.1 已通过并提交（`34d339e`），第二批据此开码；6 项已实施（`75a1159` → `27e59e6`），并已集成到生产方集成树 `27e59e6`。② 当前有效 = **R8.1 `34d339e`**。本批独立代码 Review 待进行。上面“blocked / 待 R8.1”的表述是当时原文。
 - **Review 状态（第二批 Review 后，以本句为准）**：本批独立代码 Review 已完成并**通过**（`review-batch2.md`，`f72a1a1`，0 P1 / P2，5 P3 R2-A～R2-E，见 §8）；上句“待进行”为当时原文。
 - **复核建议（r6.3 原文）**：R-B（A 首批 Review 自身建议的落法）、R-D（不扩机制）、T-A22 / T-A24 不需开码前另行 A 复核；T-A23（tasks §7 所指“基线事实与任务文字不符”一类）与 H-4 `bindRouter`（交接接口新增公开成员名；R7 审过机制、未审该名称）建议由审核员 A（新会话、异模型）对 r6.3 文档 diff 做一次**限定范围定向复核**（只审这两处 + R-B 落点）并提交 SHA 后，再开 T-A22b / T-A23 的代码；T-A10 / T-A22 / T-A24 可先开工。若要以本批代码 Review 替代该定向复核，属 Walter / 集成人裁量，本文件不代定；不声称 R7 自动覆盖 r6.3。
+
+## 10. 第三批派工准备（r6.6，2026-10-29；待实施，不预写结果）
+
+- **范围**：T-A11 → T-A12 → T-A13 → T-A22a，同一实施树串行（4 项，约 7 h = 2 + 2 + 1.5 + 1.5）。每个任务的修改范围、完成标准（引用 AC）与验证命令以 tasks.md 原文为准，本节只摘口径。
+  - **不在本批**：T-A14～T-A18、T-A21、B 组页面、投放 UI（T-C 组）、持久化横幅（T-G04）。不提前实现，也不冒称已覆盖全部写后刷新管线。
+- **基线**：
+  - 实施树 / 生产方集成树代码 = `27e59e6`（第二批 Review 通过，`f72a1a1`）；本规格修订起点 `f1b7c06`。
+  - upstream 继续 pin `90187f7`，正式 base 仍 `43b6d79`。
+  - main `072bb12` 不导入（R2-D 同步流程不变，不是本批人工门）。
+- **模型**：Implement 首选 `openai/gpt-6-astra`（新会话、实施树），回退 `deepseek/deepseek-flash`；只有调用失败才回退（AGENTS §6）。
+- **写权限 / 所有权**（tasks §1-5，按任务细化）：
+  - **T-A11**：
+    - 新建 `frontend/src/jobs/persistence.ts`、`tests/unit/jobs/persistence.spec.ts`。
+    - 改 `contracts/{mock/job-state.ts, mock/index.ts, client.ts, methods.ts, real/index.ts}`；生成物只经 `pnpm -C frontend contract`。
+    - 只在语义变更处改 `tests/unit/jobs/job-state-read.spec.ts`：增加 `beforeEach` 清 localStorage，并改写 `WI scenarios read` 中的两例（tasks T-A11【r6.6 精度】）。
+  - **T-A12**：
+    - 改 `contracts/types.ts`（只加 `CreateJobInputSchema` / `IntakeReceiptSchema` 并注册），以及 `jobs/persistence.ts`（`mappingHistory`）、`contracts/{mock/job-state.ts, mock/index.ts, client.ts, methods.ts, real/index.ts}`；生成物。
+    - 新建 `tests/unit/jobs/job-state-intake.spec.ts`。
+  - **T-A13**：
+    - 改 `contracts/{mock/job-state.ts, mock/index.ts, client.ts, methods.ts, real/index.ts}`；生成物。
+    - 新建 `tests/unit/jobs/job-state-pool.spec.ts`。
+  - **T-A22a**：
+    - 新建 `frontend/src/jobs/stores/jobs.ts`、`tests/unit/jobs/jobs-store.spec.ts`。
+    - `frontend/src/main.ts` 只加 jobsStore 的应用级订阅与解除。
+  - **一律不改**：
+    - fixture 文件；v1 三份契约测试；`scripts/**`；`package.json` / 锁文件。
+    - `app/**`、`workbench/**`、`shared/**`、`agent/{store.ts,AgentDock.vue,AgentDrawer.vue,CotTimeline.vue}`。
+    - `backend/`、`docs/`、spec / checklist / 审核原件；不写 v2 任何树。
+- **r6.6 口径摘要**（原文见 plan §2.3 / §2.4 / §3【r6.6】与 tasks 四个任务的【r6.6 精度】）：
+  1. **持久化**：
+     - 只有 normal 且无覆盖时读一次 `fai.jobs.v1`；getter 只读一次。
+     - 快照 = `{version:1, data}`，data 为业务子集；Upload 白名单 + 既有 `quarantineReason`；内部 `mappingHistory`。
+     - 保存失败（> 512 KiB 或 setItem 异常）只置 degraded，业务成功，每次 commit 照常尝试。
+     - 损坏时为 unreadable，不覆写，直到重置。
+     - 重置用会话 seeds：删两 key → 重建 → 重写 `fai.jobs.v1`；非持久会话零访问。
+     - `persistence.ts` 只读状态订阅；不导入 job-state；不加 guard（R2-B）。
+  2. **写方法**：
+     - 签名与回执：`CreateJobInput`、`IntakeReceipt`，复用 `WriteReceipt`；回执 inbox 在 T-A21 前为真实 0。
+     - 时机：slow 延迟后执行；error 在 commit 替换前拒绝，未知锚仍 not_found。
+     - 以作业为目标的写在入口查一次 delivered / cancelled（既有领域规则；全方法只读门归 T-A17）。
+  3. **投放**：
+     - 合成预览为固定值；confirm 只从 pending 出发，fixture 预置原因 → quarantined。
+     - 未归属投放不写事件；assign 移动记录并只补一条 ingest；remove 只置 `removed`；cancel 保留快照、不 abort。
+  4. **投影**：`listUnassignedUploads` 与 collect.uploads 是唯一的“当前列表”位置；状态层与快照不过滤。
+  5. **jobsStore**：
+     - `refresh` 只重读未筛选列表与筛选副本；`createJob` 成功后恰一次 refresh，失败不动缓存。
+     - 只有带 `jobContext` 的三种终态触发 refresh；`main.ts` 应用级订阅，卸载 / HMR 时解除。
+     - 测试用真实 mock AgentClient 回放，不加生产注入。
+- **验证命令**：逐任务按 tasks 原文执行，共 19 条（T-A11 5 / T-A12 5 / T-A13 4 / T-A22a 5），均带 jobs 路径与 `WI` 标题。
+  - 另建议（非新增标准）：每任务提交前跑 `git diff --check`；改契约的任务跑 `contract --check`；批末跑全量 `pnpm -C frontend test:unit` 与 `pnpm -C frontend check` 防回归。
+  - A11 起 normal 会话会持久化，新 spec 每例前清 localStorage。
+- **回报要求**：同 §4（固定 commit、逐命令输出摘要、失败原文脱敏摘要）。任一任务实际超过 2 h（T-A11 / T-A12 已到上限），或发现与 tasks / plan 精度不符，先停并回报，不在实施中偷换。
+- **H-x**：本批完成后，H-2·列表的提供任务（T-A01 / A02 / A10 / A12 / A22a）齐备，可形成生产方 ①③；H-6 仍缺 T-A21。② = 当时已提交的有效 Checklist（现为 R8.1 `34d339e`）；④ 只能由 `integration/frontend-workbench-v2` 所有者登记。
+- **复核建议**：见 analyze.md「Analyze R12」§8。不自动触发新的 A 轮次；持久化白名单补列与 `mappingHistory` 提请第三批独立代码 Review 明确核对；开码前是否另做限定范围的 A 定向复核，由 Walter / 集成人裁量。

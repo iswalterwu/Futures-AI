@@ -17,6 +17,14 @@
 >
 > 本行不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（本轮协调器最小真实调用 `claude-bridge/claude-opus-5-5` exit 1，provider / invocation error 类、未确认 quota；同模型官方通道 exit 0；只换通道、未改配置）。
 > **当前状态（2026-10-29 第二批独立 Review 后记账；以本行为准，上七块为当时原文，其中“待本批独立代码 Review / 待审核证据”已过时）**：第二批 T-A09b / T-A10 / T-A22 / T-A22b / T-A23 / T-A24 经独立审核员 A（claude-fable-5-1 via anthropic，新会话、独立 worktree，固定审文档 `858025d` + 代码 `27e59e6`）判**本批通过（0 P1 / P2，5 项 P3 R2-A～R2-E）**；审核原件 `review-batch2.md` 由集成人原样提交于 `f72a1a187405e9f9dcba5bb22f47ad840141702d`。**H-2·标签 / H-3·路由切片 / H-4** 生产方 ①②③ 齐：② = 当前有效 Checklist R8.1 `34d339e`；③ 除实施者执行外另有 **A 亲跑**同数通过（`WI labels` 10 / `WI status badges` 18；`WI routes` 7 / `WI register` 2、整文件 9；`WI H-4 enter` 4 / `leave same navigation` 3 / `readonly` 1；见 `review-batch2.md` §1 / §5）。**④ 均未取得**：只读核对 `integration/frontend-workbench-v2` = `3f63273`，`13a3373` / `ebce4c8` / `cc59e94` / `b38cf43` 均非其祖先 → 仍为“**待消费方集成（未交付）**”；生产方集成树 `f72a1a1` / `27e59e6` 只是旁证，不能填作 ④。H-1 保留首批登记（① `13a3373`、② 当时 R7 `9acf3de`、③ 含首批 A 亲跑），当前有效清单为 R8.1 `34d339e`，④ 仍缺。H-2·列表 / H-6 / H-5 / 页面切片仍未交付（提供任务未齐）。本行不宣称任何切片已交付或已被 v2 签收；④ 只能由 v2 集成树所有者登记，本 feature 不代填、不代 merge。上游 main `072bb12` 不在本批祖先，同步协调见 §5-9（R2-D）。记账者 = claude-opus-5-5 via anthropic（协调器对 `claude-bridge/claude-opus-5-5` 最小调用 exit 1 = provider / invocation error、未确认 quota；同模型官方通道成功；只换通道、未改配置）。
+> **当前状态（2026-10-29 第三批派工准备 r6.6；以本行为准，上一块为第二批 Review 后原文、仍有效）**：
+> - **本批**：T-A11 → T-A12 → T-A13 → T-A22a 的开码前精度已补，**全部待实施**；没有新代码，也没有新测试输出。
+> - **完成后的生产方证据**：H-2·列表的提供任务（T-A01 / A02 / A10 / A12 / A22a）将齐备，可形成 ①③；H-6 仍缺 T-A21。八个切片的交付状态不变：H-2·标签 / H-3 / H-4 / H-1 为“待消费方集成（未交付）”，其余未交付。
+> - **接口精度**（r6.6，见 §3 注）：`useJobsStore().createJob(input: CreateJobInput): Promise<Job>`；`DataClient` 新增写方法的签名与回执见 plan §2.4【r6.6】。
+> - **④**：消费分支 `integration/frontend-workbench-v2` 仍 `3f63273`，四项 ④ 仍缺。本 feature 不写、不重建 v2 树。
+> - **上游**：main `072bb12` 未同步（§5-9 流程不变）。
+>
+> 记账者 = claude-opus-5-5 via anthropic（协调器对 `claude-bridge/claude-opus-5-5` 最小调用 exit 1 = quota / rate / spend_limit 类；同模型官方通道 exit 0；本窗口不重试；未改配置）。
 > **阶段记录（脱敏）**：作者 = claude-opus-5-5 via anthropic（Plan / Tasks / Analyze 角色；本窗口 `claude-bridge/claude-opus-5-5` 经协调器探活 exit 1，quota / rate / spend_limit 类，未重试；未改 provider / key / 全局配置）。
 
 ## 0. 固定参照
@@ -116,6 +124,14 @@
 - `DataClient`：增加 `listJobs(filter?: {status?, type?, title?})`、`getJob(jobId)`、`getStageWorkspace(jobId, stage)`。
 
 以下仍**未实施**：`useJobsStore`、`useIntakeStore`、`IntakeDrawer`、`main.ts` 的 jobsStore 订阅（T-A22a）。上表两行只按精度补了导出名和字段级只读，机制与语义不变。
+
+【2026-10-29 r6.6 接口精度（第三批派工准备，未实施）】
+- `useJobsStore()`：
+  - `createJob(input: CreateJobInput): Promise<Job>`，返回写回执中的 `jobs[0]`；失败以原 ErrorResponse 拒绝，不刷新缓存。
+  - 本 feature 内部的 `filter: ListJobsFilter | null`、`filteredJobs: JobListItem[] | null` 只作精度登记，不属交接接口。
+- `CreateJobInput = {title, type, subject: string | null, goal}`（strict）进 `contractSchemas`；`DataClient.createJob` 返回 `WriteReceipt`。
+- 投放相关写方法（`IntakeReceipt` 等）属页面切片 / H-5 的下游，签名见 plan §2.4【r6.6】，不改 §1 的切片划分。
+- 名称在交付 commit 时以实际导出为准；若有出入，回到 Analyze 更新本表。
 
 ## 4. 不做的事（生产方边界）
 

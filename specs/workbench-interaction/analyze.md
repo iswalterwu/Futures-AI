@@ -3,7 +3,13 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
-> **当前结论（2026-10-29 第二批实施后 Converge batch2）：见文末「Analyze R11」**
+> **当前结论（2026-10-29 第三批开工前精度澄清 r6.6）：见文末「Analyze R12」**
+> - **本轮**：只为第三批 T-A11 → T-A12 → T-A13 → T-A22a（4 项，约 7 h）补既有 what / AC 的机制与类型精度（plan §2.3 / §2.4 / §3【r6.6】，四个任务的修改范围【r6.6 精度】）。冻结 spec / 46 AC / 方法集 / 动作矩阵不变，不回 Clarify；67 个任务 / 约 102 h / 224 ↔ 224 / 依赖不变。
+> - **硬约束文字**：唯一触及处 = 持久化白名单补列既有可选字段 `quarantineReason`，另新增内部 `mappingHistory`。隐私边界实质不变，提请第三批独立代码 Review 明确核对。
+> - **进度**：16 / 67 已完成、51 未开始，本批 4 项仍待实施；feature **未收敛**；46 AC 最终验收 0；H-x 无一已交付。
+> - **不是** Review / Gate 2 / Handoff。
+>
+> 【历史原文】**当前结论（2026-10-29 第二批实施后 Converge batch2）：见文末「Analyze R11」**
 > - **前置**：Checklist R8.1 已通过（`34d339e`），第二批据此开码。
 > - **本批**：T-A09b / T-A10 / T-A22 / T-A22b / T-A23 / T-A24 已实施（代码 `34d339e..27e59e6 -- frontend`）。Converge 判本批范围**已收口、待本批独立代码 Review**；实施中定形的最小接口只是精度，已同步 plan / tasks / interface-handoff（r6.5），不是需求变更，未新增任务。
 > - **feature 整体**：**16 / 67 已实施、51 未开始**，**未收敛**（尚未实施 + H 组外部阻塞）；46 AC 最终验收 0；H-x 无一已交付（H-2·标签 / H-3 / H-4 具备 ①②③ 中的 3 / 4，③ 待审核；H-1 维持原登记）。
@@ -666,3 +672,127 @@
 - **本批**（6 项）：**已收口、待本批独立代码 Review**。
 - **feature**：**未收敛（尚未实施 51 项 + H 组外部阻塞）**；46 AC 最终验收 0。
 - **不是** Review 通过、不是 Gate 2、不是 Handoff；H-x 无一“已交付”。
+
+## Analyze R12（只读；第三批 T-A11 / T-A12 / T-A13 / T-A22a 开工前精度澄清 r6.6 之后，2026-10-29；区别于 Checklist R8.1，**不是**审核结论）
+
+> **阶段记录（脱敏）**：
+> - **角色与模型**：第三批 Plan / Tasks 精度准备 + 本分析；实际模型 = **claude-opus-5-5 via anthropic**。
+> - **通道**：本轮协调器对 `claude-bridge/claude-opus-5-5` 的最小真实调用 exit 1，失败类别 = **quota / rate / spend_limit**；同模型官方通道 exit 0。按 AGENTS §6 规则 2 / 5 只换通道、不换模型，本窗口不重试已明确限额的通道，未改 provider / key / 路由 / 全局配置。
+> - **派工**：集成人协调会话 `01a18388-a371-7746-8158-9fb15d55d819`；用户本轮“继续”，Walter 的“允许”授权与集成人指定在既有 tasks 范围内持续有效。
+> - **性质**：只读报告；不勾选 checklist。当前有效审核 = Checklist R8.1（`34d339e`，本树 blob `99e096ad9f82bffe2e61d13ea5a8512d5075ce71`，未改）。
+>
+> **写入与执行边界**：
+> - **可写范围**：唯一可写 worktree `D:/2030/Futures-AI-interaction-plan-batch3`（`docs/workbench-interaction-batch3-plan`，起点 `f1b7c06bc7202685fdd3786d74c294cac6ae406e`，起始 clean）；只写本 feature 的 plan / tasks / analyze / implementation-log / interface-handoff 与 `specs/README.md` 本 feature 行。
+> - **未改动**：代码 / fixture / 测试 / spec / checklist / 已有 Review 与 Converge 原件 / 权威 docs / 根 HANDOFF / 其他 worktree。
+> - **未执行**：未 commit / push / merge；未安装；未启动服务或子 agent；**未运行任何产品测试**。
+> - **只读脚本**（非项目产物，不清理）：`C:/Users/iswal/AppData/Local/Temp/wi-batch3-01a18388-0yit2j1a/` 下 `analyze-r12-struct.py`、`analyze-r12-structure.log`（本轮）/ `analyze-r12-structure-HEAD.log`（`f1b7c06`）、`analyze-r12-std-cmd-diff.log`。
+
+### 1. 重新读取与输入
+
+- **工作流与权威文档**：AGENTS.md（§2 / §3 / §5 / §6）、`docs/plan.md`、`docs/interaction.md` §3.2 / §3.4（ingest / map_fix）/ §5 源材料、`docs/architecture.md` §3（投放路径与来源说明）/ §4.7 / works 目录。
+- **本 feature 规格**：冻结 spec.md（R-001 / R-003 / R-007 / R-008、§4 持久化）、plan.md、tasks.md（页首、§1、§2a、T-A10～T-A13、T-A17 / T-A18 / T-A21 / T-A22a、B03 / B04、C01～C04、G04、§5～§7）、checklist.md R8.1（只读）、本报告 R11、implementation-log、interface-handoff、`review-batch2.md`、`specs/README.md`。
+- **真实代码（本树 = 代码 `27e59e6`，逐文件读，不以摘要代替）**：
+  - `contracts/mock/job-state.ts`、`contracts/mock/index.ts`、`contracts/{types,client,methods,index}.ts`、`contracts/real/index.ts`、`main.ts`、`agent/events.ts`（终态类型）、`stores/layout.ts`（既有 localStorage 写法）。
+  - fixtures `jobs/{uploads,job-detail,interventions,jobs,deliverable}.json`（用 node 只读汇总）。
+  - 测试：`tests/setup.ts`、`tests/unit/jobs/{job-state-read,contract-version,real-stubs}.spec.ts`、v1 `tests/unit/{mock,contracts}.spec.ts` 的相关段。
+- **固定输入**：spec.md / checklist.md 相对 HEAD 零差异；main 仍 `072bb12`（协调器 ls-remote 实查），本批 pin `90187f7`；消费分支 `integration/frontend-workbench-v2` 仍 `3f63273`。
+
+### 2. 决定精度的代码事实
+
+| # | 事实（文件:行为） | 影响 |
+|---|---|---|
+| F-1 | `mock/index.ts` 的 `readJobFixtures()` 在函数内读 `window.__FAI_MOCK__?.jobFixtures` getter；工厂调用它一次 | A11 若再判“有无覆盖”会读第二次 → 工厂先取局部值，私有 helper 共用（`readJobFixtures()` 形状不变） |
+| F-2 | `JobState = {scenario, jobs, details, deliverables, interventions, uploads, emptyJobIds}`，无运行时控制；`commit` = clone → mutate → `JobStateSchema.parse` → 替换 | 快照子集 = 去掉 scenario / emptyJobIds；save 挂在 commit 替换之后 |
+| F-3 | `state.uploads` 只有 `{uploads, previews}`；`InterventionSchema.jobId` 必填 | 未归属投放的确认 / 删除无法写事件；修正前 mapping 需要别处承载 |
+| F-4 | `UploadSchema` 已含可选 `quarantineReason`；`uploads.json` 的隔离样例带原因；plan §3 白名单原文未列 | 不补列则恢复后隔离原因丢失（AC-003-6 “隔离显示原因”） |
+| F-5 | 现有 fixture 中没有“pending_validation + quarantineReason”的投放 | T-A12 标准 2 的隔离样例经 `jobFixtures` 覆盖注入（系统边界），不改 fixture |
+| F-6 | `WriteReceiptSchema` 已存在并注册；`DataClient` 只有 13 个方法 | 新写方法回执复用它；只需 `CreateJobInput` / `IntakeReceipt` 两个新 schema |
+| F-7 | `job-state-read.spec.ts` 的 `WI scenarios read` 中，“this batch stays entirely in memory…”断言 normal 也零 storage；“real commit…”末句断言新 normal client 丢弃提交 | A11 起两例语义必然变化（属本任务语义变更处，允许改写） |
+| F-8 | `tests/setup.ts` 不清 localStorage；v1 `mock.spec.ts` 的 `dataRequests` 是显式十方法清单；`contracts.spec` / `real-stubs.spec` 按 `dataMethods` 动态比较 | 新 spec 自清 localStorage；新增方法不破 v1 三份契约测试 |
+| F-9 | 读方法的场景来源 = `jobState.getJobScenario()`（R2-E）；未知锚先于 error | 写方法沿用同一来源；error 拒绝放在 commit 替换前，以保持“未知锚独立 not_found” |
+| F-10 | `main.ts` 已有 agent store 的应用级订阅 + `onUnmount` / HMR 解除 | T-A22a 订阅照抄先例 |
+
+### 3. 精度项逐条判定
+
+| 精度项 | 依据（既有 what / AC / plan） | 判定 | 是否触及既有硬约束 |
+|---|---|---|---|
+| 持久化读时机：normal 且无覆盖才读一次 `fai.jobs.v1`；getter 只读一次 | plan §2.3 / §3、T-A11 标准 4、H-6 | 精度 | 否（落实既有约束） |
+| `persistence.ts` API 与状态订阅 | T-A11 上下文（`getPersistenceStatus` / `onPersistenceStatus`、`ok/degraded/unreadable`） | 精度（只补函数名与回调口径） | 否 |
+| 512 KiB / setItem 异常 → degraded，业务成功、每次尝试、每 key 承诺 | plan §3、T-A11 标准 2 | 精度（“转内存”读作该次未写；无跨 key 事务） | 否 |
+| 损坏 / version≠1 → unreadable、不覆写直到重置 | plan §3、T-A11 标准 3 | 精度 | 否 |
+| 重置：会话 seeds / scenario；删两 key → 重建 → 重写 `fai.jobs.v1` | plan §2.4 场景段、T-G04 标准 1（“key 被重建”）、R2-E | 精度（统一 plan “删除并重建”与 T-G04 “key 被重建”两种表述） | 否 |
+| 快照白名单补列 `quarantineReason` | F-4；AC-003-6 | 精度，但**改动 plan §3 白名单与 T-A11 标准 1 的文字** | **是（文字）**：字段为既有契约字段、fixture 合成文本，非投放原文；实质隐私边界不变 |
+| 内部 `mappingHistory {uploadId, mapping, status, replacedAt}` | plan 矩阵 map_fix “原记录与修正前 mapping 保留”；F-3 | 精度（未归属投放没有其他载体时的最小承载；不是公开 API / 新产物 / 新流程） | 新增一项**持久化内容**（结构化映射，非原文）；与上项同请 Review 核对 |
+| 写方法签名与回执；`CreateJobInput` / `IntakeReceipt` | plan §2.4 方法表与“写回执包含…”；T-A12 / A13 修改范围 | 精度（本任务契约本来要定的类型） | 否 |
+| 回执 `inbox` = 全局计数，A21 前为真实 0 | `WriteReceiptSchema.inbox`；plan §2.3 收件箱 | 精度 | 否 |
+| slow 延迟后执行；error 在 commit 替换前拒绝，未知锚仍 not_found | plan §2.4 场景表；T-A12 标准 4 | 精度 | 否 |
+| createJob：human、collecting / collect、R,N,N,N、交付侧初始空产物；不预建 recipe / analysis；dataset 首投放时建 | plan §4.1、T-A12 标准 1、R-D ⑤ | 精度（“初始空产物”的最小具体化，不猜业务参数） | 否 |
+| 合成预览固定值；confirm 只从 pending；fixture 预置原因 → quarantined | plan §2.4 `ExtractionPreview` 行、§3 “mock 预览由输入类型 + 人工映射驱动”、T-A12 标准 2、R-D ② | 精度 | 否 |
+| 未归属投放的 confirm / remove 不写事件；assign 只补一条 ingest、移动记录 | plan 矩阵 ingest 行、§4.2；F-3 | 精度（不伪造 jobId、不新增 kind、不重放） | 否 |
+| 以作业为目标的写在入口查一次 delivered / cancelled | plan §4.6、场景表 job-delivered 行 | 精度（既有领域规则；全方法只读门仍归 T-A17） | 否（非 R-D 新 guard） |
+| 当前列表投影只在 `listUnassignedUploads` 与 collect.uploads | spec R-003 / AC-003-5、plan 矩阵 remove_source “只从当前视图移除” | 精度（与“不按阶段态过滤”不冲突：按 removed 标记，不按阶段态） | 否 |
+| cancel 保留阶段 / 产物快照、不 abort | plan 矩阵 cancel_job、§4.6 | 精度 | 否 |
+| jobsStore 类型、refresh / applyFilter / createJob / receiveAgentEvent 口径与测试方式 | plan §2.3 r6、T-A22a、H-2 ①～⑤ | 精度 | 否 |
+| `job-state-read.spec.ts` 两例改写 + 清 localStorage | F-7 | 本任务语义变更处的回归调整（不改 v1 三份契约测试） | 否 |
+
+**结论**：全部是既有需求与既有设计内的机制 / 类型精度；**没有冻结需求变化，不回 Clarify / Gate 1**；未新增任务、标准或命令；方法集与动作矩阵不变。
+
+### 4. 一致性（spec ↔ plan ↔ tasks ↔ interface-handoff ↔ implementation-log）
+
+- **spec**：§4 持久化（浏览器本地、真实持久化归 `api`）与 R-003 的“待归属池 / 修正后确认才入库 / 三种状态”均被覆盖；未引入 spec 非目标（真实解析 / 抓取 / 闸门 / 验证队列）。
+- **plan ↔ tasks**：plan §2.3 / §2.4 / §3【r6.6】是机制权威；四个任务的【r6.6 精度】只引用并给落地 / 测试提示，没有第二套口径。T-A11 标准 1 的补列与 plan §3 同句同义。
+- **跨任务口径**：
+  - T-A17 标准 3 仍是逐方法只读拒绝的验收处；本批入口检查不冒称已完成。
+  - T-A18 承接“不 abort / 晚到事件隔离”；T-A21 承接收件箱条目、已读 id 读写、回执计数来源。
+  - T-B04 承接 `openJob` / 详情重读；T-G04 承接横幅。
+  - 以上衔接无矛盾。
+- **既有下游断言**：
+  - T-B03 e2e 取 `fai.jobs.v1` 中新作业参数：快照含 jobs，满足。
+  - T-C04 e2e 取 ingest 事件与 Upload 记录：快照含两者，满足。
+  - T-C02 “隔离显示原因”：`quarantineReason` 持久化后仍可显示。
+  - T-C03 “归入后 `updatedAt` 与顺序变化”：以作业为目标的写更新 updatedAt，满足。
+- **interface-handoff / implementation-log / README**：只同步当前状态、§3 公开接口精度（`useJobsStore().createJob` 返回 `Job`）与第三批派工登记；H-x 交付状态不变（H-2·列表 / H-6 仍缺提供任务，未交付）。
+
+### 5. DAG 与开工门槛
+
+- 依赖链：T-A11（依赖 T-A10，已完成）→ T-A12（依赖 T-A11）→ T-A13（依赖 T-A12）；T-A22a 依赖 T-A09a / T-A10 / T-A22（均已完成）与 T-A12（本批）。按批内串行顺序全部满足；脚本复核无环、全部前向依赖。
+- 门槛：Checklist R8.1 仍为当前有效且 26 / 26；Walter 授权与集成人指定持续有效；r6.6 不改 checklist 覆盖的结构（任务 / 依赖 / 工时 / 标准与命令数），不需要新 Checklist 轮次。
+- 上游：main `072bb12` 不在本树祖先，本批继续 pin `90187f7`，不自动同步。R2-D 同步流程（§7 重核 → Analyze → A 定向复核）保持不变，但**不是本批的新人工门**。
+- 消费分支 `integration/frontend-workbench-v2` = `3f63273`，四个已具备 ①②③ 的切片 ④ 仍缺；本 feature 不写、不重建 v2 树。
+
+### 6. 结构复算（脚本、只读，作用于本轮最终 tasks.md 并与 HEAD `f1b7c06` 对比）
+
+- 67 个任务、编号唯一、排序正确；合计 102.0 h（A 28 / 43、B 7 / 10.5、C 5 / 7.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4）。
+- 完成标准 / 验证命令 **224 / 224**，逐任务 1:1、编号连续；problems = []；依赖无环且全部前向。
+- AC 矩阵 46 行；部分前置均为最终任务祖先；矩阵 ↔ 任务 AC 双向一致。
+- 状态：16 × 已完成、51 × 未开始。本批 4 项命令 5 + 5 + 4 + 5 = **19 条**，工时 7.0 h。
+- 与 HEAD 对比：结构日志除集合打印顺序外完全相同。标准 / 命令 / 预计逐任务文本比对后，**只有 T-A11 标准 1 的一处文字补列**（`quarantineReason`），无其他标准、命令或预计变化。
+
+### 7. 观察项与未解决项
+
+- **粒度**：T-A12 已到 2 h 上限，工作量为 4 个方法、2 个 schema、`mappingHistory`、dataset 修订 helper 和 4 组测试。r6.6 的作用主要是减少临时猜测，判断不属于已知超额，因此不预先拆分；若实际超过 2 h，按 tasks §7 S-22 停下并报告，不硬塞。T-A11 同样到上限（含两例既有回归改写）。
+- **未关的 P3**：以下均不属本批。
+  - R-A：T-A16 / T-A19 开工前定案。
+  - R-B：残留项未关。
+  - R-C / R2-A：归 T-G06。本批新增方法的描述沿用实现中立写法，mock 场景句不写进方法描述。
+  - R2-C：首个消费徽标的页面任务或 T-G10 前处理。
+  - R-E：归 T-A17。
+  - R-F：归 T-A21。
+  - 与本批相关的两项：R2-B 由本批测试固定调用顺序，不加 guard；R-D 的 ② / ⑤ 由本批写方法按构造保持，不加 refine。
+- **`mappingHistory` 无读 API**：有意为之，不新增公开历史 API。本批经 normal 快照验证；后续若需展示，须走需求流程。
+- **未归属投放的删除理由不持久化**：没有 jobId 就没有事件载体，理由只作确认输入。这是既有契约（`Intervention.jobId` 必填）的直接结果，不是遗漏。
+- **外部 / 流程**：
+  - H 组的 v2 外部闸门；
+  - 四个切片的 ④ 待 v2 所有者登记；
+  - main `072bb12` 的同步决策；
+  - 本树文档待集成人审阅提交。
+
+### 8. 结论（Analyze R12）
+
+- **一致性**：在第三批范围内，spec ↔ plan ↔ tasks ↔ interface-handoff ↔ implementation-log ↔ 真实代码**无冲突**。先前会让实施者临时猜测的点已经定案：F-1 / F-3 / F-4 / F-5 / F-7 / F-9，以及回执、预览和投影。
+- **是否需要 A 定向复核**：
+  - 绝大多数是任务字段 / 类型精度和正常流程，**不自动触发新的 A 轮次**。
+  - 唯一触及既有硬约束文字的是持久化白名单：补列 `quarantineReason`，另增内部 `mappingHistory`。实质隐私边界不变。
+  - 建议由第三批独立代码 Review 明确核对这一点。是否在开码前另做限定范围的 A 定向复核，由 Walter / 集成人裁量；本报告不代定，也不声称 R8.1 自动覆盖 r6.6。
+- **第三批**：4 项（T-A11 → T-A12 → T-A13 → T-A22a，约 7 h）**全部待实施**。完成并通过本批 Review 后预计为 20 / 67，现在不预写成功。
+- **feature**：16 / 67 已完成，51 未开始，**未收敛**；46 AC 最终验收 0；H-x 无一已交付。本报告不是 Review / Gate 2 / Handoff。

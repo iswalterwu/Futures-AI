@@ -1,5 +1,25 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
+> **第三批派工准备（r6.6，2026-10-29；以本块为准；开码前精度澄清，未实施、不预写结果）**：
+>
+> **范围**：**T-A11 → T-A12 → T-A13 → T-A22a**（4 项，约 7 h = 2 + 2 + 1.5 + 1.5），同一实施树串行。T-A22a 的依赖 T-A09a / T-A10 / T-A12 / T-A22 在本批内满足。**不在本批**：T-A14～T-A18、T-A21、B 组、投放 UI（T-C 组）、持久化横幅（T-G04）。进度仍以下一块为准（16 / 67 已完成、51 未开始）；本批完成后预计 20 / 67，不预写成功。
+>
+> **r6.6 只补既有 what / AC 的机制与类型精度**（plan §2.3 / §2.4 / §3【r6.6】；T-A11 / A12 / A13 / A22a 修改范围【r6.6 精度】）：
+> 1. 持久化：读写时机、降级、损坏、重置的确定语义，以及 `persistence.ts` 的 API。
+> 2. 写方法：签名与回执（`CreateJobInput`、`IntakeReceipt`，复用 `WriteReceipt`）；slow / error 下的写入时机；以作业为目标的写在入口查一次只读。
+> 3. 投放写入规则：合成预览；confirm 只从 pending 出发；未归属投放不写事件；assign 移动记录；内部 `mappingHistory`。
+> 4. 当前列表投影的唯一位置。
+> 5. jobsStore 的类型与刷新口径。
+> 6. 既有 jobs 回归：A11 起 normal 会话会持久化，`job-state-read.spec.ts` 中两例按新语义改写（属本任务语义变更处）。
+>
+> **结构**：完成标准 / 命令 **224 / 224 不变**（T-A11 标准 1 只补列一个既有字段）；67 个任务 / 约 102 h / 依赖不变。
+>
+> **硬约束文字**：唯一触及处 = 持久化白名单补列既有可选字段 `quarantineReason`，另登记内部 `mappingHistory`。隐私边界实质不变，提请第三批独立代码 Review 明确核对。是否在开码前另做 A 定向复核，由 Walter / 集成人裁量，本文件不代定；Analyze R12 认为不必。checklist R8.1（blob `99e096ad…`）未改、未勾。
+>
+> **上游与 H-x**：main `072bb12` 仍不在本树祖先，本批继续 pin `90187f7`，不自动同步（R2-D 流程不变，不是本批的人工门）。消费分支 `integration/frontend-workbench-v2` 仍为 `3f63273`，四项 ④ 仍缺；本 feature 不写、不重建 v2 树。
+>
+> **作者**：claude-opus-5-5 via anthropic（本轮协调器对 `claude-bridge/claude-opus-5-5` 的最小真实调用 exit 1，quota / rate / spend_limit 类；同模型官方通道 exit 0；本窗口不重试已明确限额的通道，未改配置）。详见 analyze.md「Analyze R12」。
+
 > **当前实施进度（第二批独立 Review 后记账，2026-10-29；本块为准，取代下方 Converge batch2 块中“6 项已实施、待本批独立代码 Review”等当时原文）**：
 >
 > **进度**：**16 / 67 已完成**，**51 未开始**。“已完成”= 所在批次代码 Review 通过，**不表示任何 AC 最终验收**：46 AC 最终验收仍 **0**（本批多为“部分前置”；T-A23 只完成 AC-001-5 的组件半项，人工 M-01 归 T-G10）。
@@ -400,12 +420,38 @@
 
 ### T-A11 本地持久化 persistence.ts 与 resetMockData
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-B（P3 后续观察，非新增标准）：状态由 DataClient 工厂建立，持久化入口按正常调用顺序接入并以测试固定，不加 guard
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-B（P3 后续观察，非新增标准）：状态由 DataClient 工厂建立，持久化入口按正常调用顺序接入并以测试固定，不加 guard｜第三批 r6.6 精度已补（修改范围【r6.6 精度】、标准 1 补列既有字段），仍未开始
 - **预计**：2 h｜**依赖**：T-A10
 - **上下文**：plan §2.3 / §3 的持久化规则。plan 没写横幅如何得知持久化状态，本任务由 `persistence.ts` 提供只读状态订阅（`getPersistenceStatus()` / `onPersistenceStatus(cb)`，取值 `ok|degraded|unreadable`），供 T-G04 的横幅使用；不经业务契约。
 - **修改范围**：新建 `frontend/src/jobs/persistence.ts`（`fai.jobs.v1` = `{version:1,data}`；`fai.inbox.v1` = 已读 id；UTF-8 字节数用 TextEncoder 计算，上限 512 KiB；配额异常时降级）；`job-state.ts` 接入：只有 normal 场景且没有 `jobFixtures` 覆盖时读写（r6，H-6：注入的样例不污染本机快照）；每次成功 commit 后保存；`resetMockData`（normal：删除两个 key 并重建 fixture；其他场景：只重建内存）；`DataClient` / `methods.ts` / real 桩加 `resetMockData`。生成物；新建 `tests/unit/jobs/persistence.spec.ts`。
+  【r6.6 精度（机制见 plan §2.3 / §3【r6.6】；不改标准编号与命令）】
+  - **`jobs/persistence.ts` 导出**：
+    - `JOBS_KEY='fai.jobs.v1'`、`INBOX_KEY='fai.inbox.v1'`；
+    - `PersistedJobDataSchema` / `PersistedJobData`：本任务 = `{jobs, details, deliverables, interventions, uploads}`，用既有契约 schema 组合，内部用、不进 `contractSchemas`；
+    - `loadJobsSnapshot(): PersistedJobData | null`、`saveJobsSnapshot(data): void`、`clearJobKeys(): void`；
+    - `resetPersistenceStatus(): void`（只置 ok，不碰 storage）、`getPersistenceStatus()`、`onPersistenceStatus(cb): () => void`。
+    - `fai.inbox.v1` 只定 key 与格式（`string[]`），在重置时删除；已读 id 的读写函数随 T-A21（有消费方时）引入。
+  - **`job-state.ts`**：
+    - `JobStateSchema` = `PersistedJobDataSchema` + `scenario` / `emptyJobIds`；模块另记当前会话 `{seeds, persistent}`。
+    - `initializeJobState(scenario, seeds, persistent)`：先建状态；persistent 时 `loadJobsSnapshot()` 非 null 则覆盖可持久化字段；非持久时 `resetPersistenceStatus()`。
+    - `commit`：替换状态后，若 persistent，则 `saveJobsSnapshot(可持久化字段)`。
+    - 新增 `resetJobState()`：用会话记录的 seeds / scenario 重建；persistent 时依次 `clearJobKeys()` → 重建 → `saveJobsSnapshot`。
+  - **`mock/index.ts`**：
+    - 工厂把 `window.__FAI_MOCK__?.jobFixtures` 只读一次到局部变量，交给私有解析 helper；`readJobFixtures()` 改为同一 helper 对 getter 的薄包装，返回形状不变。
+    - `persistent = scenario === 'normal' && override === undefined`。
+    - `resetMockData`：按当前共享状态的 scenario 延迟（slow）；error 下不拒绝；调用 `resetJobState()` 后返回 null。
+  - **契约**：`DataClient.resetMockData(): Promise<null>`；`methods.ts` 描述保持实现中立（R2-A：mock 场景句不写进方法描述）；real 桩；生成物。
+  - **既有 jobs 回归（属语义变更处，允许改）**：`job-state-read.spec.ts` 增加 `beforeEach(() => localStorage.clear())`。`WI scenarios read` 中两例按新语义改写：
+    - “real commit…”一例：末句的新 normal client 改为读回已持久化的提交；“重建即丢弃”改用非持久场景验证。
+    - “this batch stays entirely in memory…”一例：改为“非 normal 与有覆盖时零访问；normal 无覆盖时只 getItem 一次 `fai.jobs.v1`，不写、不删”。
+    - 不改 v1 三份契约测试、生成器、工具链、壳 UI。
+  - **测试提示**（对应既有标准，不新增）：
+    - 本任务尚无写方法，持久化测试经真实 `commit(mutator)` 制造写入（同 T-A17 标准 2 口径）。
+    - 超限：用 mutator 写入超长 `goal`。配额异常：在系统边界 `vi.spyOn(Storage.prototype, 'setItem')` 抛错。
+    - 每例前 `localStorage.clear()`、`delete window.__FAI_MOCK__`。
+    - R2-B：总是先建 client 再观察；不测未初始化路径，不加 guard。
 - **完成标准**（正负向齐全）：
-  1. normal 下保存后新建 client 能读回；持久化子集为白名单：Upload 只含 id / jobId / inputKind / fileMeta / url / sourceNote / mapping / status / createdAt / removed，不含粘贴正文和 File 对象（spec §4 持久化；AC-003-3 部分前置）。
+  1. normal 下保存后新建 client 能读回；持久化子集为白名单：Upload 只含 id / jobId / inputKind / fileMeta / url / sourceNote / mapping / status / createdAt / removed（另含既有可选结构化字段 `quarantineReason`，即 fixture 合成的隔离判定说明、非投放原文；r6.6 补列，见 plan §3），不含粘贴正文和 File 对象（spec §4 持久化；AC-003-3 部分前置）。
   2. 超过 512 KiB 或 setItem 抛异常 → 状态 degraded，内存继续可用，**最后一次成功的快照仍在、未被删除**（spec §4 持久化约束，无独立 AC；随 AC-009-1 全量回归）。
   3. 内容损坏或版本不支持 → 本次用 fixture，状态 unreadable，**原 key 保留**，本会话不自动覆写；只有 resetMockData 才删除（spec §4 持久化约束，无独立 AC；随 AC-009-1 全量回归）。
   4. 八个非 normal 场景、以及 normal 下存在 `jobFixtures` 覆盖时（r6，H-6），对两个 key 一律不 getItem / setItem / removeItem（Storage spy 计数为 0）；切场景不清空；`fai.rail` / `fai.drawer` / `fai.layout` 不受影响（AC-008-2 部分前置）。
@@ -419,10 +465,38 @@
 
 ### T-A12 写方法：createJob 与投放主流程
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-D（P3 后续观察，非新增标准）；r6.3 口径：R-D ②（quarantined 附原因）与 ⑤（createJob 写 collecting / collect 与 R,N,N,N）由本任务写方法按构造保持、以既有读回断言覆盖，不加 schema refine / 入口跨字段校验（如认为必须加，按 AGENTS §5.1 先报 Walter）
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-D（P3 后续观察，非新增标准）；r6.3 口径：R-D ②（quarantined 附原因）与 ⑤（createJob 写 collecting / collect 与 R,N,N,N）由本任务写方法按构造保持、以既有读回断言覆盖，不加 schema refine / 入口跨字段校验（如认为必须加，按 AGENTS §5.1 先报 Walter）｜第三批 r6.6 精度已补（修改范围【r6.6 精度】），仍未开始
 - **预计**：2 h｜**依赖**：T-A11
 - **上下文**：plan §4.1 / §4.2；矩阵中的 ingest / map_fix。
 - **修改范围**：`job-state.ts` + 接口 / 方法表 / real 桩 / mock 接线：`createJob(input)`（写入 collecting / collect，阶段为 R,N,N,N；初始空产物；交付物 draft，定稿锚为 null）、`submitIntake(input)`（jobId 在提交时确定，没有作业则进入待归属；返回 pending_validation 的预览；有作业时写 ingest 事件）、`getIntakePreview(uploadId)`、`confirmIntake(uploadId, mapping)`（默认 ingested；fixture 判定的样例为 quarantined 并附原因；写 map_fix 事件，保留修正前的 mapping）。error 场景不产生部分修改；slow 在提交前延迟。生成物；新建 `tests/unit/jobs/job-state-intake.spec.ts`。
+  【r6.6 精度（机制见 plan §2.4 / §3【r6.6】；不改标准与命令）】
+  - **`types.ts`**（本任务必要的契约精度，生成物随之更新）：
+    - 新增 `CreateJobInputSchema`、`IntakeReceiptSchema`（`WriteReceiptSchema` + `upload` / `preview`），注册进 `contractSchemas`；
+    - 每个字段带 describe（既有描述守卫，见首批失败留痕）；
+    - 方法签名按 plan §2.4【r6.6】。
+  - **`persistence.ts`**：`PersistedJobDataSchema` 增加 `mappingHistory: {uploadId, mapping, status, replacedAt}[]`，在快照入口默认 `[]`（version 仍为 1）；`JobState` 同步。
+  - **`mock/index.ts`**：
+    - 读方法 `getIntakePreview` 沿用 `readJobState`。
+    - 写方法共用一个写包装：入口 parse → 按当前共享 scenario 做 slow 延迟 → 调用 job-state 写函数 → 结果边界 parse。
+    - error 的拒绝放在 `commit` 内（mutator 与边界校验之后、替换状态之前），以保持未知锚 not_found（plan §2.4 场景表“查无 id 独立”）。
+  - **job-state 内只抽会复用的 helper**：
+    - `writableJob`：查作业，并拒绝 delivered / cancelled；
+    - `findUpload`：在池或各作业 collect 中查找；
+    - 追加 dataset 修订：本任务的 submit / confirm 使用，T-A13 的 assign / remove 复用；
+    - 回执收件箱计数：T-A21 前为 0，由 T-A21 接管。
+  - **生成规则**：
+    - id 用 `j-` / `u-` / `i-` + `crypto.randomUUID()`；修订 id 为 `<artifactId>-r<n>`，n = 该产物已有修订数 + 1。
+    - 时间戳 `new Date().toISOString()`；修订摘要文字自定，不作断言。
+  - **合成预览（固定值，不由文件名 / URL / 文本推断）**：
+    - `detectedType`：file = `合成文件预览（未解析正文）`；url = `合成链接预览（未抓取）`；text = `合成文本预览（正文不保存）`。
+    - `fields = [{sourceField:'合成列 1', targetField:'待映射', unit:'待确认'}]`，`unit = null`，`timeRange = null`。
+  - **测试提示**（对应既有标准）：
+    - 标准 2 “quarantined 样例可复现”：经 `jobFixtures.uploads`（或 `job-detail`）覆盖注入一条 pending_validation 且带 `quarantineReason` 的投放，再 confirm。这属系统边界注入，走真实实现；有覆盖的会话不持久化。
+    - 修正前 mapping：已归属投放看 `getStageWorkspace` collect 的旧修订；未归属投放看 normal 快照中的 `mappingHistory`。
+    - 标准 3：normal 下 submit 文本后，`fai.jobs.v1` 不含正文字符串；ingest payload 的 sourceNote 五字段原样。
+    - 标准 4：slow / error 下的读方法本身也延迟或报错，因此“未提交 / 读回不变”经 job-state 的同步读函数观察。
+    - 每例前清 `localStorage`。
+  - **不做**：真实解析 / 抓取 / 模型 / 启发式隔离；T-A13 的池、归入、删除与取消；不宣称 T-A17 的只读门已完成。
 - **完成标准**：
   1. createJob 校验必填（标题非空、类型合法），回执和读回均为 collecting / collect，交付物 draft（AC-001-3 部分前置）。
   2. submit 后状态为 pending_validation，**confirm 之后才是 ingested**；quarantined 样例可复现；map_fix payload 带修正后的 mapping，原记录保留（AC-003-4、AC-003-6 部分前置）。
@@ -438,10 +512,19 @@
 
 ### T-A13 写方法：待归属池、归入、删除来源与取消作业
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜r6.3 R-D 口径：⑤（cancelJob 后 status 与阶段一致）由本任务写方法按构造保持，不加 refine（implementation-log §8）
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜r6.3 R-D 口径：⑤（cancelJob 后 status 与阶段一致）由本任务写方法按构造保持，不加 refine（implementation-log §8）｜第三批 r6.6 精度已补（修改范围【r6.6 精度】），仍未开始
 - **预计**：1.5 h｜**依赖**：T-A12
 - **上下文**：plan §4.2（assign 时补作业内的 ingest 事件；removeUpload 只移除当前关联）；矩阵中的 remove_source / cancel_job。
 - **修改范围**：`listUnassignedUploads()`、`assignUpload(uploadId, jobId)`、`removeUpload(uploadId, reason)`（kind=delete，action=remove_source；从当前视图移除，历史锚保留）、`cancelJob(jobId, reason)`（cancelled + reason，kind=delete，action=cancel_job）；接口 / 方法表 / real 桩 / 接线；生成物；新建 `tests/unit/jobs/job-state-pool.spec.ts`。
+  【r6.6 精度（规则见 plan §2.4【r6.6】；不改标准与命令）】
+  - **规则**：assign 把池中记录（连同预览）移入目标作业；remove 只置 `removed=true`；cancel 保留阶段 / 产物快照；未归属投放的 remove 不写事件。
+  - **前置**：assign 的投放须在池中且未删除，否则 validation_error；未知投放 / 作业返回 not_found。
+  - **复用**：T-A12 的 `writableJob` / `findUpload` / dataset 修订 helper。
+  - **投影**：本任务在 job-state 的两个读函数中落地“当前列表”——`listUnassignedUploads` 过滤；`getStageWorkspace` 的 collect.uploads 去掉 removed。同时把 `getStageWorkspace` 方法描述补一句（实现中立）。commit 与快照不过滤。
+  - **测试提示**（对应既有标准）：
+    - 标准 2：本批没有 listInterventions（T-A15）。“介入历史和原锚仍可查”经以下真实输出验证：回执中的 remove_source 事件；normal 快照中的事件与 removed 记录；`getStageWorkspace` collect 旧修订中的 uploadId；`getIntakePreview`。T-A15 / T-B06 再经读 API 覆盖。
+    - 标准 3：cancel 后 `getJob` 的 currentStage / stages 与取消前一致，各阶段工作区内容不变。本批没有 run 关联，“不 abort”只作实现约束（晚到事件隔离见 T-A18 标准 5）。
+    - 每例前清 `localStorage`。
 - **完成标准**：
   1. 待归属的投放出现在池中；assign 之后从池中消失、出现在该作业的采集列表，并追加一条作业内 ingest 事件；assign 到未知作业返回 not_found（AC-003-5 部分前置）。
   2. removeUpload 之后当前视图不再显示该投放，但介入历史和原锚仍可查（AC-007-3 部分前置）。
@@ -620,10 +703,20 @@
 
 ### T-A22a jobsStore：共享未筛选列表缓存、刷新、createJob action 与 agent 终态刷新（H-2·列表；r6 新增）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜第三批 r6.6 精度已补（修改范围【r6.6 精度】），仍未开始
 - **预计**：1.5 h｜**依赖**：T-A09a、T-A10、T-A12、T-A22
 - **上下文**：plan §2.3 “写回执 / agent 通知后重新读取，不做轮询”的机制落地（本 feature 的详情页、重跑、改稿、待合并 e2e 同样依赖它）；v2 plan §7.3 H-2 ①～⑤ 与 v2 tasks §1.2 H-2·列表；§1-9。
 - **修改范围**：新建 `frontend/src/jobs/stores/jobs.ts`（`useJobsStore`）：只读 `jobs: JobListItem[]`（`listJobs()` 未筛选结果）、`listStatus: 'idle'|'loading'|'ready'|'error'`、`listError: ContractError | null`；`ensureJobs()`（仅 idle 时加载）；`refresh()`（重读未筛选列表；有筛选时重读 `filteredJobs`；T-B04 起同时重读已打开的作业详情；已有数据时保持 ready、不回到 loading；失败置 error 并保留 `listError`）；`applyFilter(filter | null)`（`listJobs(filter)` 的结果存为 `filteredJobs`，不写 `jobs`）；`createJob(input)`（`dataClient.createJob` 成功后 `refresh()`，返回新作业）；`receiveAgentEvent(event)`（仅对带 `jobContext` 的终态事件调用 `refresh()`）；`frontend/src/main.ts` 增一行 `agentClient.subscribe(useJobsStore(pinia).receiveAgentEvent)`，与既有 agent store 订阅一样在卸载 / HMR 时解除（§0 B-10 先例）。store 不直接访问 localStorage、不推导业务状态，“进行中”只用契约常量 `ACTIVE_JOB_STATUSES`、不另建判定或 selector；不加请求序号等竞态防护（AGENTS §5.1）。新建 `tests/unit/jobs/jobs-store.spec.ts`（真实 Pinia + 真实 mock client；按 §0 B-6 的既有做法在系统边界新建 client 并用透传 spy 计数，不 `vi.mock` 内部模块）。
+  【r6.6 精度（不改标准与命令；导出名与方法名保持 plan / interface-handoff 已审名称）】
+  - **类型**：`filter: ListJobsFilter | null`（`ListJobsFilter = NonNullable<Parameters<DataClient['listJobs']>[0]>`，不另建 schema）；`filteredJobs: JobListItem[] | null`；`createJob(input: CreateJobInput): Promise<Job>`，返回回执的 `jobs[0]`。
+  - **`refresh()`**：先 `listJobs()` 写 `jobs`；`filter` 非 null 时再 `listJobs(filter)` 写 `filteredJobs`。成功 → ready、`listError=null`；任一失败 → error + `listError`，已有 `jobs` / `filteredJobs` 保留。本批不读详情（`openJob` 与详情重读归 T-B04）。
+  - **`applyFilter`**：`applyFilter(null)` 不发请求，置空 `filter` / `filteredJobs`；`applyFilter(f)` 只写 `filter` / `filteredJobs`，失败口径同上。
+  - **`createJob`**：契约失败时以原 ErrorResponse 拒绝，不 refresh、不改缓存；成功后恰好一次 `refresh()`，再返回新作业。
+  - **`receiveAgentEvent`**：仅当事件为 `run.completed` / `run.failed` / `run.aborted` 且带 `jobContext` 时，调用一次 `refresh()`。
+  - **标准 4 的验证方式**：T-A18 尚未接线，状态层不随事件改变，因此只验证“真实 mock AgentClient 回放的终态触发一次重读”。测试新建 `createMockAgentClient()` 并订阅 `store.receiveAgentEvent`，执行 `send({message, jobContext})`，用假时钟推进到终态，对 `dataClient.listJobs` 的透传 spy 计数。不加生产故障开关或注入 setter，不在测试里复写业务逻辑。
+  - **`main.ts`**：在 agent store 订阅之后增加 `agentClient.subscribe(useJobsStore(pinia).receiveAgentEvent)`，返回值同样交给 `app.onUnmount` 与 `import.meta.hot?.dispose` 解除。
+  - **范围**：本批只有 createJob 一条写路径接入“写后恰一次 refresh”。其余写路径由各自任务接入（§1-9；§7 S-31 核对表），本任务不宣称覆盖全部写管线。
+  - **测试卫生**：每例前清 `localStorage`（normal 会话自 T-A11 起会持久化）。标准 1 的“store 不调用 localStorage”只在读 action（ensure / refresh / applyFilter）期间以 Storage spy 断言；createJob 成功后由 mock 契约层写快照属契约实现层，不计为 store 访问。
 - **完成标准**：
   1. `ensureJobs()` 后 `jobs` 等于 `listJobs()` 的未筛选结果（updatedAt 倒序），状态 idle → loading → ready；重复 `ensureJobs()` 不重读；error 场景状态为 error、`listError.code='adapter_error'`，`refresh()` 可重试成功；已有数据时 `refresh()` 期间不回到 loading；store 不调用 localStorage（AC-001-1、AC-008-3 部分前置；H-2 ①②）。
   2. `applyFilter` 后 `filteredJobs` 为筛选结果，而 `jobs` 保持未筛选全集；清除筛选后 `filteredJobs` 为 null（AC-001-2 部分前置；H-2 ④）。
