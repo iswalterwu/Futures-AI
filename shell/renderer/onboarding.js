@@ -93,6 +93,7 @@ async function renderSources() {
 }
 
 async function boot() {
+  await loadApplicationPrefs()
   const backend = await window.futuresai.getBackend()
   if (!backend) {
     const message = window.futuresai.mode === 'mock' ? 'Mock 模式：设置业务不可用' : '后端未就绪，请稍后重试'
@@ -229,6 +230,39 @@ $('#open-unregister').addEventListener('click', async () => {
     status($('#key-status'), `清除失败：${err.message}`, 'err')
   }
 })
+
+// ---- 应用偏好：只消费窄 bridge，不触及档案/凭证或任意路径 ----
+async function loadApplicationPrefs() {
+  const result = await window.futuresai.getShellPrefs()
+  if (result.error) {
+    status($('#application-status'), `读取失败：${result.error.code || result.error}`, 'err')
+    return
+  }
+  $('#close-behavior').value = result.prefs.closeBehavior
+  $('#notifications').checked = result.prefs.notifications
+  $('#update-check').checked = result.prefs.updateCheck === 'startup'
+  $('#update-check').disabled = !result.updateConfigured
+  $('#update-note').textContent = result.updateConfigured ? '' : '未配置更新源，启动时检查更新不可用。'
+  $('#data-root').textContent = result.dataRoot
+  $('#pending-root').hidden = result.prefs.pendingDataRoot === null
+  $('#pending-root').textContent = result.prefs.pendingDataRoot === null ? '' : `重启后生效：${result.prefs.pendingDataRoot}`
+  $('#relaunch').hidden = result.prefs.pendingDataRoot === null
+}
+async function saveApplicationPref(patch) {
+  const result = await window.futuresai.setShellPrefs(patch)
+  status($('#application-status'), result.error ? `保存失败：${result.error.code || result.error}` : '应用偏好已保存', result.error ? 'err' : 'ok')
+  await loadApplicationPrefs()
+}
+$('#close-behavior').addEventListener('change', event => { void saveApplicationPref({ closeBehavior: event.target.value }) })
+$('#notifications').addEventListener('change', event => { void saveApplicationPref({ notifications: event.target.checked }) })
+$('#update-check').addEventListener('change', event => { void saveApplicationPref({ updateCheck: event.target.checked ? 'startup' : 'off' }) })
+$('#choose-data-root').addEventListener('click', async () => {
+  const result = await window.futuresai.chooseDataRoot()
+  if (result.cancelled) return
+  status($('#application-status'), result.error ? `更改失败：${result.error.code || result.error}` : '重启后生效，原目录数据不会移动或删除。', result.error ? 'err' : 'ok')
+  await loadApplicationPrefs()
+})
+$('#relaunch').addEventListener('click', () => window.futuresai.relaunch())
 
 boot().catch((err) => {
   $('#meta').textContent = `启动失败：${err.message}`

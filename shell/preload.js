@@ -22,4 +22,8 @@ contextBridge.exposeInMainWorld('futuresai', {
   openLogs: () => ipcRenderer.invoke('fai:logs'),
   openSettings: () => ipcRenderer.invoke('fai:open-settings'),
   openMain: () => ipcRenderer.invoke('fai:open-main'),
+  getShellPrefs: () => ipcRenderer.invoke('fai:shell-prefs'),
+  setShellPrefs: patch => ipcRenderer.invoke('fai:set-shell-prefs', patch),
+  chooseDataRoot: () => ipcRenderer.invoke('fai:choose-data-root'),
+  relaunch: () => ipcRenderer.invoke('fai:relaunch'),
 })
