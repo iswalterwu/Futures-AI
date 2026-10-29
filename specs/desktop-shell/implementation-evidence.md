@@ -598,3 +598,38 @@ a0d926709e28cf6cc9e7fd245e4c4f9f54d9f28605986c11abdc873bae6cd212  shell/test/e2e
 - 本轮仅完成T-06c/d的自动化实施子句，**已停在T-07a之前**。下一任务为T-07a，由协调者另行派工；没有整体feature完成/Converge/独立代码Review/Gate2/Handoff结论。
 - 人工M-13/14/15、真实前端工作台/作业/agent/drain、真实EIA注册/key/上游、日志诊断隐私（T-08d）、clean Windows安装卸载、基准机15s、系统toast/托盘、满盘/507 GUI、发布通道等均未取得。本轮绿灯不代表用户风险接受。
 - 证据追加后的首次`git diff --check`报第600行new blank line at EOF、exit2；已定点移除新增尾部空行后复查。未修改源码，11项源码指纹全部仍相同；保留这次文档检查失败，不计为产品测试失败。
+
+## 12. 2026-10-29 T-07a 预检停止（运行器提前退出契约缺口，未实施）
+
+### 12.1 固定输入与身份
+
+- Implement = **`openai/gpt-6-astra` via openai**，session **`01a187b3-5e6b-76b8-b88a-1209f19e5f0a`**（只打印指定 PI 三字段）；唯一 writer，未换模型/通道、未启动其他 agent、未改全局配置或鉴权。
+- 原实施树 `D:/2030/Futures-AI-desktop-implement` / `feat/desktop-shell-astra`，HEAD **`dad9352cb5222611b8adff5e66060d528315c64c`**；起始 status 干净。只读比较协调输入 `411a53f426164c160068aa4e00b4008f9c961e4c` 与本 HEAD，whole-tree Git diff 为空，exit0；未访问或修改其他工作树。
+- 重读 AGENTS、docs 四份权威文档、冻结 Spec、Plan5（含 §3.5/8.3/9）、Tasks 页首及 T-07a～e、完整 Checklist（含 offset86 以后）、Analyze、Review、HANDOFF §17、证据 §11、root-lock-risk-review 最终 v2；核对实际 main/hooks/runner/登记表与 runner 单测。Checklist 实数 **41 checked / 0 unchecked**，未修改；A 第2轮的未变 T-07 批准保留，第4轮局部 T-06 复查不是撤销 T-07 批准。
+- 写入前在 Git 外生成 **247 个 tracked 文件的 SHA-256 输入清单**。外部证据目录（RUN）：`C:/Users/iswal/AppData/Local/Temp/fai-activity-01a187b3-oMCjoJ/`，含 `input.sha256`、`preflight.log`、`blocker-inputs.sha256`；不含凭证、事件载荷或用户数据。
+
+### 12.2 精确阻塞与所需所有权
+
+**状态：BLOCKED，静态预检即触发本次派工的 runner-contract STOP；不是产品测试失败，也不是已运行的 Electron 复现。**
+
+| 实际代码 | 与 T-07a 必需验收的缺口 |
+|---|---|
+| `shell/main.js:32–34` 在顶层调用 `hooks.install()`；控制通道到 `:303–313` 的 `whenReady` 才启动。`test-hooks.js:11` 先发 `SMOKE paths` | 在加载事件文件入口整体拒绝非法输入并提前 exit4，会发生在控制通道就绪之前 |
+| `shell/check.js:113–164` 的 `ctx.launch()` 无提前退出模式；`:160` 要求 `paths && (second || controlPort)`，`:161` 对提前退出直接抛 `Electron exited before paths/control: 4`，不返回 instance | 正常场景入口不能取得期望提前退出的实例并执行 `退出码 4` 断言。`second` 是第二实例用途，拿来规避控制通道前置条件会绕过本次要求，不使用 |
+| `shell/check.js:153–156` 的 stderr 处理仅提取 TypeError/ReferenceError/SyntaxError 类型；stdout 只处理 SMOKE 行 | 没有保留/暴露固定安全标记 `TEST_EVENTS_INVALID` 的观察接口，不能通过现有返回对象证明 `输出 TEST_EVENTS_INVALID`。不得用伪造 SMOKE、延迟失败等待控制通道或捕获 launch 异常后访问内部 instances 代替批准契约 |
+
+- 需要由 **Plan/Tasks 作者明确设计并分配 `shell/check.js` 的最小提前退出观察契约与安全标记观察接口，以及相应 runner 单测/必要夹具的写入所有权，再经 Analyze / A 复查**；当前派工只允许 `index.js` 登记，runner 与旧 unit/fixtures 均只读。此处只报告缺口，不自行决定接口、扩范围或修基础设施。
+- 仍须保留 `ctx.launch()`、真实 Electron、首条 paths 与路径隔离核查、正常启动的 control 要求、原断言、10s/30s 时限及清理/泄漏即 FAIL 规则；不记录原始 stderr、文件名、输入值、payload 或私密字段。本轮未新增任何控制命令、事件 API 或安全机制。
+
+### 12.3 实际执行与未执行
+
+- 已执行：指定环境/Git 预检、只读文件核对、Checklist 计数、输入树比较、SHA-256 清单生成。首次文档枚举误把 HANDOFF 放在 feature 目录，`rg` 报该路径不存在；随后定位并读取根目录 `HANDOFF.md` §17。该辅助错误保留于会话，不是产品失败。
+- **发现停止条件时尚未启动 npm ci、baseline unit 或默认19场景。** 按 STOP 不再启动安装/产品测试，也不为制造失败写入临时产品实现。因此本轮基线及最终测试计数均为 **未运行**，不是 0 failure/绿色；历史42 unit、19场景310/310不计作本轮复验。
+- 未创建 activity reducer、unit 或 events-invalid scene；未改 hooks 或登记表。目标五个具名 unit、真实 Electron `退出码 4` / `输出 TEST_EVENTS_INVALID`、最终 unit / targeted / 默认20场景均 **未运行、未通过**。Electron/内嵌 Node/Chrome 运行时版本本轮未取得，不引用历史版本冒充新证据。
+
+### 12.4 冻结、清理与停止边界
+
+- 唯一仓库改动为本文件追加 §12；无新源码文件（新文件 ignore 检查不适用）。源码、原19场景、runner、单测/夹具、backend、依赖/lockfile、全部冻结文档及 checklist 保持输入字节；最终 manifest 核对与 `git diff --check` 记录在 RUN。
+- 本轮未启动 Electron、Python 宿主/helper、监听器或服务，未创建 scene roots、未改 ACL，无需 kill/删锁/恢复 ACL；本轮自有产品进程、监听、服务及 scene roots 均为 **0（未创建，不是已跑场景的清理证明）**。仅保留 Git 外证据目录；没有服务/端口需保留。
+- **T-07a 未实施/未完成，T-07b NOT STARTED**；未进入 T-07c/d/e、T-08、Converge、代码 Review、Gate2 或人工 M-ID。RL-01 仍 P3 OPEN / UNKNOWN / nonblocking；本轮无 root-lock 运行，不能称未复现或已修。RL-02 对照、UTF-8、PYZ、R5-02/03 与全部人工/真实作业/drain/上游义务保留。
+- 未 commit/push/PR/merge/reset；等待协调者安排上述窄范围规划与所有权处理，不在本调用绕过停止点继续写 reducer。

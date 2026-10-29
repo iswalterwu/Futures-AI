@@ -14,6 +14,7 @@
 > - **最新风险评估检查点（2026-10-29）**：Astra有界诊断未复现，只补安全时间线，实施681d4bb；最后42unit/14场景213通过。独立A专项评估无P1/P2，RL-01=P3 OPEN/UNKNOWN、非阻塞，可从T-06b继续；**不是根因已修或用户风险接受**。整体Converge/Review前需按A报告§4与既定文档流程补正负对照，其他RL事项仍跟踪。
 > - **最新设置检查点（2026-10-29）**：Astra从c33fa9d完成T-06b并保存d77ce69：42unit/0skip、16场景236/236，真实file设置XHR未触发CORS。T-06c/d因两个旧场景兼容与菜单驱动方案缺口暂停；先Plan/Tasks/Analyze/A窄修补确认，不隐匿API/假菜单或改生产路由取绿，不进入T-07；RL-01仍OPEN非阻塞。
 > - **修订5最新实施检查点（2026-10-29）**：Plan5/Analyze8固定38c482c与A第4轮41/41先通过；Astra以be6efe8实施T06c/d，保存209262e，最后源码42unit/19场景310/310、0fail/skip。固定导航/真实菜单驱动/两旧场景兼容与核心指引自动化通过，尚无人工M13/14/15；下一T07a未启动，仍18任务及外部验收。原RL条件/R5-02与R5-03的T08e依赖前提补齐义务不得漏过。
+> - **T07a最新停止点（2026-10-29）**：Astra从dad9352静态预检后STOP：ctx.launch不返回earlyexit4实例、stderr无固定安全标记观察；未获runner/旧unit/fixture写入权，未绕过launch或隔离。无T07代码/npm/产品测试，证据§12仅追加；先窄Plan/Tasks/Analyze/A再继续，T07b未开始，原42/310仅前序证据。
 > - **工作树**：一个 Astra 实施工作树 / 分支串行完成全部任务；`shell/main.js`、`preload.js`、`renderer/onboarding.*`、`package.json`/`package-lock.json`、`backend/app/*` 是共享文件，不安排并行写入者。
 > - **登记约定**：各任务修改范围中的"`shell/check.js`（登记）"均指在登记表 `shell/test/e2e/index.js` 中加入场景名（plan §8.3），不改运行器逻辑。
 - **命令状态**：下列所有"待新增"的测试文件、测试名、e2e 场景、npm 脚本在 Implement 前**都不存在、都未运行**；本文件不表示任何验证已通过。测试名为约定名，实施时须按此命名，以便验证输出能逐条对上。

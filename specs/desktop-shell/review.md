@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前检查点：**T06b/c/d自动化子句完成，最后源码42unit/19场景310/310、0fail/skip**。T06c/d保存209262e（输入be6efe8），按Plan5/Analyze8/A第4轮41/41批准范围实施，无安全放宽/CORS STOP。未进入T07a；RL-01 OPEN与R5跟踪项保留，完整代码Review/Converge/Gate2尚未完成。
+> 当前状态：**T07a预检BLOCKED：runner提前exit4与安全标记观察契约需窄Plan修补**。未写T07源码/未跑npm与产品测试，唯一实施输出为证据§12；前序42unit/19场景310不是本轮复验。T07b未开始，先Plan/Analyze/A明确最小所有权/契约，RL-01 OPEN与R5义务及Gate2边界不变。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -262,6 +262,15 @@ run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。以�
 - 冻结比对230tracked中221相同/9授权差异，另3新场景，未改backend/runner/生命周期/依赖/权限/其他旧scene。68临时根全部删除、所属进程/监听/服务0、ACL断言通过，未用强杀/删锁消除失败；git diff --check、11源码指纹与字节集成核对通过。
 - 实施证据 **§11**；原始 `C:/Users/iswal/AppData/Local/Temp/fai-routing-01a186ef/`，精简归档 `handoff-artifacts/20261029-settings-routing/`。完成23项的自动化实施范围，仍18项任务及人工/外部证据。下一T07a未开工；M13/14/15等未验，独立整体代码Review/Gate2未做。
 - RL-01仍OPEN/UNKNOWN，三次全集未复现不是根因修复；RL02对照/UTF8/PYZ/507GUI等仍待既定节点。R5-02菜单409缺自动化保留；R5-03在T08e前补T06d依赖与完整档案+准备注册前提；R5-04代码已落实，空window分支只有静态核对。无用户风险接受、无push/PR/merge。
+
+### 2026-10-29 继续：T-07a预检STOP（已结束，待Plan修补）
+
+- 用户再次“继续”。主输入411a53f / 实施输入 **dad9352cb5222611b8adff5e66060d528315c64c**；两树干净、全树内容一致。协调openai/gpt-6.1-sol复读权威资料与Checklist全文，实数41 checked/0 unchecked。T07未改动的原批准继续有效，A第4轮仅局部复查T06，不扩大其结论为代码Review。
+- 首选Implement **openai/gpt-6-astra via openai**，新session **01a187b3-5e6b-76b8-b88a-1209f19e5f0a**（会话元数据已实核），原实施树/分支唯一writer；只派T07a归约器、事件文件校验、新unit/events-invalid场景与登记、证据§12追加，停止于T07b前。其余源码/Spec/Checklist/文档只读，不顺手接托盘/改安全或生命周期。
+- `check.js`按Tasks登记约定只对应index登记，运行器本体暂不开放；若退出码4前置控制握手等真实接口缺口使批准场景无法执行，实施者须停报具体证据，由规划/A承接，不绕过ctx.launch与路径隔离或弱化旧断言。
+- **实际结果BLOCKED**：预检在代码前确认`ctx.launch`只接受paths+control、earlyexit4抛错，stderr只提异常类型不暴露TEST_EVENTS_INVALID；未绕过launch/second/路径隔离或擅改runner。按派工需Plan作者明确最小早退/标记接口与runner单测/fixture所有权、Analyze/A后继续；后续T07同类hook接线所有权可由规划者窄核查，不扩大安全/业务。
+- npm ci/unit/Electron均未执行，未取得本轮运行时版本；无T07实现/新scene。只追加证据§12（247输入中246不变），diff-check通过；未创建产品进程/监听/服务/scene/ACL，0是未创建而非场景清理。第一次误读feature内HANDOFF路径辅助错误已记录。无模型/通道/配置失败，不能作为回退理由。
+- run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-activity-HmP6S6Ej/`；外置预检`C:/Users/iswal/AppData/Local/Temp/fai-activity-01a187b3-oMCjoJ/`。T07b未开始；旧42/19场景310仅历史，RL-01及R5义务不变，无push/PR/merge/Gate2。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 

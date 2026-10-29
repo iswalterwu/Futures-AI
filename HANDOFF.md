@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **当前检查点：T-06b/c/d自动化子句已完成，最后源码42unit/19场景310/310、0fail/skip（2026-10-29）**。T06c/d实施保存 **209262e**、输入be6efe8；Plan5/Analyze8/A第4轮41/41先通过，未改需求/后端/安全，未触发CORS STOP。已停在T07a之前，无活跃worker/服务/端口。
-> **先读 §17（最新检查点）**、实施证据§11及Checklist第4轮。RL-01 P3 OPEN及对照义务、R5跟踪项保留；代码/人工/外部完整Review和Gate2均未完成，不push/PR/merge。
+> **当前状态：T07a预检因运行器提前退出/安全标记观察契约缺口停止，安排窄Plan修补（2026-10-29）**。未写T07源码/未跑npm或产品测试，唯一实施输出为证据§12。T06b/c/d最后42unit/19场景310为前序检查点，不能当作本轮复验；T07b未开始。
+> **先读 §18（最新停止点）**与证据§12，再看§17。RL-01 OPEN及R5义务保留；不得绕过ctx.launch/路径隔离，先固定规划/Analyze/A复查再继续，无push/PR/merge/Gate2。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -361,4 +361,12 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 本轮真实新基线42unit/16场景236；C后42unit/18场景273；D单场景37/37，最后定向7场景129/129；**最后源码42unit/0skip，默认全集19场景310/310、0failure（99.586s）**。3次npm ci成功。无产品测试FAIL；辅助Bash引号exit2、证据尾空行diff-check失败已修复并保留，不删历史root-lock/来源清除失败。
 - 仅授权8个既有源码+3新场景+证据§11；11源码SHA核对、冻结差异、git diff --check通过。全部68场景临时根已删，CIM/监听/服务所属计数均0，ACL原断言通过，无强制清理改绿。Coordinator只核对/串行集成，未代跑产品测试。原始log `C:/Users/iswal/AppData/Local/Temp/fai-routing-01a186ef/`，仓库精简 `specs/desktop-shell/handoff-artifacts/20261029-settings-routing/`。
 - **下一项T-07a**（活动归约器+事件夹具来源），未开工。仍18项任务及人工/外部验收未完成；RL-01 OPEN/UNKNOWN、RL-02正负对照和RL-04UTF8等整体Converge/Review前义务不变。R5-02菜单409自动化缺口保留，R5-03在T08e前必须由规划者补T06d依赖+完整档案/点击前提；R5-04已落实但空window保护仅静态核对，不冒充GUI断言。M13/14/15、真实前端/作业/agent/drain/上游、诊断隐私、干净Windows安装/15s基准/系统托盘toast等均无验收。
-- 主/实施树已内容同步、本地提交，无push/PR/merge；独立A第4轮只是规划质量复查，**不是完整代码Review/Converge/Gate2**。下次先重读本节、Plan5、Tasks T07a、Checklist41/41和全部保留风险，另派Astra，不跳任务。
+- 上述为T06c/d保存时点。下一轮T07a预检停止见§18；独立A第4轮只是规划质量复查，**不是完整代码Review/Converge/Gate2**，无push/PR/merge。
+
+## 18. 2026-10-29 T07a预检停止：运行器契约待窄Plan修补
+
+- 用户再次继续后，同首选Implement **openai/gpt-6-astra via openai**，新session **01a187b3-5e6b-76b8-b88a-1209f19e5f0a**（元数据实核），原实施输入 **dad9352cb5222611b8adff5e66060d528315c64c**、主输入411a53f，两树起始干净/全树一致。Checklist41/0，未改；无provider失败或模型回退。
+- 静态预检发现：ctx.launch只接受paths+control就绪，事件文件入口非法提前exit4会直接抛错、不返回实例；stderr只捕获异常类型，无TEST_EVENTS_INVALID安全标记观察接口。Tasks登记约定未给runner本体/旧unit/fixture写入权，实施者遵STOP不绕过ctx.launch、second语义或首paths隔离，不写伪造输出/延迟失败。
+- **T07a BLOCKED/未实施，T07b未开始**；无npm ci、unit或Electron，不能说本轮0fail或沿用42/310为复验。唯一输出为implementation-evidence §12，247输入指纹中246不变/仅证据变化；git diff --check通过。辅助路径误读已保留；未创建产品进程/场景根/端口/服务/ACL修改，不是已跑场景的清理证明。
+- 下一步由首选Opus窄修Plan/Tasks：明确批准早退观察/固定安全标记与对应runner单测/fixture所有权，Analyze追加后固定提交交独立A。T07后续hook接线所有权如有同类已观测缺口一并由规划者核查，不代写代码、不新增高权限/控制协议或放宽测试。Spec/AC/业务/后端/生命周期/安全不变；A若需工程批准则停报Walter。
+- run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-activity-HmP6S6Ej/`；外置预检 `C:/Users/iswal/AppData/Local/Temp/fai-activity-01a187b3-oMCjoJ/`。RL/PYZ/UTF8、R5-03(T08e前补前提依赖)、人工/外部证据与Gate2边界不变。
