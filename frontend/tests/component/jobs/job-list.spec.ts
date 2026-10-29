@@ -164,3 +164,142 @@ describe('WI AC-001-4 list', () => {
     expect(wrapper.findAllComponents(JobCard)).toHaveLength(5)
   })
 })
+
+describe('WI AC-001-2', () => {
+  test('offers all nine statuses and three types using contract option values and labels', async () => {
+    connect()
+    const wrapper = mountList()
+    await flushPromises()
+    for (const [name, labels] of [['状态', JobStatusLabel], ['类型', JobTypeLabel]] as const) {
+      const options = wrapper.findAll(`select[aria-label="${name}"] option`)
+      expect(options.map(option => [option.attributes('value'), option.text()])).toEqual([
+        ['', '全部'], ...Object.entries(labels).map(([value, label]) => [value, label.text]),
+      ])
+    }
+  })
+
+  test('each control sends the composed filter and renders real contract results without replacing the base cache', async () => {
+    const { client, reads, store } = connect()
+    const wrapper = mountList()
+    await flushPromises()
+    const cached = store.jobs
+    for (const [selector, value, filter] of [
+      ['select[aria-label="类型"]', 'research', { type: 'research' }],
+      ['select[aria-label="状态"]', 'processing', { type: 'research', status: 'processing' }],
+      ['input[aria-label="标题"]', 'j-process', { type: 'research', status: 'processing', title: 'j-process' }],
+      ['select[aria-label="状态"]', '', { type: 'research', title: 'j-process' }],
+      ['select[aria-label="类型"]', '', { title: 'j-process' }],
+    ] as const) {
+      reads.mockClear()
+      await wrapper.get(selector).setValue(value)
+      await flushPromises()
+      expect(reads).toHaveBeenCalledExactlyOnceWith(filter)
+      const expected = await client.listJobs(filter)
+      expect(expected.length).toBeGreaterThan(0)
+      expect(wrapper.findAllComponents(JobCard).map(card => card.props('job'))).toEqual(expected)
+      expect(store.jobs).toBe(cached)
+      expect(store.listStatus).toBe('ready')
+    }
+    reads.mockClear()
+    await wrapper.get('input[aria-label="标题"]').setValue('')
+    await flushPromises()
+    expect(reads).not.toHaveBeenCalled()
+    expect(store.filter).toBeNull()
+    expect(store.filteredJobs).toBeNull()
+    expect(wrapper.findAllComponents(JobCard).map(card => card.props('job'))).toEqual(cached)
+  })
+
+  test('clear resets all controls and restores the unscreened list without a request', async () => {
+    const { reads, store } = connect()
+    const wrapper = mountList()
+    await flushPromises()
+    const cached = store.jobs
+    await wrapper.get('select[aria-label="状态"]').setValue('processing')
+    await flushPromises()
+    await wrapper.get('select[aria-label="类型"]').setValue('research')
+    await flushPromises()
+    await wrapper.get('input[aria-label="标题"]').setValue('j-process')
+    await flushPromises()
+    expect(wrapper.findAllComponents(JobCard)).toHaveLength(1)
+    reads.mockClear()
+    await wrapper.get('.job-filters button').trigger('click')
+    await flushPromises()
+    expect(reads).not.toHaveBeenCalled()
+    expect(wrapper.get<HTMLSelectElement>('select[aria-label="状态"]').element.value).toBe('')
+    expect(wrapper.get<HTMLSelectElement>('select[aria-label="类型"]').element.value).toBe('')
+    expect(wrapper.get<HTMLInputElement>('input[aria-label="标题"]').element.value).toBe('')
+    expect(store.filter).toBeNull()
+    expect(store.filteredJobs).toBeNull()
+    expect(wrapper.findAllComponents(JobCard).map(card => card.props('job'))).toEqual(cached)
+  })
+
+  test('title stays untrimmed and case-sensitive; empty matches have their own message', async () => {
+    const { client, reads } = connect()
+    const wrapper = mountList()
+    await flushPromises()
+    for (const title of [' j-process ', 'J-PROCESS', ' ', 'j-process']) {
+      reads.mockClear()
+      await wrapper.get('input[aria-label="标题"]').setValue(title)
+      await flushPromises()
+      expect(reads).toHaveBeenCalledExactlyOnceWith({ title })
+      const expected = await client.listJobs({ title })
+      expect(wrapper.findAllComponents(JobCard).map(card => card.props('job'))).toEqual(expected)
+      if (title === 'j-process' || title === ' ') {
+        expect(expected).toHaveLength(title === ' ' ? 5 : 1)
+        expect(wrapper.findComponent(EmptyState).exists()).toBe(false)
+      } else {
+        expect(expected).toHaveLength(0)
+        expect(wrapper.getComponent(EmptyState).text()).toBe('暂无符合筛选的作业。')
+      }
+    }
+  })
+
+  test('clearing a filter in the empty scenario restores the unfiltered empty message without reading', async () => {
+    const { reads } = connect('empty')
+    const wrapper = mountList()
+    await flushPromises()
+    expect(wrapper.getComponent(EmptyState).text()).toBe('暂无作业。')
+    await wrapper.get('select[aria-label="类型"]').setValue('daily')
+    await flushPromises()
+    expect(wrapper.getComponent(EmptyState).text()).toBe('暂无符合筛选的作业。')
+    reads.mockClear()
+    await wrapper.get('.job-filters button').trigger('click')
+    await flushPromises()
+    expect(reads).not.toHaveBeenCalled()
+    expect(wrapper.getComponent(EmptyState).text()).toBe('暂无作业。')
+  })
+
+  test('filter failure hides cached cards; later filter success keeps the read error until retry refreshes both lists', async () => {
+    const { client, reads, store } = connect()
+    const wrapper = mountList()
+    await flushPromises()
+    const cached = store.jobs
+    changeScenario('error')
+    await wrapper.get('select[aria-label="类型"]').setValue('research')
+    await flushPromises()
+    expect(store.listStatus).toBe('error')
+    const error = store.listError
+    expect(wrapper.getComponent(ErrorState).props('error')).toEqual(error)
+    expect(wrapper.findComponent(JobCard).exists()).toBe(false)
+    changeScenario('normal')
+    await wrapper.get('input[aria-label="标题"]').setValue('j-process')
+    await flushPromises()
+    expect(store.filteredJobs).toHaveLength(1)
+    expect(store.jobs).toBe(cached)
+    expect(store.listStatus).toBe('error')
+    expect(store.listError).toBe(error)
+    expect(wrapper.findComponent(ErrorState).exists()).toBe(true)
+    expect(wrapper.findComponent(JobCard).exists()).toBe(false)
+    reads.mockClear()
+    await wrapper.getComponent(ErrorState).findAll('button')[1]!.trigger('click')
+    await flushPromises()
+    expect(reads.mock.calls).toEqual([[], [{ type: 'research', title: 'j-process' }]])
+    expect(store.listStatus).toBe('ready')
+    expect(store.listError).toBeNull()
+    expect(wrapper.findComponent(ErrorState).exists()).toBe(false)
+    expect(wrapper.findAllComponents(JobCard).map(card => card.props('job'))).toEqual(
+      await client.listJobs({ type: 'research', title: 'j-process' }),
+    )
+    expect(store.jobs).toEqual(await client.listJobs())
+  })
+})
