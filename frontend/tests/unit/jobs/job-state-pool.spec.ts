@@ -249,3 +249,42 @@ describe('WI cancelJob — AC-002-5 / AC-007-3 partial', () => {
     expect(state.getStageWorkspace('j-collect', 'collect')).toEqual(slowBefore.collect)
   })
 })
+
+describe('WI R3-B repeated remove — AC-007-3 partial', () => {
+  test.each([true, false])('second removal rejects without changing history or timestamps; assigned=%s', async assigned => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2030-01-02T03:04:05Z'))
+    const client = clientFor()
+    const submitted = await client.submitIntake({ ...input, jobId: assigned ? 'j-collect' : null })
+    await client.confirmIntake(submitted.upload.id, mapping)
+    const beforeRemoval = await client.getStageWorkspace('j-collect', 'collect')
+    const first = await client.removeUpload(submitted.upload.id, '第一次删除')
+    const beforeSecond = snapshot()
+    const stored = localStorage.getItem(JOBS_KEY)
+    const workspace = await client.getStageWorkspace('j-collect', 'collect')
+    const job = await client.getJob('j-collect')
+    expect(beforeSecond.mappingHistory).toHaveLength(1)
+    expect(workspace.revisions.slice(0, beforeRemoval.revisions.length)).toEqual(beforeRemoval.revisions)
+    if (assigned) {
+      expect(workspace.revisions).toHaveLength(beforeRemoval.revisions.length + 1)
+      expect(first.interventions).toHaveLength(1)
+      expect(first.interventions[0]).toMatchObject({ kind: 'delete', payload: { action: 'remove_source', uploadId: submitted.upload.id } })
+      expect(beforeSecond.interventions).toContainEqual(first.interventions[0])
+    } else {
+      expect(first.interventions).toEqual([])
+      expect(workspace).toEqual(beforeRemoval)
+    }
+    vi.setSystemTime(new Date('2030-01-02T03:05:05Z'))
+    await expect(client.removeUpload(submitted.upload.id, '再次删除')).rejects.toEqual({
+      error: { code: 'validation_error', message: '投放已删除。', retryable: false },
+    })
+    expect(localStorage.getItem(JOBS_KEY)).toBe(stored)
+    expect(snapshot()).toEqual(beforeSecond)
+    expect(snapshot().interventions).toEqual(beforeSecond.interventions)
+    expect(snapshot().mappingHistory).toEqual(beforeSecond.mappingHistory)
+    expect(await client.getStageWorkspace('j-collect', 'collect')).toEqual(workspace)
+    expect((await client.getJob('j-collect'))!.updatedAt).toBe(job!.updatedAt)
+    expect(await client.getIntakePreview(submitted.upload.id)).toEqual(submitted.preview)
+    expect(await clientFor().getIntakePreview(submitted.upload.id)).toEqual(submitted.preview)
+  })
+})

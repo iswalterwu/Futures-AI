@@ -234,6 +234,7 @@ export function removeUpload(uploadId: string, reason: string): WriteReceipt {
   return commit(working => {
     const { upload } = findUpload(working, uploadId)
     const job = upload.jobId === null ? null : writableJob(working, upload.jobId)
+    if (upload.removed) throw { error: { code: 'validation_error', message: '投放已删除。', retryable: false } }
     upload.removed = true
     return job ? appendDatasetRevision(working, job, new Date().toISOString(), {
       action: 'remove_source', uploadId, reason,

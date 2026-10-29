@@ -176,7 +176,7 @@ export const dataMethods = {
     result: WriteReceiptSchema,
   },
   removeUpload: {
-    description: '标记投放已删除，使其从当前列表消失；保留记录、预览与旧修订。已归属者追加 dataset 修订及 delete / remove_source 事件，未归属者不写事件；终结作业拒绝写入。',
+    description: '标记投放已删除，使其从当前列表消失；保留记录、预览与旧修订。已归属者追加 dataset 修订及 delete / remove_source 事件，未归属者不写事件；终结作业拒绝写入。已删除的投放返回 validation_error。',
     params: z.tuple([
       z.string().min(1).describe('uploadId：要移除的投放锚。'),
       z.string().trim().min(1).describe('reason：删除理由，去除两端空白后非空。'),
