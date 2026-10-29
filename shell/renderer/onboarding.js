@@ -3,9 +3,9 @@
 // AC-005-1 首启进引导、AC-005-2 可跳过、AC-005-3 开通与状态、AC-005-4 不显示明文。
 
 const REGISTER_URL = 'https://www.eia.gov/opendata/register.php'
-const backend = (window.futuresai && window.futuresai.backend && window.futuresai.backend()) || null
 
 const $ = (sel) => document.querySelector(sel)
+const displayedEmails = new WeakMap()
 const status = (el, text, kind) => {
   el.hidden = false
   el.textContent = text
@@ -13,7 +13,8 @@ const status = (el, text, kind) => {
 }
 
 async function api(path, options = {}) {
-  if (!backend || !backend.port) throw new Error('后端未就绪')
+  const backend = await window.futuresai.getBackend()
+  if (!backend) throw new Error(window.futuresai.mode === 'mock' ? 'Mock 模式：设置业务不可用' : '后端未就绪')
   const res = await fetch(`http://127.0.0.1:${backend.port}${path}`, {
     ...options,
     headers: {
@@ -23,7 +24,7 @@ async function api(path, options = {}) {
     },
   })
   const body = res.status === 204 ? {} : await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(body.detail || `HTTP ${res.status}`)
+  if (!res.ok) throw new Error(body.message || body.detail || `HTTP ${res.status}`)
   return body
 }
 
@@ -45,6 +46,13 @@ function fillForm(form, profile) {
     const field = form.elements[k]
     if (field && typeof v === 'string') field.value = v
   }
+  displayedEmails.set(form, form.elements.email.value)
+}
+
+function profilePatch(form) {
+  const payload = Object.fromEntries(new FormData(form).entries())
+  if (payload.email === displayedEmails.get(form)) delete payload.email
+  return payload
 }
 
 function show(id) {
@@ -62,18 +70,28 @@ const PATH_LABEL = {
 async function renderSources() {
   const { sources } = await api('/settings/sources')
   const tbody = $('#sources-table tbody')
-  tbody.innerHTML = ''
+  tbody.replaceChildren()
   for (const s of sources) {
     const tr = document.createElement('tr')
-    tr.innerHTML = `
-      <td><code>${s.adapter_id}</code><br /><span class="muted">${s.name || ''}</span></td>
-      <td><span class="badge ${s.path}">${PATH_LABEL[s.path] || s.path}</span></td>
-      <td>${s.status}${s.run_status ? ` · 最近取数 <code>${s.run_status}</code>` : ''}</td>
-      <td class="muted">${s.reason || ''}</td>`
-    tbody.appendChild(tr)
+    const identity = document.createElement('td')
+    const code = document.createElement('code')
+    code.textContent = s.adapter_id
+    const name = document.createElement('div')
+    name.textContent = s.name || ''
+    identity.append(code, name)
+    tr.append(identity)
+    for (const text of [PATH_LABEL[s.path] || s.path,
+      `${s.enabled ? '已启用' : '已禁用'} · ${s.status}`,
+      s.verified_at || '尚未验证',
+      s.run_status ? `${s.run_status} · ${s.run_at || ''}` : '尚未取数',
+      [s.reason, s.reason_hint, s.guide_error].filter(Boolean).join('；')]) {
+      const cell = document.createElement('td')
+      cell.textContent = text
+      tr.append(cell)
+    }
+    tbody.append(tr)
   }
-  const eia = sources.find((s) => s.adapter_id === 'eia')
-  $('#open-unregister').hidden = !(eia && eia.credential_state === 'configured')
+  $('#open-unregister').hidden = false
 }
 
 async function renderPrefill(profile) {
@@ -83,15 +101,21 @@ async function renderPrefill(profile) {
     ['Email', profile.email],
     ['Category', profile.sector],
   ]
-  $('#prefill').innerHTML =
-    '<div class="muted" style="margin-bottom:6px">将用以下信息填写注册表单：</div>' +
-    rows.map(([k, v]) => `<div>${k}: <code>${v || '（未填）'}</code></div>`).join('')
+  $('#prefill').replaceChildren()
+  for (const [label, value] of rows) {
+    const row = document.createElement('div')
+    row.textContent = `${label}: ${value || '（未填）'}`
+    $('#prefill').append(row)
+  }
 }
 
 async function boot() {
-  if (!backend || !backend.port) {
-    status($('#onboard-status'), '后端未就绪，请稍后重试', 'err')
-    $('#onboard-form').classList.add('active')
+  const backend = await window.futuresai.getBackend()
+  if (!backend) {
+    const message = window.futuresai.mode === 'mock' ? 'Mock 模式：设置业务不可用' : '后端未就绪，请稍后重试'
+    $('#meta').textContent = message
+    show('view-onboard')
+    status($('#onboard-status'), message, 'err')
     return
   }
   const data = await api('/settings/profile')
@@ -113,7 +137,7 @@ async function boot() {
 // ---- 引导 ----
 $('#onboard-form').addEventListener('submit', async (e) => {
   e.preventDefault()
-  const payload = Object.fromEntries(new FormData(e.target).entries())
+  const payload = profilePatch(e.target)
   try {
     await api('/settings/profile', { method: 'PUT', body: JSON.stringify(payload) })
     await api('/settings/onboard', { method: 'POST', body: JSON.stringify({ skip: false }) })
@@ -135,9 +159,10 @@ $('#skip-onboard').addEventListener('click', async () => {
 // ---- 设置 ----
 $('#profile-form').addEventListener('submit', async (e) => {
   e.preventDefault()
-  const payload = Object.fromEntries(new FormData(e.target).entries())
+  const payload = profilePatch(e.target)
   try {
     const data = await api('/settings/profile', { method: 'PUT', body: JSON.stringify(payload) })
+    fillForm(e.target, data.profile)
     status($('#profile-status'), '档案已保存', 'ok')
     await renderPrefill(data.profile)
   } catch (err) {
@@ -175,7 +200,8 @@ $('#verify-key').addEventListener('click', async () => {
 $('#open-unregister').addEventListener('click', async () => {
   try {
     const r = await api('/settings/key', { method: 'DELETE' })
-    status($('#key-status'), r.cleared ? '已清除 key，当前回到免凭证回退路径' : '未找到已保存的 key', 'ok')
+    $('#api-key').value = ''
+    status($('#key-status'), r.cleared ? '已清除 key，当前为免凭证回退' : '未配置 key，当前为免凭证回退', 'ok')
     await renderSources()
   } catch (err) {
     status($('#key-status'), `清除失败：${err.message}`, 'err')

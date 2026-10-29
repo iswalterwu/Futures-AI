@@ -1,0 +1,35 @@
+**已保留 T06b 验证检查点；T06c/d 未实施，未进入 T07。**
+
+- 实际模型/通道：`openai/gpt-6-astra via openai`
+- Session：`01a18698-0ad0-7456-8578-dd4892e22bd5`
+- 输入及当前 HEAD：`c33fa9dad1a7a9ba548f1979a986a0a29cf18606`
+- 起始工作树干净；Checklist **41/41**，未修改；没有提交或推送。
+
+### 实现与验证
+T06b 已完成异步 `getBackend()`、安全 DOM 渲染、邮箱仅改变时提交、密码输入遮蔽、真实来源状态与清除回退提示。
+
+**未触发 CORS STOP**：真实 `file://` 页面成功加载 12 个下拉项及 EIA 回退状态，并完成姓名保存和空凭证清除；没有放宽安全策略或添加代理。
+
+| 验证 | 实际结果 |
+|---|---|
+| 新基线 | npm ci 成功；42 单测；原14场景213/213 |
+| 初次 settings-sources | **8/10失败**：空key时旧UI隐藏清除按钮；已保留记录并修正 |
+| T06b 两场景 | **23/23通过** |
+| 最后源码全量 | **42单测通过；16场景236/236通过** |
+
+### 停止原因
+T06c 所需改动与本次只读范围冲突：
+1. `startup-visible.js` 严格断言旧 preload 五成员，不能容纳批准新增的 `openSettings()`。
+2. `frontend-missing.js` 在未完成引导的新根中要求直接进入外部前端，与批准的首次引导路由冲突。
+3. 固定测试控制面没有应用菜单点击入口；未擅自扩命令或假称 API 调用就是菜单测试。
+
+**下一步需明确两个旧场景的最小兼容写权限及真实菜单驱动方案，再继续 T06c → T06d；不是进入 T07a。**
+
+### 改动与清理
+改动仅：
+- `shell/renderer/onboarding.{html,js}`
+- `shell/test/e2e/index.js`
+- 新增 `shell/test/e2e/{settings-sources,ui-masking}.js`
+- `specs/desktop-shell/implementation-evidence.md` 追加 §10
+
+冻结文件检查、源码指纹与 `git diff --check` 通过。自有进程 **0**，场景临时目录已删除，无后台服务/端口保留。RL-01 仍为 **P3 OPEN/UNKNOWN**；未宣称整体 Converge、Review 或 Gate 2 通过。

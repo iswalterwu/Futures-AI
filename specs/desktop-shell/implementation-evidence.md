@@ -453,3 +453,71 @@ profiling 首代：`uvicorn` cumulative **214866µs**，`fastapi` **285820µs**�
 - 213个输入tracked文件指纹在 RUN/`input.sha256`；最终比对 **211个未改，2个授权差异**（scene、本证据）。`git diff --exit-code 35e5f78 -- . ':!shell/test/e2e/root-locked.js' ':!specs/desktop-shell/implementation-evidence.md'`为空；`git diff --check`通过；本证据numstat仅新增、零删除。完整诊断diff、最终diff与最终SHA清单留RUN供协调者核对。冻结spec/Plan/Tasks/Checklist/Analyze/Review/HANDOFF/README、backend与依赖均未动；HEAD未移动。未commit/push/PR/merge/reset。
 - **结论：只完成本轮有界诊断及安全观测补充，不是T-05k稳定性关闭，更不是Converge/代码Review/Gate2。T-06b未开始。** 不能用本轮绿灯给风险评级或代替用户接受。
 - 下一步仍限定T-05k：协调者先保留本证据和历史FAIL；若继续诊断，可用已保存的最小临时observer做一次受控真实宿主启动迟滞（10s以上、30s以内）与缺失/错误marker或deadline超时的负对照，证明或否定“本场景观察预算不足”，再决定是否只调整该scene；同时仍需自然失败的producer/import/exit记录才能解释历史因果。不得仅用受控sleep或绿灯反推历史原因。需要触及后端/安全面/冻结设计时继续停报；不直接推进T-06b。
+
+## 10. 2026-10-29 T-06b 设置页检查点（T-06c/d 因权限边界暂停）
+
+### 10.1 输入、批准与实际范围
+
+- Implement = **`openai/gpt-6-astra` via openai**；session **`01a18698-0ad0-7456-8578-dd4892e22bd5`**，PI 环境实核，仅打印指定三个 PI 字段。唯一 writer，未开其他 agent、未切模型、未改配置。
+- 工作树 / 分支：`D:/2030/Futures-AI-desktop-implement` / `feat/desktop-shell-astra`；固定输入与结束 HEAD **`c33fa9dad1a7a9ba548f1979a986a0a29cf18606`**。起始 `git status --short` 为空。未 commit / push / PR / merge / reset。
+- 按请求完整读取 AGENTS、HANDOFF（含最新§14）、docs 四份权威文档与 D-007、feature spec/Plan/Tasks/Checklist/Analyze/Review/实施证据/root-lock-risk-review v2、settings spec/plan 与真实 profile/onboarding/sources/宿主路由、main/preload/renderer/runner/hooks/相关场景；截断均以 offset 续读。T-06b 实施及准备进入 T-06c 时重读对应 Plan/Tasks。
+- Checklist **41 checked / 0 unchecked**，未修改。最初 `rg -o '\[x\]'` 对全部文本计数得到43/2（误包含文内计数示例）；随后按实际 `^- \[x\]` / `^- \[ \]` 条目重新核对41/0，不将字面量计数当作闸门。
+- 按 Walter 继续及独立 A v2 的 nonblocking 判定开始既定 T-06b；**RL-01 仍 P3 OPEN / UNKNOWN**，原202/203失败、原断言/10s观察窗/30s生产deadline/历史记录均未改。RL-02受控正负对照仍欠，须整体Converge/Review前另行派工；RL-03/04/05与PYZ残余不顺手处理。本次基线及最终全集未复现root-lock，不能称根因已修或用户接受。
+
+### 10.2 任务状态与真实结果边界
+
+| 任务 | 实际状态 / AC |
+|---|---|
+| **T-06b** | **本任务自动化子句通过**。每次 API 操作异步取当前 `getBackend()`，无静态 `backend()` 别名；null/mock 明示。后端/用户字符串用 textContent/createElement/replaceChildren，renderer 无 innerHTML。表单保存时邮箱等于加载的遮蔽值则不提交，改变（含空串清除）才提交，成功后用遮蔽响应回填。保留 password key 输入与成功清空，不回显。真实来源表显示路径/状态/验证与取数记录/原因，并明确不是本次上游成功；空凭证也能清除并提示回退。覆盖 AC-005-3 的状态/清除、AC-005-4 的输入遮蔽/邮箱不覆盖、AC-009-2 的内置DOM子句；不代表整个AC或源开通完成 |
+| **T-06c** | **未实施 / 权限阻塞**。准备接线前发现旧只读场景与批准的新接口/路由直接冲突（§10.4），未修改main/preload/旧场景/hooks/fixture。AC-005-1/2、WO-01/05没有本轮新增通过结论 |
+| **T-06d** | **未开始**（依赖T-06c）。旧 renderPrefill 本轮仅消除HTML拼接，仍是旧的四项遮蔽展示；固定注册URL、缺项仍可打开注册、location.reload 仍待后续任务纠偏。没有调用或验证 registration-guide，没有声称核心五项指引、显式点击/离开清空、应用菜单测试已通过 |
+
+真实核心夹具：`settings-sources` 启动前用 `settings.onboarding.set_onboard_state` 写自有根目录完成状态，不复制schema；`ui-masking` 用 `settings.profile.Profile/save` 加密保存随机合成邮箱，退出后用真实 `load` 校验姓名确改、邮箱不变，并检查密文中无完整邮箱字节。测试只输出布尔判定和退出码，不打印字段/请求体/响应体/令牌/argv。名字含HTML样式文本，保存后没有插入对应DOM元素。所有邮箱均 `example.test` 合成数据；未读取真实凭证、未保存/提交/验证任何EIA key，清除仅作用于自有空凭证库，无上游/注册网络请求。
+
+**CORS实证**：源宿主无 `FAI_BACKEND_CMD`，真正的 `file://…/onboarding.html`，通过当前异步端口/令牌执行页面自身 fetch。`/settings/profile` 与 `/settings/sectors` 成功，**后端11项 + placeholder1 = DOM12项**；真实 `/settings/sources` 渲染eia「免凭证回退」，DELETE空key与姓名PUT也成功。**本受测 Electron33.4.11 没有触发 Plan§10 CORS STOP**；这不证明别的浏览器/打包环境CORS政策，也不宣称OPTIONS已被允许。场景失败分支保留Node同端点GET、OPTIONS状态/允许头与renderer错误类型的安全诊断，但本次该分支**未执行**，没有OPTIONS观测数据。未加入CORS中间件、proxy、header改写、security开关、mock API或回退。
+
+### 10.3 全部命令、失败与最终复验
+
+日志目录（Git外）：**`C:/Users/iswal/AppData/Local/Temp/fai-settings-01a18698/`**。以下cwd= shell，均用 `{ time <命令>; } > <日志> 2>&1` 保存并实录退出码：
+
+| 顺序 | 命令 | 结果 | 日志 / 墙钟 |
+|---|---|---|---|
+| 新基线 | `npm ci` | exit0，70 packages；既有boolean@3.2.0 deprecated提示 | baseline-ci.log / **13.430s** |
+| 新基线 | `npm run test:unit` | **42 passed / 0 failed / 0 skipped，4967.7373ms，exit0** | baseline-unit.log / **5.539s** |
+| 新基线 | `npm run check` | 原14场景 **213/213，failures0，exit0** | baseline-e2e.log / **71.091s** |
+| 早期真实正对照（只迁移异步API后） | `npm run check -- settings-sources` | **8/10，failures2，exit1**；DOM12项与eia回退已通过，失败为旧UI在空key时隐藏清除按钮，随后场景明确中断；非CORS错误 | t06b-settings-sources.log / **5.766s** |
+| T-06b修正后 | `npm run check -- settings-sources ui-masking` | **23/23，2场景，exit0** | t06b-final.log / **11.467s** |
+| **最后源码编辑后** | `npm run test:unit` | **42 passed / 0 failed / 0 cancelled / 0 skipped，4968.2733ms，exit0** | unit-final.log / **5.502s** |
+| **最后源码编辑后** | 默认 `npm run check` | **236/236，16场景，failures0，exit0**（原14场景213 + 新settings-sources11 + ui-masking12） | e2e-final.log / **72.960s** |
+
+唯一产品失败为上述一次清除按钮不可见；修正是让无key的真实清除入口可用并说明回退，未改断言、运行器、隔离或清理规则。不是重跑直到绿；T-06c的旧场景冲突属于静态发现、尚未执行的新功能失败，不伪造红灯结果。hash检查exit1仅为三个授权既有源码差异（证据追加前），`check-ignore`无命中exit1、新文件`diff --no-index --check`正常差异exit1不是产品失败；Git LF→CRLF提示未通过配置消除。
+
+真实runtime：**Electron33.4.11 / Node20.18.3 / Chrome130.0.6723.191**。本轮未跑后端全量、打包冒烟或重建；旧454/5与12/12仅历史。未执行19场景，不把未创建的 onboarding/onboarding-skip/registration-guide算通过；完整507 GUI自动化仍是既有P3缺口，仅API错误显示现在可使用message字段。
+
+### 10.4 后续停止理由：测试兼容所有权 / 菜单驱动范围
+
+本请求明确冻结旧生命周期/其他scene，只允许极小frontend-stub/test-hook兼容，并要求权限或控制命令不足时报告。T-06b后重读发现：
+
+1. `shell/test/e2e/startup-visible.js:18` 对 `Object.keys(window.futuresai).sort()` **严格等于旧五项**。T-06c批准契约必须增加 `openSettings()`，该旧断言将失败；不通过隐藏API枚举或按测试场景裁剪产品bridge骗过它。
+2. `shell/test/e2e/frontend-missing.js:10,33–35` 用全新、未完成引导的真实根，要求先显示外部资源缺失，再在补齐资源后直接进frontend fixture。Plan§4.1第6步要求未完成引导先进入内置向导；需授权把此旧资源场景的前提改为经真实settings核心完成引导，**保留**缺失/重载/后端代际/端点/清理断言。不为了它改变生产路由优先级，也不在hooks伪造业务状态。
+3. `src/test-hooks.js` 固定命令无应用菜单click（只有尚未实现的tray-click），eval只能在隔离renderer中运行。`openSettings()`调用不能当“菜单设置…”通过；没有默默新增menu-click或把tray-click改称应用菜单。需协调明确真实菜单handler的受控驱动方式/授权范围（或既定人工路径，但不能因此改自动化验收条件）。
+
+**停止点：保留T-06b已验证WIP，不实施T-06c/d，更不进入T-07a。** 下一步需要协调者批准上述两个旧scene的最小兼容写入范围，并明确应用菜单测试驱动；若涉及新增控制命令/设计，则依请求先走相应Plan/Analyze与A复查，不在本轮自授权限。这里不是CORS或模型不可用，不申请任何后端/Chromium安全放宽。
+
+### 10.5 冻结、源码指纹、清理与剩余边界
+
+- 只改3个既有源码（onboarding.html/js、e2e/index.js）+ 新2个scene + 本证据§10追加。main/preload/backend/**、依赖/package/lock、旧14scene/unit/runner/hooks/fixture、frozen spec/Plan/Tasks/Checklist/Analyze/Review/README/HANDOFF/.gitignore及其他工作树未改。
+- 输入清单 `input.sha256` 共209个tracked文件；证据追加前206个字节相同，3个授权源码变化；追加后实核205个未改、4个授权差异（另增本证据）。`git diff --exit-code c33fa9d -- . ':!shell/renderer/onboarding.html' ':!shell/renderer/onboarding.js' ':!shell/test/e2e/index.js' ':!specs/desktop-shell/implementation-evidence.md'`为空；新scene不被忽略；已跟踪及两个新文件whitespace检查通过。忽略项只有既有backend/build、backend/dist与npm安装生成的node_modules。
+- 每场景自有外部root；失败及成功均由原runner优先production request-quit退出。新scene没有兜底kill/泄漏；快照记录的backend PID已死，所有scene temp已删；两次全集真实ACL恢复并实写通过，holder/helper均退出。最终CIM定向检查本工作树Electron、测试root Python/fake_backend，仅输出PID/Name与计数，**OWNED_SETTINGS_PROCESSES=0**；没有后台服务/控制端口保留，没有broad kill或用户数据清理。外部测试日志/指纹作为证据保留，不入Git。
+- 源码SHA-256清单（`code.sha256`，最后源码上）：
+
+```text
+013667f40561fd356c24906c8a52805d8a20cb37b634ca8c78b6f4e89e031f59  shell/renderer/onboarding.html
+6a7ce9cbbbc18babcf15632f3083336b3fd42cffe91adcfaee072867d9ddce3e  shell/renderer/onboarding.js
+3b5fec5546c5989cef7ce3655201cee7995f586abff8a0a48d367d10fc53c6cc  shell/test/e2e/index.js
+167c802ac8f9b5dda955f9a6744ec52a36e4d7367beafbc415bda016f08dc253  shell/test/e2e/settings-sources.js
+71560b3084aa61aec7c41ac3244baac5e48efa84a55f3933e6807928ee5656c2  shell/test/e2e/ui-masking.js
+```
+
+- 追加证据后空白检查曾报第523行 new blank line at EOF；已定点移除新增尾部空行后复查，保留此文档检查失败记录。源码未再编辑，最后测试与五个源码SHA仍对应当前源码。
+- **无整体feature完成 / Converge / 独立代码Review / Gate2 / 用户风险接受结论**。RL-01及所有条件保持；人工M-13/14/15、真实前端/作业/agent/drain、真实key/注册、日志诊断隐私、clean install、基准机15s、发布通道、系统toast/托盘、满盘/507 GUI等均未取得。本轮checkpoint不代替这些证据。

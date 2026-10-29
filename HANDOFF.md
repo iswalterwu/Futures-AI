@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **最新检查点：T-05k 有界诊断及独立技术复核完成，RL-01 为 P3 OPEN / UNKNOWN、非阻塞；下一项 T-06b（2026-10-29）**。A 未发现本窄范围 P1/P2，允许继续 Implement；这不是根因修复或用户风险接受。Astra 只补安全时间线与证据，实施提交 **`681d4bb`**，生产代码/现有超时/断言未改；最新42unit、14场景213/213通过。
-> **先读 §14 和 `root-lock-risk-review.md` 最终v2结论**。整体Converge/Review前必须补正负对照；若复现进程观测缺陷则升级回修。当前无后台worker，Checklist41/41不变，完整feature Review/Gate2未完成，不push/PR/merge。
+> **当前检查点：T-06b 自动化通过（42 unit / 16场景236/236），T-06c/d 因旧测试兼容与菜单驱动设计缺口暂停，准备最小Plan修补（2026-10-29）**。设置页真实file-origin GET/PUT/DELETE正对照通过，**未触发CORS STOP**，无需放宽安全。实施保存 **`d77ce69`**，不进入T-07；旧断言/控制命令未被擅改。
+> **先读 §15 与实施证据§10.4**。接下来仅明确T-06c导航/菜单测试与两个旧场景兼容，先Plan/Analyze/A复查再继续；不是新需求或授权安全面变更。RL-01 P3 OPEN及对照义务保留，完整Review/Gate2未完成，不push/PR/merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -332,3 +332,14 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 主集成检查点=本文件所在HEAD；实施源码观察提交=681d4bb，若同步进度文档以实施树git log查询最新HEAD。两棵树相关代码/文档会在无writer边界串行同步；不得从历史审核树回拷旧进度。
 - 当前权威证据：`implementation-evidence.md` **§9** + **`root-lock-risk-review.md`最终v2**。分派/最终报告/普通时间线/最终unit/e2e/审核输入指纹与A勘误摘要在 **`handoff-artifacts/20261029-lockprobe/`**；原始历史失败仍在前序lifecycle目录。
 - 原始run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-lockprobe-FiY0hypq/`；原始测试/诊断 `C:/Users/iswal/AppData/Local/Temp/fai-lockprobe-01a18620/`。大型profile日志、完整session、diff/测试库不入Git。本轮两个agent均结束，无服务、控制端口或自有进程需保留。
+
+## 15. 2026-10-29 设置宿主界面（T-06b检查点通过；T-06c/d待方案兼容修补）
+
+- 用户继续后，主树输入 `8a5ea69` / 实施树输入 **`c33fa9d`**，开始均干净，相关源码/feature文档/交接内容一致。Checklist41 checked/0 unchecked；A已判RL-01非阻塞但保持OPEN，未把根因当已修。
+- 唯一实施writer=session **`01a18698-0ad0-7456-8578-dd4892e22bd5`**，元数据实核 **openai/gpt-6-astra via openai**，原树/分支，无回退；协调仅派工、记录及后续串行集成。
+- 仅T-06b→c→d：异步当前端点与安全DOM/邮箱保护、引导与菜单设置入口、显式消费核心注册指引；仅授权shell界面/导航/五场景与证据追加。backend/**、依赖/生命周期/规划审核/全局配置只读，不开始T-07，也不重开RL控制实验或PYZ修补。
+- 必须真实settings-sources XHR正对照、真实加密档案夹具；组织类型11后台项+1占位=12options。e2e不验证/提交真实key，不访EIA，外链只经记录器；注册指引只在用户点击后显示真实合成邮箱，离开清空，不入日志/缓存。
+- **硬停止规则**：真实file://→127.0.0.1请求若被CORS/OPTIONS/权限阻止，保留Node同端点与renderer的安全诊断差异，停在受影响任务；禁止加CORSMiddleware、关闭webSecurity/CSP/sandbox、加main/preload代理或mock API/硬编码列表取绿，须先回Plan/Analyze/A复查及必要人工批准。
+- run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-settings-owBsqdLT/`；Astra已在07:52结束，**T-06b**最后源码42unit/0skip、16场景236/236，两个新业务场景23/23；真实file页面12options/EIA回退/DELETE空key/PUT姓名均成功，未触发CORS，未改backend/安全。最初清除按钮隐藏8/10失败已修且保留。六文件指纹核对后保存实施提交 **d77ce69520f2530532476f32a0735aa76691c301**；owned进程0，temp已删。
+- **T-06c/d未实施**：旧startup-visible严格等于五成员bridge，与已批准openSettings冲突；旧frontend-missing使用未完成引导的新根却要求直接进frontend，与Plan首启优先冲突；测试固定命令没有真实应用菜单点击驱动。禁止隐匿API/假点击/改生产路由迎合旧测试，需先明确最小兼容写权限与菜单方案。
+- 接下来Plan/Tasks/Analyze窄范围修补（非需求变更、非CORS调整），原任务目标/AC不变；Plan首选 **anthropic/claude-opus-5-5**，同限额窗口bridge已知耗尽不重复，本轮官方真实最小调用 **ROUTING_PLAN_OK**。独立规划树/输入提交与后续A固定审阅另行记录；重新质量确认前不开始T-06c/d。原源证据见implementation-evidence§10，仍不push/PR/merge/Gate2。

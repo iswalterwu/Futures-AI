@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前检查点：**T-05k有界诊断及独立A技术评估完成；RL-01=P3 OPEN/UNKNOWN、非阻塞，下一项T-06b**。A本窄范围无P1/P2，允许继续Implement但未关闭根因、未替用户接受；整体Converge/Review前必须补正负对照。Astra仅补scene安全时间线和证据§9（实施681d4bb），生产零改；新42unit/14场景213通过不是根因证明，不等于完整Review/Gate2。
+> 当前检查点：**T-06b 已验证42unit/16场景236/236，T-06c/d因测试兼容与菜单驱动方案缺口暂停**。真实file-origin设置GET/PUT/DELETE通过，未触发CORS、不改backend/安全；实施保存d77ce69。准备窄范围Plan/Tasks/Analyze修补与A复查，确认前不进入c/d/T-07，不假点击或隐匿API；RL-01 P3 OPEN、Checklist41/41原批准、完整Gate2边界不变。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -220,6 +220,26 @@ A 新增 P3 跟踪：**R4-01** 确认旧 `PYZ-00.toc` 中已有 `pyarrow.conftes
 **必留跟踪而非关闭**：RL-01历史FAIL202/203完整保留；不能从旧snapshot推断OS存活或marker未到。若复现证实OS已死但Node长时未收到exit，按A条件升级P2。RL-02须在整体Converge/Review前完成真实迟启动与错误标记/超deadline正负对照，按Plan/Tasks/派工纪律安排，不只是改大等待值；RL-03生产时间戳需先批准；RL-04 UTF-8跨chunk可损中文path/detail，A评P3、建议整体Review前Converge任务修；RL-05沿用现有deadline语义。当前均未实施或被用户接受。
 
 保存位置：A最终报告 + `implementation-evidence.md` §9；`handoff-artifacts/20261029-lockprobe/` 保存分派、Astra最终输出、普通时间线、最终unit/e2e、A勘误摘要及两类输入/源码指纹；大型profile/完整session留Git外。**取消此前人工临时阻塞，下一项T-06b**；本次未启动后续任务。需求/Plan/Checklist未改，整体Converge/独立代码Review/Gate2未完成，不push/PR/merge。归档Astra输出时，原Markdown硬换行的行尾空白触发一次whitespace检查；已用git stripspace从未改动的临时原始输出重新生成仅空白规范版，再检查通过，未手改生成物或生产源码，原报告保留Git外。
+
+## 2026-10-29 07:37～07:52 UTC 设置宿主界面（T-06b通过；T-06c/d暂停）
+
+- 用户继续后主树8a5ea69 / 实施树c33fa9d启动前均干净，相关内容一致。实际Implement **openai/gpt-6-astra via openai**，新session **01a18698-0ad0-7456-8578-dd4892e22bd5** 元数据确认，原实施树/分支唯一writer，无回退；协调仍PI实核gpt-6.1-sol，仅记录/派工/集成。
+- Checklist41 checked/0 unchecked，未改需求/Plan/审核；A上轮非阻塞RL-01仍UNKNOWN/OPEN，控制实验等条件留存，本调用不连带实施。
+- 范围仅既有onboarding.html/js、main/preload的设置导航、五个新e2e及登记/必要兼容与证据追加；backend、依赖、原生命周期/运行器/其他业务及全局配置只读，不进T-07。要求textContent安全DOM、只提交修改邮箱、真实核心加密档案、显式注册指引不入日志/缓存，e2e不提交真实key或访问EIA。
+- 真实settings-sources为带令牌回环XHR正对照，遇CORS/OPTIONS/权限阻止先做安全元数据对比并停止受影响任务；不关webSecurity/CSP/sandbox、不加backend CORS或main/preload代理、不mock API/硬编码列表绕过。需要安全面改动先Plan/Analyze/A复查与必要人工批准。
+- run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-settings-owBsqdLT/`；完整测试日志 `C:/Users/iswal/AppData/Local/Temp/fai-settings-01a18698/`。实现者已停止且未自行提交；协调核对六文件指纹后以 **d77ce69** 本地保存并原样集成。
+
+| 验证 | T-06b真实结果 |
+|---|---|
+| 本轮新基线 | npm ci成功、42unit、14场景213/213 |
+| 首次settings-sources | **8/10、2failure**：空key时清除按钮隐藏；非CORS失败，已修且历史保留 |
+| 两个新场景 | **23/23**：12options、EIA回退/清除；密码输入、普通页面无完整合成邮箱、HTML样式字符串未作DOM插入、真实核心读出姓名改而邮箱未覆盖 |
+| 最后完整unit / 全登记e2e | **42passed/0skip；16场景236/236/0failure（72.960s）** |
+| 安全与清理 | file://真实端口令牌GET/PUT/DELETE成功，无backend/CORS/proxy/security更改；owned0、temp已删、冻结与指纹通过 |
+
+**T-06c/d未实施的实际原因**：startup-visible锁死旧五API成员，不容批准的openSettings；frontend-missing新根未完成引导但期待先前端，与批准的主路由优先级冲突；固定控制集无应用菜单实际click驱动，不能把API调用冒充菜单。旧scene/runner/hooks未被擅改，main/preload本轮也未改，注册指引五字段尚未验证。
+
+后续先做Plan/Tasks兼容范围/菜单驱动及必要窄导航设计修补，Analyze与A确认后再由Astra继续，不涉及新What/AC或CORS放宽。Plan首选anthropic/claude-opus-5-5，同窗口不重试已耗尽bridge，本轮官方真实最小调用 **ROUTING_PLAN_OK**；独立树/固定提交待派工记录。详细证据§10和归档settings-b，非全feature Converge/Review/Gate2，不push/PR/merge。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 
