@@ -1,22 +1,24 @@
 import { expect, test } from '@playwright/test'
-import research from '../src/contracts/mock/fixtures/research.json' with { type: 'json' }
+import { T } from '../src/design/generated/tokens.ts'
 
 const menu = [
   { title: '工作台', path: '/workbench' },
+  { title: '作业', path: '/jobs', owner: 'workbench-interaction' },
   { title: '日报', path: '/daily', owner: 'daily-report' },
   { title: '价格', path: '/prices', owner: 'prices' },
   { title: '平衡表', path: '/balance', owner: 'balance-sheet' },
   { title: '物流', path: '/logistics', owner: 'logistics' },
-  { title: '专题研究', path: '/research', owner: 'research' },
+  { title: '格物致知', path: '/learning', owner: 'learning' },
   { title: '知识库', path: '/knowledge', owner: 'knowledge-base' },
   { title: '设置', path: '/settings', owner: 'settings' },
 ]
 const notice = '演示模式：数据均为合成样例，不读取私有文档或真实头寸。'
 
-test('AC-002-2 fixed menu order, stable addresses, current item and feature-owned placeholders', async ({ page }) => {
+test('AC-002-2 v2-nav nine-item order, stable addresses, current item and S0 feature-owned placeholders', async ({ page }) => {
   await page.goto('/')
   const links = page.locator('.fixed-link')
-  await expect(links).toHaveCount(8)
+  await expect(links).toHaveCount(9)
+  await expect(page.locator('.research-link')).toHaveCount(0)
   expect(await links.locator('.full-label').allTextContents()).toEqual(menu.map(item => item.title))
   for (const item of menu) {
     const link = page.getByRole('navigation', { name: '主菜单', exact: true }).getByRole('link', { name: item.title, exact: true })
@@ -24,7 +26,7 @@ test('AC-002-2 fixed menu order, stable addresses, current item and feature-owne
     await link.click()
     await expect(page).toHaveURL(item.path)
     await expect(link).toHaveAttribute('aria-current', 'page')
-    await expect(page.locator('.fixed-link[aria-current]')).toHaveCount(1)
+    await expect(page.locator('[aria-current]')).toHaveCount(1)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(item.title)
     if (item.owner) {
       await expect(page.locator('[data-placeholder-owner]')).toHaveAttribute('data-placeholder-owner', item.owner)
@@ -38,7 +40,7 @@ test('AC-002-2 fixed menu order, stable addresses, current item and feature-owne
 })
 
 for (const item of menu.slice(1)) {
-  test(`AC-002-2 direct ${item.path} and reload preserve path, query and fragment`, async ({ page }) => {
+  test(`AC-002-2 v2-nav direct ${item.path} and reload preserve path, query and fragment`, async ({ page }) => {
     const url = `${item.path}?scenario=normal#saved-view`
     await page.goto(url)
     await expect(page.locator('.shell')).toBeVisible()
@@ -51,21 +53,19 @@ for (const item of menu.slice(1)) {
   })
 }
 
-test('AC-002-2 dated daily and research detail deep links survive startup and reload', async ({ page }) => {
-  for (const detail of [
-    { url: '/daily/2026-10-28?scenario=normal#report', title: '日报', navId: 'daily' },
-    { url: `/research/${research[0].id}?scenario=normal#notes`, title: research[0].title, navId: 'research' },
-  ]) {
-    await page.goto(detail.url)
-    await expect(page.locator('.shell')).toBeVisible()
-    await expect(page).toHaveURL(detail.url)
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(detail.title)
-    await expect(page.locator(`[data-nav-id="${detail.navId}"]`)).toHaveClass(/active/)
-    await page.reload()
-    await expect(page.locator('.shell')).toBeVisible()
-    await expect(page).toHaveURL(detail.url)
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(detail.title)
-  }
+test('AC-002-2 v2-nav dated daily deep link survives startup and reload', async ({ page }) => {
+  const url = '/daily/2026-10-28?scenario=normal#report'
+  await page.goto(url)
+  await expect(page.locator('.shell')).toBeVisible()
+  await expect(page).toHaveURL(url)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('日报')
+  await expect(page.locator('[data-nav-id="daily"]')).toHaveAttribute('aria-current', 'page')
+  await expect(page.locator('[aria-current]')).toHaveCount(1)
+  await page.reload()
+  await expect(page.locator('.shell')).toBeVisible()
+  await expect(page).toHaveURL(url)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('日报')
+  await expect(page.locator('[data-nav-id="daily"]')).toHaveAttribute('aria-current', 'page')
 })
 
 test('AC-002-1 first-frame static skeleton hands over to mounted loading then workbench without blank frames', async ({ page }) => {
@@ -110,15 +110,16 @@ test('AC-002-1 first-frame static skeleton hands over to mounted loading then wo
   await expect(loading).toHaveCount(0)
 })
 
-test('AC-002-7 loading displays measured progress and the bootstrap notice before readiness', async ({ page }) => {
+test('AC-002-7 v2-boot loading displays three-step progress and the bootstrap notice before readiness', async ({ page }) => {
   await page.goto('/?scenario=slow')
   const loading = page.getByTestId('loading-screen')
   await expect(loading).toHaveAttribute('data-phase', 'loading')
   await expect(loading.getByRole('progressbar')).toHaveAttribute('value', '0')
   await expect(loading.getByRole('status')).toHaveText('正在启动本地工作台…')
   await expect(loading.locator('.notice')).toHaveText(notice)
-  await expect(loading.getByRole('progressbar')).toHaveAttribute('value', '25')
-  await expect(loading.getByRole('status')).toHaveText('正在加载资讯、数据源与研究列表…')
+  await expect.poll(() => loading.getByRole('progressbar').evaluate(element => (element as HTMLProgressElement).value)).toBeCloseTo(33.333333, 5)
+  await expect(loading.getByRole('status')).toHaveText('正在加载资讯与数据源…')
+  await expect(loading.getByRole('status')).not.toContainText('研究列表')
   await expect(page.locator('[data-page="workbench"]')).toBeVisible()
 })
 
@@ -165,26 +166,41 @@ test('AC-002-5 rail collapse and expansion survive navigation and reload', async
   expect(await page.evaluate(() => localStorage.getItem('fai.rail'))).toBe('expanded')
 })
 
-test('AC-002-3 research children come from the contract fixture and accept one added study', async ({ page }) => {
-  await page.goto('/')
-  await expect(page.locator('.research-link')).toHaveCount(research.length)
-  expect(await page.locator('.research-link .full-label').allTextContents()).toEqual(research.map(item => item.title))
-  const added = { id: '新增/油品研究', title: '新增油品研究（样例）' }
-  await page.addInitScript(items => {
-    window.__FAI_MOCK__ = { fixtures: { research: items } }
-  }, [...research, added])
-  await page.reload()
-  await expect(page.locator('.research-link')).toHaveCount(research.length + 1)
-  await expect(page.locator('.fixed-link')).toHaveCount(8)
-  const link = page.getByRole('link', { name: added.title, exact: true })
-  await link.click()
-  await expect(page).toHaveURL(`/research/${encodeURIComponent(added.id)}`)
-  await expect(link).toHaveAttribute('aria-current', 'page')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(added.title)
-  await expect(page.locator('.placeholder-note')).toContainText('research feature')
-  await page.reload()
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(added.title)
-})
+for (const width of [T.window.min_width, T.breakpoint.shell_collapse - 1]) {
+  test(`AC-002-6 v2-nav ${width}: nowrap labels, single row, contained overflow and reachable settings`, async ({ page }) => {
+    await page.setViewportSize({ width, height: T.window.height })
+    await page.goto('/workbench')
+    const nav = page.locator('nav.rail-navigation')
+    const links = nav.locator('.fixed-link')
+    await expect(links).toHaveCount(9)
+    await expect(nav.locator('.nav-list')).toHaveCSS('flex-wrap', 'nowrap')
+    const labels = links.locator('.full-label')
+    for (let index = 0; index < 9; index++) {
+      await expect(labels.nth(index)).toHaveCSS('white-space', 'nowrap')
+    }
+    const tops = await links.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().top))
+    for (const top of tops) expect(Math.abs(top - tops[0])).toBeLessThanOrEqual(1)
+    await expect(nav).toHaveCSS('overflow-x', 'auto')
+    const overflowing = await nav.evaluate(element => element.scrollWidth > element.clientWidth)
+    await nav.evaluate(element => { element.scrollLeft = element.scrollWidth })
+    if (overflowing) expect(await nav.evaluate(element => element.scrollLeft)).toBeGreaterThan(0)
+    const settings = nav.getByRole('link', { name: '设置', exact: true })
+    const containerRect = await nav.boundingBox()
+    const settingsRect = await settings.boundingBox()
+    expect(containerRect).not.toBeNull()
+    expect(settingsRect).not.toBeNull()
+    expect(settingsRect!.x).toBeGreaterThanOrEqual(containerRect!.x - 1)
+    expect(settingsRect!.x + settingsRect!.width).toBeLessThanOrEqual(containerRect!.x + containerRect!.width + 1)
+    expect(settingsRect!.y).toBeGreaterThanOrEqual(containerRect!.y - 1)
+    expect(settingsRect!.y + settingsRect!.height).toBeLessThanOrEqual(containerRect!.y + containerRect!.height + 1)
+    expect(await page.evaluate(() => ({
+      document: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      body: document.body.scrollWidth <= window.innerWidth,
+    }))).toEqual({ document: true, body: true })
+    await settings.click()
+    await expect(page).toHaveURL('/settings')
+  })
+}
 
 test('AC-002-4 ticker moves normally and reduced motion leaves news manually scrollable', async ({ page }) => {
   await page.goto('/')

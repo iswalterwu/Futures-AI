@@ -15,6 +15,10 @@ const items = [
   { id: 'M-06', title: '窄窗口', ac: 'AC-002-6' },
   { id: 'M-07', title: 'ticker', ac: 'AC-002-4' },
   { id: 'M-08', title: '图表主题', ac: 'AC-006-4' },
+  { id: 'M-09', title: '九项导航', ac: 'AC-002-2' },
+  { id: 'M-10', title: '作业轨道', ac: 'AC-003-7' },
+  { id: 'M-11', title: '全局投放', ac: 'AC-002-8' },
+  { id: 'M-12', title: '对话作业上下文', ac: 'AC-005-8' },
 ]
 
 test('AC-009-1 test chains every automated check in order and stops on failure', () => {
@@ -27,8 +31,8 @@ test('AC-009-1 test chains every automated check in order and stops on failure',
   ])
 })
 
-describe('AC-009-2 manual acceptance', () => {
-  test('contains exactly M-01 through M-08 in order', () => {
+describe('AC-009-2 v2-manual acceptance', () => {
+  test('contains exactly M-01 through M-12 in order', () => {
     expect(sections.map(section => section.split('\n')[0])).toEqual(
       items.map(({ id, title }) => `${id} ${title}`),
     )

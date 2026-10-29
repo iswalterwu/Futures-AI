@@ -113,8 +113,8 @@ adaptation: dark-glass
 
 ## 暗色适配
 
-- **规定**：两台导航表 → 单一 Vue 路由导航；固定八项顺序为工作台、日报、价格、平衡表、物流、专题研究、知识库、设置，专题研究子项来自 `getResearchList()`。不逐页手抄导航的原则不变。**为什么**：产品底座品种无关，固定菜单与研究扩展由 spec R-002 冻结，不随旧站页面身份生成。
-- **规定**：当前项加粗与点睛指示不变，墨字 → `text.primary`，竖条 → `accent.red`，并标记 `aria-current`；窄窗口塌为顶部横向导航，阈值用 `breakpoint.shell_collapse`，侧栏收起状态持久化。**为什么**：高亮要同时可见且可测，点睛色只用于非文字指示，不作导航背景。
+- **规定**：两台导航表 → 单一 Vue 路由导航；固定九项顺序为工作台、作业、日报、价格、平衡表、物流、格物致知、知识库、设置，无专题子项。不逐页手抄导航的原则不变。**为什么**：产品底座品种无关，九项固定菜单由 spec R-002 v2 冻结（D-016 / D-018），不随旧站页面身份生成。
+- **规定**：当前项加粗与点睛指示不变，墨字 → `text.primary`，竖条 → `accent.red`，并标记 `aria-current`；窄窗口塌为单行顶部横向导航，标签不折行、页面不横滚，仅空间不足时在导航容器内部横向滚动；采用 [UI_LAYOUT.md#narrow](UI_LAYOUT.md#narrow) 原规则（Walter 2026-10-28 的 G-02 裁定）。阈值用 `breakpoint.shell_collapse`，侧栏收起状态持久化。**为什么**：高亮要同时可见且可测，点睛色只用于非文字指示，不作导航背景。
 - **规定**：导航旁的待更新提醒 → 顶栏数据源新鲜度点，取 `status.fresh / status.stale`；原绿正常态改蓝。**为什么**：资讯与数据源状态是全局顶栏职责，不依赖旧「数据状态」页面或双 nav 注入。
-- **不采用**：六组旧组序、柴油 / LPG 导航内容、双台切换、`nav_sync.py` 与 `LPG_NAV` 流程、历史豁免页、旧待裁定问题及 `data-fresh-dot` 注入机制；原因是本 feature 的路由与 mock 研究列表已明确，旧静态页同步与后端注册表不属于前端实施范围。上方生成的 `page-contract.nav` 只保留原件，不手改其内容或继续生成旧导航。
-- **落点**：`frontend/src/app/{nav.ts,router.ts,Rail.vue,TopBar.vue}`；页面地址稳定、直接打开与刷新停留行为按 [plan §2.2](../../specs/frontend-workbench/plan.md) 实现。
+- **不采用**：六组旧组序、柴油 / LPG 导航内容、双台切换、`nav_sync.py` 与 `LPG_NAV` 流程、历史豁免页、旧待裁定问题及 `data-fresh-dot` 注入机制；原因是本 feature 的九项路由已明确，旧静态页同步与后端注册表不属于前端实施范围。上方生成的 `page-contract.nav` 只保留原件，不手改其内容或继续生成旧导航。
+- **落点**：`frontend/src/app/{nav.ts,router.ts,Rail.vue,TopBar.vue}`；页面地址稳定、直接打开与刷新停留行为按 [plan §2.2 / §9.4](../../specs/frontend-workbench/plan.md) 实现（v2 导航以 §9.4 为准）。

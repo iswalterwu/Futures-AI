@@ -13,7 +13,7 @@
 | [UI_COMPONENTS](UI_COMPONENTS.md) | `D:/FTEngine/design/UI/Components/UI_COMPONENTS.md` | 2026-10-28 | 迷你折线、新鲜度点、四态徽章与加载 / 空 / 错误态 |
 | [UI_CARDS](UI_CARDS.md) | `D:/FTEngine/design/UI/Cards/UI_CARDS.md` | 2026-10-28 | 基卡结构、标题 / 副标 / 右注、CK-CARD 思路迁为模块壳契约 |
 | [UI_TABLES](UI_TABLES.md) | `D:/FTEngine/design/UI/Tables/UI_TABLES.md` | 2026-10-28 | 通用表、盘面网格、三态格、数字对齐与语义分区 |
-| [UI_NAV](UI_NAV.md) | `D:/FTEngine/design/UI/Navigation/UI_NAV.md` | 2026-10-28 | 当前项与单一导航来源原则；旧双台改八项路由与研究扩展 |
+| [UI_NAV](UI_NAV.md) | `D:/FTEngine/design/UI/Navigation/UI_NAV.md` | 2026-10-28 | 当前项与单一导航来源原则；旧双台改九项路由（作业 / 格物致知，无专题子项） |
 | [UI_DARK_ADDITIONS](UI_DARK_ADDITIONS.md) | `specs/frontend-workbench/plan.md` + `frontend/src/design/tokens.json`（本 feature 新增） | 2026-10-28 | 背景、玻璃、补充字号、圆角例外、层级、窗口、抽屉与焦点带 |
 
 ## 阅读与追溯约定

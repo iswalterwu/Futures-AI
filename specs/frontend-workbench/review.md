@@ -593,3 +593,11 @@ Handoff 核对：`frontend/` 树 `03fda1de…` 与 A 审查目标 `869cb71` 相�
 
 - PR：[iswalterwu/Futures-AI#10](https://github.com/iswalterwu/Futures-AI/pull/10)（`docs/frontend-workbench-m08-evidence` → `main`，普通 merge commit；仓库没有配置 CI 检查）。
 - merge 提交号在 merge 后才产生，记在 PR 页面与 Handoff 结果文件上，不再为此另提交一次。
+
+## 20. v2 S0 阶段合入授权与集成记录（2026-10-29，追加；只作链接）
+
+> 作者 = claude-opus-5-5 via anthropic（协调器新派的集成 / 交接文档会话，不是 Implement，也不是 A；bridge 本窗口已有真实额度 / 限流失败，未重试）。本节只追加链接，上文 §0 ~ §19 是 v1 / H-01 / T-19 的历史记录，逐字不改。
+
+- Walter 授权把 frontend-workbench v2 **S0 现有内容**阶段性合入 main，同时清理本次修改衍生的工作树目录。原话、范围、Gate 边界、两条基线（`76abe92` / `cf8e11b`）、4 处冲突的处理、plan 编号迁移（v2 设计旧 §7 → §9；本 feature plan 的 §7 H-01 / §8 M-08 保留）、保留校验和待清理目录清单，都记录在 [merge-main-cleanup.md](merge-main-cleanup.md)。
+- 这一步**不是** v2 最终 Review、Gate 2 或正式 Handoff：完整 v2 仍 blocked 于 H-x；S0 代码审查的 P3-1 仍未修复、未获最终风险接受；M-01 ~ M-12 未代勾。v2 的状态与证据入口是 [tasks.md](tasks.md) v2 段首“主线合并登记”与第 1.3 节、[handoff-v2-s0.md](handoff-v2-s0.md)。
+- 合并后的复测、独立集成 Analyze / Converge、A 复核，以及 PR / merge main，都由协调器后续安排；本节不预写其结果。

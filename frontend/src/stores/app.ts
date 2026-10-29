@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { dataClient } from '../contracts/index.ts'
-import type { Bootstrap, ContractError, ErrorResponse, NewsItem, ResearchItem, SourceStatus } from '../contracts/types.ts'
+import type { Bootstrap, ContractError, ErrorResponse, NewsItem, SourceStatus } from '../contracts/types.ts'
 
 export const useAppStore = defineStore('app', () => {
   const phase = ref<'loading' | 'error' | 'ready'>('loading')
@@ -10,11 +10,10 @@ export const useAppStore = defineStore('app', () => {
   const completed = ref(0)
   const news = ref<NewsItem[]>([])
   const sources = ref<SourceStatus[]>([])
-  const research = ref<ResearchItem[]>([])
-  const progress = computed(() => completed.value / 4 * 100)
+  const progress = computed(() => completed.value / 3 * 100)
   const statusText = computed(() => {
-    if (completed.value === 4) return '加载完成'
-    return boot.value ? '正在加载资讯、数据源与研究列表…' : '正在启动本地工作台…'
+    if (completed.value === 3) return '加载完成'
+    return boot.value ? '正在加载资讯与数据源…' : '正在启动本地工作台…'
   })
 
   async function bootstrap(): Promise<boolean> {
@@ -28,7 +27,6 @@ export const useAppStore = defineStore('app', () => {
       await Promise.all([
         dataClient.getNewsTicker().then(items => { news.value = items; completed.value += 1 }),
         dataClient.getSourceStatus().then(items => { sources.value = items; completed.value += 1 }),
-        dataClient.getResearchList().then(items => { research.value = items; completed.value += 1 }),
       ])
       return true
     } catch (cause) {
@@ -38,5 +36,5 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  return { phase, boot, error, progress, statusText, news, sources, research, bootstrap }
+  return { phase, boot, error, progress, statusText, news, sources, bootstrap }
 })

@@ -20,6 +20,21 @@ afterEach(() => {
 })
 
 describe('AC-002-4 topbar', () => {
+  test('AC-002-4 v2-topbar visible 投放 button emits intake without a store or drawer', async () => {
+    const client = createMockDataClient()
+    const wrapper = mount(TopBar, { props: {
+      news: await client.getNewsTicker(),
+      sources: await client.getSourceStatus(),
+    } })
+    const button = wrapper.get('button.intake-button')
+    expect(button.isVisible()).toBe(true)
+    expect(button.text()).toBe('投放')
+    expect(button.attributes('type')).toBe('button')
+    expect(wrapper.emitted('intake')).toBeUndefined()
+    await button.trigger('click')
+    expect(wrapper.emitted('intake')).toEqual([[]])
+  })
+
   test('renders news titles, sources and timestamps returned by the real mock client', async () => {
     const client = createMockDataClient()
     const news = await client.getNewsTicker()

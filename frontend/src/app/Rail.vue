@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { RouterLink, useRoute } from 'vue-router'
-import { useAppStore } from '../stores/app.ts'
 import { useUiStore } from '../stores/ui.ts'
 import { navItems } from './nav.ts'
 
 defineOptions({ name: 'AppRail' })
 
-const app = useAppStore()
 const ui = useUiStore()
 const route = useRoute()
 </script>
@@ -56,7 +54,7 @@ const route = useRoute()
             class="nav-link fixed-link"
             :class="{ active: route.meta.navId === item.id }"
             :data-nav-id="item.id"
-            :aria-current="route.meta.navId === item.id ? (item.id === 'research' && route.params.id ? 'location' : 'page') : undefined"
+            :aria-current="route.meta.navId === item.id ? (route.name === item.id ? 'page' : 'location') : undefined"
             :aria-label="item.title"
             :title="item.title"
           >
@@ -66,30 +64,6 @@ const route = useRoute()
               aria-hidden="true"
             >{{ item.title[0] }}</span>
           </RouterLink>
-          <ul
-            v-if="item.id === 'research' && app.research.length"
-            class="research-list"
-            aria-label="专题研究列表"
-          >
-            <li
-              v-for="study in app.research"
-              :key="study.id"
-            >
-              <RouterLink
-                :to="{ name: 'research', params: { id: study.id } }"
-                class="nav-link research-link"
-                :data-research-id="study.id"
-                :aria-label="study.title"
-                :title="study.title"
-              >
-                <span class="full-label">{{ study.title }}</span>
-                <span
-                  class="compact-label"
-                  aria-hidden="true"
-                >研</span>
-              </RouterLink>
-            </li>
-          </ul>
         </li>
       </ul>
     </nav>
@@ -131,8 +105,7 @@ const route = useRoute()
   overflow: auto;
 }
 
-.nav-list,
-.research-list {
+.nav-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -159,14 +132,6 @@ const route = useRoute()
 .nav-link:focus-visible,
 .rail-toggle:hover {
   color: var(--fai-text-primary);
-}
-
-.research-list {
-  margin-inline-start: var(--fai-space-grid-gap);
-}
-
-.research-link {
-  font-size: var(--fai-type-meta);
 }
 
 .rail-foot {
@@ -199,10 +164,6 @@ const route = useRoute()
   text-align: center;
 }
 
-.rail[data-viewport-collapsed='false'][data-collapsed='true'] .research-list {
-  margin-inline-start: 0;
-}
-
 .rail[data-viewport-collapsed='true'] {
   gap: var(--fai-space-grid-gap);
   padding-inline: var(--fai-space-content-pad-x);
@@ -213,12 +174,23 @@ const route = useRoute()
   display: none;
 }
 
+.rail[data-viewport-collapsed='true'] .rail-navigation {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .rail[data-viewport-collapsed='true'] .nav-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.rail[data-viewport-collapsed='true'] .nav-list > li {
+  flex: none;
 }
 
 .rail[data-viewport-collapsed='true'] .nav-link {
+  white-space: nowrap;
   border-inline-start: 0;
   border-bottom: var(--fai-radius-base) solid transparent;
 }
