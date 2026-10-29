@@ -566,3 +566,20 @@ fi
 - 全部模型调用已同步返回，测试自管服务已退出，无本 session 待续跑服务；未 push、未建 PR、未 merge main、未进入全 feature Gate 2 / Handoff。
 
 > **下次先看 Walter 是否已对 T-B04a 最小生命周期检查与回归单独批复。** 获准才派 Astra → Converge → A 新会话定向复核；未获准不派代码。当前 21 完成 + 5 已实施未过 + 44 未开始，P2 R4-A 尚未修，整体未收敛。
+
+## 15. 远端备份已完成；未 merge、未删除（2026-10-29；保存/清理记录，非正式 Handoff；替代 §14.6 末条“未 push”的文字）
+
+> 文档记录 = claude-opus-5-5 via anthropic（本窗口 bridge 已确认 quota，不重试；官方调用成功，未改配置）。Git 操作由协调器亲自执行，本节只记事实。**没有新代码，没有修 guard，没有重跑测试。**
+
+- **起因**：Walter 要求保存工作、push 到 GitHub、合并后删除 D:/2030 下本 feature 的全部目录。R4-A（P2）尚未修，所以只完成远端备份；**未 merge main，也未删除任何目录或分支**。新的 push / merge 指令不倒推为 P2 已风险接受或 §5.1 guard 已批准，原评审不改。
+- **远端**：私有仓库 `github.com/iswalterwu/Futures-AI`，默认分支 main；fetch 后 main 仍为 `072bb12`，无 force push。原子 push 推送以下 3 个分支，并以 `ls-remote` 核对 SHA：
+  - `spec/workbench-interaction` @ `fc55235`：规格与恢复文档。本节提交后再 push，最新 SHA 用 `git log -1 -- HANDOFF.md` 查询。
+  - `integration/workbench-interaction` @ `e285ad2`：前端代码（固定点 `6c082fd`）及实施、评审完整历史。
+  - `docs/workbench-interaction-batch3-plan` @ `8c4660f`：唯一不在前两个分支祖先中的方案原件。
+- **覆盖范围**：上述 3 个分支覆盖本 feature 全部 **21 个本地分支的完整提交历史**；另 4 棵 detached 只读树的 HEAD 可由既有 `origin/main` 或 `origin/spec/frontend-workbench-v2` 访问，已核。
+- **目录**：D:/2030 下 `Futures-AI-interaction` / `Futures-AI-interaction-*` 共 **25 个目录**，全部为已注册 worktree、状态 clean；ignored 仅 `frontend/node_modules`、`frontend/test-results`，无未提交 / 未跟踪文件或 env。完整清单保存在协调器独占 Temp `wi-save-cleanup-01a18388-eehngibl/inventory.json`，不入库。
+- **保护范围**：不动其他 feature 的 **18 棵 worktree**、主仓库 `D:/2030/Futures-AI` 及共享 `.git`。以后清理只用 `git worktree remove` 移除这 25 棵，**不删本地或远端分支**，不碰共享 Git 数据。
+- **Draft PR**：[PR #12](https://github.com/iswalterwu/Futures-AI/pull/12)，main ← `integration/workbench-interaction`。已核 `OPEN` / `isDraft=true` / `autoMergeRequest=null`，head=`e285ad2`；`mergeStateStatus=DIRTY`，还存在与 main 的集成冲突，未处理。它仅用于保存和查看，不是 §2 第 11 步的正式 Handoff PR，不表示 feature 已验收，不启用 auto-merge。
+- **状态不变**：70 项 = 21 完成 + 5 已实施未过 + 44 未开始；46 AC 最终验收 0；Review `9812f64` 未通过（1 P2 + 4 P3）。1018 单测 / 29 E2E 为上一轮 A 的证据，本次没有重跑。
+- **下一步待 Walter 确认**：(a) 不合入 main，只保留远端备份 / Draft PR，直接清理这 25 棵本地 worktree；或 (b) 按完整工程流程继续修复、复核、收敛、Gate 2 后 Handoff。**目前尚未同意 (a)，所以全部目录保留**；通用代码授权不重复询问，§5.1 专项审批也没有被本次保存动作替代。
+- 原始会话、密钥、用户数据不 push；Temp 不清理。后续不要再为归档记录在 D:/2030 新建工作树。
