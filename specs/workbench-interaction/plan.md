@@ -38,6 +38,18 @@
 > **2026-10-29 r6.10（Converge batch4 精度登记，实施后）**：第四批 T-B01 / T-B02 / T-A22d / T-B04 / T-B03 已实施（代码 diff `37e2f71..6c082fd -- frontend`，待第四批独立代码 Review）。按实际代码只补类型 / 读法精度（标【r6.10】）：§2.1 `JobCard` / `StageRail` / `StageWorkspace` / 创建面板的实际 props 与写法；§2.3 详情缓存成员的类型层只读形态，以及 Checklist R10 S-43 的跨 feature 登记（真实 `api` 乱序归 `api` feature 决定）。不改行为、方法集、契约、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC 与任务结构；不是需求变更（analyze.md「Analyze R17」、`converge-batch4.md` §3）。R10 S-41（创建者展示）不在本轮改设计，只登记归属 = 本 feature、T-B05 开工前精度轮（tasks T-B05 状态行）。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；bridge 本协调窗口已确认 quota / rate / spend_limit，不重试；官方通道成功；未改配置）。
 > 【r6.11 草案时原文；“待批，不生效”已由下一行“r6.11 生效”取代】**2026-10-29 r6.11（第四批 Review R4-A 的最小修复草案；【待 Walter AGENTS §5.1 批准，不生效】）**：第四批代码 Review（`review-batch4.md`，原件 `9812f64`）判**未通过**，唯一 P2 = R4-A：详情页 async 入口在离开或切换阶段后，仍会执行迟到的 canonical replace。A 用真实 Chrome 在请求按序完成的 slow 场景复现了这一点，因此它不属于 S-43 的“乱序”口径。修复需要在 §2.1 新增一处本 plan 明确不做的生命周期检查，故只写成草案，见 §2.1 / §2.3【r6.11 草案】，落点为 tasks **T-B04a**（0.5 h，blocked_by Walter §5.1 批准）。在 Walter 单独批准前，§2.1【r6.9】“不加比较 / 去重 guard”仍然有效，本条不授权实施。不改 spec / 46 AC、方法集、契约、store、动作矩阵、九场景、样例表与定稿语义；不是需求变更，不回 Clarify。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18834-f443-750c-ae53-bba830191e22`；bridge 本协调窗口已确认 quota / rate / spend_limit，不重试；官方通道成功；未改配置）。
 > **2026-10-29 r6.11 生效（已获 Walter AGENTS §5.1 批准）**：集成人向 Walter 报告 R4-A、`onCleanup` 约 3～5 行的最小方案与归档选项后，Walter 原话回复：**“那就先修P2等全部工作完成后，再合入main”**。这是对 R4-A 最小修复的 §5.1 单独批准，并选定“先修、feature 全部完成后再合 main”；**不是**风险接受、**不是**提前 Gate 2，也不批准扩到 store 取消 / 锁 / 请求序号或其他 guard。生效范围逐字以 §2.1 / §2.3【r6.11】草案原文为限：只改 `JobDetailPage.vue` 的 `watch` 回调（`onCleanup` + `stale` 标志 + canonical replace 前的 `!stale` 条件），`job-detail.spec.ts` 只新增 `WI R4-A` 2 例，`detail-stage.spec.ts` 只新增 1 例；原 11 / 4 例不改；其他源码、store、query 一律不动。§2.1【r6.9】“不加比较 / 去重 guard”仅对这一处失效标志例外，其余位置仍然有效。T-B04a 的标准 / 命令 / 依赖 / 工时与 70 / 235 不变。批准 ≠ 已修：须 Implement → Converge → A 新会话增量 Review 通过后才关闭 R4-A。下文【r6.11 草案】中“待批，不生效 / 若获批 / 获批前”为草案时原文，按本行读作已生效（analyze.md「Analyze R19」）。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188da-1d90-7009-9405-316722985a4e`；bridge 本协调窗口已确认额度耗尽、无重置证据，不重试；同模型官方通道近期成功；未改配置）。
+> **2026-10-29 r6.12（第五批采集台闭环开工前机制精度，未审核、未实施）**：只为第五批 T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04 补既有 what / AC 内、可从代码推断的最小机制精度（标【r6.12】）：
+> - §2.1：投放抽屉的页面级容器、`StageWorkspace` 只对 collect 分发到新 `CollectWorkspace`、详情页右侧栏挂载介入历史。
+> - §2.2：采集台组件补 `stages/CollectWorkspace.vue`。
+> - §2.3：intakeStore 的公开（H-5）/ 内部成员、草稿 / 选中 / 池语义、写后刷新与读写错误口径；介入历史以 `currentJob` 替换为重读信号。
+> - §2.4：`listInterventions` 签名与语义（自 T-A15 拆出为 T-A15a）；`removeUpload` 对已删除投放 validation_error（R3-B，T-A13a，是否属领域规则由 Checklist R11 判定）；第十张展示映射 `ReliabilityLabel`（T-A01a）。
+> - §3：投放草稿与 File 的内存 / 元数据边界。
+>
+> 冻结 spec v1.1、46 AC、动作矩阵（13 kind）、九场景、样例表、迁移表、定稿语义均不变；`CONTRACT_VERSION` 仍 2.0.0（只增一个读方法与一张展示映射）；不新增事件总线 / 轮询 / 请求序号 / 锁 / 实例登记 / 测试 setter；不改 `app/**`、壳、agent、router、main。不是需求变更，不回 Clarify（analyze.md「Analyze R21」）。本补正**未经审核**：须独立 A 新会话做 Checklist R11 定向复核通过并提交后才可开码；R10 不自动覆盖本轮新接口。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18917-d5b2-7520-921c-f26458a30be1`；bridge 本协调窗口已明确 quota、无重置证据，不重试；同模型官方通道近期成功；未改配置）。
+> **2026-10-30 r6.12.1（Checklist R11 通过后的 P3 吸收；只改措辞 / 实施提示，不改设计）**：独立 A Checklist R11（claude-fable-5-1 via anthropic，原件提交 `1f99f80`，`checklist.md` blob `27a76aa6…`，审查对象 `fdac9f2`）判 r6.12 **通过：26 ☑ / 0 ☐，0 P1 / 0 P2**，5 项 P3 S-44～S-48 不阻断、授权作者自行吸收而不重过 Checklist。本 plan 只补两处【r6.12.1】：§2.3 校验位置写明 file 元数据在选择 / 拖入边界 parse 一次、提交时只判非空（S-46）；§2.4 R3-B 句以 R11 判定替换原条件句（S-45：**既有领域规则，可在现有授权内实施，不需 Walter §5.1 另批**；R3-B 维持开放至第五批代码 Review）。上一行 r6.12 中“是否属领域规则由 Checklist R11 判定”“本补正未经审核”为当时原文。方法集、契约、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC 与任务结构（73 / 107 h / 245 / 245）均不变；不是需求变更，不回 Clarify（analyze.md「Analyze R22」）。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1894d-29db-730d-9090-8d4c26c5575f`；bridge 本窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改配置）。
+> **2026-10-30 r6.12.3（T-C02 开码前第二次源检查停的最小类型精度；不改设计语义）**：只在 §2.3【r6.12】补一条【r6.12.3】：R11 已审的“预览读失败 → `ErrorState` 重试同一投放”需要一个失败时仍在的目标——`selection` 只在读成功后写入，失败时可能为 null。定名内部只读视图字段 `previewTarget: DeepReadonly<Upload> | null`（初值 null），由 `selectUpload` 在读之前写入，`open()` 与 `selection` 一起清，T-C03 `assign` / `remove` 成功时同 id 一并清并把预览读状态复位 idle。不是新机制 / 交接成员：H-5 四项不变，方法数与 `selectUpload` / `confirm` / 写后刷新语义不变，不加通用 retry、请求序号、取消或 guard。测试权限修正（C01a 总按钮数断言）只在 tasks / implementation-log。方法集、契约、46 AC 与任务结构（73 / 107 h / 245 / 245）均不变；不是需求变更（analyze.md「Analyze R24」）。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18989-2181-70b0-8a2d-5f03380ff6aa`；bridge 本窗口既有限额不重试，官方同模型调用成功；未改配置）。
+> **2026-10-30 r6.12.4（Converge batch5 精度登记，实施后；不改设计语义）**：第五批 9 项已实施（代码 `b67a227..e609c2e -- frontend`，9 个前端提交 / 28 文件 / +3672 / −24；待第五批独立代码 Review）。只按实际代码在 §2.1 / §2.3 / §2.4 各补一条【r6.12.4 精度】：页面 / 组件实际 props 与布局写法（含只读 `useUiStore().viewport.collapsed` 断点）；intakeStore 公开（H-5 四项）与内部成员的实际类型、源码中确认的类型别名、私有 `selectReceipt` / `clearPreview` / `refreshViews`，以及 `selectReceipt` 不改 `previewTarget` 的事实（Converge 观察 O-B5-3，交 Review 判定，本条不预设修正）；`ReliabilityLabel` 图标、方法数 25、`listInterventions` 排序 / filter 读法与 `removeUpload` 检查顺序。方法集语义、契约、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC 与任务结构（73 / 107 h / 245 / 245）均不变；不是需求变更（analyze.md「Analyze R25」、`converge-batch5.md` §4）。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189ab-7934-721a-8701-82b717fd3a18`；bridge 本窗口既有限额不重试，官方同模型调用成功；未改配置）。
+> **2026-10-30 r6.13（第五批 Review R5-A 的普通业务一致性补修登记；未实施）**：第五批独立代码 Review（`review-batch5.md`，原件 `fe9c2c9`，A = claude-fable-5-1 via anthropic）判本批**通过（0 P1 / 0 P2 / 5 P3）**，R3-B 技术关闭。其 P3 **R5-A** 在 normal 场景可确定复现：预览 A → 同一抽屉提交 B → 编辑 B 的映射 → 删除 / 归入 A，结果 B 的预览与未确认映射草稿被误清。原因是此时 `selection` = B，而 `previewTarget` 仍 = A。A 明判这是普通业务流程一致性问题，不是 AGENTS §5.1 防线；集成人选择现在只修 R5-A。本 plan 只做三处：§2.3 补【r6.13 成功回执同步】一条；【r6.12.4】事实登记句末注明失效；§5 AC-003-4 行补落点。修法 = 私有 `selectReceipt` 同时把 `previewTarget` 写为回执 upload 的副本。r6.12.3 原句保留追溯，生效口径以 r6.13 为准；落地 tasks **T-C04a**（0.5 h，3 条标准 / 命令）。以下都不改：`clearPreview` 条件、异步读写策略、任何 guard、UI、契约、jobsStore、H-5、方法集、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC。R5-B / R5-C（§5.1，须 Walter 本人决定）与 R5-D / R5-E 不在本轮。不是需求变更，不回 Clarify；R11 仍有效，不重开 Checklist（analyze.md「Analyze R26」）。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189d7-be3b-715b-9d9c-7387dc6926eb`；bridge 本窗口既有限额不重试，官方同模型调用成功；未改配置）。
 > **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
@@ -103,6 +115,18 @@
   - **不做**：不改 jobsStore（不清锚、不取消请求、不加请求序号 / 锁 / 比较去重）；不给任何导航加 `route.query`（R4-B）；不处理 store 迟到写入（R4-E，归 `api` feature），也不做全局防乱序。
   - **测试与范围**：确定为 `JobDetailPage.vue` + `tests/component/jobs/job-detail.spec.ts`（只新增 `WI R4-A` 组 2 例：slow 离开、同作业读期间选“交付”）+ `e2e/jobs/detail-stage.spec.ts`（只新增 1 例 `WI R4-A`：真实 slow 下 SPA 离开不被拉回）；原 11 例组件测试与原 4 例 E2E 不改；回归跑四份 E2E 与全量单测。API / 契约输入 / 私有存储均无变化。
   - **获批前**，上一条【r6.9】“不加比较 / 去重 guard”仍然有效；获批并实施后，须经 Converge + A 新会话增量 Review 才关闭 R4-A。
+- 【r6.12（第五批；页面挂载与采集区接线；落地 tasks T-C01a / T-B06）】
+  - **投放抽屉的页面级容器**：`JobListPage` 增“投放”按钮 → `intakeStore.open()`；`JobListPage` / `JobDetailPage` 在 `isOpen` 时于各自页面 grid 内渲染 `.intake-slot` 容器，IntakeDrawer 根 `.glass-drawer` 宽高填满容器、不自定位。详情页的容器放在状态分支之前，不随 `detailStatus` 变化。两页是互斥路由视图，同一时刻只有一个抽屉；v2 落地 AppShell `.intake-slot` 后由 T-H01 移除页面级挂载。容器布局只用既有令牌，不新增玻璃层 / 颜色；不改 AppShell / TopBar / nav / Rail / agent。
+  - **`StageWorkspace` 只对 collect 分发**：props 改为 `{stage: Stage; job: DeepReadonly<Job>; workspace: DeepReadonly<StageWorkspace> | null}`（`JobDetailPage` 传 `jobsStore.currentJob` / `currentStageWorkspace`）。`stage` 为 collect 且工作区已是 collect 分支 → `CollectWorkspace`（采集列表 + “投放到本作业”入口 `open(job.id)`）；collect 但工作区仍是上一阶段（同作业切阶段的读取窗口）→ 只显示“读取中…”，不用 shared `Loading`；process / analyze / deliver 保持原占位，D–F 不提前实现。根 section 与 `aria-label="<阶段>工作区"` 不变。
+  - **详情页右侧栏**：ready 且有作业的分支改为两列——主列为既有 `StageRail` + `StageWorkspace`，`InterventionHistory` 常驻在主列之后（spec R-007“详情侧栏”）；`minmax(0, …)` 栅格，窄窗沿用既有断点写法堆叠为单列。
+  - 新组件不渲染 `h1`、`.job-*` 类名、`aria-current` / `aria-pressed`，可访问名称不与既有区域重名，以免与已审详情 / 列表断言产生歧义。
+- 【r6.12.4 精度（Converge batch5 登记；只记实际写法，不改设计）】
+  - `JobListPage`：“新建作业”与“投放”两个按钮同在 `.intake-actions`（flex wrap）内；`.intake-slot` 位于创建面板之后、筛选条之前。
+  - `JobDetailPage`：`.intake-slot` 位于根 section 内、状态分支之前；ready 且有作业的分支为 `.detail-columns`（`grid-template-columns: minmax(0, 2fr) minmax(0, 1fr)`）= `.detail-main`（StageRail + StageWorkspace）+ `InterventionHistory`。窄窗断点用只读 `useUiStore().viewport.collapsed`，写在 `data-viewport-collapsed` 属性上，值为 true 时单列（同 `app/AppShell.vue` / `app/Rail.vue` 既有写法；`src/stores/ui.ts` 不改）。
+  - `StageWorkspace` props = `{stage: Stage; job: DeepReadonly<Job>; workspace: DeepReadonly<StageWorkspace> | null}`：collect 且 `workspace?.stage === 'collect'` → `CollectWorkspace`；collect 但不匹配 → `<p role="status">读取中…</p>`；其余阶段占位不变。
+  - `CollectWorkspace` props = `{job: DeepReadonly<Job>; workspace: Extract<DeepReadonly<StageWorkspace>, {readonly stage: 'collect'}>}`：首个按钮为“投放到本作业”；每行有“预览 / 修正”（先 `open(job.id)` 再 `selectUpload(upload)`）与“删除来源”（单个本地 `removeTarget`，行内确认面板）。
+  - `InterventionHistory` props = `{job: DeepReadonly<Job>}`：本地读状态 `idle | loading | ready | error`；`watch([() => props.job, stage, kind, expanded])` 只在展开时读；每条带 `data-intervention-id`。
+  - `IntakeDrawer` 顺序：`.intake-heading`（`h2` “投放” + “关闭”）→ 目标说明 → `IntakePanel` → 预览读 `Loading` / `ErrorState`（`intake-preview`，重试 = `selectUpload(previewTarget)`）→ `selection` 非 null 时 `ExtractionPreview` + `MappingEditor`（以 `selection.upload.id` 作 key）→ `UnassignedPool`。
 - 全局投放入口、工作台作业轨道、导航项均属 v2 前置变更（§7），v1 先保证路由可直达与页面内入口
 
 ### 2.2 组件与职责
@@ -112,7 +136,7 @@
 | 作业列表 | `pages/JobListPage.vue`、`pages/JobCreatePanel.vue`、`components/JobCard.vue` | 列表 / 筛选 / 搜索 / 三态；非模态创建面板、校验与跳转 |
 | 作业详情 | `pages/JobDetailPage.vue`、`components/StageRail.vue`、`components/StageWorkspace.vue` | 阶段轨道、状态、待确认横幅、重跑确认 |
 | 徽标体系 | `components/JobStatusBadge.vue`、`components/ArtifactStatusBadge.vue`、`components/SourceBadge.vue` | 统一状态/来源徽（文案+图标，非仅颜色） |
-| 采集台 | `stages/IntakeDrawer.vue`、`stages/IntakePanel.vue`、`stages/ExtractionPreview.vue`、`stages/MappingEditor.vue`、`stages/UnassignedPool.vue` | 三种投放、来源说明、预览修正、待归属池 |
+| 采集台 | `stages/IntakeDrawer.vue`、`stages/IntakePanel.vue`、`stages/ExtractionPreview.vue`、`stages/MappingEditor.vue`、`stages/UnassignedPool.vue`、【r6.12】`stages/CollectWorkspace.vue` | 三种投放、来源说明、预览修正、待归属池；【r6.12】`CollectWorkspace` = 详情页采集列表、行内预览 / 删除入口与“投放到本作业”入口 |
 | 处理台 | `stages/ProcessWorkspace.vue`、`stages/RecipeSteps.vue`、`stages/ParamEditor.vue`、`stages/ReconciliationDiff.vue` | 配方只读、参数修正、对账 diff、溯源 |
 | 分析台 | `stages/AnalyzeWorkspace.vue`、`stages/ConclusionCard.vue`、`stages/EvidenceChain.vue`、`stages/InterventionComposer.vue`、`stages/RuleCandidatePanel.vue` | 结论卡、证据链、批注/追问/否决/深挖、非模态教规则 |
 | 交付台 | `stages/DeliverWorkspace.vue`、`stages/DeliverableBlock.vue`、`stages/BlockTextEditor.vue`、`stages/BlockChart.vue`、`stages/BlockTable.vue`、`stages/BlockCommentThread.vue`、`stages/RevisionHistory.vue`、`stages/DiffView.vue`、`stages/FinalizeDialog.vue`、`stages/RevisionRequestPanel.vue` | 6 类块、编辑/批注、版本/diff、非模态改稿指令、定稿确认与未决项 |
@@ -150,6 +174,34 @@
   - 跨 feature 登记（S-43）：上一条“按序完成”只是 mock 口径。真实 `api` 实现可能乱序完成，届时若出现后发先至覆盖（含详情页 async 入口在用户离开后迟到的 canonical replace，Converge 观察 O-B4-2），由 `api` feature 按需求流程决定是否加请求序号或其他防护；本 feature 不预做，任何新增 guard 按 AGENTS §5.1 先报 Walter。
 - 【r6.11（**已获 Walter §5.1 批准生效**，见页首；“草案 / 若获批”为当时原文）】第四批 Review 已用真实浏览器证实：上一条括号里的“迟到 canonical replace”（O-B4-2 = R4-A，P2）在请求**按序完成**时就会发生，不依赖乱序，因此不归 `api` feature。若获批，按 §2.1【r6.11 草案】只在页面回调内处理，store 不变。store 的迟到写入（R4-E，P3，自愈）仍按上一条归 `api` feature。
 
+- 【r6.12 精度（intakeStore 与介入历史重读；落地 tasks T-C01 / T-C02 / T-C03 / T-B06）】
+  - **H-5 公开成员**（交接接口，仅此四项）：`open(jobId?: string)`——每次调用都置 `isOpen=true`，快照 = `jobId ?? null`（覆盖上次快照；store 不读 route，之后路由变化不改写）；`close()`——只置 `isOpen=false`，不导航、不调 agent、不清草稿与快照；只读 `isOpen` / `jobId`。
+  - **内部成员**（不属交接）：
+    - 草稿 `draft: IntakeDraft`（`inputKind`、`fileMeta: IntakeFileMeta | null`、`url`、`text`、`purpose`、`reliability`（默认 unknown）、`publishedAt` / `validUntil` / `scopeNote` 字符串，空串在提交时转 null）；`updateDraft(patch)`、`resetDraft()`。
+    - `submit(submission: IntakeSubmission): Promise<IntakeReceipt>`，`IntakeSubmission` 为按 `inputKind` 分配的 `Omit<…, 'jobId'>`，jobId 只取打开时快照，外部不能覆盖。
+    - 选中 `selection: {upload, preview, mapping}`（`mapping` 为编辑中的映射草稿，初值复制自 `upload.mapping` 即已保存映射，不是 `preview.fields`）与 `previewStatus` / `previewError`；`selectUpload(upload)`、`editMapping(index, patch)`、`confirm(mapping: FieldMapping)`。
+    - 待归属池 `pool` 与 `poolStatus` / `poolError`；`loadPool()`、`assign(uploadId, jobId)`、`remove(uploadId, reason)`。
+  - 【r6.12.3 类型精度：同一投放重试上下文】内部只读 `previewTarget: DeepReadonly<Upload> | null`（初值 null；私有 ref + 对外 `computed`，同其他成员不进 `$state`）。`selectUpload(upload)` 在置 loading、调用 `getIntakePreview` **之前**把该 `upload` 的副本写入 `previewTarget`（Upload 是契约投影，不含 File 或正文）；读成功照旧一次写入 `selection`（mapping 仍复制自 `upload.mapping`），`previewTarget` 不变；读失败时抽屉的 `ErrorState` 以 `previewTarget` 为实参再调 `selectUpload`——按构造，error 态只能由 `selectUpload` 进入，此时 `previewTarget` 非 null。`open()` 同时清 `selection` 与 `previewTarget`；`assign` / `remove` 成功且 `selection?.upload.id` 或 `previewTarget?.id` 等于该 uploadId 时，清两者并把 `previewStatus` / `previewError` 复位为 idle / null（不留指向已归入 / 删除投放的过期错误）。只是视图上下文：不属 H-5 交接，不新增方法，不加通用 retry / 请求序号 / 取消 / guard。
+  - 【r6.13 成功回执同步（第五批 Review R5-A 普通业务一致性补修；落地 tasks T-C04a；本条起生效，上条【r6.12.3】与下文【r6.12.4】事实登记原文保留追溯）】`submit` / `confirm` 共享私有成功函数 `selectReceipt(receipt)`。它写 `selection = {upload: 回执.upload, preview: 回执.preview, mapping: 复制回执.upload.mapping}` 的同时，把 `previewTarget` 写为回执 upload 的确定型副本：沿用 `selectUpload` 的 `structuredClone` 副本写法，与 `selection.upload` 同 id / status / mapping。
+    - **不变量**：成功回执之后，`selection.upload` 与 `previewTarget` 恒指向**同一个当前投放**。这是对 R11 已审【r6.12.3】“当前预览目标 / 同一投放重试上下文”语义的一致落实。
+    - **`clearPreview(id)` 条件不变**：删除 / 归入另一个 id 时两者都不命中，当前选中与未确认的映射草稿不动；删除 / 归入当前投放时照旧清两者，并复位 idle / null。
+    - **口径**：【r6.12.3】中“`previewTarget` 不变”只指 `selectUpload` 读成功这一条路径，仍然有效。r6.12.3 页首 / Analyze R24 的“未改 submit / confirm 对 previewTarget 的处理”，以及【r6.12.4】事实登记“`selectReceipt` 不改 `previewTarget`”，自本条起失效（历史原文保留）。
+    - **不改**：`clearPreview` 条件；`open()` / `selectUpload` / 读失败重试；写后刷新顺序与次数；失败路径（失败不调用 `selectReceipt`，字段不动）；H-5 四项、方法集、契约、UI / 组件、jobsStore / query。
+    - **不加**：请求序号、锁、比较、提交中禁用或生命周期 guard。R5-B / R5-C 属 AGENTS §5.1，须 Walter 本人决定，本条不涉及；R5-D / R5-E 也不在本条。普通路径不做防守。
+    - 这只是普通成功路径里的一次赋值，不是新机制、不是新 what；不回 Clarify、不重开 Checklist（R11 仍为有效 Checklist）。
+  - **语义**：`open()` 清空选中与预览读状态、不清草稿；`submit` 成功后复位草稿并以回执设选中；`confirm` 成功后以回执（确认后的 Upload 与预览）替换选中，选中项状态立即为 ingested / quarantined；`assign` / `remove` 成功后清除同 id 的选中。跨页面（互斥路由）重新挂载时，打开状态、快照、草稿、选中都在 store 中保留；刷新页面即全部丢失（草稿与原文不持久化）。
+  - **写后刷新**：`submit` / `confirm` / `assign` / `remove` 成功后调用 `jobsStore.refresh()` **恰一次**；若池已加载过（`poolStatus !== 'idle'`），再单独 `loadPool()` 一次——池不在 jobsStore 内，单独正常重读。写失败以原 `ErrorResponse` reject（调用组件 await + catch，显示 `ErrorState`），不刷新、不改缓存；读动作（`selectUpload` / `loadPool`）失败写各自的 error 状态并自身 resolve（S-38 口径）。
+  - **校验位置**：`IntakePanel` / `MappingEditor` / 删除确认在用户输入边界用契约导出的 schema（`SourceNoteSchema`、`IntakeFileMetaSchema`、`IntakeInputSchema` 分支字段、`FieldMappingSchema`、`removeUpload` 的 reason 参数 schema）safeParse 一次，得到确定类型再交 store；store 不重复 parse，契约边界照旧 parse。【r6.12.1 R11 S-46】File 元数据在选择 / 拖入边界经 `IntakeFileMetaSchema.safeParse` 一次成为确定类型写入草稿，提交时不再 parse，只判 `fileMeta !== null`（缺文件给正常表单提示）；url / text 原串与来源说明在提交时各 parse 一次。
+  - **不做**：请求序号、锁、事件总线、轮询、实例登记 / 首个挂载者、草稿持久化；store 不持有 File 对象。
+  - **介入历史重读信号**：`InterventionHistory` 以 props `job`（即 `jobsStore.currentJob` 的只读引用）为信号——jobsStore 每次详情读成功（`openJob` / `refresh`，含所有写后统一 `refresh()`）都会替换该对象，因此同一作业写入新事件后，展开中的历史随那次 refresh 重读。默认收起、收起时不读；读状态为组件本地状态；不新增 store 成员；并发重读按 mock 按序完成口径（S-43）。
+- 【r6.12.4 精度（Converge batch5 登记；`e609c2e` 实际类型，不改设计语义）】
+  - 源码导出的类型别名（只按源码登记）：`IntakeDraft`；`IntakeSubmission`（按 `inputKind` 分配的 `Omit<…,'jobId'>`）；`IntakeSelection = {upload: Upload; preview: ExtractionPreview; mapping: FieldMapping}`（上文的 `{sourceField, targetField, unit}[]` 即契约 `FieldMapping`）。
+  - H-5 公开四项：`open(jobId?: string): void`、`close(): void`，以及只读 `isOpen: boolean`、`jobId: string | null`（`computed`）。
+  - 内部只读：`draft: DeepReadonly<IntakeDraft>`；`selection: DeepReadonly<IntakeSelection> | null`；`previewTarget: DeepReadonly<Upload> | null`；`previewStatus` / `poolStatus: 'idle' | 'loading' | 'ready' | 'error'`；`previewError` / `poolError: DeepReadonly<ContractError> | null`；`pool: DeepReadonly<Upload[]>`。全部是私有 ref + 对外 `computed`，`$state` 为空。
+  - 内部动作：`updateDraft(patch: Partial<IntakeDraft>)`、`resetDraft()`、`submit(submission: IntakeSubmission): Promise<IntakeReceipt>`、`selectUpload(upload: DeepReadonly<Upload>): Promise<void>`、`editMapping(index: number, patch: Partial<Pick<FieldMapping[number], 'targetField' | 'unit'>>): void`、`confirm(mapping: FieldMapping): Promise<IntakeReceipt>`、`loadPool(): Promise<void>`、`assign(uploadId: string, jobId: string): Promise<WriteReceipt>`、`remove(uploadId: string, reason: string): Promise<WriteReceipt>`。
+  - 闭包私有（不在实例上）：`selectReceipt(receipt)`（submit / confirm 成功时写 `selection`、置 ready、清错）；`clearPreview(uploadId)`（assign / remove 成功时按上条【r6.12.3】规则清理）；`refreshViews()`（先 `await jobsStore.refresh()`，再在 `poolStatus !== 'idle'` 时 `await loadPool()`）。
+  - 事实登记（不改语义）：`selectReceipt` 不改 `previewTarget`，与【r6.12.3】“未改 submit / confirm 对 previewTarget 的处理”一致。因此 submit / confirm 之后，`selection` 与 `previewTarget` 可能指向不同投放；此时 `clearPreview` 按字面规则会连带清掉另一 id 的 selection。这一点登记为 Converge 观察 O-B5-3（`converge-batch5.md` §5），交第五批 Review 判定，本条不预设修正。【r6.13 注：第五批 Review（`fe9c2c9`）把 O-B5-3 判为 P3 R5-A。自上文【r6.13 成功回执同步】起，`selectReceipt` 同步 `previewTarget`，本句“不改 `previewTarget`”与“可能指向不同投放”失效，原文保留追溯；落地 T-C04a，实施并经增量 Review 前代码仍是本句所述事实】
+  - 提交 / 确认期间 UI 不禁用，成功后无条件复位草稿 / 写入选中（观察 O-B5-1 / O-B5-2）：维持【r6.12】“不加请求序号 / 锁 / guard”；如需改动，按 AGENTS §5.1 先报 Walter。
 - **契约 mock 层持有唯一可变状态**（`contracts/mock/job-state.ts`），读写均经契约方法；UI store 只做视图缓存。这样 `api` feature 落地时只需替换实现，不动组件
 - 本地持久化 key：`fai.jobs.v1`（作业、产物/版本、投放的允许子集、介入事件、交付物/定稿快照、收件箱条目）；`fai.inbox.v1`（已读 id）。非 normal 场景使用 fixture + 会话内可变副本，**不读、不写、不清**这两个 key；切场景不会清空正常模式数据
 - 【r6.6】`fai.jobs.v1` 的 v1 data = `{jobs, details, deliverables, interventions, uploads, mappingHistory}`：前五项与状态层同形（`details` / `deliverables` / `uploads` 即 fixture 同名文件形状）；`mappingHistory` 为修正前映射的内部记录（§3）。收件箱条目由 T-A21 以同一方式新增可选字段（快照入口默认一次）。运行时控制（T-A18 / T-A20 的 run 关联、重跑排队）不入快照。`fai.inbox.v1` 的值 = 已读 id `string[]`，读写函数随 T-A21 引入；在此之前只在重置时删除
@@ -227,6 +279,14 @@ resetMockData()
 - 【r6.7 精度（Converge batch3 登记；实际代码读法，不改签名 / 行为口径）】
   - `CreateJobInput.title` / `subject`，以及 `removeUpload` / `cancelJob` 的 `reason`：“去空白非空”由契约 schema 的 trim 变换实现，写入的是去掉两端空白后的值。
   - submit 的 jobId 非空、且该作业尚无 dataset 时，同一次写内建立 `<jobId>-dataset`（draft / external / source）。ingest 的 `artifactId` 即该 dataset（含本次新建者），`baseRev` = 原最新修订，首次建立时为 null（R9 S-39）。
+- 【r6.12 精度（第五批；T-A15a / T-A13a / T-A01a）】
+  - **`listInterventions(jobId, filter?: {stage?: Stage; kind?: InterventionKind})`**（filter strict，省略即不限制）：返回该作业介入事件副本，按 `createdAt` 升序（同刻保持记录顺序）；未知作业 not_found；empty 场景预置 id 返回 `[]`；场景延迟 / error 与既有作业读方法同源（R2-E）；方法描述实现中立。复用 `StageSchema` / `InterventionKindSchema` / `InterventionSchema`，不新增注册 schema。自 T-A15 拆出为 T-A15a，T-A15 只剩 `submitIntervention`。
+  - **`removeUpload` 对已删除投放**：再次删除返回 validation_error，不追加修订、事件，不改 `updatedAt`（与 `confirmIntake` / `assignUpload` 对已删除者拒绝一致；上方【r6.6】remove 句补此一条，R3-B）。【r6.12.1 改写】Checklist R11（`1f99f80`）已判定：属既有领域规则（本节“无效操作返回 validation_error”与 §4.2“只移除当前关联”的落实），而非 AGENTS §5.1 新 guard，可在现有授权内实施，不需 Walter 另批；范围只限 `removeUpload` 一处，不扩展为其他竞态 / 安全 guard 的许可。R3-B 维持开放至第五批代码 Review。原条件句已删除、废止。
+  - **`ReliabilityLabel`**：第十张契约展示映射（S-11 同机制，`labelSchema` 生成并入 `contractSchemas`），键集合 = `SourceNote.reliability` 四值，文案 高 / 中 / 低 / 未知；不新建 Reliability 枚举 schema。表单、介入历史摘要只消费该常量。
+- 【r6.12.4 精度（Converge batch5 登记）】
+  - `ReliabilityLabel` 图标：high `↑`、medium `＝`、low `↓`、unknown `?`。`DataClient` / `dataMethods` 方法数 24 → **25**（只增 `listInterventions`），事件 10 / artifacts 2 不变，`CONTRACT_VERSION` 仍 2.0.0。
+  - `listInterventions`：params = `[z.string().min(1), z.strictObject({stage?, kind?}).optional()]`，显式 null 或多余键 → validation_error；实现按 `Date.parse(createdAt)` 升序，靠 `Array.prototype.sort` 的稳定性保持同刻记录顺序；返回 `structuredClone`。
+  - `removeUpload` 的检查顺序：`findUpload`（not_found）→ 已归属时 `writableJob`（终结作业 validation_error“已定稿或取消的作业只读。”）→ `removed`（validation_error“投放已删除。”）→ 写入。
 - 错误形态沿用 `{error:{code,message,retryable}}` 与既有 code；本 feature 的无效操作/只读写入/定稿未决项均返回 validation_error，payload 含说明；未知锚返回 not_found。方法输入/输出/参数字义写进 `methods.ts` 与生成文档
 
 #### 动作 → 契约方法 → 介入 kind（B-01）
@@ -314,6 +374,7 @@ resetMockData()
   - **重置**：使用当前共享会话记录的 scenario 与已解析种子，不重读、不更换覆盖，也不用旧 client 闭包。持久会话中：`removeItem` 两个 key → 按种子重建 → 把新状态写入 `fai.jobs.v1`（即“key 被重建”；成功为 ok，失败为 degraded）；`fai.inbox.v1` 保持删除。非持久会话只重建内存。slow 下同样延迟，error 下不拒绝。
   - **状态订阅**：`persistence.ts` 导出 `getPersistenceStatus(): 'ok'|'degraded'|'unreadable'` 与 `onPersistenceStatus(cb): () => void`：状态变化时同步回调，返回取消函数；初始为 ok，非持久会话建立时置 ok。这只是只读状态源，横幅归 T-G04。
   - **模块方向**：`contracts/mock/job-state.ts → jobs/persistence.ts → contracts/types.ts`；persistence 不导入 job-state 或 mock/index。不为未初始化状态加 guard（R2-B：状态只由 DataClient 工厂建立）。
+- 【r6.12】投放草稿（含粘贴正文、URL 字符串、来源说明）只在 `intakeStore` 内存中，不持久化；跨页面挂载保留，刷新即丢。File 只取 `name / size / type / lastModified` 四项元数据，store 不持有 File 对象；不调用 `File.text / arrayBuffer / stream / slice`、`FileReader`、`URL.createObjectURL`，不发起 URL 请求。
 - `fai.inbox.v1` 只存已读 id。正常场景仅显式 `resetMockData` 二次确认后删除两个 key 并重建（连同新样例的已读状态）；场景切换不清空。非 normal 场景全程内存，既不恢复也不修改两个 key。沿用既有 `fai.rail` / `fai.drawer` / `fai.layout`，重置作业样例不动这些键
 - 生成物照旧入库：`contracts/{CONTRACT.md,schema.json}`，只改源后生成
 - 时间与日期：asOf/ts/createdAt/updatedAt 为 ISO 8601 带偏移；来源说明的 `publishedAt`（材料发布日期）/ `validUntil`（有效期）与作业日期用 `TradingDate`（`YYYY-MM-DD`）；定稿时间 `finalizedAt`（`FinalSnapshot` 与 `Deliverable` 定稿元数据）为 ISO 8601 带偏移时间戳。`publishedAt` 指被投放材料自身的发布日期，与交付物定稿时间 `finalizedAt` 是不同概念，不互换、不同名；命名映射见 §2.4
@@ -356,8 +417,8 @@ resetMockData()
 | AC-002-5 | failed/cancelled fixtures 组件测试（原因 + 占位动作说明） |
 | AC-003-1 | `IntakeDrawer` 三处入口 e2e（工作台入口依赖 v2，标记 blocked_by） |
 | AC-003-2 | 三种投放 + 白名单组件测试 |
-| AC-003-3 | 用途必填 + payload 断言 e2e（`sourceNote.purpose/reliability/publishedAt/validUntil/scopeNote`） |
-| AC-003-4 | `ExtractionPreview` / `MappingEditor` 组件测试；确认后才入库 |
+| AC-003-3 | 用途必填 + payload 断言 e2e（`sourceNote.purpose/reliability/publishedAt/validUntil/scopeNote`）；【r6.12】介入历史展开取证依赖 `InterventionHistory`（T-B06）与 `listInterventions`（T-A15a） |
+| AC-003-4 | `ExtractionPreview` / `MappingEditor` 组件测试；确认后才入库。【r6.13】R5-A：成功回执后 `previewTarget` 与 `selection.upload` 同步，删除 / 归入另一 id 不清当前映射草稿（T-C04a 组件 + E2E，与 T-C02 共同承接） |
 | AC-003-5 | `UnassignedPool` + `assignUpload` e2e |
 | AC-003-6 | 抽取状态徽组件测试（文案+图标） |
 | AC-004-1 | `ProcessWorkspace` / `RecipeSteps` / 溯源跳转组件测试 |
@@ -379,7 +440,7 @@ resetMockData()
 | AC-006-6 | `requestRevision` + mock 回放 e2e；新 revision 来源=agent，接受/回退 |
 | AC-006-7 | 定稿二次确认 → 同一次提交内快照 + 交付物 deliverableStatus=final（定稿锚与快照一致）+ delivered，头部“已定稿 vN · 时间”+ 只读 e2e；未决项被拒时快照 / 交付物 draft / 作业状态均不变 |
 | AC-006-8 | 块来源/状态徽组件测试 |
-| AC-007-1 | `InterventionHistory` 渲染 + 阶段/类型筛选组件测试 |
+| AC-007-1 | `InterventionHistory` 渲染 + 阶段/类型筛选组件测试；【r6.12】读方法 T-A15a，详情页侧栏挂载与展开时 / `currentJob` 替换时重读归 T-B06 |
 | AC-007-2 | job-pending-merge：作业内改稿指令经 requestRevision→send(long/jobContext) → 编辑另一备注块 → 同 run completed 才合并；失败/他 run 不误清。可不依赖全局输入栏自动绑定上下文 |
 | AC-007-3 | e2e：编辑/批注/投放/教规则/改稿无模态；removeUpload/delete_conclusion/finalize/cancel/rerun 二次确认后才调用契约 |
 | AC-007-4 | listInbox / markInboxRead + 列表卡/详情阶段轨道角标 e2e；首页作业轨道部分 blocked_by v2 |

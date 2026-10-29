@@ -629,3 +629,51 @@ fi
 - 全部任务完成、全 feature Converge / Review / Gate 2 后，才合 main。恢复证据在 tasks 页首、日志 §19、新 Converge / Review 与本节；本轮 Temp `C:/Users/iswal/AppData/Local/Temp/wi-r4a-fix-01a18388-bdy5e3x0/` 保留原始日志 / 探针，不入库、不清共享 Temp；模型调用均已返回，测试服务退出。
 
 > **下次开场**：R4-A 已关闭，27/70 完成、43 未开始，整体未收敛；按既有 DAG 起下一批（建议 C01），无需再问授权；Draft PR #12 不合，目录不清理。
+
+## 17. 第五批采集台闭环 + R5-A 补修完成（2026-10-30；安全点恢复记录，非正式 Handoff；替代 §16 的后续状态）
+
+> 本节由 Opus 状态登记会话起草（claude-opus-5-5 via anthropic，PI_SESSION_ID `01a18a00-abb5-7251-8666-e60a664bb4f7`；bridge 既有限额、无重置证据，不重复试；官方通道成功；未改配置、未因 Review 结果换模型），协调器核真实提交后追加。**不是全 feature Review / Gate 2 / Handoff**；本节记账不重跑产品测试。
+
+### 17.1 固定引用
+
+| 项 | 提交 |
+|---|---|
+| 开工精度 r6.12 / Checklist R11 / R11 吸收 | `fdac9f2` / `1f99f80` / `b67a227`；R11 26/26，blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`，未改 |
+| 第五批 9 项代码 | A01a `f65d3c6` → A13a `e1cd4d4` → A15a `a2efb98` → B06 `0d09748` → C01 `4af80e8` → C01a `6529f41` → C02 `d4e3fb6` → C03 `7b802d4` → C04 `e609c2e` |
+| 两次开码前 scope 精度（纯文档） | `af31dda` / `19228ce` |
+| Converge batch5 / Analyze R25 | `ca3c303` |
+| 第五批原 A `review-batch5.md`（通过，原样保留） | `fe9c2c92ac4d6778b0c7117a23b94919b2b71232` |
+| R5-A 派工 / plan r6.13 / Analyze R26 | `a2a2cdd379fd84e7744538b253450c00d59695c7` |
+| T-C04a（当前源码固定点） | `f63ef7c62f273626e4ee72f94d16bfa53b52f148` |
+| 增量 Converge / Analyze R27（当时收口待 A，原文保留） | `64d20e4a593395ad8544f64a9cd9141a0e11e43d` |
+| 新独立 A `review-batch5-r5a.md` | `2c0d09dd99e057c593fef49fb9db53f1bf63f562` |
+| 当前状态登记 | `7468a52b4d0ddf2739fd70be4df4f86d2de3d334` |
+
+### 17.2 实施、测试保护与补修
+
+- Implement 全部为 openai/gpt-6-astra（各新会话，首选未回退）。第五批 `b67a227..e609c2e -- frontend` = 9 个前端提交 / 28 文件 / +3672/−24：可靠性文案、重复删除拒绝、历史读取与展开、投放表单 / 非模态抽屉 / 采集区、抽取预览与映射确认、待归属池 / 删源确认、采集 E2E。
+- **两次 scope 停**（`af31dda` / `19228ce`）：源读取发现旧阶段性断言与已审设计冲突，0 WIP、0 红测，不是模型失败。只许 `intake.spec.ts` 两处旧例改为正向：C02 −3/+3（首例标题 + selection 行；按钮总数改为“投放到本作业”入口唯一），C03 −1/+2（pool 行）。A 逐行核实等于许可，未削减任何隐私 / 快照 / 业务断言。
+- **R5-A 普通流程补修**：预览 A → 同抽屉提交 B → 编辑 B → 删除 / 归入 A 会误清 B 的未确认映射。T-C04a 只在私有 `selectReceipt` 加一行 `previewTarget` 同步，**无 guard**；3 文件 +82/−2，含预登记的一旧 pool 例恰 3 行更正，原 E2E 205 行前缀逐字节保留。旧代码先红（组件 2 / Chrome 1），修后期望不变转绿。R5-A 是普通构造一致性，不借 R4-A 的 §5.1 批准。
+
+### 17.3 独立验证与结论
+
+- **原 A**（`fe9c2c9`，fable via anthropic，新会话）：**0 P1 / 0 P2 / 5 P3（R5-A～E），R3-B 技术关闭**。亲跑 39 files / 1128/0、33 条命令同数、全部 78 E2E（五份 34 + 其余 7 份 44）、`WI H-5` 8、工程门。
+- **增量 A**（`2c0d09d`，fable via anthropic，新会话 `01a189f3…`）：**0 P1 / 0 P2 / 0 新 P3，R5-A 技术关闭**，未重判原件。亲跑组件 2 → 32；Chrome 1 → **全部 E2E 79/0（12 文件）**；**39 files / 1130/0**；typecheck / lint / 六守卫 / contract 25/10/2；H-5 8、H-2 27、labels 10、六文件 129（v1 契约88 + real-stubs24 + routes/session17）。
+- 真实 Chrome 独立探针 **6/6**（不计入79）：原R5-A链、归入另一池项、同id删除、确认后删除其它项、对照路径、列表null目标正常。探针首轮失败是探针定位错误，不是产品失败。
+- 未跑：`pnpm test` 总命令、build、后端、人工截图、46 AC 最终验收；本轮数字来自实施者与A，Converge/记账未跑产品测试。
+
+### 17.4 进度、风险与交接
+
+- **37/74 已完成、37 未开始；107.5 h、248 标准 ↔248 命令**；46 AC 最终验收0，整体未收敛。任务增加来自已需依赖拆分与补修，不新增冻结需求；已完成指批次技术Review通过，非最终验收。唯一编号回边B03→B04，无环，46 AC矩阵双向一致。
+- **R3-B / R5-A 已技术关闭**；R4-A / R2-C 维持关闭。**R5-B**（slow提交中再输入被复位清掉）/ **R5-C**（slow切换目标后旧回执写入新抽屉）为开放P3；若加比较/禁用/锁/生命周期隔离等防护，**须先向Walter报告并获§5.1批准，当前未批准、未修、未风险接受**；不借原R4-A许可。
+- 其余未经风险接受：R5-D（file输入/输入类型复位）、R5-E（可靠性箭头）、S-43、R4-B～E、S-41、R3-C、R-A等，见日志§8/§24.1；“无新P3”不等于风险已清。
+- **H-5 / 页面切片①生产已核 `f63ef7c`**，旧 `e609c2e` 保留追溯；②R11；③A亲跑H-5=8、采集E2E原4+补修1、全部79；**④仍缺，未交付**，不拿生产方SHA冒充消费方。H-6缺A21，process/analyze/deliver仍占位；其它H-1/2/3/4历史证据保持，④全缺。
+
+### 17.5 工作树与下次开场
+
+- 实施、生产方集成、Converge 三树已由集成人 ff-only 到 `7468a52`，源码仍固定 `f63ef7c`。现有 **25 个工作树保留复用**，无新D:/2030目录，无删除目录/分支。Root只同步本feature文档、README本方两行与本节，不整分支回并源树。
+- 远端继续正常push三备份分支：spec、integration、方案原件`docs/workbench-interaction-batch3-plan` @ `8c4660f`。Draft PR #12 随integration更新，**保持Draft/DIRTY、不auto-merge、不转ready、不合main**；冲突未处理。当前规格树自身SHA不硬编码，用`git log -1 -- HANDOFF.md`查。
+- main `072bb12` 未导入、pin `90187f7`，以后仍走R2-D的基线重核/Analyze/A定向并与v2 T-V2-09#4协调；不写、不重建、不代merge v2树，④由消费方所有者登记。
+- 本轮Temp `C:/Users/iswal/AppData/Local/Temp/wi-batch5-01a18388-q7s7olxl/`保留提示/会话/日志；A只读probe另在`Temp/review-batch5-A/`及本轮R5-A审核目录，均不入库、不清共享Temp；关键结论在任务、日志§26、两Converge/Review与本节。模型调用均已返回、测试服务退出。
+
+> **下次开场**：37/74完成、37未开始，整体未收敛。按DAG起下一批：A14/A15/A16（A16先定R-A）或G04（先定义R3-C承接），不重问通用授权。R5-B/C只有Walter单独批准后才加防护。全部完成、全feature Converge/Review/Gate2后才合main；PR12不合，目录不清理。
