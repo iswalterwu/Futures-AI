@@ -9,6 +9,12 @@
 > **2026-10-29 r6.2（Converge batch-a09a 精度登记，实施后）**：首批 T-A01～T-A09a 已实施（代码 diff `8753fa9..13a3373`，待独立 Review）。实施中定形的最小字段事实只按精度同步到 §2.4 `Artifact`、`RecipeStep`、`Deliverable / Block`（表格单元）、`FinalSnapshot` 行与 fixture 句（标【r6.2】）：`FinalSnapshot.revisionNumber` 为 S-18 既有“快照版本号”比较对象的承载字段；工作区按阶段携带限定 kind 的 `artifacts[]` / `revisions[]`；修订锚取 `Revision.id`；fixture 文件形状。不改行为、方法集、动作矩阵、九场景、样例表、定稿语义、46 AC 与任务结构；不是需求变更（见 analyze.md「Analyze R8」、`converge-batch-a09a.md` §3）。作者 = claude-opus-5-5 via anthropic（bridge 本窗口已明确限额，未重试；未改配置）。
 > **2026-10-29 r6.4（Checklist R8 B-12 粒度修订，未实施；只动 tasks 拆分与本文件两处文字）**：独立 A 的 Checklist R8 未通过（唯一 P2 = B-12：T-A10 并入 R-B 后越出 0.5～2 h 粒度上限）。按其最小关闭要求只在 Tasks 层拆分：R-B 种子校正单列为 tasks **T-A09b**（fixture-only，0.5 h，依赖 T-A08），T-A10 恢复核心 2 h、只经真实 `getStageWorkspace` 读回验证；本文件只在 §2.4 R-B 句尾补落地任务号、§1 徽标句把 designUI 引用更正为 §6（R8 S-33）。设计、行为、方法集、样例表、迁移表、定稿语义、冻结 spec / 46 AC 均不变；不是需求变更（analyze.md「Analyze R10」）。作者 = claude-opus-5-5 via anthropic（本轮协调器真实调用 `claude-bridge/claude-opus-5-5` 为 provider / invocation 失败、未确认 quota，官方 anthropic 通道成功；只换通道、未改配置）。
 > **2026-10-29 r6.3（第二批开工前精度澄清，未实施）**：只为第二批（T-A10 / T-A22 / T-A22b / T-A23 / T-A24）开码前补最小精度（标【r6.3】）：§2.4 fixture 句登记 R-B 种子口径（内置种子中 `not_started` 阶段为空工作区；fixture-only，不是读侧推导、不是 schema 不变量）；§2.1 / §2.3 登记 H-4 只读上下文的生产路由绑定入口 `bindRouter(router)`（只注册既有 `afterEach` 守卫、不接受任意上下文，不是 setter）；§1 徽标为自制组件、不导入 shared `Badge.vue`（基线事实）。R-D（五处跨字段约束）口径 = 不加 refine、由对应写方法按构造保持，只登记在 tasks / implementation-log。冻结 spec v1.1、46 AC、行为、方法集、动作矩阵、九场景、样例表、rerun 迁移表、定稿语义、任务数 / 依赖 / 工时均不变；不是需求变更（analyze.md「Analyze R9」）。作者 = claude-opus-5-5 via anthropic（本轮协调器最小真实调用 `claude-bridge/claude-opus-5-5` exit 1，provider / invocation error 类、非已确认限额；同模型 anthropic exit 0；只换通道、未改配置）。
+> **2026-10-29 r6.5（Converge batch2 精度登记，实施后）**：第二批 T-A09b / T-A10 / T-A22 / T-A22b / T-A23 / T-A24 已实施（代码 diff `34d339e..27e59e6 -- frontend`，待本批独立代码 Review）。实施中定形的最小公开接口按精度同步到以下位置（标【r6.5】）：
+> - §2.1：`jobRoutes` 导出名、`registerJobRoutes` 签名；
+> - §2.2 工具行：`diffLines` / `LineDiffResult` 的返回结构；
+> - §2.4 `listJobs` 句：filter 字段名与匹配口径。
+>
+> 不复制实现算法；不改行为、方法集、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC 与任务结构；不是需求变更（analyze.md「Analyze R11」、`converge-batch2.md` §3）。作者 = claude-opus-5-5 via anthropic（本轮协调器最小真实调用 `claude-bridge/claude-opus-5-5` exit 1，provider / invocation error 类、未确认 quota；同模型官方通道 exit 0；只换通道、未改配置）。
 > **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
@@ -44,6 +50,9 @@
 - 本 feature 在 `jobs/routes.ts` 导出两条记录（name=`jobs` / `job-detail`，meta 含 `title/en/navId:'jobs'`），由 `main.ts` 在挂载前对既有 router 调用 `addRoute`；**不改 `app/router.ts`**。具名 `jobs` 记录可替换壳由导航表生成的同名占位，避免 v2 接入后双路由；导航项由 v2 在 `nav.ts` 增加
 - 阶段切换用 `router.replace({ name: 'job-detail', params: { id, stage } })`；刷新保持；未知 stage 回落当前阶段（缺省或未知 stage 时页面以 `router.replace` 补成 currentStage）
 - **r6（H-3 / H-4）**：`jobs/routes.ts` 另导出 `registerJobRoutes(router, pinia)`，对两条记录调用 `addRoute`，并注册一个 `router.afterEach`：目标为 `job-detail` 且 `stage` 合法时把 `sessionStore.context` 置为 `{jobId, stage}`，否则置 null——离开详情时在同一次导航内清空；context 只读、不提供公开 setter、不从 agent run 推导。【r6.3】为让 `registerJobRoutes` 绑定生产 router 而不暴露 setter：`sessionStore` 只多暴露一个**生产路由绑定入口** `bindRouter(router)`——它只注册上述 `afterEach`（目标判定在 store 内完成），不接受任何 `JobContext`；`registerJobRoutes` 在 addRoute 后以 `useSessionStore(pinia).bindRouter(router)` 调用；`context` 为 getter（类型层只读）；壳与测试不调用 `bindRouter`，只经导航改变上下文；不加 navigation failure / 竞态兜底
+- 【r6.5 精度（Converge batch2 登记）】实际导出如下：
+  - `jobs/routes.ts`：`jobRoutes: RouteRecordRaw[]`（上述两条记录）与 `registerJobRoutes(router: Router, pinia: Pinia): void`；
+  - `jobs/stores/session.ts`：`useSessionStore()` 的 `context` 返回深只读对象（字段亦不可写），以及 `bindRouter(router: Router): void`。
 - 全局投放入口、工作台作业轨道、导航项均属 v2 前置变更（§7），v1 先保证路由可直达与页面内入口
 
 ### 2.2 组件与职责
@@ -58,7 +67,7 @@
 | 分析台 | `stages/AnalyzeWorkspace.vue`、`stages/ConclusionCard.vue`、`stages/EvidenceChain.vue`、`stages/InterventionComposer.vue`、`stages/RuleCandidatePanel.vue` | 结论卡、证据链、批注/追问/否决/深挖、非模态教规则 |
 | 交付台 | `stages/DeliverWorkspace.vue`、`stages/DeliverableBlock.vue`、`stages/BlockTextEditor.vue`、`stages/BlockChart.vue`、`stages/BlockTable.vue`、`stages/BlockCommentThread.vue`、`stages/RevisionHistory.vue`、`stages/DiffView.vue`、`stages/FinalizeDialog.vue`、`stages/RevisionRequestPanel.vue` | 6 类块、编辑/批注、版本/diff、非模态改稿指令、定稿确认与未决项 |
 | 介入与不干扰 | `components/InterventionHistory.vue`、`components/PendingMergeChip.vue`、`components/InboxDrawer.vue` | 事件历史、待合并、角标/收件箱 |
-| 工具 | `diff.ts`、`persistence.ts` | 行级 diff（自实现）、localStorage 快照（带版本与损坏兜底） |
+| 工具 | `diff.ts`、`persistence.ts` | 行级 diff（自实现）、localStorage 快照（带版本与损坏兜底）。【r6.5】`diff.ts` 导出 `diffLines(before, after): LineDiffResult`，其中 `LineDiffResult = {kind:'lines', lines: {kind:'equal'或'add'或'remove', text}[]}` 或 `{kind:'summary', beforeLineCount, afterLineCount}` |
 | 契约 | `src/contracts/{types.ts,client.ts,methods.ts,mock/**}` | v2 方法与 mock 实现（stateful） |
 
 - 地基交付后复用 `agent/AgentDrawer.vue` 与 `agent/store.ts`，由 v2 壳方接作业上下文标签（作业 id/标题、阶段）与按作业过滤 selector；本 feature 的 `sessionStore` 提供当前上下文。普通编辑/批注/教规则/投放/改稿均为内联面板或非模态抽屉，无遮罩、无焦点锁；仅删除来源/结论、定稿、取消、显式重跑用二次确认
@@ -125,7 +134,7 @@ finalizeDeliverable(jobId)    listInbox(jobId?)            markInboxRead(ids)
 resetMockData()
 ```
 
-- `listJobs` 按状态/类型与标题子串组合筛选，缺省 updatedAt 倒序，清空筛选恢复全列表；`getJob` 未知 id 返回 not_found。读取历史版本不改变当前版本。写回执包含已改变的作业/产物/版本/事件与 inbox 计数，UI 以回执或重新读取消费，不自行改业务状态
+- `listJobs` 按状态/类型与标题子串组合筛选，缺省 updatedAt 倒序，清空筛选恢复全列表（【r6.5】filter = `{status?: JobStatus, type?: JobType, title?: string}`，strict；status / type 精确匹配，title 区分大小写做子串匹配、空串不限制；省略 filter 或传空对象时返回全列表）；`getJob` 未知 id 返回 not_found。读取历史版本不改变当前版本。写回执包含已改变的作业/产物/版本/事件与 inbox 计数，UI 以回执或重新读取消费，不自行改业务状态
 - `AgentClient.send` 增加可选 `jobContext`；`AgentEvent` 公共可选 `jobContext`（不改变十类事件/唯一终态）。mock DataClient 与 AgentClient 共享 `job-state.ts`；AgentClient 先让该状态层处理事件，再通知 UI 订阅者。runId→作业/阶段/改稿请求的关联在 mock 层，页面卸载不移除它；UI 只刷新缓存
 - mock fixture 为 `jobs.json/job-detail.json/deliverable.json/interventions.json/uploads.json`；`MockOverrides` 增加 `jobFixtures`，**不新增 `jobScript`**。r6（H-6）：`jobs.json` 按场景集合分键（normal / job-running / job-pending-merge / job-conflict / job-delivered），`job-detail.json` / `deliverable.json` 以作业 id 为键（【r6.2】`job-detail.json` 值为 `{collect, process, analyze, previews（以 Upload.id 为键）, reconciliations}`；`deliverable.json` 值为交付分支工作区；`uploads.json` 为 `{uploads, previews}`；`interventions.json` 为介入事件数组；各文件的具名边界 schema 注册进 `contractSchemas`，生成器不改）；`jobFixtures` 的每个给出的键整体替换对应内置文件（不深合并，与 v1 `fixtures` 覆盖口径一致），在每个 mock DataClient 的会话状态建立时读取一次并在边界校验（r6.1，R7 S-27：`job-state.ts` 持有**模块级唯一共享会话状态**，每次 `createMockDataClient()` 时建立 / 重建它——读 scenario 与 `jobFixtures` 各一次；`createMockAgentClient()` 与所有 DataClient 实例共用当前状态，不各持一份；故 `jobFixtures` 为“建状态时读一次”，与 v1 `fixtures` 的“每次请求读取”时机不同，切换覆盖值须新建 client）；覆盖集合中缺工作区样例的作业返回带阶段的空工作区；【r6.3，R-B】内置种子中按下方样例表阶段态为 `not_started` 的工作区为空（集合为空；deliver 为 `deliverable=null`、`finalSnapshot=null`；采集未开始时该作业 `previews={}`、处理未开始时 `reconciliations=[]`），已开始阶段保留有效样例，done 阶段产物状态不因阶段完成而改为 confirmed——这是**种子数据口径**：`getStageWorkspace` 原样返回状态层内容、不按阶段态过滤或推导（rerunStage 后下游 `not_started` 仍保留旧修订与 draft 新修订，见 §4 迁移表），schema 不加对应约束，`createJob` 的初始空产物（§4.1）不变（r6.4：种子校正由 tasks T-A09b（fixture-only）落地，T-A10 经真实 `getStageWorkspace` 读回验证）；存在覆盖时会话只在内存，不读写两个本地 key。作业运行统一经既有 `send({jobContext})` 的 success/failure/retry/long 脚本驱动；不因读取页面自动启动、不新造检查点事件种类
 - 错误形态沿用 `{error:{code,message,retryable}}` 与既有 code；本 feature 的无效操作/只读写入/定稿未决项均返回 validation_error，payload 含说明；未知锚返回 not_found。方法输入/输出/参数字义写进 `methods.ts` 与生成文档

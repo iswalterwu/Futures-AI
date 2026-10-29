@@ -7,6 +7,15 @@
 > **当前状态（2026-10-29 首批独立 Review 后记账；以本行为准，上三行为当时原文）**：首批 T-A01～T-A09a 经独立审核员 A（claude-fable-5-1 via anthropic，新会话、独立 worktree，固定审 `b0b065f` + 代码 `13a3373`）判**本批通过（0 P1 / P2，6 P3）**，审核原件 `review-batch-a09a.md` 提交于 `af95b66505875609f7ed3f823e047cd16226a1c5`。**H-1** ①②③ 具备，③ 现另有 A 亲跑证据（`agent-context-contract.spec.ts` 3 / 5 / 7、`contract-version.spec.ts -t "WI scenarios"` 15，均通过），**④ v2 消费方集成 SHA 仍未取得** → 仍为“**待消费方集成（未交付）**”；生产方集成树 `13a3373` / `b0b065f` / `af95b66` 都只是生产方旁证，**不是** v2 接收，不能代填 ④。其余七个切片仍**未交付**（H-2·标签缺 `JobStatusBadge`；H-6 缺真实状态层）。本行不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（bridge 本窗口已明确限额、未重试；未改配置）。
 > **当前状态（2026-10-29 第二批派工准备 r6.3；以本行为准，上四行为当时原文）**：第二批 T-A10 / T-A22 / T-A22b / T-A23 / T-A24 **待实施**（未写代码、未运行测试、不预写结果）。其完成后 H-3·路由切片（T-A22）、H-4（T-A22b）、H-2·标签（T-A01 + T-A23）的提供任务齐备，可形成生产方 ①③；**④ 仍须 v2 消费方集成后由其所有者登记**，八个切片当前仍全部未交付（H-1 维持“待消费方集成”）。r6.3 接口精度只有一处：H-4 的 `useSessionStore()` 增一个**生产路由绑定入口** `bindRouter(router)`，仅供 `registerJobRoutes` 调用以注册既有 `afterEach` 守卫，不接受任何 `JobContext`、不是 setter；H-4 “可在测试中使用的公开设置方式” 仍登记为**无**（见 §3、§5-8）。T-A23 的 `JobStatusBadge` 为自制组件、不导入 shared `Badge.vue`，props 不变。记账者 = claude-opus-5-5 via anthropic（本轮协调器最小真实调用 `claude-bridge/claude-opus-5-5` exit 1，provider / invocation error 类、非已确认限额；同模型 anthropic exit 0；只换通道、未改配置）。
 > **当前状态（2026-10-29 Checklist R8 后 r6.4；以本行为准，上五行为当时原文）**：独立 A 的 Checklist R8 **未通过**（原件 `7b91a2c`；唯一 P2 = B-12 T-A10 任务粒度），r6.3 的 H-4 `bindRouter` 与 T-A23 自制徽标等接口 / 设计精度经 R8 判为设计通过、**本轮不动**。r6.4 只在 Tasks 层把 R-B 种子校正拆为 **T-A09b**（fixture-only，依赖 T-A08），T-A10 依赖增 T-A09b：凡依赖链经过 T-A10 的切片（H-2·列表、H-6、页面切片）多一个祖先，但 T-A09b **不是**任何切片的提供任务、不形成 ①～④ 任何一项；§1 各切片提供任务、公开接口名称与 §5 待确认项不变，八个切片仍**全部未交付**（H-1 维持“待消费方集成”）。第二批（T-A09b / T-A10 / T-A22 / T-A22b / T-A23 / T-A24）在 A R8.1 增量复核通过并提交前不开码；② 届时以 R8.1 提交 SHA 为准（R8 未通过，不能作 ②）。记账者 = claude-opus-5-5 via anthropic（本轮协调器真实调用 `claude-bridge/claude-opus-5-5` 为 provider / invocation 失败、未确认 quota，官方通道成功；未改配置）。
+> **当前状态（2026-10-29 第二批实施后 Converge batch2；以本行为准，上六行为当时原文）**：Checklist **R8.1 通过**（`34d339e`，26 / 26，B-12 关闭），第二批 T-A09b / T-A10 / T-A22 / T-A22b / T-A23 / T-A24 已实施（openai/gpt-6-astra；代码 diff `34d339e..27e59e6 -- frontend`；集成人 ff-only 并入生产方集成树 `integration/workbench-interaction` @ `27e59e6`），**待本批独立代码 Review**。
+> - **生产方已具备 ①②③（3 / 4）的切片**：H-2·标签（T-A01 + T-A23）、H-3·路由切片（T-A22）、H-4（T-A22b）。② = R8.1 `34d339e`；③ 为实施者执行的定向测试摘要，属于**待审核证据**（本批 Review 未进行，不是 reviewed / passed）；**④ v2 消费方集成 SHA 均未取得** → 状态均为“**待消费方集成（未交付）**”。
+> - **H-1**：①②③ 保留首批原登记，可追溯（② R7 `9acf3de`、③ 含 A 亲跑），④ 仍缺。
+> - **仍缺提供任务的切片**：H-2·列表缺 T-A12 / T-A22a；H-6 已有 T-A10 的真实读 API，但缺 T-A11 / T-A21（读 API 完成 ≠ H-6 交付）；H-5 未做；页面切片缺 B / C 组（T-A22 的两页只是骨架）。
+> - **本批未做**：持久化、业务写、Agent 运行状态、页面功能。
+> - **公开接口**：实际名称与本文件 §3 一致，另按精度补记 `jobRoutes` 导出名和 `context` 字段级只读，见 §3 落地核对。
+> - **上游**：main 已到 `072bb12`（v2 S0 已合入，含 `/jobs` 壳占位），本 feature 未同步，见 §5-9。
+>
+> 本行不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（本轮协调器最小真实调用 `claude-bridge/claude-opus-5-5` exit 1，provider / invocation error 类、未确认 quota；同模型官方通道 exit 0；只换通道、未改配置）。
 > **阶段记录（脱敏）**：作者 = claude-opus-5-5 via anthropic（Plan / Tasks / Analyze 角色；本窗口 `claude-bridge/claude-opus-5-5` 经协调器探活 exit 1，quota / rate / spend_limit 类，未重试；未改 provider / key / 全局配置）。
 
 ## 0. 固定参照
@@ -31,17 +40,19 @@
 | 切片 | 提供任务（tasks §2a） | 定向测试（交付时执行） | ① commit | ② Checklist SHA | ③ 测试摘要 | ④ 集成 SHA | 状态 |
 |---|---|---|---|---|---|---|---|
 | H-1 | T-A02、T-A09、T-A09a | `agent-context-contract.spec.ts`；`contract-version.spec.ts -t "WI scenarios"` | `13a3373f7ebd2075fb8bcfe32033127a916fa6b9`（含 T-A02 `ad4a830`、T-A09 `82c36e7`、T-A09a） | `9acf3de`（R7） | 实施者执行（Converge 未重跑）：`agent-context-contract.spec.ts` `WI H-1 schema` 3 / `WI H-1 legacy` 5 / `WI H-1 passthrough` 7 pass；`contract-version.spec.ts -t "WI scenarios"` 15 pass；同提交全量单测 21 文件 722 pass / 0 fail。【独立 A 亲跑】同上 3 / 5 / 7、15 pass，全量单测 21 文件 722 / 0 fail（`review-batch-a09a.md` §1 / §5，`af95b66`） | **未取得**（生产方集成树 `13a3373` 只是旁证，不能填作 ④） | **待消费方集成（未交付）** |
-| H-2·标签 | T-A01、T-A23 | `contract-labels.spec.ts -t "WI labels"`；`badges.spec.ts -t "WI status badges"` | 部分：T-A01 `07ef7ccc3c889400dfb2354ceec22c94317c8813`（Label 常量 / schema）；T-A23 `JobStatusBadge` 未实施 | `9acf3de`（R7） | 部分：`WI labels` 10 pass（实施者执行；独立 A 亲跑同数）；`badges.spec.ts` 尚不存在 | 未取得 | 未交付 |
-| H-2·列表 | T-A01、T-A02、T-A10、T-A12、T-A22a | `jobs-store.spec.ts -t "WI H-2"` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
-| H-3·路由切片 | T-A22 | `routes.spec.ts` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
-| 页面切片 | T-B01、T-B02、T-B04、T-C01、T-C01a、T-C02、T-C03、T-C04 | `e2e/jobs/intake.spec.ts`；`detail-stage.spec.ts -g "WI AC-002-2"`；`job-list.spec.ts` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
-| H-4 | T-A22b | `session-context.spec.ts -t "WI H-4"` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
-| H-5 | T-C01、T-C01a | `intake.spec.ts -t "WI H-5"` | 未取得 | `9acf3de`（R7） | 未取得 | 未取得 | 未交付 |
-| H-6 | T-A07、T-A09、T-A10、T-A11、T-A21 | `contract-version.spec.ts -t "WI jobFixtures"`；`job-state-read.spec.ts -t "WI scenarios read"`；`job-state-inbox.spec.ts -t "WI inbox seed"` | 部分：T-A07 `0f604480816c6372e847d29cf05bdc63e88371a3`、T-A09 `82c36e7b05ce286ebc0f9650e466695e394612ee`（fixture 形状、`MockOverrides.jobFixtures` 类型与 `readJobFixtures()` 边界解析）；状态层 T-A10 / T-A11 / T-A21 未实施，`jobFixtures` 尚不影响任何读方法 | `9acf3de`（R7） | 部分：`WI jobFixtures` 14 pass（实施者执行；独立 A 亲跑同数）；`job-state-read` / `job-state-inbox` 尚不存在 | 未取得 | 未交付 |
+| H-2·标签 | T-A01、T-A23 | `contract-labels.spec.ts -t "WI labels"`；`badges.spec.ts -t "WI status badges"` | `ebce4c85b1422a62b883117f75459a1fdee81b80`（T-A23；祖先含 T-A01 `07ef7ccc3c889400dfb2354ceec22c94317c8813`） | `34d339e`（R8.1，当前有效） | **待审核证据**（实施者执行、Converge 未重跑、本批 Review 未进行）：`WI labels` 10 pass（本批复跑；首批 A 亲跑同数）；`badges.spec.ts -t "WI status badges"` 18 pass；同批末轮全量单测 27 文件 833 pass / 0 fail | 未取得（生产方集成树 `27e59e6` 只是旁证） | **待消费方集成（未交付）**：生产方 3 / 4 |
+| H-2·列表 | T-A01、T-A02、T-A10、T-A12、T-A22a | `jobs-store.spec.ts -t "WI H-2"` | 部分：T-A01 / T-A02（首批）、T-A10 `1841029f5a948b53ef21cbc54967556dc04e0815`（`listJobs`）；T-A12（`createJob`）与 T-A22a（jobsStore）未实施 | `34d339e`（R8.1，当前有效） | 未取得（`jobs-store.spec.ts` 尚不存在） | 未取得 | 未交付 |
+| H-3·路由切片 | T-A22 | `routes.spec.ts` | `cc59e946df2d08178b03e3b37928ab34517067d7`（T-A22；`b38cf43` 后路由整文件回归仍通过） | `34d339e`（R8.1，当前有效） | **待审核证据**（实施者执行、Converge 未重跑、本批 Review 未进行）：`routes.spec.ts` `WI routes` 7 / `WI register` 2 pass；T-A22b 后整文件 9 pass | 未取得（生产方集成树 `27e59e6` 只是旁证） | **待消费方集成（未交付）**：生产方 3 / 4；只是路由切片，两页为骨架，不含页面功能 |
+| 页面切片 | T-B01、T-B02、T-B04、T-C01、T-C01a、T-C02、T-C03、T-C04 | `e2e/jobs/intake.spec.ts`；`detail-stage.spec.ts -g "WI AC-002-2"`；`job-list.spec.ts` | 未取得 | `34d339e`（R8.1，当前有效） | 未取得 | 未取得 | 未交付 |
+| H-4 | T-A22b | `session-context.spec.ts -t "WI H-4"` | `b38cf43f602390d7645cc84514d0da9860a7e0b7`（T-A22b） | `34d339e`（R8.1，当前有效） | **待审核证据**（实施者执行、Converge 未重跑、本批 Review 未进行）：`WI H-4 enter` 4 / `WI H-4 leave same navigation` 3 / `WI H-4 readonly` 1 pass | 未取得（生产方集成树 `27e59e6` 只是旁证） | **待消费方集成（未交付）**：生产方 3 / 4；公开设置方式 = 无（§5-8） |
+| H-5 | T-C01、T-C01a | `intake.spec.ts -t "WI H-5"` | 未取得 | `34d339e`（R8.1，当前有效） | 未取得 | 未取得 | 未交付 |
+| H-6 | T-A07、T-A09、T-A10、T-A11、T-A21 | `contract-version.spec.ts -t "WI jobFixtures"`；`job-state-read.spec.ts -t "WI scenarios read"`；`job-state-inbox.spec.ts -t "WI inbox seed"` | 部分：T-A07 `0f604480816c6372e847d29cf05bdc63e88371a3`、T-A09 `82c36e7b05ce286ebc0f9650e466695e394612ee`（fixture 形状、`MockOverrides.jobFixtures` 与 `readJobFixtures()` 边界解析）、**T-A10 `1841029f5a948b53ef21cbc54967556dc04e0815`**（共享状态在 client 创建时据 `jobFixtures` 建立一次；`listJobs` / `getJob` / `getStageWorkspace` 的 empty / error / slow 与缺样例返回空工作区）；T-A11（有覆盖时只在内存 / 持久化）与 T-A21（收件箱种子）未实施 | `34d339e`（R8.1，当前有效） | 部分：`WI jobFixtures` 14 pass（首批，实施者执行，A 亲跑同数）；`WI scenarios read` 33 pass（本批，实施者执行，**待审核**）；`job-state-inbox.spec.ts` 尚不存在 | 未取得 | 未交付（读 API 完成 ≠ H-6 交付） |
 
 （测试文件均在 `frontend/tests/{unit,component}/jobs/` 或 `frontend/e2e/jobs/`；命令前缀 `pnpm -C frontend test:unit|test:e2e`。）
 
 【r6.4 口径】上表“提供任务”列不变；T-A10 新增依赖 T-A09b（R-B fixture-only 种子校正），H-2·列表 / H-6 的依赖链随之多一个祖先，T-A09b 本身不登记为提供任务、不产生 ①～④；内置种子中未开始阶段的工作区为空（plan §2.4 R-B），这是既有 S-13 空工作区表达，不是新接口或新 UI 状态。
+
+【batch2 口径（Converge batch2，2026-10-29）】② 列已改为当前有效轮次 **R8.1 `34d339e`**（R7 `9acf3de` 是首批 / H-1 当时的有效轮次，H-1 行保留原登记以便追溯；R8 `7b91a2c` 未通过，不作 ②）。H-2·标签 / H-3 / H-4 的 ③ 是**待审核证据**：实施者执行，Converge 未重跑，本批独立代码 Review 尚未进行；不得写成“reviewed / passed”。Review 若有发现，按其结论回修后再更新本表。④ 只能由 `integration/frontend-workbench-v2` 的所有者登记；生产方集成树 `27e59e6` 只是旁证。
 
 ## 2. 逐项对拍（v2 要求 → r5 状态 → r6 落点）
 
@@ -83,14 +94,24 @@
 | `frontend/src/contracts/types.ts` | `ActiveJobStatusSchema`、`ACTIVE_JOB_STATUSES` | H-2 ③；= JobStatus − {delivered, cancelled} |
 | `frontend/src/jobs/components/JobStatusBadge.vue` | props：`status: JobStatus`（只读 props，不读 store） | H-2·标签；文案 + 图标来自 `JobStatusLabel` |
 | `frontend/src/jobs/stores/jobs.ts` | `useJobsStore()`：只读 `jobs: JobListItem[]`、`listStatus: 'idle'\|'loading'\|'ready'\|'error'`、`listError: ContractError \| null`；`ensureJobs()`、`refresh()`、`createJob(input)`；（本 feature 内部另有 `filteredJobs` / `applyFilter()` / `openJob()` / `receiveAgentEvent()`） | H-2·列表；进行中集合 = `jobs` 中 status ∈ `ACTIVE_JOB_STATUSES` |
-| `frontend/src/jobs/routes.ts` | 两条路由记录（`jobs`、`job-detail`）；`registerJobRoutes(router, pinia)` | H-3（+ H-4 守卫）；`main.ts` 在挂载前调用 |
-| `frontend/src/jobs/stores/session.ts` | `useSessionStore()`：只读 `context: JobContext \| null`；【r6.3】生产路由绑定入口 `bindRouter(router)`（只由 `registerJobRoutes` 调用，注册 `afterEach` 守卫；不接受 `JobContext`） | H-4；无公开 setter，只经导航改变；壳与测试不调用 `bindRouter` |
+| `frontend/src/jobs/routes.ts` | 两条路由记录（`jobs`、`job-detail`）；`registerJobRoutes(router, pinia)`；【batch2 落地】两条记录的导出名为 `jobRoutes: RouteRecordRaw[]`，签名为 `registerJobRoutes(router: Router, pinia: Pinia): void` | H-3（+ H-4 守卫）；`main.ts` 在挂载前调用 |
+| `frontend/src/jobs/stores/session.ts` | `useSessionStore()`：只读 `context: JobContext \| null`；【r6.3】生产路由绑定入口 `bindRouter(router)`（只由 `registerJobRoutes` 调用，注册 `afterEach` 守卫；不接受 `JobContext`）；【batch2 落地】`context` 返回深只读对象，字段也不可写；签名为 `bindRouter(router: Router): void` | H-4；无公开 setter，只经导航改变；壳与测试不调用 `bindRouter` |
 | `frontend/src/jobs/stores/intake.ts` | `useIntakeStore()`：`open(jobId?)`、`close()`、只读 `isOpen`、`jobId` | H-5；jobId 为打开时快照 |
 | `frontend/src/jobs/stages/IntakeDrawer.vue` | 无必需 props；根元素 `.glass-drawer`，填满父容器 | H-5；v2 前由本 feature 两个页面挂载，v2 后由 AppShell `.intake-slot` 挂载并由 T-H01 移除页面级挂载 |
 | `frontend/src/contracts/mock/index.ts` | `MockOverrides.jobFixtures`：键 = `fixtures/jobs` 文件名，值整体替换；`jobs` 按场景集合分键 | H-6；每个 client 状态建立时读取一次；切换覆盖值需新建 client（沿用 v1 测试在系统边界 spy 委托的做法）。r6.1（R7 S-27）：`job-state.ts` 为模块级唯一共享会话状态，每次 `createMockDataClient()` 时据 scenario / `jobFixtures` 重建，AgentClient 与各 DataClient 共用当前状态；`jobFixtures` “建状态时读一次”，与 v1 `fixtures` “每次请求读取”时机不同 |
 | `frontend/src/main.ts` | `registerJobRoutes(router, pinia)`；`agentClient.subscribe(useJobsStore(pinia).receiveAgentEvent)` | 本 feature 写入；壳不改 |
 
 【2026-10-29 batch-a09a 落地核对（Converge 只读）】在 `13a3373` 中已按本表名称落地：`CONTRACT_VERSION='2.0.0'`、`JobContextSchema` / `JobContext`、`SendMessageSchema.jobContext?`、`events.ts` 共享 `eventFields` 的可选 `jobContext`（无上下文时事件不出现该键）、九张 Label 常量与 schema、`ActiveJobStatusSchema` / `ACTIVE_JOB_STATUSES`、`MockOverrides.jobFixtures`（另导出内部用 `readJobFixtures()` / `jobFixtureSchemas`，供 T-A10 建状态时调用，尚未接线）。`JobStatusBadge`、`useJobsStore`、`routes.ts` / `registerJobRoutes`、`useSessionStore`、`useIntakeStore`、`IntakeDrawer`、`main.ts` 注册均**未实施**。名称无出入，本表无需改。
+
+【2026-10-29 batch2 落地核对（Converge 只读；代码 `34d339e..27e59e6`，待本批独立代码 Review）】以下名称已按本表落地：
+- `JobStatusBadge`：props `status: JobStatus`，自制组件，不导入 shared `Badge.vue`，文案和图标来自 `JobStatusLabel`。本 feature 内部另有 `ArtifactStatusBadge{status: ArtifactStatus | UploadStatus}` 与 `SourceBadge{origin, source}`，不属于交接接口。
+- `routes.ts`：`jobRoutes` 与 `registerJobRoutes`。
+- `useSessionStore`：`context` 与 `bindRouter`。
+- `main.ts`：挂载前调用 `registerJobRoutes(router, pinia)`。
+- `MockOverrides.jobFixtures`：已由 T-A10 的共享状态在 `createMockDataClient()` 时读取一次。
+- `DataClient`：增加 `listJobs(filter?: {status?, type?, title?})`、`getJob(jobId)`、`getStageWorkspace(jobId, stage)`。
+
+以下仍**未实施**：`useJobsStore`、`useIntakeStore`、`IntakeDrawer`、`main.ts` 的 jobsStore 订阅（T-A22a）。上表两行只按精度补了导出名和字段级只读，机制与语义不变。
 
 ## 4. 不做的事（生产方边界）
 
@@ -109,6 +130,12 @@
 6. 合并注意（集成人）：`43b6d79` 不含 `specs/workbench-interaction/**`；main 的 `specs/README.md` 无本 feature 行，且仍有已完成的“D-018 → workbench-interaction 回 Clarify”待同步行（本分支已于 `c238bd8` / `8bd1b31` 完成），合并时保留本 feature 行并删除该已完成行；v2 参照分支 README 中对本 feature 的待同步行，在交付完成前保留。【r6.1】main 已前进到 `90187f7`：其 `specs/README.md` 仍无本 feature 行、仍有已完成的 D-018 行，并新增 D-020 等跨 feature 行（含“`workbench-interaction` 冻结 spec 不加 AC”）；带入时只定向导入本规格目录与本 feature 行，不整文件覆盖 main 的 `docs/**`、README 或其他 feature 规格。
 7. 【r6.1，R7 S-30，仅知悉】作业内分析台追问经 `contracts/index.ts` 的 `agentClient.send({message, jobContext})` 直接发送，不经 `agent/store.ts`、不带 `sessionId`；基线 mock 为每次这样的 send 分配新的 `mock-session-*`，即**独立 mock session**，与 v2 plan §7.7 “会话 ID 沿用 v1 单会话”不同轨。壳的 `running` 由 runs 派生仍能禁发，时间线仍回放；本 feature 不改该行为，请 v2 接收方知悉。
 8. 【r6.3，H-4 登记，仅知悉】H-4 的公开设置方式 = **无**：`context` 只经 `registerJobRoutes` 注册的路由守卫在导航时设置 / 清空；`useSessionStore()` 另有的 `bindRouter(router)` 只供 `registerJobRoutes` 绑定生产 router（注册守卫、不接受上下文），壳不调用、测试不以它代替导航。因此 v2 T-V2-03 / S1-ctx 对 H-3·路由切片的条件依赖成立（v2 plan §7.3 H-4 / F-05 口径）；`session.ts` 不导入 `agent/**` 与 `routes.ts`，与 v2 `send` 体内调用 `useSessionStore()` 不成环。
+9. 【batch2，仅知悉 / 待集成人与 v2 所有者协调】main 已前进到 `072bb12`（PR #11，v2 S0 阶段性合入），带来三处交点：
+   - `app/nav.ts` 新增名为 `jobs` 的壳占位（`placeholderOwner: 'workbench-interaction'`）。
+   - v2 `e2e/shell.spec.ts` 断言 `/jobs` 为该 owner 的占位页。v2 tasks 已写明这只是 S0 证据，H-3 集成后由 T-V2-09#4 迁移为集成态。
+   - 本 feature 的 `registerJobRoutes` 按 H-3 / plan §2.1 同名替换该占位。本 feature 的 `routes.spec.ts` 真实路由表用例按 pin `90187f7` 断言“新增两条、原表无 `jobs`”，同步 `072bb12` 后需按 tasks §7 重核并调整。
+
+   本 feature 未同步该 main，不代改 v2 壳文件 / 测试；同步时点、T-V2-09#4 迁移与本 feature 测试调整的先后，由集成人与 v2 所有者协调（`converge-batch2.md` §6）。
 
 ## 6. 已登记的外部风险（不升级为本 feature 新硬阻塞）
 

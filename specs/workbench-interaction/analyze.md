@@ -3,7 +3,13 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
-> **当前结论（2026-10-29 Checklist R8 后 r6.4）：见文末「Analyze R10」**——按 Checklist R8 唯一 P2 B-12 拆出 T-A09b（R-B fixture-only，0.5 h），T-A10 恢复核心 2 h；67 任务 / 约 102 h、224 / 224；需求未变、无新机制；第二批 6 项约 7 h，待 A 新会话 R8.1 增量复核前 blocked；本报告不宣布 B-12 关闭。R9（r6.3）为历史记录。
+> **当前结论（2026-10-29 第二批实施后 Converge batch2）：见文末「Analyze R11」**
+> - **前置**：Checklist R8.1 已通过（`34d339e`），第二批据此开码。
+> - **本批**：T-A09b / T-A10 / T-A22 / T-A22b / T-A23 / T-A24 已实施（代码 `34d339e..27e59e6 -- frontend`）。Converge 判本批范围**已收口、待本批独立代码 Review**；实施中定形的最小接口只是精度，已同步 plan / tasks / interface-handoff（r6.5），不是需求变更，未新增任务。
+> - **feature 整体**：**16 / 67 已实施、51 未开始**，**未收敛**（尚未实施 + H 组外部阻塞）；46 AC 最终验收 0；H-x 无一已交付（H-2·标签 / H-3 / H-4 具备 ①②③ 中的 3 / 4，③ 待审核；H-1 维持原登记）。
+> - **上游**：main 已到 `072bb12`（v2 S0），本批仍 pin `90187f7`、未导入，需按 tasks §7 决定是否重核。
+> - **不是** Review / Gate 2 / Handoff。
+> 【历史原文】**当前结论（2026-10-29 Checklist R8 后 r6.4）：见文末「Analyze R10」**——按 Checklist R8 唯一 P2 B-12 拆出 T-A09b（R-B fixture-only，0.5 h），T-A10 恢复核心 2 h；67 任务 / 约 102 h、224 / 224；需求未变、无新机制；第二批 6 项约 7 h，待 A 新会话 R8.1 增量复核前 blocked；本报告不宣布 B-12 关闭。R9（r6.3）为历史记录。
 > 【历史原文】**当前结论（2026-10-29 首批实施后）：见文末「Analyze R8」**——首批 T-A01～T-A09a（10 / 66）已实施（代码 diff `8753fa9..13a3373`），Converge 判本批范围已收口、待独立 Review；实施中的字段定形只是既有需求内的类型精度，已同步 plan / tasks（r6.2），不是需求变更；feature 整体**未收敛（尚未实施 56 项 + H 组外部阻塞）**；46 AC 最终验收 0；H-1 具备 ①②③、④ 未取得（未交付），其余 H-x 未交付；不是 Review / Gate 2 / Handoff。
 > 【历史原文】**当前结论（2026-10-28 r6.1 开工前）：见文末「Analyze R7」**——r6.1 只吸收 Checklist R7 建议范围内的措辞 / 断言精度（S-27～S-32），需求与结构不变，内部一致性通过；IMPL-GATE-R6 三项已满足（R7 `9acf3de`、Walter“允许”、集成人 / 工作树登记），实现分支带入本规格后即可按 DAG 开工首批 T-A01～T-A09 / T-A09a；H-x 全部未交付；未实施、未验收、未收敛。
 > 【历史原文】**当前结论（2026-10-28 恢复轮）：见文末「Analyze R6」**——r6 内部一致性通过，待 A 新会话定向复核（Checklist R7）；`implementation_base_sha = 43b6d79`（v1 Handoff 合入 main 的基线门已满足）；Implement 仍 BLOCKED（IMPL-GATE-R6：A R7、Walter 代码授权、集成人 / worktree 登记）；H-1～H-6 / 页面切片全部未交付；未实施、未验收、未收敛。
@@ -564,3 +570,99 @@
 - **任务**：67 个 / 约 102 h；标准 / 命令 224 / 224；首批 10 已完成不变、57 未开始。
 - **开工**：第二批（T-A09b → T-A10；T-A22 → T-A22b；T-A23、T-A24；6 项约 7 h）在 R8.1 通过并提交前 **blocked**，不开码。
 - **已实施 / 已验收**：第二批均为否；本轮未写代码、未运行任何产品测试。
+
+---
+
+## Analyze R11（只读；第二批 T-A09b～T-A24 实施后的 Converge 配套分析，2026-10-29；区别于 Checklist R8.1，**不是**审核结论）
+
+> **阶段记录（脱敏）**：
+> - **角色与模型**：Converge / 状态记账（含本分析）；实际模型 = **claude-opus-5-5 via anthropic**（PI_SESSION_ID `01a18625-c9a1-76a3-aa8d-fefefec99096`）。
+> - **通道**：本轮协调器对 `claude-bridge/claude-opus-5-5` 的最小真实调用 exit 1，失败类别 = **provider / invocation error（未确认为 quota）**；同模型官方通道最小调用 exit 0，正式任务也由官方通道完成。按 AGENTS §6 规则 2 只换通道、不换模型，未改 provider / key / 路由 / 全局配置。
+> - **派工**：集成人协调会话 `01a18388-a371-7746-8158-9fb15d55d819`。Walter 的“允许”授权和本轮“继续”持续有效。
+> - **性质**：本报告不勾选 checklist；当前有效审核 = Checklist R8.1（`34d339e`，本树 blob `99e096ad9f82bffe2e61d13ea5a8512d5075ce71`，未改）。
+>
+> **写入与执行边界**：
+> - **可写范围**：唯一可写 worktree `D:/2030/Futures-AI-interaction-converge-batch2`（`docs/workbench-interaction-batch2-converge` @ `27e59e6`，起始 clean）；只写本 feature 的 plan / tasks / analyze / implementation-log / interface-handoff，新建 `converge-batch2.md`，以及 `specs/README.md` 本 feature 两行。
+> - **未改动**：代码 / 测试 / fixture / spec / checklist / 已有 Review 原件 / 首批 Converge 报告 / 权威 docs / 根 HANDOFF / 其他 worktree。
+> - **未执行**：未 commit / push / merge；未安装；未启动服务或子 agent；**未运行任何产品测试**。
+> - **只读脚本**：`C:/Users/iswal/AppData/Local/Temp/wi-batch2-01a18388-i8ukv6xl/converge-fixture-check.py`（非项目产物，不清理）。
+
+### 1. 重新读取与输入
+
+- **本轮开始时重新读取**：
+  - 工作流与权威文档：AGENTS.md、`docs/plan.md`、`docs/interaction.md` §3.2、`docs/designUI.md` §2.4 / §6。
+  - 本 feature 规格：冻结 spec.md、plan.md、tasks.md、checklist.md R8.1 节（只读）、本报告 R10、implementation-log、interface-handoff、`converge-batch-a09a.md`、`review-batch-a09a.md`、`specs/README.md`。
+  - 实施者两份脱敏回报（只作结果来源）。
+- **固定输入**：
+  - 代码 diff `34d339e..27e59e6 -- frontend`：6 个提交、25 个文件，非 frontend 零差异。
+  - spec.md / checklist.md 相对 `34d339e` 零差异。
+  - 生产方集成树 HEAD = `27e59e6`（只读核验，旁证）。
+  - main：`cf8e11b` 相对 `90187f7` 的 frontend / docs / AGENTS / backend / design 零差异；本地 `main` 与 `origin/main` 现为 `072bb12`（PR #11 v2 S0），相对 `90187f7` 有 12 个前端 / 设计文件差异。本批 pin `90187f7`，不导入（见 §5）。
+
+### 2. 本批范围与结论
+
+| 项 | 结果 |
+|---|---|
+| 范围 | T-A09b、T-A10、T-A22、T-A22b、T-A23、T-A24（6 项，约 7 h）；全部是“部分前置”，T-A23 另对 AC-001-5 为“组件部分最终”（人工 M-01 归 T-G10） |
+| 代码 ↔ 完成标准 | 6 / 6 有对应实现；21 条命令的 `-t` 标题全部存在，用例展开数与回报数一致；T-A09b 的 fixture 校正经只读脚本证实：12 空 / 已开始未变 / `jobs.json` 未变 |
+| 命令结果 | **实施者执行、本会话未重跑**：逐任务原定命令全部通过；末轮全量单测 27 文件 833 / 0、六守卫、`contract --check` 15 / 10 / 2、typecheck、lint、既有 shell + agent E2E 24 / 0。两次新增测试的首跑失败（A10 匹配器、A23 选择器）都只修了新测试 |
+| 所有权 | 只改 tasks 修改范围内的文件；`app/**`、`shared/**`、`agent/**`、`workbench/**`、`scripts/**`、package / 锁、`types.ts`、三份既有契约测试、`jobs` / `interventions` / `uploads.json`、e2e 均零差异 |
+| 新增任务 | 无 |
+| 本批判定 | **已收口，待本批独立代码 Review** |
+| feature 判定 | **未收敛（尚未实施 + H 组外部阻塞）**：16 / 67 已实施（10 已完成 + 6 待审）、51 未开始；46 AC 最终验收 0 |
+
+### 3. 实施接口定形 ↔ 需求（是否变更）
+
+| 实施事实 | 依据 | 判定 |
+|---|---|---|
+| `listJobs(filter?: {status?, type?, title?})`；strict；title 区分大小写子串、空串不限制 | plan §2.4 / T-A10 “状态 / 类型 / 标题子串组合筛选” | 精度 |
+| 未知锚在任何场景都返回 not_found，error 场景只对已知目标返回 adapter_error | S-13 / T-A10 标准 2 / plan “未知锚 not_found” | 精度（先后顺序；读法差异作为观察项交给 Review，`converge-batch2.md` §5 O-B2-2） |
+| `jobRoutes: RouteRecordRaw[]` + `registerJobRoutes(router, pinia)` | plan §2.1 “导出两条记录” | 精度（导出名） |
+| `useSessionStore().context` 深只读 + `bindRouter(router): void` | plan §2.1 / §2.3【r6.3】 | 精度（只读覆盖到字段层） |
+| `diffLines(before, after): LineDiffResult`（`lines` / `summary` 具名判别） | plan §2.2 / §6；T-A24【r6.3】+ S-36 | 精度 |
+
+**结论**：都是既有需求内的名称 / 类型精度，**不是需求变更**，不回 Clarify / Gate 1。已以【r6.5 精度】同步 plan（页首、§2.1、§2.2 工具行、§2.4 `listJobs` 句）、tasks（T-A10 / A22 / A22b / A24 修改范围）、interface-handoff §3 两行与落地核对段。不复制实现算法，不增加要求 / AC / 机制。
+
+### 4. 状态回写与结构复核（tasks §1-8）
+
+- 6 项状态改为“**已实施（batch2，待本批独立代码 Review；不表示 AC 最终验收）**”，并带固定 commit 与“实施者执行”的验证摘要；**不写“已完成 / 已验收”**。首批 10 项的状态行不改。
+- 页首新增“当前实施进度（Converge batch2）”块：16 / 67 已实施，51 未开始，下一可起步任务 T-A11。r6.4 块中“blocked / 57 未开始”保留为 R8.1 之前的历史原文，以便追溯审查输入。
+- **结构**：只改了上述 6 条状态行，以及 T-A10 / A22 / A22b / A24 修改范围中的【r6.5】追加文字。67 个任务的编号 / 顺序 / 预计 / 依赖 / 完成标准 / 验证命令均未改；标准 ↔ 命令仍为 **224 ↔ 224**，合计约 102 h；§5 矩阵 / §6 DAG / §7 口径未改。状态值共三种：10 × 已完成、6 × 已实施（batch2，待本批 Review）、51 × 未开始。
+- P3 / 精度项：
+  - **S-37**：断言已落实（标准未改字）。
+  - **R-B**：12 个样例已校正并读回；done 阶段上游 draft 残留保留，不自动审批，仍部分落实、未关。
+  - **R-D**：未加新 guard，待后续写方法按构造保持。
+  - **R-A / R-C / R-E / R-F**：未处理、未冒称关闭。
+
+### 5. 上游移动（main `072bb12`）
+
+- **事实**：PR #11 把 frontend-workbench v2 S0（T-V2-01 / 02）阶段性合入 main。`app/nav.ts` 新增 `jobs` 壳占位（`placeholderOwner: 'workbench-interaction'`），`router.ts` 去掉 research 深链，v2 `e2e/shell.spec.ts` 断言 `/jobs` 为该 owner 的占位页（v2 tasks 写明这只是 S0 证据，由 T-V2-09#4 在 H-3 集成后迁移）。`main.ts`、`contracts/**`、`agent/**`、`shared/**`、脚本、依赖零差异。
+- **对本 feature 的影响**（尚未发生，本批 pin `90187f7`）：同步后：
+  - ① `routes.spec.ts` 中“真实路由表新增两条、原表无 `jobs`”的断言会失效（同名替换路径已由占位替换用例覆盖）；
+  - ② 本 feature 集成树里的 v2 shell E2E 在 `/jobs` 处会因同名替换而失败，直到 T-V2-09#4 迁移。
+- **口径**：这是基线变化，不是本批相对 pin 基线的缺口。按 tasks §7（“基线再变须重核”）：集成人若要同步，须先修订 tasks §0.0 并重跑 Analyze，经 A 复核后，再派任务调整测试，并与 v2 所有者协调迁移时点。本报告**不新增任务、不导入、不代改 v2 文件**，交集成人 / Walter 决定。
+
+### 6. 观察项与未解决项
+
+- **观察项**（交本批独立 Review 判定，不是缺口）：O-B2-1～O-B2-6，见 `converge-batch2.md` §5。
+  - O-B2-1：状态共享时机。
+  - O-B2-2：error 场景下的未知锚。
+  - O-B2-3：模块状态在 client 创建前未初始化，需 T-A18 核对。
+  - O-B2-4：徽标统一 ok 边色。
+  - O-B2-5：S-32 用行内 eslint-disable。
+  - O-B2-6：真实路由表断言只适用于当前基线。
+- **S-31 写后统一刷新核对**：本批没有领域写路径，不适用。
+- **外部 / 流程**：
+  - ① 本批独立代码 Review（审核员 A，新会话、异模型）；
+  - ② H-2·标签 / H-3 / H-4 / H-1 的 ④ 须 `integration/frontend-workbench-v2` 所有者真正集成后登记，生产方集成树 `27e59e6` 只是旁证；
+  - ③ interface-handoff §5（含新增 §5-9）待 v2 接收方确认 / 集成人协调；
+  - ④ H 组 v2 外部闸门；
+  - ⑤ main `072bb12` 同步决策；
+  - ⑥ 本树文档待集成人审阅提交。
+
+### 7. 结论（Analyze R11）
+
+- **一致性**：spec ↔ plan ↔ tasks ↔ interface-handoff ↔ implementation-log ↔ 代码，在本批范围内**无冲突**；接口定形差距已按精度同步；没有需要回 Clarify 的歧义。
+- **本批**（6 项）：**已收口、待本批独立代码 Review**。
+- **feature**：**未收敛（尚未实施 51 项 + H 组外部阻塞）**；46 AC 最终验收 0。
+- **不是** Review 通过、不是 Gate 2、不是 Handoff；H-x 无一“已交付”。
