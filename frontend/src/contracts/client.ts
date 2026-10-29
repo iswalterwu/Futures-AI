@@ -3,6 +3,12 @@ import type {
   Bootstrap,
   CalendarEntry,
   DailyBriefResponse,
+  Job,
+  JobListItem,
+  JobStatus,
+  JobType,
+  Stage,
+  StageWorkspace,
   MarketBoard,
   ModuleDef,
   ModuleId,
@@ -27,6 +33,9 @@ export interface DataClient {
   getNewsTicker(): Promise<NewsItem[]>
   getSourceStatus(): Promise<SourceStatus[]>
   getResearchList(): Promise<ResearchItem[]>
+  listJobs(filter?: { status?: JobStatus; type?: JobType; title?: string }): Promise<JobListItem[]>
+  getJob(jobId: string): Promise<Job | null>
+  getStageWorkspace(jobId: string, stage: Stage): Promise<StageWorkspace>
 }
 
 export type AgentEventCallback = (event: AgentEvent) => void

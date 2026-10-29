@@ -17,6 +17,7 @@ import {
   type ContractError,
   type ErrorResponse,
 } from '../types.ts'
+import * as jobState from './job-state.ts'
 import success from './agent/success.ts'
 import failure from './agent/failure.ts'
 import retry from './agent/retry.ts'
@@ -101,6 +102,7 @@ const moduleFixtures = new Set<keyof typeof fixtures>([
 
 export function createMockDataClient(): DataClient {
   const scenario = readScenario()
+  jobState.initializeJobState(scenario, readJobFixtures())
   let bootstrapFailed = false
 
   async function readFixture<T>(name: keyof typeof fixtures, schema: z.ZodType<T>): Promise<T> {
@@ -175,6 +177,18 @@ export function createMockDataClient(): DataClient {
       const items = await readFixture('research', fixtureSchemas.research)
       return scenario === 'empty' ? [] : items
     },
+    async listJobs(filter) {
+      const [query] = parseBoundary(dataMethods.listJobs.params, [filter])
+      return readJobState(() => jobState.listJobs(query), dataMethods.listJobs.result)
+    },
+    async getJob(jobId) {
+      const [id] = parseBoundary(dataMethods.getJob.params, [jobId])
+      return readJobState(() => jobState.getJob(id), dataMethods.getJob.result)
+    },
+    async getStageWorkspace(jobId, stage) {
+      const [id, targetStage] = parseBoundary(dataMethods.getStageWorkspace.params, [jobId, stage])
+      return readJobState(() => jobState.getStageWorkspace(id, targetStage), dataMethods.getStageWorkspace.result)
+    },
   }
 }
 
@@ -211,6 +225,14 @@ export function createMockAgentClient(): AgentClient {
       return () => { listeners.delete(cb) }
     },
   }
+}
+
+async function readJobState<T>(read: () => T, schema: z.ZodType<T>): Promise<T> {
+  const scenario = jobState.getJobScenario()
+  await delayScenario(scenario)
+  const result = read() // Unknown anchors remain not_found, including in error scenarios.
+  if (scenario === 'error') throw mockError('adapter_error', '样例作业数据暂不可用，请重试。', true)
+  return parseBoundary(schema, result)
 }
 
 function readScenario(): Bootstrap['scenario'] {

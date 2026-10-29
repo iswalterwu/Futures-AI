@@ -140,6 +140,42 @@
         "$ref": "#/$defs/ErrorResponse"
       }
     },
+    "listJobs": {
+      "description": "按状态、类型与标题子串组合筛选作业摘要；省略 filter 或传空对象恢复全列表，默认按 updatedAt 时间倒序，不分页。empty 初始化为空；error 返回 adapter_error；slow 每次调用延迟 1500ms。读取当前共享会话状态并返回副本。",
+      "params": {
+        "$ref": "#/$defs/listJobsParams"
+      },
+      "result": {
+        "$ref": "#/$defs/listJobsResult"
+      },
+      "error": {
+        "$ref": "#/$defs/ErrorResponse"
+      }
+    },
+    "getJob": {
+      "description": "读取当前共享会话的作业详情副本；empty 的预置 normal 集合作业 id 返回 null，其他未知 id 在任何场景均为 not_found（独立于 error）；error 的已知目标返回 adapter_error；slow 每次调用延迟 1500ms。",
+      "params": {
+        "$ref": "#/$defs/getJobParams"
+      },
+      "result": {
+        "$ref": "#/$defs/getJobResult"
+      },
+      "error": {
+        "$ref": "#/$defs/ErrorResponse"
+      }
+    },
+    "getStageWorkspace": {
+      "description": "按作业与阶段读取当前共享状态的工作区副本，不按阶段态过滤内容或启动运行。empty 预置 id 与覆盖集合中缺工作区样例的作业返回带阶段的空集合（交付物和定稿快照为 null）；未知 id 在任何场景均为 not_found，error 的已知目标返回 adapter_error；slow 每次调用延迟 1500ms。",
+      "params": {
+        "$ref": "#/$defs/getStageWorkspaceParams"
+      },
+      "result": {
+        "$ref": "#/$defs/StageWorkspace"
+      },
+      "error": {
+        "$ref": "#/$defs/ErrorResponse"
+      }
+    },
     "send": {
       "description": "提交用户消息并返回会话与运行 ID；缺省 sessionId 时创建会话，回执仅表示受理，运行进度由 subscribe 提供。",
       "params": {
@@ -7386,6 +7422,83 @@
         "$ref": "#/$defs/ResearchItem"
       },
       "description": "研究条目列表。"
+    },
+    "listJobsParams": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "description": "filter：可选组合条件，各条件同时满足；省略条件不限制对应字段。",
+          "type": "object",
+          "properties": {
+            "status": {
+              "description": "status：可选作业状态，精确匹配。",
+              "$ref": "#/$defs/JobStatus"
+            },
+            "type": {
+              "description": "type：可选作业类型，精确匹配。",
+              "$ref": "#/$defs/JobType"
+            },
+            "title": {
+              "description": "title：可选标题子串，区分大小写；空串不限制标题。",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      ],
+      "items": false,
+      "maxItems": 1,
+      "description": "作业列表查询的位置参数。"
+    },
+    "listJobsResult": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/JobListItem"
+      },
+      "description": "按更新时间倒序排列的作业摘要副本；没有匹配项时为空数组。"
+    },
+    "getJobParams": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "description": "jobId：作业唯一标识，非空。"
+        }
+      ],
+      "items": false,
+      "minItems": 1,
+      "maxItems": 1,
+      "description": "作业详情查询的位置参数。"
+    },
+    "getJobResult": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Job"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "作业详情副本；仅 empty 初始化的预置 id 返回 null。"
+    },
+    "getStageWorkspaceParams": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "description": "jobId：工作区所属作业唯一标识，非空。"
+        },
+        {
+          "description": "stage：要读取的阶段，不必是当前阶段。",
+          "$ref": "#/$defs/Stage"
+        }
+      ],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "阶段工作区查询的位置参数。"
     },
     "sendParams": {
       "type": "array",

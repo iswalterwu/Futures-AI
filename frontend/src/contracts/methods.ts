@@ -7,6 +7,12 @@ import {
   CONTRACT_VERSION,
   DailyBriefResponseSchema,
   ErrorResponseSchema,
+  JobSchema,
+  JobListItemSchema,
+  JobStatusSchema,
+  JobTypeSchema,
+  StageSchema,
+  StageWorkspaceSchema,
   MarketBoardSchema,
   ModuleDefSchema,
   ModuleIdSchema,
@@ -99,6 +105,32 @@ export const dataMethods = {
     description: '读取专题研究动态子菜单，按展示顺序一次返回，不分页。',
     params: noParams,
     result: z.array(ResearchItemSchema).describe('研究条目列表。'),
+  },
+  listJobs: {
+    description: '按状态、类型与标题子串组合筛选作业摘要；省略 filter 或传空对象恢复全列表，默认按 updatedAt 时间倒序，不分页。empty 初始化为空；error 返回 adapter_error；slow 每次调用延迟 1500ms。读取当前共享会话状态并返回副本。',
+    params: z.tuple([
+      z.strictObject({
+        status: JobStatusSchema.optional().describe('status：可选作业状态，精确匹配。'),
+        type: JobTypeSchema.optional().describe('type：可选作业类型，精确匹配。'),
+        title: z.string().optional().describe('title：可选标题子串，区分大小写；空串不限制标题。'),
+      }).optional().describe('filter：可选组合条件，各条件同时满足；省略条件不限制对应字段。'),
+    ]).describe('作业列表查询的位置参数。'),
+    result: z.array(JobListItemSchema).describe('按更新时间倒序排列的作业摘要副本；没有匹配项时为空数组。'),
+  },
+  getJob: {
+    description: '读取当前共享会话的作业详情副本；empty 的预置 normal 集合作业 id 返回 null，其他未知 id 在任何场景均为 not_found（独立于 error）；error 的已知目标返回 adapter_error；slow 每次调用延迟 1500ms。',
+    params: z.tuple([
+      z.string().min(1).describe('jobId：作业唯一标识，非空。'),
+    ]).describe('作业详情查询的位置参数。'),
+    result: JobSchema.nullable().describe('作业详情副本；仅 empty 初始化的预置 id 返回 null。'),
+  },
+  getStageWorkspace: {
+    description: '按作业与阶段读取当前共享状态的工作区副本，不按阶段态过滤内容或启动运行。empty 预置 id 与覆盖集合中缺工作区样例的作业返回带阶段的空集合（交付物和定稿快照为 null）；未知 id 在任何场景均为 not_found，error 的已知目标返回 adapter_error；slow 每次调用延迟 1500ms。',
+    params: z.tuple([
+      z.string().min(1).describe('jobId：工作区所属作业唯一标识，非空。'),
+      StageSchema.describe('stage：要读取的阶段，不必是当前阶段。'),
+    ]).describe('阶段工作区查询的位置参数。'),
+    result: StageWorkspaceSchema,
   },
 } satisfies RequestMethods<DataClient>
 

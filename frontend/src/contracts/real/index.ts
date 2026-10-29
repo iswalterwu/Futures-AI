@@ -23,6 +23,9 @@ export const dataClient: DataClient = {
   async getNewsTicker() { throw new NotImplementedError('getNewsTicker') },
   async getSourceStatus() { throw new NotImplementedError('getSourceStatus') },
   async getResearchList() { throw new NotImplementedError('getResearchList') },
+  async listJobs() { throw new NotImplementedError('listJobs') },
+  async getJob() { throw new NotImplementedError('getJob') },
+  async getStageWorkspace() { throw new NotImplementedError('getStageWorkspace') },
 }
 
 export const agentClient: AgentClient = {
