@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| desktop-shell | in-progress（T-06b验证通过，T-06c/d待窄范围Plan兼容修补） | frontend-workbench（完整前端集成）、settings、data-layer v23 | 2026-10-29 | T-06b实施d77ce69：42unit/0skip、16场景236/236、两新真实设置场景23/23，file GET/PUT/DELETE未触发CORS；旧场景API枚举/引导前提冲突与真实菜单驱动缺口使c/d暂停，先Plan/Analyze/A明确范围，不擅改backend/安全或假菜单；RL-01 P3 OPEN条件保留，入口HANDOFF.md §15，不push/PR/merge，Gate2未批准 |
+| desktop-shell | in-progress（Plan5/Analyze8/A第4轮41/41通过，准备T06c/d） | frontend-workbench（完整前端集成）、settings、data-layer v23 | 2026-10-29 | T06b已通过42unit/16场景236；固定规划38c482c后A新独立审阅无P1/P2、4P3，明确openMain/真实菜单test seam与旧场景兼容，无需求/后端/安全改动；待同步原树固定输入后Astra继续，19场景未执行，不进T07；RL及R5-03(T08e前补依赖/前提)继续跟踪，入口HANDOFF.md §16，不push/PR/merge/Gate2 |
 | frontend-workbench | in-progress（v1 实施中；v2 Clarify 草稿待 Gate 1） | 无后端依赖；v2 集成 AC 依赖 workbench-interaction 前端 | 2026-10-28 | v1 地基在 feat/frontend-workbench（基线 fdaa7d8）；v2 草稿位于隔离 worktree D:/2030/Futures-AI-workbench-v2（spec/frontend-workbench-v2）：九项导航/固定作业轨道/全局投放/对话上下文，52 AC、Q-023～Q-030 待 Walter 批准；未进入 v2 Plan |
 | workbench-interaction | in-progress（Checklist A 独立审核中） | frontend-workbench v1 地基；壳集成待 v2 批准；api 仅后续真实集成 | 2026-10-28 | Phase 1.5 协作交付骨架；Spec Gate 1 已批准（9 需求/46 AC），Plan 完成。审阅包 checklist-review-request.md；bridge 实测额度受限，已启动 claude-fable-5-1 via anthropic 新会话；未取得结论，不进入 Tasks / Implement |
 

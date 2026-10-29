@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前检查点：**T-06b 已验证42unit/16场景236/236，T-06c/d因测试兼容与菜单驱动方案缺口暂停**。真实file-origin设置GET/PUT/DELETE通过，未触发CORS、不改backend/安全；实施保存d77ce69。准备窄范围Plan/Tasks/Analyze修补与A复查，确认前不进入c/d/T-07，不假点击或隐匿API；RL-01 P3 OPEN、Checklist41/41原批准、完整Gate2边界不变。
+> 当前阶段：**Plan5 / Analyze8 / 独立A第4轮质量复查41/41通过，无P1/P2，准备恢复T06c/d**。规划固定38c482c，明确固定导航/真实菜单驱动/两旧场景兼容；R5-01～04四P3跟踪，非新安全权限。T06b的42unit/16场景236/236为已验代码，19场景未运行；RL-01 OPEN与完整Review/Gate2边界不变，不进T-07。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -240,6 +240,18 @@ A 新增 P3 跟踪：**R4-01** 确认旧 `PYZ-00.toc` 中已有 `pyarrow.conftes
 **T-06c/d未实施的实际原因**：startup-visible锁死旧五API成员，不容批准的openSettings；frontend-missing新根未完成引导但期待先前端，与批准的主路由优先级冲突；固定控制集无应用菜单实际click驱动，不能把API调用冒充菜单。旧scene/runner/hooks未被擅改，main/preload本轮也未改，注册指引五字段尚未验证。
 
 后续先做Plan/Tasks兼容范围/菜单驱动及必要窄导航设计修补，Analyze与A确认后再由Astra继续，不涉及新What/AC或CORS放宽。Plan首选anthropic/claude-opus-5-5，同窗口不重试已耗尽bridge，本轮官方真实最小调用 **ROUTING_PLAN_OK**；独立树/固定提交待派工记录。详细证据§10和归档settings-b，非全feature Converge/Review/Gate2，不push/PR/merge。
+
+### 窄范围Plan5/Analyze8与独立A第4轮（文档前置通过）
+
+固定输入 **4b0c3c5**，独立规划树 `D:/2030/Futures-AI-desktop-settings-plan` / `plan/desktop-shell-settings-routing`；实际首选 **anthropic/claude-opus-5-5**（官方ROUTING_PLAN_OK，同窗口已知bridge配额不重试）。设计session **01a186ae-a724-7435-9516-4e3e3028f6a5**；聚焦收尾 **01a186cd-cda4-7695-a01c-0c406624215d**，元数据均确认相同模型/通道。长请求在无tool边界保留中间稿后人工终止/同模型续作，exit1不是provider失败或回退；150tabs/CRLF精确匹配障碍由协调者仅edit格式修复，未代写设计。Plan静态读取仍有awk/od快捷偏差，未用shell改源码/技术文档，后续继续严格read/edit。
+
+最终四文件集成 **38c482c6c97085d25c913e3cfdee2c0938854201**：Plan5、Tasks06c/d、Analyze8、新settings-routing-review-request；源码/Spec/旧Checklist未动，无测试构建。任务41/61.5h、c=2h，Spec/AC/后端/CORS/生命周期/依赖/安全面不变。A独立判断无需新增ADR/Gate1或§5.1工程批准（不替Walter授权）。
+
+A第4轮=**anthropic/claude-fable-5-1**（官方SETTINGS_REVIEW_OK），新session **01a186df-a8d4-7549-a450-deb727c6dd65** 元数据确认；独立树 `D:/2030/Futures-AI-desktop-settings-checklist` / `review/desktop-shell-settings-routing`，HEAD固定38c482c，真实diff4b0c3c5..38c482c仅四文档。A只改Checklist，无Bash/测试，17份保护输入SHA前后全部一致；**41/41、无P1/P2、4P3，允许实施T06c/d修订5**，未用旧41自动批准。
+
+P3跟踪：**R5-01**条数5/5但标准/验证序号不一，覆盖完整，Converge按断言名核对；**R5-02**菜单409两分支不可达/无自动化，接受记录；**R5-03**实施T08e前必须补依赖T06d和真实完整档案+准备注册前提（Plan已写、Task未同步）；**R5-04**startup-visible eval需同步类型字段、state.window空返回not_ready是必要兼容。未把这些写成已修。
+
+run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。下一步串行同步批准文件/给实际新实施HEAD后交Astra，当前T06c/d尚未写代码、19场景未执行，非Converge/代码Review/Gate2。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 

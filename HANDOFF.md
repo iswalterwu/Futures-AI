@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **当前检查点：T-06b 自动化通过（42 unit / 16场景236/236），T-06c/d 因旧测试兼容与菜单驱动设计缺口暂停，准备最小Plan修补（2026-10-29）**。设置页真实file-origin GET/PUT/DELETE正对照通过，**未触发CORS STOP**，无需放宽安全。实施保存 **`d77ce69`**，不进入T-07；旧断言/控制命令未被擅改。
-> **先读 §15 与实施证据§10.4**。接下来仅明确T-06c导航/菜单测试与两个旧场景兼容，先Plan/Analyze/A复查再继续；不是新需求或授权安全面变更。RL-01 P3 OPEN及对照义务保留，完整Review/Gate2未完成，不push/PR/merge。
+> **当前阶段：Plan修订5 / Analyze8 / A第4轮质量复查完成（41/41，无P1/P2），准备恢复T-06c/d实现（2026-10-29）**。固定规划提交 **38c482c**，明确openMain、真实应用菜单驱动和两旧场景最小兼容；未改需求/后端/安全。T-06b已通过42unit/16场景236/236，CORS STOP未触发；19场景尚未运行，不进T-07。
+> **先读 §16（本轮批准）**及Plan5/Checklist第4轮。RL-01 P3 OPEN及对照义务、R5新跟踪项保留；本质量复查不是代码Review/完整Gate2，不push/PR/merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -342,4 +342,13 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - **硬停止规则**：真实file://→127.0.0.1请求若被CORS/OPTIONS/权限阻止，保留Node同端点与renderer的安全诊断差异，停在受影响任务；禁止加CORSMiddleware、关闭webSecurity/CSP/sandbox、加main/preload代理或mock API/硬编码列表取绿，须先回Plan/Analyze/A复查及必要人工批准。
 - run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-settings-owBsqdLT/`；Astra已在07:52结束，**T-06b**最后源码42unit/0skip、16场景236/236，两个新业务场景23/23；真实file页面12options/EIA回退/DELETE空key/PUT姓名均成功，未触发CORS，未改backend/安全。最初清除按钮隐藏8/10失败已修且保留。六文件指纹核对后保存实施提交 **d77ce69520f2530532476f32a0735aa76691c301**；owned进程0，temp已删。
 - **T-06c/d未实施**：旧startup-visible严格等于五成员bridge，与已批准openSettings冲突；旧frontend-missing使用未完成引导的新根却要求直接进frontend，与Plan首启优先冲突；测试固定命令没有真实应用菜单点击驱动。禁止隐匿API/假点击/改生产路由迎合旧测试，需先明确最小兼容写权限与菜单方案。
-- 接下来Plan/Tasks/Analyze窄范围修补（非需求变更、非CORS调整），原任务目标/AC不变；Plan首选 **anthropic/claude-opus-5-5**，同限额窗口bridge已知耗尽不重复，本轮官方真实最小调用 **ROUTING_PLAN_OK**。独立规划树/输入提交与后续A固定审阅另行记录；重新质量确认前不开始T-06c/d。原源证据见implementation-evidence§10，仍不push/PR/merge/Gate2。
+- Plan/Tasks/Analyze窄范围修补进行中（非需求变更、非CORS调整），原目标/AC不变。固定主检查点 **4b0c3c510906bba83f41eac4ac34bbbccf1c1a30**；独立规划树 `D:/2030/Futures-AI-desktop-settings-plan` / `plan/desktop-shell-settings-routing`，session **01a186ae-a724-7435-9516-4e3e3028f6a5** 元数据实核 **anthropic/claude-opus-5-5**。同窗口不重试已耗尽bridge，本轮官方真实最小调用ROUTING_PLAN_OK。
+- 规划者仅写plan/tasks/analyze（新增迭代）与settings-routing-review-request；此处为开工时点描述。现Plan5/Analyze8与A第4轮已完成，最新批准见§16，非复用旧41/41假放行。
+
+## 16. 2026-10-29 Plan5 / Analyze8 / A第4轮质量批准
+
+- 四份规划文档固定提交 **38c482c6c97085d25c913e3cfdee2c0938854201**（相对4b0c3c5仅四文档）。同一首选 **anthropic/claude-opus-5-5** via官方：首会话01a186ae-a724-7435-9516-4e3e3028f6a5设计、聚焦收尾01a186cd-cda4-7695-a01c-0c406624215d；长生成在无活动tool边界由协调者保存/中止后同模型通道续作，人工exit1不是额度/鉴权/模型失败，不触发回退。草稿150tab/CRLF格式障碍由协调者仅用edit修格式，未代写技术方案。静态曾有awk/od等读取快捷方式，不作为后续工具惯例。
+- 设计：无参数openMain固定返回目标；routeToMain真实GETprofile决定首启/目标；openSettings共用生产处理器。仅test-hooks新增app-menu-click单值settings驱动真实MenuItem.click，不开放任意主进程JS/路径；startup-visible用批准18全集/当前7必需/禁止项，frontend-missing核心标记完成后验证资源，均保留原保证。任务仍41、61.5h（T06c=2h）。无Spec/AC/CORS/后端/依赖变更。
+- A=**anthropic/claude-fable-5-1**官方，本轮SETTINGS_REVIEW_OK真实探活成功，同窗口不重试已耗尽bridge；新独立session **01a186df-a8d4-7549-a450-deb727c6dd65** 元数据实核。独立树 `D:/2030/Futures-AI-desktop-settings-checklist` / `review/desktop-shell-settings-routing`，HEAD固定38c482c，只写Checklist；17份输入指纹前后全一致，不跑测试。
+- **A第4轮结论：41 checked/0 unchecked，无P1/P2，R5-01～04四项P3，T06c/d修订5文档前置满足**。R5-01完成/验证编号不对位但具名覆盖全，Converge按断言核对；R5-02菜单409不可达分支缺自动化跟踪；R5-03 **实施T08e前必须补依赖T06d及完整档案+点击准备注册前提**；R5-04接口类型eval与空window not_ready为必要兼容。无额外工程批准/ADR/Gate1需求，A不授予更大范围。
+- 接下来在无writer边界同步四规划+A Checklist到原实施树并固定新输入，才由同首选Astra恢复T06c/d。当前代码仍T06b检查点，19场景未执行；原RL/PYZ/UTF8等跟踪与Gate2边界不变。run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。
