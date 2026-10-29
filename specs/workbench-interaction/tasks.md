@@ -1,5 +1,15 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
+> **当前状态（r6.12.4 = 第五批 9 项已实施 + Converge batch5 / Analyze R25，2026-10-30；以本块为准。下一块 r6.12.3 中的“33 已实施 / 40 未开始”“6 项状态行保留派工原文”“下一步再派 Astra 做 T-C02 → C03 → C04”为当时原文）**：
+>
+> - **实施**：第五批 9 项全部由 Implement（openai/gpt-6-astra via openai；各新会话；均为调用正常的首选模型，未回退）在实施树 `D:/2030/Futures-AI-interaction-implement`（`feat/workbench-interaction-astra`）按 §6 DAG 串行实施、各自提交：T-A01a `f65d3c6` → T-A13a `e1cd4d4` → T-A15a `a2efb98` → T-B06 `0d09748` → T-C01 `4af80e8` → T-C01a `6529f41` →（纯文档 `af31dda` / `19228ce`）→ T-C02 `d4e3fb6` → T-C03 `7b802d4` → T-C04 `e609c2e`。固定代码 diff `b67a227..e609c2e -- frontend` = 9 个前端提交、28 个文件、+3672 / −24；两个纯文档提交不含 `frontend`，不计前端提交。9 项状态行已回写为“已实施（第五批第 N 项；待第五批独立代码 Review）”，派工原文保留在其后。
+> - **Converge**：[converge-batch5.md](converge-batch5.md) 与 analyze.md「Analyze R25」（claude-opus-5-5 via anthropic）判**本批已收口、待第五批独立 A 代码 Review**：9 项完成标准在代码中逐条有对应实现，33 条原定命令的标题都存在，实施者执行全部通过；没有发现对冻结 AC / plan / tasks 的明确违反，不新增任务。绿测试不等于无缺陷：静读观察 O-B5-1～O-B5-9 交 A 实测并判严重度（不预设、不加防线；其中 O-B5-1 / O-B5-2 的任何修法都属 AGENTS §5.1，须先报 Walter）。
+> - **进度**：73 个任务 / 约 107 h / 245 / 245：**36 已实施（27 已完成 + 9 已实施待第五批 Review）/ 37 未开始**；46 AC 最终验收 **0**；feature **未收敛**（37 项未实施 + H 组外部阻塞）。标准 / 命令 / 工时 / 依赖 / AC 矩阵均不变（脚本复算见 Analyze R25）。
+> - **两处 `intake.spec.ts` 例外**：Converge 读 `git diff 6529f41 d4e3fb6` / `git diff d4e3fb6 7b802d4` 核对，C02 −3 / +3（r6.12.2 首例标题 + selection 行；r6.12.3 第 528 行入口唯一）、C03 −1 / +2（pool 行），与许可逐行相同；未加可选 assertTypes 行；其余 36 例、imports、helpers 与业务 / 隐私断言未改。
+> - **风险台账**：R3-B 代码已由 `e1cd4d4` 修改，**未关闭**，由第五批 Review 判；R4-A / R2-C 维持已关闭；R4-B～R4-E、S-41、R3-C、R-A 等仍开放、未经风险接受。Checklist R11（`1f99f80`，blob `27a76aa…`）只读未改。
+> - **下一步**：集成人审阅并提交本文档改动；独立 A 新会话做第五批代码 Review（固定 `b67a227..e609c2e -- frontend`，重点见 converge-batch5 §5 / §9）。依赖上可起的未开始任务为 T-A14 / T-A15 / T-A16（依赖全为已完成）；T-G04 依赖含已实施待审的 T-C01a，须待本批 Review 通过。
+> - 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189ab-7934-721a-8701-82b717fd3a18`；bridge 本窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改配置）。只写规格文档，未运行产品测试，未 commit。
+
 > **当前状态（r6.12.3 = T-C02 开码前第二次源检查停的最小 scope / 类型精度修正，2026-10-30；以本块为准。下一块 r6.12.2 中“唯一例外”指 `WI H-5 store` 首例那一处，现为两处已知例外之一，其内容与保护面不变）**：
 >
 > - **进度不变**：第五批前 6 项已实施待 Review（`f65d3c6` … `6529f41`；本计划树 HEAD `af31dda` = 实施树，后者仅文档提交）；73 个任务 / 约 107 h / 245 / 245：**33 已实施（27 已完成 + 6 已实施待 Review）/ 40 未开始**；46 AC 最终验收 0；feature 未收敛。C02 无 WIP；6 项状态行仍保留派工原文“未开始”，以页首为准。
@@ -486,7 +496,7 @@
 
 ### T-A01a ReliabilityLabel：来源可靠性的契约展示映射（S-11 同机制；r6.12 新增，第五批首项）
 
-- **状态**：未开始｜r6.12 新增；Checklist R11 定向复核通过并提交前不得开码
+- **状态**：**已实施（第五批第 1 项；待第五批独立代码 Review，不计完成、非 AC 最终验收）**｜commit `f65d3c6f8798bf0fca2b55afb9abfd9ab4627964`（父 `b67a227`；4 个授权文件：`types.ts` +7 行（`ReliabilityLabel` / `ReliabilityLabelSchema` / 注册）、生成物经 `contract` 重生成、`contract-labels.spec.ts` 只在末尾追加 `WI reliability label` 2 例）。验证（实施者 openai/gpt-6-astra 执行，Converge 未重跑；数字以 Temp `wi-batch5-01a18388-q7s7olxl/astra-*` 原始日志为准）：命令 1 = 2；命令 2 三文件 = 72；命令 3 contract --check / typecheck / lint 通过；旧 `-t "WI labels"` 仍 10。首跑全过，无失败留痕。实际图标 = `↑` / `＝` / `↓` / `?`（plan §2.4【r6.12.4】）｜以下为派工准备时原文：未开始｜r6.12 新增；Checklist R11 定向复核通过并提交前不得开码
 - **预计**：0.5 h｜**依赖**：T-A01
 - **上下文**：spec R-003 来源说明“可靠性（高 / 中 / 低 / 未知）”。`SourceNoteSchema.reliability` 已是四值枚举（`high / medium / low / unknown`），但没有独立 schema，契约里也没有中文文案。投放表单（T-C01）、介入历史 ingest 摘要（T-B06）、采集端到端（T-C04）都要显示同一组文案；若在组件里各写一份，就是 §1-7 / S-11 所禁的“另建映射”。原 T-C01 已顶格 2 h，按 Checklist R8 B-12 先例单拆本任务，不把额外工作藏进 C01。
 - **修改范围**：
@@ -863,7 +873,7 @@
 
 ### T-A13a R3-B：已删除投放再次 removeUpload 被拒（领域前置；r6.12 新增，第五批）
 
-- **状态**：未开始｜r6.12 新增；【r6.12.1】Checklist R11 已通过并提交（`1f99f80`），开码前置已满足。**R11 判定**：本项属既有领域规则（与 `confirmIntake` / `assignUpload` 对已删除投放 validation_error 一致），不是 AGENTS §5.1 意义上的新 guard，可在现有授权内实施，不需 Walter 另批；不借 R4-A 的批准，也不扩展为其他竞态 / 安全 guard 的许可。R3-B **维持开放、未修**，关闭由第五批代码 Review 对真实 diff 判定。T-C03 依赖本任务：本任务未完成前 T-C03 不得开码（原“须 §5.1 时 C03 照常”条件分支已删除、废止）
+- **状态**：**已实施（第五批第 2 项；待第五批独立代码 Review，不计完成）**｜commit `e1cd4d4913e77568a9551a3c0e18f2a164ac810b`（父 `f65d3c6`；5 文件：`job-state.ts` 的 `removeUpload` 只加 1 行 removed → validation_error“投放已删除。”，位于 `findUpload` 与已归属时 `writableJob` 之后、任何写入之前；`methods.ts` 描述补一句；生成物；`job-state-pool.spec.ts` 只追加 `WI R3-B repeated remove` 2 例）。验证（实施者 openai/gpt-6-astra 执行，Converge 未重跑；数字以 Temp `wi-batch5-01a18388-q7s7olxl/astra-*` 原始日志为准）：命令 1 = 2；命令 2 整文件 = 29；命令 3 通过；旧 `-t "WI removeUpload"` 仍 4。首跑全过。**R3-B 代码已修、未关闭**，关闭与否由第五批独立代码 Review 判定｜以下为派工准备时原文：未开始｜r6.12 新增；【r6.12.1】Checklist R11 已通过并提交（`1f99f80`），开码前置已满足。**R11 判定**：本项属既有领域规则（与 `confirmIntake` / `assignUpload` 对已删除投放 validation_error 一致），不是 AGENTS §5.1 意义上的新 guard，可在现有授权内实施，不需 Walter 另批；不借 R4-A 的批准，也不扩展为其他竞态 / 安全 guard 的许可。R3-B **维持开放、未修**，关闭由第五批代码 Review 对真实 diff 判定。T-C03 依赖本任务：本任务未完成前 T-C03 不得开码（原“须 §5.1 时 C03 照常”条件分支已删除、废止）
 - **预计**：0.5 h｜**依赖**：T-A13
 - **上下文**：`review-batch3.md` §5 R3-B（探针 P4）；implementation-log §8 原归属“T-C03 或 T-A17 二选一”。现状（`ae592ba` 的 `job-state.ts` `removeUpload`）不检查 `removed`：已归属投放每次重复删除都会再追加一条相同的 dataset 修订与 `remove_source` 事件（冗余台账、改写 `updatedAt`），未归属投放静默成功；而 `confirmIntake` / `assignUpload` 对已删除者已返回 validation_error。plan §2.4【r6.6】的 remove 句只写“置 `removed=true`”，没写重复删除。T-C03 的删除确认 UI 是首个消费方，故在它之前单列，不并入 C03（C03 已 1.5 h）。
 - **修改范围**：
@@ -917,7 +927,7 @@
 
 ### T-A15a 介入历史读取：listInterventions（r6.12 自 T-A15 拆出，第五批）
 
-- **状态**：未开始｜r6.12 自 T-A15 拆出：原 T-A15 标准 4 / 命令 4（`listInterventions` 筛选与十字段）**移交本任务**，原文保留在 T-A15；Checklist R11 定向复核通过并提交前不得开码
+- **状态**：**已实施（第五批第 3 项；待第五批独立代码 Review，不计完成）**｜commit `a2efb987f35e9109c6698a36a775362242a8e35d`（父 `e1cd4d4`；9 文件：`client.ts` / `methods.ts` / `real/index.ts` / `mock/index.ts` / `mock/job-state.ts` 各只加 `listInterventions`；生成物；新建 `job-state-history.spec.ts` 12 例；`real-stubs.spec.ts` 只追加 1 键）。验证（实施者 openai/gpt-6-astra 执行，Converge 未重跑；数字以 Temp `wi-batch5-01a18388-q7s7olxl/astra-*` 原始日志为准）：命令 1 = 9；命令 2 = 3 + real-stubs 24；命令 3 通过（contract 25 methods / 10 events / 2 artifacts）；另跑 `job-state-read` 整文件 39。首跑全过。实际排序 = `Date.parse(createdAt)` 升序 + `Array.prototype.sort` 稳定（同刻保持记录顺序）｜以下为派工准备时原文：未开始｜r6.12 自 T-A15 拆出：原 T-A15 标准 4 / 命令 4（`listInterventions` 筛选与十字段）**移交本任务**，原文保留在 T-A15；Checklist R11 定向复核通过并提交前不得开码
 - **预计**：0.5 h｜**依赖**：T-A13
 - **上下文**：T-B06 渲染介入历史、T-C04 标准 2 核对介入历史展开内容，二者都只需要**读**。原 T-A15 把这个读方法与七个分析写动作捆在一起；为一个读接口提前做完整分析写没有必要。拆出后 T-A15 只剩 `submitIntervention`。依赖 T-A13：本任务追加 `real-stubs.spec.ts` 键时以 T-A13 之后的 22 键（该文件 23 例 = 22 个桩调用 + 1 个键集合断言）为前缀，标准 1 也要用 ingest / remove_source 的真实事件取证。
 - **修改范围**（规则见 plan §2.4【r6.12】）：
@@ -1375,7 +1385,7 @@
 
 ### T-B05 待人工确认横幅、失败 / 取消展示与取消作业确认
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜**开工前先承接 Checklist R10 S-41（P3，未关、未经 Walter 风险接受）**：冻结 spec §2 目标与 R-001 what 均含“创建者（人 / 计划）”，已实施的 T-B04 按已审 r6.9 未显示（`JobListItem` 契约也不含创建者）。本任务开工前须先做一次最小展示精度轮（Tasks / Plan 写明展示位置与文案来源，候选为 S-11 同机制的契约展示映射；重跑 Analyze 并经 A 定向复核），若因此超 2 h 按 B-12 先例拆小任务；不改 spec / AC、不写成“v1 不展示”、不移交其他 feature、不回头扩已实施的 B04（Converge batch4 登记，本行不改本任务标准 / 命令）
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜**开工前先承接 Checklist R10 S-41（P3，未关、未经 Walter 风险接受）**：冻结 spec §2 目标与 R-001 what 均含“创建者（人 / 计划）”，已实施的 T-B04 按已审 r6.9 未显示（`JobListItem` 契约也不含创建者）。本任务开工前须先做一次最小展示精度轮（Tasks / Plan 写明展示位置与文案来源，候选为 S-11 同机制的契约展示映射；重跑 Analyze 并经 A 定向复核），若因此超 2 h 按 B-12 先例拆小任务；不改 spec / AC、不写成“v1 不展示”、不移交其他 feature、不回头扩已实施的 B04（Converge batch4 登记，本行不改本任务标准 / 命令）｜阅读提示（Converge batch5 观察 O-B5-5，待第五批 Review 判定；非新增标准，不改本任务范围 / 命令）：第五批采集区对 delivered / cancelled 作业仍显示“投放到本作业”“预览 / 修正”“删除来源”与抽屉内“确认入库”，提交时由领域只读门（`writableJob`）返回 validation_error 并以 `ErrorState` 呈现、数据不变；这些入口是否按 AC-002-5“failed / cancelled 显示原因与可执行动作” 隐藏或禁用并说明原因，由本任务开工前按原 spec 边界判断，不回补第五批
 - **预计**：1.5 h｜**依赖**：T-B04、T-A13、T-A17、T-A20
 - **上下文**：plan §4.3（横幅目标取固定顺序中的第一个 H；冲突样例取第一个 C）；spec R-002 作业级状态展示；S-14。
 - **修改范围**：`JobDetailPage.vue` 的横幅与作业级状态区（failed / cancelled 显示原因；“重试”入口只是占位，说明归属后续 feature；取消作业要经二次确认面板，默认理由可修改）；扩充 `job-detail.spec.ts` 和 `e2e/jobs/detail-stage.spec.ts`。
@@ -1392,7 +1402,7 @@
 
 ### T-B06 介入历史侧栏与筛选
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜**r6.12：第五批第 4 项**。依赖 T-A15 改为 **T-A15a**（只读）并增 T-A01a；补 JobDetailPage 侧栏挂载权与写后刷新口径；预计 1.5 → 2 h，新增标准 / 命令 2（原标准 / 命令 2 顺延为 3）。Checklist R11 定向复核通过并提交前不得开码
+- **状态**：**已实施（第五批第 4 项；待第五批独立代码 Review，不计完成；AC-007-1 最终验收仍待全 feature Review / Gate 2）**｜commit `0d09748c38ddbbeab6398ea3adfc8b8875290119`（父 `a2efb98`；3 文件：新建 `InterventionHistory.vue`；`JobDetailPage.vue` 只改 ready 有作业分支为 `.detail-columns`（`minmax(0, 2fr) minmax(0, 1fr)`）两列并挂载侧栏，窄窗以只读 `useUiStore().viewport.collapsed` + `data-viewport-collapsed` 堆叠单列（同 `app/AppShell.vue` / `app/Rail.vue` 既有写法，`src/stores/ui.ts` 未改）；新建 `intervention-history.spec.ts` 10 例）。验证（实施者 openai/gpt-6-astra 执行，Converge 未重跑；数字以 Temp `wi-batch5-01a18388-q7s7olxl/astra-*` 原始日志为准）：命令 1 = 8；命令 2 = 2；命令 3 job-detail 13 + detail-stage / list-create E2E 6 + typecheck / lint。**失败留痕**：命令 3 首跑 lint 4 条新模板换行警告（`InterventionHistory.vue`），只改新组件格式后同命令重跑通过。R4-A watch、`selectStage`、三态、详情头未改（实施者保留性核对；Converge 读 diff 复核）｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜**r6.12：第五批第 4 项**。依赖 T-A15 改为 **T-A15a**（只读）并增 T-A01a；补 JobDetailPage 侧栏挂载权与写后刷新口径；预计 1.5 → 2 h，新增标准 / 命令 2（原标准 / 命令 2 顺延为 3）。Checklist R11 定向复核通过并提交前不得开码
 - **预计**：2 h｜**依赖**：T-B04、T-A15a、T-A01a
 - **上下文**：spec R-007“作业详情侧栏‘介入历史’按时间展示，可按阶段 / 类型筛选”；plan §2.2、§2.3【r6.12】。原范围只新建组件，漏了两件事：谁把它挂进 `JobDetailPage`；同一作业写入新事件后，历史如何看到它（只在 mounted 或 jobId 变化时读会过期）。T-C04 的取证要展开这里的内容。
 - **修改范围**：
@@ -1434,7 +1444,7 @@
 
 ### T-C01 投放面板：三种输入、白名单、来源说明与 intakeStore 公开接口（H-5）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜**r6.12：第五批第 5 项**；依赖增 T-A01a（可靠性文案）；store 成员 / 草稿形状 / 提交签名按 plan §2.3【r6.12】定型（不改标准数、命令与工时）。Checklist R11 定向复核通过并提交前不得开码
+- **状态**：**已实施（第五批第 5 项；待第五批独立代码 Review，不计完成；AC-003-2 最终验收仍待全 feature Review / Gate 2）**｜commit `4af80e81933f30f0d696fb8e1b25d38fe3dba13b`（父 `0d09748`；3 文件：新建 `stores/intake.ts`、`stages/IntakePanel.vue`、`tests/component/jobs/intake.spec.ts` 25 例）。验证（实施者 openai/gpt-6-astra 执行，Converge 未重跑；数字以 Temp `wi-batch5-01a18388-q7s7olxl/astra-*` 原始日志为准）：命令 1 = 13；命令 2 = 4；命令 3 = 2；命令 4 = 6；命令 5 typecheck / lint 通过。**失败留痕**：命令 1 首跑 1 fail（新测试误期待 `type=url` 输入保留首尾空格，happy-dom 已规范化），只改新测试期望后重跑 13。C01 后批次回归：全量 37 files / 1072 / 0、六守卫、contract 25 / 10 / 2、旧四份 E2E 30。H-5 首例两条负断言此后由 T-C02 / T-C03 按 r6.12.2 例外替换（见各自状态行）｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜**r6.12：第五批第 5 项**；依赖增 T-A01a（可靠性文案）；store 成员 / 草稿形状 / 提交签名按 plan §2.3【r6.12】定型（不改标准数、命令与工时）。Checklist R11 定向复核通过并提交前不得开码
 - **预计**：2 h｜**依赖**：T-A22、T-A12、T-A22a、T-A01a
 - **上下文**：spec R-003；plan §2.2 / §3（文件只取元数据；粘贴正文只在草稿中）；v2 plan §7.3 H-5（`open(jobId?)` / `close()` / `isOpen` / `jobId` 为打开时快照，提交使用快照，写后刷新共享缓存）。r6：IntakeDrawer 容器、页面级挂载与非模态断言移到 T-C01a。
 - **修改范围**：新建 `jobs/stages/IntakePanel.vue`（文件拖入 / 选择、URL、文本，三选一必填；来源说明表单；提示“本地样例记录；原文不保存，刷新后需重新投放原文”）；新建 `stores/intake.ts`（`useIntakeStore`：`open(jobId?)` 记录打开时的 `jobId` 快照，此后路由变化不改写；`close()`；只读 `isOpen` / `jobId`；当前草稿；`submit(input)` 以快照 jobId 调用 `submitIntake`（快照为空则进入待归属），成功后调用 `useJobsStore().refresh()`；**不含实例登记**）；新建 `tests/component/jobs/intake.spec.ts`。
@@ -1469,7 +1479,7 @@
 
 ### T-C01a IntakeDrawer 非模态容器与页面级挂载（H-5；r6 从 T-C01 拆出）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜**r6.12：第五批第 6 项**。补采集区接线：新增 `CollectWorkspace.vue`，`StageWorkspace` 只对 collect 分发；依赖增 T-B04；预计 1 → 1.5 h，新增标准 / 命令 5（详情 / 列表回归）。Checklist R11 定向复核通过并提交前不得开码
+- **状态**：**已实施（第五批第 6 项；待第五批独立代码 Review，不计完成）**｜commit `6529f41833cb82a802824808cda1a37ecca427a8`（父 `4af80e8`；6 个授权文件：新建 `IntakeDrawer.vue` / `CollectWorkspace.vue`，改 `JobListPage.vue`（“投放”与“新建作业”同置 `.intake-actions`、`.intake-slot` 在筛选条前）/ `JobDetailPage.vue`（`.intake-slot` 在状态分支前、给 `StageWorkspace` 传 `job` / `workspace`）/ `StageWorkspace.vue`（collect 分发与“读取中…”）；`intake.spec.ts` 追加 13 例，原 25 例为字节前缀）。验证（实施者 openai/gpt-6-astra 执行，Converge 未重跑；数字以 Temp `wi-batch5-01a18388-q7s7olxl/astra-*` 原始日志为准）：命令 1 = 1；命令 2 = 1；命令 3 = 10；命令 4 = 1 + typecheck / lint；命令 5 组件 30（12 / 13 / 5）+ E2E 6。**失败留痕**：命令 3 首跑 1 fail（新测试误读 `WriteReceipt.job.id`，契约为 `jobs[0].id`）；命令 4 首跑 lint 26 条新模板换行警告；均只修新增部分后同命令重跑通过。C01a 后回归：全量 37 / 1085 / 0、旧四份 E2E 30｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜**r6.12：第五批第 6 项**。补采集区接线：新增 `CollectWorkspace.vue`，`StageWorkspace` 只对 collect 分发；依赖增 T-B04；预计 1 → 1.5 h，新增标准 / 命令 5（详情 / 列表回归）。Checklist R11 定向复核通过并提交前不得开码
 - **预计**：1.5 h｜**依赖**：T-C01、T-B04
 - **上下文**：plan §2.1 / §2.2（IntakeDrawer 为非模态抽屉，无遮罩、无焦点锁）；§3 挂载约定；v2 plan §7.3 H-5（根元素 `.glass-drawer`、填满壳提供的容器；不自设 `position: fixed`、遮罩、`aria-modal` 或焦点锁；关闭不导航、不调用 agent）。【r6.12】`ae592ba` 的 `StageWorkspace.vue` 只接收 `stage` 并渲染占位，详情页没有采集列表，也没有“详情页采集阶段”的入口；原 C01a 只写了“详情页采集阶段调用 `open(job.id)`”，没说入口和列表放在哪个组件。
 - **修改范围**：新建 `jobs/stages/IntakeDrawer.vue`（根元素 `.glass-drawer`，宽高填满父容器；内含 IntakePanel，T-C02 / T-C03 再放入预览与待归属池；关闭按钮调用 `intakeStore.close()`）；`JobListPage` / `JobDetailPage` 各自在页面布局内提供容器，在 `isOpen` 时挂载 IntakeDrawer（互斥路由视图，§3）；投放入口：列表页调用 `open()`，详情页采集阶段调用 `open(job.id)`；扩充 `tests/component/jobs/intake.spec.ts`。
@@ -1501,7 +1511,7 @@
 
 ### T-C02 抽取预览、映射修正与抽取状态徽
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜**r6.12：第五批第 7 项**。补接线：预览 / 映射挂在 IntakeDrawer，选中与确认经 intakeStore；依赖增 T-C01a；预计 1.5 → 2 h；命令 4 增 `intake.spec.ts` 回归（标准数不变）。Checklist R11 定向复核通过并提交前不得开码
+- **状态**：**已实施（第五批第 7 项；待第五批独立代码 Review，不计完成；AC-003-4 / AC-003-6 最终验收仍待全 feature Review / Gate 2）**｜commit `d4e3fb6665fcd1dcfdc1c3823003702b25b847d0`（父 `19228ce`（纯文档提交）；7 文件：`intake.ts`（selection / previewTarget / 预览读状态 / `selectUpload` / `editMapping` / `confirm`）、新建 `ExtractionPreview.vue` / `MappingEditor.vue` / `extraction-preview.spec.ts` 13 例、`IntakeDrawer.vue`、`CollectWorkspace.vue`；`intake.spec.ts` 只有 r6.12.2 首例标题 + selection 行与 r6.12.3 第 528 行入口唯一断言两处替换（−3 / +3），未加可选 assertTypes 行）。验证（实施者 openai/gpt-6-astra 执行，Converge 未重跑；数字以 Temp `wi-batch5-01a18388-q7s7olxl/astra-*` 原始日志为准）：命令 1 = 5；命令 2 = 4；命令 3 = 4；命令 4 intake 38 + typecheck / lint。首跑全过，无失败留痕（实施前只对授权新 / 改文件跑既有 `eslint --fix`）｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜**r6.12：第五批第 7 项**。补接线：预览 / 映射挂在 IntakeDrawer，选中与确认经 intakeStore；依赖增 T-C01a；预计 1.5 → 2 h；命令 4 增 `intake.spec.ts` 回归（标准数不变）。Checklist R11 定向复核通过并提交前不得开码
 - **预计**：2 h｜**依赖**：T-C01、T-C01a、T-A23
 - **上下文**：spec R-003“修正后确认才入库”；plan §2.4 FieldMapping。【r6.12】原范围只列 `ExtractionPreview` / `MappingEditor` 两个新组件与测试，没写谁把预览挂进抽屉、谁调 `getIntakePreview`、确认后哪些视图怎样更新。代码事实：`confirmIntake` 回执里的 `upload` 已是确认后的记录（mapping = 修正值，status = ingested / quarantined），而 `preview.fields` 始终是提交时的合成字段；`getStageWorkspace` 的采集列表随 `jobsStore.refresh()` 重读。
 - **修改范围**：新建 `jobs/stages/{ExtractionPreview,MappingEditor}.vue`；采集列表用 `UploadStatusLabel` 显示三种状态；新建 `tests/component/jobs/extraction-preview.spec.ts`。
@@ -1542,7 +1552,7 @@
 
 ### T-C03 待归属池、归入作业与删除来源确认
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜开工前读 `review-batch3.md` R3-B（P3 后续观察，非新增标准；未修、未经风险接受）：对已删除投放再次 `removeUpload` 会重复追加 dataset 修订与 `remove_source` 事件，与 confirm / assign 对已删除者拒绝不一致；A 建议的最小修复与本任务或 T-A17 二选一落点，由实施时按 AGENTS §2 处理｜**r6.12：第五批第 8 项**。R3-B 落点定为 **T-A13a**（本任务依赖它；上句“二选一”为当时原文），本任务不改 `job-state.ts`；补池 / 删除接线与 store 动作；工时与标准数不变，命令 4 增回归。Checklist R11 定向复核通过并提交前不得开码
+- **状态**：**已实施（第五批第 8 项；待第五批独立代码 Review，不计完成）**｜commit `7b802d418ccf8985457582405885124a28e56764`（父 `d4e3fb6`；6 文件：`intake.ts`（pool / `loadPool` / `assign` / `remove` / `clearPreview` / 私有 `refreshViews`）、新建 `UnassignedPool.vue` / `unassigned-pool.spec.ts` 30 例、`IntakeDrawer.vue`、`CollectWorkspace.vue`（行内删除确认）；`intake.spec.ts` 只有 pool 行 −1 / +2）。验证（实施者 openai/gpt-6-astra 执行，Converge 未重跑；数字以 Temp `wi-batch5-01a18388-q7s7olxl/astra-*` 原始日志为准）：命令 1 = 5；命令 2 = 4；命令 3 = 21；命令 4 三文件 80（38 + 13 + 29）+ typecheck / lint。**失败留痕**：命令 3 首跑（新文件当时 26 例）1 fail（新测试假时钟早于其他种子 `updatedAt`，排序期望错），只改新测试时钟；命令 4 首跑 typecheck TS2345 ×4（新 helper 参数 `DOMWrapper<Element>` 与 VTU `get` 返回 `Omit<…,'exists'>` 不兼容），只改新 helper 入参；随后补 4 例（最终 30）并全链重跑通过。C03 后回归：全量 39 files / 1128 / 0、旧四份 E2E 30｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜开工前读 `review-batch3.md` R3-B（P3 后续观察，非新增标准；未修、未经风险接受）：对已删除投放再次 `removeUpload` 会重复追加 dataset 修订与 `remove_source` 事件，与 confirm / assign 对已删除者拒绝不一致；A 建议的最小修复与本任务或 T-A17 二选一落点，由实施时按 AGENTS §2 处理｜**r6.12：第五批第 8 项**。R3-B 落点定为 **T-A13a**（本任务依赖它；上句“二选一”为当时原文），本任务不改 `job-state.ts`；补池 / 删除接线与 store 动作；工时与标准数不变，命令 4 增回归。Checklist R11 定向复核通过并提交前不得开码
 - **预计**：1.5 h｜**依赖**：T-C02、T-A13、T-C01a、T-A13a
 - **上下文**：spec R-003 待归属池；plan §4.2 removeUpload 需要二次确认。【r6.12】代码事实：`listUnassignedUploads` 只返回未归属且未删除的记录；`getStageWorkspace` 的采集列表不含 removed；二者都不随 `jobsStore.refresh()` 之外的路径更新——池不在 jobsStore 内，须单独重读。
 - **修改范围**：新建 `jobs/stages/UnassignedPool.vue`（列表、选择作业后归入；r6：挂在 IntakeDrawer 内、IntakePanel 下方，使任何挂载点（含 v2 AppShell）都能完成归属；可选作业取 `useJobsStore().jobs` 中状态属于 `ACTIVE_JOB_STATUSES` 者；归入 / 删除来源经 `intakeStore` action，成功后 `refresh()`）；采集列表中的删除来源入口和二次确认面板；新建 `tests/component/jobs/unassigned-pool.spec.ts`。
@@ -1575,7 +1585,7 @@
 
 ### T-C04 采集端到端：页面入口、payload、待归属
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准；若 R2-C 尚未在前序页面任务处理）｜R2-C 已于第四批技术关闭（`46e8fbe`）｜**r6.12：第五批末项**。依赖增 **T-B06**（标准 2 的介入历史展开取证）；只写 E2E，不写任何生产文件；标准 / 命令 / 工时不变。Checklist R11 定向复核通过并提交前不得开码
+- **状态**：**已实施（第五批末项；待第五批独立代码 Review，不计完成；AC-003-3 / AC-003-5 最终验收与 AC-003-1 本地子项仍待全 feature Review / Gate 2，AC-003-1 v2 子项仍外部阻塞）**｜commit `e609c2e54e02ba1d11912c5c10cf229ada025cba`（父 `7b802d4`；只新建 `e2e/jobs/intake.spec.ts` 4 例，无生产文件；取证只读 `localStorage['fai.jobs.v1']` 与页面可见内容）。验证（实施者 openai/gpt-6-astra 执行，Converge 未重跑；数字以 Temp `wi-batch5-01a18388-q7s7olxl/astra-*` 原始日志为准）：命令 1 = 1；命令 2 = 2；命令 3 = 1；五份 E2E（shell / agent / detail-stage / list-create / intake）34 / 0。首跑全过。批末回归：全量 39 / 1128 / 0、六守卫、contract 25 / 10 / 2、typecheck / lint、routes + session 17、`WI H-2` 27、badges 48、job-list 12、job-detail 13、job-create 5、v1 契约 88、real-stubs 24｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准；若 R2-C 尚未在前序页面任务处理）｜R2-C 已于第四批技术关闭（`46e8fbe`）｜**r6.12：第五批末项**。依赖增 **T-B06**（标准 2 的介入历史展开取证）；只写 E2E，不写任何生产文件；标准 / 命令 / 工时不变。Checklist R11 定向复核通过并提交前不得开码
 - **预计**：1.5 h｜**依赖**：T-C03、T-B04、T-B06（r6.12：增 T-B06）
 - **上下文**：AC-003-1 的工作台入口和顶栏全局入口属于 v2（T-H01）；本任务只覆盖本 feature 的页面入口。【r6.12】原依赖不含 T-B06，而标准 2 要“核对介入历史展开内容”——这是本批要补的唯一隐含依赖；历史展开内容由 T-B06 的 `InterventionHistory` 提供，读方法由 T-A15a 提供。
 - **修改范围**：新建 `e2e/jobs/intake.spec.ts`。
@@ -1773,7 +1783,7 @@
 
 ### T-F07 定稿面板、未决项拒绝与只读
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜阅读提示（Converge batch5 观察 O-B5-5，待第五批 Review 判定；非新增标准，不改本任务范围 / 命令）：第五批采集区对 delivered / cancelled 作业仍显示“投放到本作业”“预览 / 修正”“删除来源”与抽屉内“确认入库”，提交时由领域只读门（`writableJob`）返回 validation_error 并以 `ErrorState` 呈现、数据不变；这些入口是否按 AC-006-7“视图只读”（定稿后所有编辑入口隐藏或禁用并说明原因） 隐藏或禁用并说明原因，由本任务开工前按原 spec 边界判断，不回补第五批
 - **预计**：2 h｜**依赖**：T-F06、T-A17、T-A20
 - **上下文**：spec AC-006-7；plan §4.6；D-018（不自动、不可撤销）。
 - **修改范围**：新建 `jobs/stages/FinalizeDialog.vue`（二次确认面板，先列出未决项）；只读视图（定稿后所有编辑 / 批注 / 改稿入口隐藏或禁用，并说明原因）；新建 `tests/component/jobs/finalize.spec.ts`、`e2e/jobs/deliver-finalize.spec.ts`。
@@ -2044,6 +2054,7 @@
 - 【r6.11 草案，待 Walter §5.1 批准，不生效】第四批 Review（`review-batch4.md` 原件 `9812f64`）未通过，唯一 P2 = R4-A。新增 **T-B04a**（0.5 h，3 条标准 / 命令，依赖 T-B04 / T-B03 的已实施代码，`blocked_by: Walter §5.1 批准`），排在 T-B04 之后、T-B05 之前；编号前向（T-B04a 在 T-B04 后、T-B05 前），不新增回边。T-B04a 与 T-B04 共同作为 AC-002-2 的最终任务（原 B04 的正常路径承接与命令保留）；T-G09 增依赖 T-B04a，使全量检查与 T-H04 复验都在修复之后执行。原 5 个任务的标准 / 命令 / 工时不改。合计 **70 个任务、约 104.5 h**（A 30 / 44.5、B 8 / 11.5，其余组不变）；完成标准 / 验证命令 **235 / 235**；唯一有意编号回边仍为 T-B03 → T-B04（见 analyze.md「Analyze R18」）。上行 r6.9 的合计为当时原文。
 - 【r6.12（第五批开工前机制精度；未审核、未实施）】新增 **T-A01a**（0.5 h，3 条标准 / 命令，依赖 A01）、**T-A13a**（0.5 h，3 条，依赖 A13）、**T-A15a**（0.5 h，3 条，依赖 A13；自 T-A15 拆出，原 A15 标准 / 命令 4 移交）。T-A15 1.5 → 1 h、标准 / 命令 5 → 4；T-B06 1.5 → 2 h、2 → 3，依赖 T-A15 → T-A15a + T-A01a；T-C01 依赖 + T-A01a；T-C01a 1 → 1.5 h、4 → 5，依赖 + T-B04；T-C02 1.5 → 2 h，依赖 + T-C01a；T-C03 依赖 + T-A13a；T-C04 依赖 + T-B06；T-A17 依赖 + T-A15a；T-D02 / T-E03 / T-F03 依赖 + T-B06（其标准已引用介入历史）。排序：T-A01a 在 A01 后、A02 前；T-A13a 在 A13 后、A14 前；T-A15a 在 A15 后、A16 前。所有新依赖都按编号前向，**不新增回边**（T-A15 不依赖 T-A15a）；唯一有意回边仍为 T-B03 → T-B04，真实拓扑无环。合计 **73 个任务、约 107 h**（A 33 / 45.5、B 8 / 12、C 5 / 8.5，其余组不变）；完成标准 / 验证命令 **245 / 245**（脚本复算，见 analyze.md「Analyze R21」）。第五批 = T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04（9 项，约 12 h，33 条命令）。上行 r6.11 与下行 r6.4 的合计为当时原文。
 - 【r6.12.1（Checklist R11 `1f99f80` 通过后的 P3 S-44～S-48 吸收）】只改措辞 / 实施提示 / 登记：T-B06 依赖行括注移走（依赖仍为 T-B04 / T-A15a / T-A01a）、T-A13a 状态行以 R11 判定替换原条件句、T-C01 提交校验写法、T-B06 / T-G08 / T-G10 人工验收登记。任务数、工时、依赖、标准编号与命令均不变：仍 **73 个任务、约 107 h、245 / 245**，唯一有意回边 T-B03 → T-B04，真实拓扑无环（脚本复算见 analyze.md「Analyze R22」）。
+- 【r6.12.4（Converge batch5，实施后）】只回写第五批 9 项状态行（已实施，待第五批独立代码 Review）与页首，另在 T-B05 / T-F07 状态行末加观察 O-B5-5 的阅读提示（非新增标准）；任务数、工时、依赖、标准编号与命令、AC 矩阵均不变：仍 **73 个任务、约 107 h、245 / 245**，唯一有意回边 T-B03 → T-B04，真实拓扑无环（脚本复算见 analyze.md「Analyze R25」）。
 - 合计 **67 个任务、约 102 h**（r6.4；A 28 个 43 h / B 7 个 10.5 h / C 5 个 7.5 h / D 3 个 5 h / E 3 个 5.5 h / F 7 个 12 h / G 10 个 14.5 h / H 4 个 4 h）。r5 为 62 个 / 96.5 h；r6 增量：新增 T-A09a 1 h、T-A22a 1.5 h、T-A22b 1 h、T-C01a 1 h；T-A09 1.5→2 h、T-A21 1.5→2 h、T-A18 2→1.5 h；T-A22、T-C01 预估不变（拆出部分与新增部分相当）。r6.4 增量：新增 T-A09b 0.5 h（r6～r6.3 为 66 个 / 101.5 h）。所有任务 `blocked_by: IMPL-GATE-R6`；H 组（4 个任务、4 h）另 `blocked_by: frontend-workbench-v2`。
 
 ## 7. Converge 口径

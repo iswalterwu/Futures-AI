@@ -1,6 +1,12 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
+> **当前状态（2026-10-30 r6.12.4：第五批 9 项已实施 + Converge batch5；以本块为准。下一块 r6.12.3 中的“33 已实施 / 40 未开始”“C02 无 WIP”“下一步再派 Astra”为当时原文）**：
+> - **已实施（待第五批独立代码 Review，不计完成）**：T-A01a `f65d3c6` → T-A13a `e1cd4d4` → T-A15a `a2efb98` → T-B06 `0d09748` → T-C01 `4af80e8` → T-C01a `6529f41` → T-C02 `d4e3fb6` → T-C03 `7b802d4` → T-C04 `e609c2e`（openai/gpt-6-astra，未回退）；代码 `b67a227..e609c2e -- frontend` = 9 个前端提交 / 28 文件 / +3672 / −24。实施者末轮：39 files / 1128 / 0、六守卫、contract 25 / 10 / 2、typecheck / lint、五份 E2E 34 / 0（§23.4）。
+> - **Converge**：`converge-batch5.md` 与 analyze.md「Analyze R25」判本批已收口、待 A；没有需补的任务；两处测试例外与许可逐行相同；观察 O-B5-1～O-B5-9 交 A（§23.6）。
+> - **进度**：73 / 107 h / 245 / 245；**36 已实施（27 已完成 + 9 待 Review）/ 37 未开始**；46 AC 最终验收 0；未收敛。R3-B 代码已修、未关闭；H-5 / 页面切片 ① 候选 `e609c2e`、④ 缺。
+> - 记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189ab-7934-721a-8701-82b717fd3a18`；通道同前，未改配置）；只写规格文档，未运行产品测试，未 commit。
+
 > **当前状态（2026-10-30 r6.12.3：T-C02 开码前第二次源检查停的最小 scope / 类型精度修正；以本块为准。下一块 r6.12.2 中“唯一例外”指 `WI H-5 store` 首例那一处，现为两处已知例外之一，内容不变）**：
 > - **进度不变**：33 已实施（27 已完成 + 6 已实施待第五批 Review）/ 40 未开始；73 / 107 h / 245 / 245；46 AC 最终验收 0；未收敛。计划树 HEAD `af31dda` = 实施树（clean，C02 无 WIP）。
 > - **停止点**：Astra 第二次在 T-C02 源读取时停下（正常范围结果，非跑红、非调用失败，未回退）：C01a 用例 `collect renders all input kinds…` 第 528 行 `expect(collect.findAll('button')).toHaveLength(1)` 与 C02 / C03 行级新按钮必然冲突。
@@ -1117,3 +1123,57 @@
 - T-C02 实施后：`git diff 6529f41 -- frontend/tests/component/jobs/intake.spec.ts` 只含 §21.2 的标题 / selection 行（及可选 2 行类型断言）与 §22.2 的 −1 / +1 行；整文件仍 38 例且全过；T-C02 四条命令按原文执行。
 - T-C03 实施后：`git diff <T-C02 提交> -- frontend/tests/component/jobs/intake.spec.ts` 仍只含 pool 行（及可选 2 行）。
 - 批末 Converge → 独立 A 第五批代码 Review：核两处例外未削减业务 / 隐私覆盖、无隐藏字段 / 隐藏按钮 hack、`previewTarget` 实际类型与清理点，并判 R3-B。
+
+## 23. 第五批 9 项已实施与批次 Converge batch5（r6.12.4，2026-10-30；实施者执行，Converge 未重跑；待第五批独立代码 Review；不是 Review / Gate 2 / Handoff）
+
+- **记账者 / 通道**：Converge / Analyze R25 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189ab-7934-721a-8701-82b717fd3a18`）；bridge 本窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改 provider / key / 全局配置；没有因任务结果换模型。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。
+- **工作树**：复用 `D:/2030/Futures-AI-interaction-converge-batch4`（`docs/workbench-interaction-batch4-converge`，起点 HEAD `e609c2e`，clean），没有新建 D:/2030 目录。只写本 feature 的 plan / tasks / analyze / implementation-log / interface-handoff、新建 `converge-batch5.md`，以及 `specs/README.md` 本 feature 两行。未改源码 / 测试 / fixture / spec / checklist / 旧 Review / 旧 Converge / docs / HANDOFF / 其他树；未运行产品测试；未 commit / push / merge；未派子 agent。临时脚本与日志在 Temp `wi-batch5-01a18388-q7s7olxl/converge-work/`。
+- **重读输入**：见 `converge-batch5.md` §0 与 analyze.md「Analyze R25」§1。
+
+### 23.1 派工 / 模型 / 父基线（脱敏；均为 Implement 首选 openai/gpt-6-astra via openai，调用正常、未回退）
+
+| 会话（Temp 目录 / session 文件） | 任务 | 起点（父） | 结果 | 失败类别 |
+|---|---|---|---|---|
+| `astra-core-*`（`01a18958…`） | T-A01a / A13a / A15a | `b67a227` | `f65d3c6` / `e1cd4d4` / `a2efb98` | 无 |
+| `astra-history-form-*`（`01a18963…`） | T-B06 / C01 | `a2efb98` | `0d09748` / `4af80e8` | 新测试 / 新模板（B06 lint 4；C01 URL 空格期望），已修 |
+| `astra-drawer-preview-*`（`01a18972…`） | T-C01a；随后在 T-C02 源读取时**第一次停止** | `4af80e8` | `6529f41`；C02 零写入 | C01a 新测试误读 `job` / lint 26，已修；停止 = 正常范围结果 |
+| `astra-preview-pool-*`（`01a18985…`） | T-C02 / C03 源读取时**第二次停止** | `af31dda` | 零写入、HEAD 不变 | 正常范围结果 |
+| `astra-preview-pool-resume-*`（`01a18992…`） | T-C02 / C03 | `19228ce` | `d4e3fb6` / `7b802d4` | C03 新测试时钟 / VTU 类型 TS2345 ×4，已修 |
+| `astra-e2e-*`（`01a189a1…`） | T-C04 | `7b802d4` | `e609c2e` | 无 |
+
+两次停止之间的文档修正 `af31dda`（r6.12.2，记账 §21）与 `19228ce`（r6.12.3，记账 §22）只改 `specs/**`。集成人已 ff-only 把生产方集成树 `integration/workbench-interaction` 推进到 `e609c2e`（旁证）；peer / main 未写。
+
+### 23.2 代码写权限执行情况（对照 §20.2）
+
+- 逐提交文件 = §20.2 表；全批禁写路径（`app/**` / `shared/**` / `agent/**` / `workbench/**` / `stores/**` / `main.ts` / `routes.ts` / `stores/{jobs,session}.ts` / `persistence.ts` / fixtures / scripts / 配置 / 锁 / docs / backend）对 `b67a227..e609c2e` 零差异；`git diff --check` 通过。
+- R4-A 的 6 行 `watch` 修复、`selectStage`、三态与详情头未改；`InterventionHistory.vue` 只由 T-B06 写（S-44）。
+- `JobDetailPage.vue` 只读导入 `src/stores/ui.ts` 的 `viewport.collapsed` 作断点（未写该文件；同 AppShell / Rail 写法），登记为观察 O-B5-8，交 A 确认。
+- 旧用例：`contract-labels` / `job-state-pool` / `real-stubs` / `intake.spec.ts`（C01a 追加时）都是只追加；旧 `jobs-store` 43、routes + session 17、job-list 12、job-detail 13、job-create 5、badges 48、v1 契约 88 的期望未改。
+
+### 23.3 两次 scope 停止与两处明示例外（不削减正向覆盖）
+
+- **停止 1**（`6529f41` 后，源读取）：`intake.spec.ts:260-261` 的 `not.toHaveProperty('selection' | 'pool')` → r6.12.2 许可首例替换。**停止 2**（`af31dda` 后，源读取）：`intake.spec.ts:528` 总按钮数 = 1 → r6.12.3 许可入口唯一断言。两次都零写入、不是红测、不是调用失败，没有回退。
+- **实际 diff**：C02 −3 / +3（标题、selection 行、第 528 行），C03 −1 / +2（pool 行），与许可逐行相同；可选 assertTypes 行未加。其余 36 例、imports、helpers、describe 名、用例数（38），以及隐私 / 快照 / 刷新 / 行级业务等正向断言不变；新按钮是真实 `<button>`，没有隐藏字段或按钮。核对方法见 `converge-batch5.md` §3。
+
+### 23.4 真实验证来源（实施者执行；本记账者未亲跑）
+
+- 逐任务命令与首跑失败：见 tasks 第五批 9 项状态行、`converge-batch5.md` §2。
+- 末轮（`e609c2e`，`astra-e2e-logs/`）：全量 `test:unit` **39 files / 1128 / 0**；`check` 六守卫（tokens 156 / 5、colors 24 / 24、负命中 0）；`contract --check` **25 methods / 10 events / 2 artifacts**；typecheck / lint（新 E2E 文件被包含）；**五份 E2E 34 / 0**（旧 30 + intake 4）；routes + session 17；`WI H-2` 27；badges / job-list / job-detail / job-create 78；v1 契约 88；real-stubs 24。
+- **未跑**：其余 7 份 E2E、全量 `pnpm -C frontend test`、人工截图、后端、46 AC 最终验收、单独的 `intake.spec.ts -t "WI H-5"`。
+
+### 23.5 H-x 与 ④（不代签收）
+
+- **H-5**：① 候选 `e609c2e`（生产代码终点 `7b802d4` + E2E；不以 `6529f41` 部分抽屉代替）；② R11 `1f99f80`；③ 实施者证据待 A；**④ 仍缺 → 待消费方集成（未交付）**。
+- **页面切片**：提供任务齐（B 组已完成，C 组待 Review）；① 候选 `e609c2e`；②：B 组 R10、C 组 R11；③ 待 A；**④ 缺**。
+- H-1 / H-2·标签 / H-2·列表 / H-3 / H-4 的历史生产方证据保留，可并记 R11；H-6 缺 T-A21；D–F 未做；H 组（T-H01 等）仍受外部阻塞。`integration/frontend-workbench-v2` 只读仍 `3f63273`。
+
+### 23.6 风险台账与观察
+
+- **R3-B**：代码已由 `e1cd4d4` 修改，**未关闭**，由第五批 Review 判。**R4-A / R2-C**：维持已关闭（`46e8fbe`）。**R4-B～R4-E、S-41、R3-C、R-A、R-B 残留、R-C / R2-A、R-D ①③④、R-E、R-F、R2-B（AgentClient 侧）、R2-D**：未处理，未经 Walter 风险接受。S-44～S-48 落实情况见 `converge-batch5.md` §4。
+- **静读观察 O-B5-1～O-B5-9**（`converge-batch5.md` §5，不预设严重度、不写防护）：O-B5-1 慢提交窗口内草稿被复位、重复提交；O-B5-2 迟到回执写全局 selection；O-B5-3 `previewTarget` 不随 submit / confirm 同步导致误清（建议 A 优先判定；最小修正约 0.5 h，须同步 plan r6.12.3）；O-B5-4 选中快照与并发预览；O-B5-5 封存作业采集入口（T-B05 / T-F07 状态行已加阅读提示）；O-B5-6 原生文件输入；O-B5-7 可靠性箭头；O-B5-8 断点 / 按钮容器写法；O-B5-9 H-5 定向命令粒度。O-B5-1 / O-B5-2 的任何修法都属 AGENTS §5.1，须先报 Walter。
+
+### 23.7 进度与下一步
+
+- 73 个任务 / 约 107 h / 245 / 245：**36 已实施（27 已完成 + 9 已实施待第五批 Review）/ 37 未开始**；46 AC 最终验收 0；feature 未收敛。标准 / 命令 / 工时 / 依赖 / 矩阵不变（analyze.md「Analyze R25」§6）。
+- 合并：Walter 已选全部完成后再合 main；Draft PR #12 保持 Draft；25 个本 feature 目录保留复用；main `072bb12` 不导入、继续 pin `90187f7`，R2-D 流程不变；不写 v2 树。
+- 下一步：集成人审阅并提交本文档；独立 A 新会话做第五批代码 Review（固定 `b67a227..e609c2e -- frontend`），重点见 `converge-batch5.md` §9。

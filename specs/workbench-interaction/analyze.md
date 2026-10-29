@@ -3,6 +3,7 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
+> **当前结论（2026-10-30 r6.12.4：第五批 9 项实施后的批次 Converge）：见文末「Analyze R25」**（当前索引；只读，不是审核结论；下一行指向 R24 的页首块及 R24～R21 正文为当时原文，不改）。第五批 9 项（`f65d3c6` … `e609c2e`，代码 `b67a227..e609c2e -- frontend` 9 个前端提交 / 28 文件 / +3672 / −24）的标准逐条有代码与命令对应，实施者执行全过；两处 `intake.spec.ts` 例外与许可逐行相同；没有需按 §9 补的任务，定形只按精度登记（r6.12.4）；静读观察 O-B5-1～O-B5-9 交 A（O-B5-3 建议优先判定）。36 已实施（27 已完成 + 9 待第五批 Review）/ 37 未开始；73 / 107 h / 245 / 245 / 46 AC 不变，唯一回边 T-B03 → T-B04、无环；R3-B 代码已修、未关闭；下一步 = 独立 A 第五批代码 Review。
 > **当前结论（2026-10-30 r6.12.3：T-C02 开码前第二次源检查停的最小 scope / 类型精度修正）：见文末「Analyze R24」**（当前索引；只读登记，结构无变化；下一行指向 R23 的页首块及 R23 / R22 正文为当时原文，不改）。T-C02 另获 C01a `collect renders all input kinds…` 第 528 行总按钮数断言 → “投放到本作业”入口恰 1 个的一行替换（C03 继承不再改），与 r6.12.2 首例例外合为两处已知阶段性测试约束纠正、不删除验收覆盖；扫描无第三处；内部只读 `previewTarget: DeepReadonly<Upload> | null` 补“同一投放重试”的类型 / 清理点精度。33 已实施 / 40 未开始；标准 / 命令 / 工时 / 依赖 / AC 不变，R11 原件只读、不重开 Checklist；可再派 Astra 做 T-C02。
 > **当前结论（2026-10-30 r6.12.2：T-C02 / T-C03 开码范围冲突最小修正）：见文末「Analyze R23」**（当前索引；只读登记，结构无变化；下一行指向 R22 的页首块及 R22 / R21 正文为当时原文，不改）。第五批前 6 项已实施待 Review（`f65d3c6` … `6529f41`），33 已实施（27 已完成 + 6 待 Review）/ 40 未开始；T-C02 / T-C03 各获 `intake.spec.ts` 首例一条断言替换的唯一例外，标准 / 命令 / 工时 / 依赖 / AC 不变，R11 原件只读、不重开 Checklist；可再派 Astra 做 T-C02。
 > **当前结论（2026-10-30 r6.12.1：Checklist R11 已通过 + P3 S-44～S-48 吸收）：见文末「Analyze R22」**（当前索引；只读登记，结构无变化）。Checklist R11 原件 `1f99f80`（A = claude-fable-5-1 via anthropic，blob `27a76aa6…`）通过 26 / 26、0 P1 / P2；第五批 9 项仍未实施，可按 R11 开码。下一行指向 R21 的页首块及 R21 正文中的“未审核”“须 R11 后才可开码”“R3-B 由 R11 判定 / 判为 §5.1 时其余 8 项照常推进”为当时原文，正文不改，其条件分支已由 R11 判定废止。本行不是审核结论。
@@ -1844,3 +1845,69 @@ spec / plan / tasks / 代码之间**无冲突**；第四批 5 项**已收口、�
 - 第二处冲突已按最小范围修正：T-C02 只多一行断言替换许可（C03 继承），连同 r6.12.2 首例例外共两处，均逐行枚举、可 diff 核对；`previewTarget` 只补类型 / 清理点精度。结构 73 / 107 h / 245 / 245 / 46 AC、唯一回边 T-B03 → T-B04、无环均不变（以 §3 日志为准）。不是需求变更，不回 Clarify / Gate 1；R11 维持只读，不重开 Checklist / 投票。
 - **下一入口**：再派 Astra（openai/gpt-6-astra，新会话，实施树）按 DAG 做 T-C02 → T-C03 → T-C04，按 implementation-log §21.3 / §22.5 核对例外 diff；批末 Converge → 独立 A 第五批代码 Review（核两处例外、`previewTarget` 实际类型与清理点，并判 R3-B）。
 - 本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。
+
+## Analyze R25（只读；第五批 9 项实施后的批次 Converge 一致性报告 r6.12.4，2026-10-30；当前索引，R24 / R23 / R22 / R21 及更早轮次正文不改；区别于 Checklist R11 与第五批代码 Review，**不是**审核结论）
+
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189ab-7934-721a-8701-82b717fd3a18`；`claude-bridge` 本窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改配置，不因任务结果换模型）。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。工作树 = 复用 `D:/2030/Futures-AI-interaction-converge-batch4`（`docs/workbench-interaction-batch4-converge`，起点 HEAD `e609c2e54e02ba1d11912c5c10cf229ada025cba`，clean），没有新建 D:/2030 目录。本轮**没有运行任何产品测试**，没有写代码 / 测试 / fixture，没有改 spec / checklist / 旧 Review / 旧 Converge / docs / HANDOFF，没有 commit。结构脚本 `converge-struct.py`（复制自 R24 的 `scope-fix2-struct.py`，只增加“已实施”状态类与可起步清单，判定逻辑未改）、HEAD / WT dump 与日志在协调器 Temp `wi-batch5-01a18388-q7s7olxl/converge-work/`，不是项目产物。
+
+### 1. 输入与性质
+
+- 重读：AGENTS.md；`docs/plan.md`；`docs/interaction.md` §3.1 / §3.3 / §3.4 / §7.1；`docs/designUI.md` §1 / §2.4 / §3.3 / §3.5；冻结 spec（blob `102af73…`，46 AC）；plan 页首 r6.12～r6.12.3 与各【r6.12*】段；tasks 页首、§0 / §1 / §2a / §3、第五批 9 项完整原文、§5 / §6 / §7；Checklist R11 当前原件 `1f99f80`（blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`，26 / 26，0 P1 / P2）；本文件 R21～R24；implementation-log §8 / §19～§22；interface-handoff；`review-batch3.md` R3-B、`review-batch4-r4a.md`（R4-A 关闭）。
+- **代码**：固定 diff `b67a227..e609c2e -- frontend`（9 个前端提交，28 个文件，+3672 / −24），逐文件真读，不只看摘要；另外两个提交 `af31dda` / `19228ce` 只改文档，不计前端提交。
+- **实测来源**：全部由 Implement（openai/gpt-6-astra）执行，本作者不亲跑；逐命令日志见 converge-batch5.md 页首。
+- **性质**：AGENTS §2 第 9 步 Converge 的只读 Analyze。它比对实施后的代码与 spec / plan / tasks 是否一致，判断是否需要按 §9 补任务；不替代第五批独立代码 Review。
+
+### 2. 逐任务 1:1（标准 ↔ 代码 ↔ 命令；命令原文不变）
+
+| 任务 | 标准数 = 命令数 | 代码落点（摘要，详见 converge-batch5 §2） | 实施者结果 | 结论 |
+|---|---|---|---|---|
+| T-A01a | 3 = 3 | `types.ts` `ReliabilityLabel` / schema / 注册；生成物 | 2 / 72 / 门 | 满足 |
+| T-A13a | 3 = 3 | `removeUpload` 在 `findUpload` / `writableJob` 后加 removed → validation_error；描述 | 2 / 29 / 门 | 满足；R3-B 待 A |
+| T-A15a | 3 = 3 | 五处只加 `listInterventions`；strict filter；稳定升序；副本 | 9 / 3 + 24 / 门 | 满足 |
+| T-B06 | 3 = 3 | `InterventionHistory.vue`（默认收起、展开才读、`props.job` 替换即重读、typed 摘要）；详情页两列挂载 | 8 / 2 / 13 + E2E 6 + 门 | 满足 |
+| T-C01 | 5 = 5 | `IntakePanel.vue`（三输入、白名单、来源说明、一次校验、`intake-submit`）；`intake.ts`（H-5 四成员 + 草稿 / submit） | 13 / 4 / 2 / 6 / 门 | 满足 |
+| T-C01a | 5 = 5 | `IntakeDrawer` / `CollectWorkspace` / `StageWorkspace` 分发 / 两页 `.intake-slot` | 1 / 1 / 10 / 1 + 门 / 30 + E2E 6 | 满足 |
+| T-C02 | 4 = 4 | store 选中 / `previewTarget` / 预览读 / confirm；`ExtractionPreview` / `MappingEditor`；抽屉子区；行内“预览 / 修正” | 5 / 4 / 4 / 38 + 门 | 满足 |
+| T-C03 | 4 = 4 | store 池 / assign / remove / `clearPreview` / `refreshViews`；`UnassignedPool`；行内删除确认 | 5 / 4 / 21 / 80 + 门 | 满足 |
+| T-C04 | 3 = 3 | 新建 `e2e/jobs/intake.spec.ts`（只读快照与页面） | 1 / 2 / 1；五份 E2E 34 | 满足 |
+
+合计 9 项 / 12 h / 33 条命令：标题全部存在，`test.each` 展开数与日志一致，新测试中没有 `skip` / `only` / `todo`。
+
+### 3. 一致性（spec ↔ plan ↔ tasks ↔ interface-handoff ↔ implementation-log ↔ 代码）
+
+- **spec**：未改（blob 与 SHA256 同 §1）。代码只落实 R-003（三种投放、来源说明、预览修正、待归属池、状态展示）、R-007（详情侧栏介入历史、无模态、删除二次确认）与 R-008（契约 +1 读方法 +1 展示映射）的既有 what；没有混入真实解析、URL 抓取、agent、D-020～D-024 或 v2 壳接线。
+- **plan**：代码与 §2.1 / §2.2 / §2.3 / §2.4 / §3 的【r6.12 / r6.12.1 / r6.12.3】逐条一致。本轮只补【r6.12.4 精度（Converge batch5 登记）】，内容是实际类型 / 名称 / 写法：`ReliabilityLabel` 图标与方法数 25；`listInterventions` 的排序读法与 strict filter；`removeUpload` 的检查顺序；intakeStore 公开（H-5 四项）与内部成员（draft / selection / previewTarget / pool 及读写状态）的实际类型，以及源码中确认的类型别名 `IntakeDraft` / `IntakeSubmission` / `IntakeSelection`；`selectReceipt` 不改 `previewTarget` 的事实（引出 O-B5-3）；`StageWorkspace` / `CollectWorkspace` / 页面布局的实际写法（含只读 `useUiStore` 断点）。不改设计语义。
+- **tasks**：9 项状态行回写为“已实施（第五批第 N 项；待第五批独立代码 Review）”，派工原文保留；页首 r6.12.4 块；§6 r6.12.4 行；T-B05 / T-F07 状态行末各加一条观察 O-B5-5 的阅读提示（非新增标准、不改范围 / 命令）。
+- **interface-handoff**：页首 batch5 块、§1 batch5 口径、§3 batch5 落地核对（补上 r6.12.3 留待交付登记时同步的 `previewTarget`）。H-5 ① 候选 `e609c2e`、② R11、③ 待 A、④ 缺；页面切片同此；不拿 `6529f41` 当完整切片，不代 peer 签收。
+- **implementation-log**：页首 r6.12.4 块；新增 §23（代码写权限、两次 scope 停止与两处明示例外、真实验证来源、派工模型 / 父基线、④ 未取得）。
+- **README**：只改本 feature 两行。
+
+### 4. 范围、需求与类型精度
+
+- **范围**：逐提交文件 = tasks 修改范围 = implementation-log §20.2 写权限；禁写路径零差异（converge-batch5 §1）；`git diff --check` 通过。
+- **需求**：没有超出 spec 的行为，也没有删减已审验收覆盖。两处测试例外是阶段性约束纠正，与 r6.12.2 / r6.12.3 许可逐行相同，正向断言没有被削减（converge-batch5 §3）。
+- **类型精度**：已同步到 plan / interface【r6.12.4】，都是已审设计的落地，没有新增交接成员、方法或机制。H-5 交接仍只有 `open(jobId?) / close() / isOpen / jobId`。
+
+### 5. 真缺口判断（按 §9 是否补任务）
+
+- **结论：没有需要 Converge 按 §9 补的任务**。9 项标准逐条有代码与命令对应，没有发现代码偏离 spec / plan / tasks 的地方。
+- **静读观察**（converge-batch5 §5，交 A，不预设严重度、不写防护）：O-B5-1 慢提交窗口内草稿被复位（含重复提交）；O-B5-2 迟到回执写入全局 selection；O-B5-3 `previewTarget` 不随 submit / confirm 同步，导致另一 id 的写入误清当前 selection（normal 下可确定复现；代码符合 tasks T-C03【r6.12.3】的字面规则，但与同段“其他 id 不动”的意图冲突，属设计精度缺口，建议 A 优先判定，最小修正方案已列出）；O-B5-4 选中快照与并发预览；O-B5-5 封存作业的采集入口（归 T-B05 / T-F07 边界）；O-B5-6 原生文件输入；O-B5-7 可靠性箭头图标；O-B5-8 断点 / 按钮容器写法；O-B5-9 H-5 定向命令粒度。
+- **为什么不在本轮给 O-B5-3 加任务**：修正需要改 plan r6.12.3 明文（“未改 submit / confirm 对 previewTarget 的处理”）。它属于设计精度问题，不是“代码没按计划做”；先由 A 在代码 Review 中判定严重度，再按 §2 第 9 步登记（约 0.5 h，1 行 + 1～2 例），可以避免未审先改。O-B5-1 / O-B5-2 的任何修法都属 AGENTS §5.1，须先报 Walter。
+
+### 6. 结构复算（脚本只读；WT 对照 HEAD `e609c2e`）
+
+- **WT**：73 个任务，约 107 h（A 33 / 45.5、B 8 / 12、C 5 / 8.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4），每项 0.5～2 h；状态 **27 done / 9 impl / 37 todo / 0 other**；完成标准 / 验证命令 **245 / 245**，逐任务 1:1、编号连续、每条标准含 AC（`PROBLEMS = []`）；`UNKNOWN_DEP = []`；`CYCLE None`；`BACKEDGES = [(T-B03, T-B04)]`（唯一有意回边）；spec 46 = 矩阵 46；`PARTIAL_NOT_ANCESTOR = []`；`BIDIR_BAD = []`；括注内非依赖任务号只有 T-A22（“原依赖 T-A10”，同 R22 登记）。
+- **第五批**：9 项 / 12 h / 33 条命令，状态全部 impl，依赖不变；`T-B06 ∈ ancestors(T-C04)`、`T-A15a ∈ ancestors(T-A17)` 为真，`T-A15a ∉ deps(T-A15)`。
+- **逐任务 dump**（预计 / 依赖 / 每条标准与命令全文）HEAD 与 WT 除 9 项 `status=todo → impl` 外**逐字相同**：没有任何标准或命令被删减、放宽或改写。
+- **可起步**：依赖全部已完成的未开始任务 = T-A14 / T-A15 / T-A16；若把已实施待审也算作满足，另有 T-G04（依赖 T-C01a），按纪律须等本批 Review 通过。
+
+### 7. 保护面
+
+- spec blob `102af73…`、checklist blob `27a76aa6…`（= R11 原件 `1f99f80`）与 HEAD 相同；改动只涉及本 feature 的 plan / tasks / analyze / implementation-log / interface-handoff、新建 converge-batch5.md 与 `specs/README.md` 本 feature 两行；`frontend` / `backend` / `docs` / AGENTS.md / HANDOFF.md / 旧 Review / 旧 Converge / checklist / spec 零差异；R24～R21 正文不改；`git diff --check` 无告警。
+- 25 个本 feature 目录保留复用、不新建；main `072bb12` 未导入，继续 pin `90187f7`，R2-D 流程不变；Draft PR #12 保持 Draft、不合；不写 v2 树。
+
+### 8. 结论（Analyze R25，当前索引）
+
+- 第五批 9 项**已收口，待第五批独立 A 代码 Review**；没有发现对冻结 AC / plan / tasks 的明确违反，不新增任务；定形只是精度（r6.12.4）。结构 73 / 107 h / 245 / 245 / 46 AC、唯一回边 T-B03 → T-B04、无环均不变。
+- 进度：**36 已实施（27 已完成 + 9 待 Review）/ 37 未开始**；46 AC 最终验收 0；feature 未收敛（含 H 组外部阻塞）。R3-B 代码已修、未关闭；R4-A / R2-C 维持关闭；其余 P3 未经风险接受。
+- **下一入口**：集成人提交本轮文档 → A 新会话第五批代码 Review（固定 `b67a227..e609c2e -- frontend`，重点见 converge-batch5 §9）。本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。
