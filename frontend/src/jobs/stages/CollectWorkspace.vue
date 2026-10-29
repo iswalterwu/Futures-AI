@@ -35,6 +35,15 @@ const intake = useIntakeStore()
         </p>
         <p>用途：{{ upload.sourceNote.purpose }}</p>
         <ArtifactStatusBadge :status="upload.status" />
+        <p v-if="upload.quarantineReason">
+          隔离原因：{{ upload.quarantineReason }}
+        </p>
+        <button
+          type="button"
+          @click="intake.open(job.id); intake.selectUpload(upload)"
+        >
+          预览 / 修正
+        </button>
       </li>
     </ul>
     <p v-if="workspace.uploads.length === 0">

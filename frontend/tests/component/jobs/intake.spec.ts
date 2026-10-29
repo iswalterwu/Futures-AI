@@ -250,14 +250,14 @@ describe('WI metadata only', () => {
 })
 
 describe('WI H-5 store', () => {
-  test('starts closed with a deep-readonly draft and exposes no selection/pool or writable target; DTO excludes jobId', () => {
+  test('starts closed with readonly H-5 state and internal view caches; DTO excludes jobId', () => {
     const { store } = connect()
     expect(store.isOpen).toBe(false)
     expect(store.jobId).toBeNull()
     expect(store.draft).toEqual(initialDraft)
     expect(isReadonly(store.draft)).toBe(true)
     expect(Object.keys(store.$state)).toEqual([])
-    expect(store).not.toHaveProperty('selection')
+    expect(store.selection).toBeNull()
     expect(store).not.toHaveProperty('pool')
     const assertTypes = () => {
       // @ts-expect-error H-5 target is readonly.
@@ -525,7 +525,7 @@ describe('WI page mount', () => {
     }
     expect(collect.text()).not.toContain('不应出现在列表的正文')
     expect(JSON.stringify(workspace)).toBe(before)
-    expect(collect.findAll('button')).toHaveLength(1)
+    expect(collect.findAll('button').filter(button => button.text() === '投放到本作业')).toHaveLength(1)
   })
 
   test('a newly created job has an empty collect list and a working entry', async () => {

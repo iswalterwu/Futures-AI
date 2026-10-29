@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useIntakeStore } from '../stores/intake.ts'
 import IntakePanel from './IntakePanel.vue'
+import ExtractionPreview from './ExtractionPreview.vue'
+import MappingEditor from './MappingEditor.vue'
+import Loading from '../../shared/components/Loading.vue'
+import ErrorState from '../../shared/components/ErrorState.vue'
 
 const intake = useIntakeStore()
 </script>
@@ -26,6 +30,17 @@ const intake = useIntakeStore()
       目标作业：{{ intake.jobId }}
     </p>
     <IntakePanel />
+    <Loading v-if="intake.previewStatus === 'loading'" />
+    <ErrorState
+      v-else-if="intake.previewStatus === 'error' && intake.previewError && intake.previewTarget"
+      module-id="intake-preview"
+      :error="intake.previewError"
+      @retry="intake.selectUpload(intake.previewTarget!)"
+    />
+    <template v-if="intake.selection">
+      <ExtractionPreview />
+      <MappingEditor :key="intake.selection.upload.id" />
+    </template>
   </aside>
 </template>
 
