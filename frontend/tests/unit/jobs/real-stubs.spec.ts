@@ -18,6 +18,7 @@ const requests = {
   listJobs: () => dataClient.listJobs({ status: 'collecting', type: 'daily', title: '油品' }),
   getJob: () => dataClient.getJob('j-collect'),
   getStageWorkspace: () => dataClient.getStageWorkspace('j-collect', 'collect'),
+  resetMockData: () => dataClient.resetMockData(),
 } satisfies { [Method in keyof DataClient]: () => ReturnType<DataClient[Method]> }
 
 describe('WI real stubs — AC-008-3 partial', () => {

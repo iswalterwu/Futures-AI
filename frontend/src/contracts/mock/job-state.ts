@@ -1,12 +1,18 @@
 import { z } from 'zod'
 import type { DataClient } from '../client.ts'
 import {
+  clearJobKeys,
+  loadJobsSnapshot,
+  PersistedJobDataSchema,
+  resetPersistenceStatus,
+  saveJobsSnapshot,
+} from '../../jobs/persistence.ts'
+import {
   BootstrapSchema,
   DeliverableFixturesSchema,
   InterventionSchema,
   JobCollectionsSchema,
   JobDetailsSchema,
-  JobSchema,
   UploadFixturesSchema,
   type Bootstrap,
   type Job,
@@ -15,13 +21,8 @@ import {
 } from '../types.ts'
 
 // Composition of existing boundaries; no additional cross-field domain guards.
-const JobStateSchema = z.strictObject({
+const JobStateSchema = PersistedJobDataSchema.extend({
   scenario: BootstrapSchema.shape.scenario,
-  jobs: z.array(JobSchema),
-  details: JobDetailsSchema,
-  deliverables: DeliverableFixturesSchema,
-  interventions: z.array(InterventionSchema),
-  uploads: UploadFixturesSchema,
   emptyJobIds: z.array(z.string()),
 })
 type JobState = z.infer<typeof JobStateSchema>
@@ -35,13 +36,33 @@ type JobSeeds = {
 
 // All DataClient instances read this current session, rebuilt only by their factory.
 let state: JobState
+let session: { seeds: JobSeeds; persistent: boolean }
 
-export function initializeJobState(scenario: Bootstrap['scenario'], seeds: JobSeeds): void {
+export function initializeJobState(scenario: Bootstrap['scenario'], seeds: JobSeeds, persistent: boolean): void {
+  session = { seeds, persistent }
+  state = createSeedState(scenario, seeds)
+  if (persistent) {
+    const snapshot = loadJobsSnapshot()
+    if (snapshot !== null) state = { ...state, ...snapshot }
+  } else {
+    resetPersistenceStatus()
+  }
+}
+
+export function resetJobState(): void {
+  if (session.persistent) clearJobKeys()
+  state = createSeedState(state.scenario, session.seeds)
+  if (session.persistent) saveJobsSnapshot(state)
+  else resetPersistenceStatus()
+}
+
+function createSeedState(scenario: Bootstrap['scenario'], seeds: JobSeeds): JobState {
   const collection = scenario === 'job-running' || scenario === 'job-pending-merge'
     || scenario === 'job-conflict' || scenario === 'job-delivered' ? scenario : 'normal'
   const jobs = seeds.jobs[collection]
-  state = structuredClone({
+  return structuredClone({
     scenario,
+    mappingHistory: [],
     jobs: scenario === 'empty' ? [] : jobs,
     details: scenario === 'empty' ? {} : seeds['job-detail'],
     deliverables: scenario === 'empty' ? {} : seeds.deliverable,
@@ -56,6 +77,7 @@ export function commit(mutator: (working: JobState) => void): void {
   const working = structuredClone(state)
   mutator(working)
   state = JobStateSchema.parse(working)
+  if (session.persistent) saveJobsSnapshot(state)
 }
 
 export function getJobScenario(): Bootstrap['scenario'] {

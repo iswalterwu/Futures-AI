@@ -36,6 +36,7 @@ export interface DataClient {
   listJobs(filter?: { status?: JobStatus; type?: JobType; title?: string }): Promise<JobListItem[]>
   getJob(jobId: string): Promise<Job | null>
   getStageWorkspace(jobId: string, stage: Stage): Promise<StageWorkspace>
+  resetMockData(): Promise<null>
 }
 
 export type AgentEventCallback = (event: AgentEvent) => void

@@ -26,6 +26,7 @@ export const dataClient: DataClient = {
   async listJobs() { throw new NotImplementedError('listJobs') },
   async getJob() { throw new NotImplementedError('getJob') },
   async getStageWorkspace() { throw new NotImplementedError('getStageWorkspace') },
+  async resetMockData() { throw new NotImplementedError('resetMockData') },
 }
 
 export const agentClient: AgentClient = {

@@ -52,9 +52,13 @@ const jobFixturesBoundary = z.preprocess(value => {
   return { ...jobFixtures, ...value }
 }, z.strictObject(jobFixtureSchemas))
 
-/** T-A10 calls this once when rebuilding shared session state, never on a read request. */
+/** Read and validate seed overrides once, never on a business read request. */
 export function readJobFixtures() {
-  return parseBoundary(jobFixturesBoundary, window.__FAI_MOCK__?.jobFixtures)
+  return parseJobFixtures(window.__FAI_MOCK__?.jobFixtures)
+}
+
+function parseJobFixtures(override: unknown) {
+  return parseBoundary(jobFixturesBoundary, override)
 }
 
 const fixtures = {
@@ -102,7 +106,8 @@ const moduleFixtures = new Set<keyof typeof fixtures>([
 
 export function createMockDataClient(): DataClient {
   const scenario = readScenario()
-  jobState.initializeJobState(scenario, readJobFixtures())
+  const override = window.__FAI_MOCK__?.jobFixtures
+  jobState.initializeJobState(scenario, parseJobFixtures(override), scenario === 'normal' && override === undefined)
   let bootstrapFailed = false
 
   async function readFixture<T>(name: keyof typeof fixtures, schema: z.ZodType<T>): Promise<T> {
@@ -176,6 +181,11 @@ export function createMockDataClient(): DataClient {
     async getResearchList() {
       const items = await readFixture('research', fixtureSchemas.research)
       return scenario === 'empty' ? [] : items
+    },
+    async resetMockData() {
+      await delayScenario(jobState.getJobScenario())
+      jobState.resetJobState()
+      return null
     },
     async listJobs(filter) {
       const [query] = parseBoundary(dataMethods.listJobs.params, [filter])

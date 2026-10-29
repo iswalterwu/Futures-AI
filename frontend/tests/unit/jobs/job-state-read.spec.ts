@@ -25,6 +25,7 @@ function clientFor(scenario: Bootstrap['scenario'] = 'normal') {
 }
 
 beforeEach(() => {
+  localStorage.clear()
   window.history.replaceState(null, '', '/')
   delete window.__FAI_MOCK__
   vi.stubEnv('VITE_MOCK_SCENARIO', undefined)
@@ -231,15 +232,18 @@ describe('WI scenarios read — AC-001-4 / AC-004-5 / AC-005-6 partial', () => {
     retained!.jobs[0].title = 'late mutation'
     expect(await client.getJob('j-collect')).toMatchObject({ title: 'committed' })
     expect((await client.listJobs({ title: 'committed' })).map(job => job.id)).toEqual(['j-collect'])
-    expect((await clientFor().getJob('j-collect'))).toEqual(before)
+    expect(await clientFor().getJob('j-collect')).toMatchObject({ title: 'committed' })
+    clientFor('boot-error')
+    commit(working => { working.jobs[0].title = 'memory only' })
+    expect(await clientFor('boot-error').getJob('j-collect')).toEqual(before)
   })
-  test('this batch stays entirely in memory in every scenario, including overrides', async () => {
+  test('non-normal and overrides stay in memory; normal only reads its snapshot at creation', async () => {
     vi.useFakeTimers()
-    const get = vi.spyOn(Storage.prototype, 'getItem')
-    const set = vi.spyOn(Storage.prototype, 'setItem')
-    const remove = vi.spyOn(Storage.prototype, 'removeItem')
-    const clear = vi.spyOn(Storage.prototype, 'clear')
-    for (const scenario of scenarios) {
+    const get = vi.spyOn(localStorage, 'getItem')
+    const set = vi.spyOn(localStorage, 'setItem')
+    const remove = vi.spyOn(localStorage, 'removeItem')
+    const clear = vi.spyOn(localStorage, 'clear')
+    for (const scenario of scenarios.filter(value => value !== 'normal')) {
       const client = clientFor(scenario)
       const result = client.listJobs().catch(error => error)
       await vi.advanceTimersByTimeAsync(1500)
@@ -248,6 +252,9 @@ describe('WI scenarios read — AC-001-4 / AC-004-5 / AC-005-6 partial', () => {
     window.__FAI_MOCK__ = { jobFixtures: { jobs } }
     await clientFor().listJobs()
     expect(get).not.toHaveBeenCalled()
+    delete window.__FAI_MOCK__
+    await clientFor().listJobs()
+    expect(get).toHaveBeenCalledExactlyOnceWith('fai.jobs.v1')
     expect(set).not.toHaveBeenCalled()
     expect(remove).not.toHaveBeenCalled()
     expect(clear).not.toHaveBeenCalled()

@@ -176,6 +176,18 @@
         "$ref": "#/$defs/ErrorResponse"
       }
     },
+    "resetMockData": {
+      "description": "显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。",
+      "params": {
+        "$ref": "#/$defs/bootstrapParams"
+      },
+      "result": {
+        "$ref": "#/$defs/resetMockDataResult"
+      },
+      "error": {
+        "$ref": "#/$defs/ErrorResponse"
+      }
+    },
     "send": {
       "description": "提交用户消息并返回会话与运行 ID；缺省 sessionId 时创建会话，回执仅表示受理，运行进度由 subscribe 提供。",
       "params": {
@@ -7499,6 +7511,10 @@
       "minItems": 2,
       "maxItems": 2,
       "description": "阶段工作区查询的位置参数。"
+    },
+    "resetMockDataResult": {
+      "type": "null",
+      "description": "重置完成，无返回数据。"
     },
     "sendParams": {
       "type": "array",

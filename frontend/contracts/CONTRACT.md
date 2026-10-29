@@ -132,6 +132,14 @@
 - 成功结果（Promise）：`StageWorkspace`
 - 拒绝：`ErrorResponse`
 
+### `resetMockData`
+
+显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。
+
+- 参数（位置参数元组）：`bootstrapParams`
+- 成功结果（Promise）：`resetMockDataResult`
+- 拒绝：`ErrorResponse`
+
 ### `send`
 
 提交用户消息并返回会话与运行 ID；缺省 sessionId 时创建会话，回执仅表示受理，运行进度由 subscribe 提供。
@@ -1911,6 +1919,12 @@
 | `$` | 是 | `[string, Stage]` | 阶段工作区查询的位置参数。 |
 | `$[0]` | 是 | `string` | jobId：工作区所属作业唯一标识，非空。 |
 | `$[1]` | 是 | `Stage` | stage：要读取的阶段，不必是当前阶段。 |
+
+### `resetMockDataResult`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `null` | 重置完成，无返回数据。 |
 
 ### `sendParams`
 

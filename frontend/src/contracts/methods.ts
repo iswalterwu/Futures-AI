@@ -132,6 +132,11 @@ export const dataMethods = {
     ]).describe('阶段工作区查询的位置参数。'),
     result: StageWorkspaceSchema,
   },
+  resetMockData: {
+    description: '显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。',
+    params: noParams,
+    result: z.null().describe('重置完成，无返回数据。'),
+  },
 } satisfies RequestMethods<DataClient>
 
 export const agentMethods = {
