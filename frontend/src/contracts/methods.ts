@@ -9,6 +9,8 @@ import {
   FieldMappingSchema,
   IntakeInputSchema,
   IntakeReceiptSchema,
+  InterventionKindSchema,
+  InterventionSchema,
   WriteReceiptSchema,
   UploadSchema,
   CONTRACT_VERSION,
@@ -190,6 +192,17 @@ export const dataMethods = {
       z.string().trim().min(1).describe('reason：取消理由，去除两端空白后非空。'),
     ]).describe('取消作业的位置参数。'),
     result: WriteReceiptSchema,
+  },
+  listInterventions: {
+    description: '读取作业介入事件副本，按 createdAt 升序，同刻保持记录顺序；stage / kind 可组合筛选，省略即不限制；未知作业返回 not_found。',
+    params: z.tuple([
+      z.string().min(1).describe('jobId：介入事件所属作业唯一标识，非空。'),
+      z.strictObject({
+        stage: StageSchema.optional().describe('stage：可选阶段，精确匹配。'),
+        kind: InterventionKindSchema.optional().describe('kind：可选介入类型，精确匹配。'),
+      }).optional().describe('filter：可选组合条件，各条件同时满足；省略即不限制。'),
+    ]).describe('介入历史查询的位置参数。'),
+    result: z.array(InterventionSchema).describe('按时间升序排列的介入事件副本，同刻保持记录顺序；没有匹配项时为空数组。'),
   },
   resetMockData: {
     description: '显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。',

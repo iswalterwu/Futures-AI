@@ -109,6 +109,14 @@ export function getJob(jobId: string): Job | null {
   return structuredClone(findJob(jobId))
 }
 
+export function listInterventions(jobId: string, filter: Parameters<DataClient['listInterventions']>[1]): Intervention[] {
+  findJob(jobId)
+  return structuredClone(state.interventions.filter(event => event.jobId === jobId
+    && (filter?.stage === undefined || event.stage === filter.stage)
+    && (filter?.kind === undefined || event.kind === filter.kind),
+  ).sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt)))
+}
+
 export function getStageWorkspace(jobId: string, stage: Stage): StageWorkspace {
   findJob(jobId)
   const workspace = stage === 'deliver' ? state.deliverables[jobId] : state.details[jobId]?.[stage]

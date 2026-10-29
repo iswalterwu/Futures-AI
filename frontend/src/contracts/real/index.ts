@@ -35,6 +35,7 @@ export const dataClient: DataClient = {
   async assignUpload() { throw new NotImplementedError('assignUpload') },
   async removeUpload() { throw new NotImplementedError('removeUpload') },
   async cancelJob() { throw new NotImplementedError('cancelJob') },
+  async listInterventions() { throw new NotImplementedError('listInterventions') },
 }
 
 export const agentClient: AgentClient = {

@@ -27,6 +27,7 @@ const requests = {
   assignUpload: () => dataClient.assignUpload('u-unassigned-file', 'j-collect'),
   removeUpload: () => dataClient.removeUpload('u-unassigned-file', '样例删除'),
   cancelJob: () => dataClient.cancelJob('j-collect', '样例取消'),
+  listInterventions: () => dataClient.listInterventions('j-collect', { stage: 'collect', kind: 'ingest' }),
 } satisfies { [Method in keyof DataClient]: () => ReturnType<DataClient[Method]> }
 
 describe('WI real stubs — AC-008-3 partial', () => {

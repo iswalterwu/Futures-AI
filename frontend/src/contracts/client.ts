@@ -7,6 +7,8 @@ import type {
   FieldMapping,
   IntakeInput,
   IntakeReceipt,
+  Intervention,
+  InterventionKind,
   WriteReceipt,
   Upload,
   DailyBriefResponse,
@@ -52,6 +54,7 @@ export interface DataClient {
   assignUpload(uploadId: string, jobId: string): Promise<WriteReceipt>
   removeUpload(uploadId: string, reason: string): Promise<WriteReceipt>
   cancelJob(jobId: string, reason: string): Promise<WriteReceipt>
+  listInterventions(jobId: string, filter?: { stage?: Stage; kind?: InterventionKind }): Promise<Intervention[]>
 }
 
 export type AgentEventCallback = (event: AgentEvent) => void

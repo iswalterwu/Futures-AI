@@ -220,6 +220,10 @@ export function createMockDataClient(): DataClient {
       const [id] = parseBoundary(dataMethods.getJob.params, [jobId])
       return readJobState(() => jobState.getJob(id), dataMethods.getJob.result)
     },
+    async listInterventions(jobId, filter) {
+      const [id, query] = parseBoundary(dataMethods.listInterventions.params, [jobId, filter])
+      return readJobState(() => jobState.listInterventions(id, query), dataMethods.listInterventions.result)
+    },
     async getStageWorkspace(jobId, stage) {
       const [id, targetStage] = parseBoundary(dataMethods.getStageWorkspace.params, [jobId, stage])
       return readJobState(() => jobState.getStageWorkspace(id, targetStage), dataMethods.getStageWorkspace.result)

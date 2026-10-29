@@ -196,6 +196,14 @@
 - 成功结果（Promise）：`WriteReceipt`
 - 拒绝：`ErrorResponse`
 
+### `listInterventions`
+
+读取作业介入事件副本，按 createdAt 升序，同刻保持记录顺序；stage / kind 可组合筛选，省略即不限制；未知作业返回 not_found。
+
+- 参数（位置参数元组）：`listInterventionsParams`
+- 成功结果（Promise）：`listInterventionsResult`
+- 拒绝：`ErrorResponse`
+
 ### `resetMockData`
 
 显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。
@@ -2090,6 +2098,23 @@
 | `$` | 是 | `[string, string]` | 取消作业的位置参数。 |
 | `$[0]` | 是 | `string` | jobId：要取消的作业锚。 |
 | `$[1]` | 是 | `string` | reason：取消理由，去除两端空白后非空。 |
+
+### `listInterventionsParams`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `[string, object]` | 介入历史查询的位置参数。 |
+| `$[0]` | 是 | `string` | jobId：介入事件所属作业唯一标识，非空。 |
+| `$[1]` | 否 | `object` | filter：可选组合条件，各条件同时满足；省略即不限制。 |
+| `$[1].stage` | 否 | `Stage` | stage：可选阶段，精确匹配。 |
+| `$[1].kind` | 否 | `InterventionKind` | kind：可选介入类型，精确匹配。 |
+
+### `listInterventionsResult`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `Intervention[]` | 按时间升序排列的介入事件副本，同刻保持记录顺序；没有匹配项时为空数组。 |
+| `$[]` | 是 | `Intervention` | 介入事件十个必有字段，camelCase；原动作不可改，检查点仅更新 outcome。action↔kind 对应关系由 zod 边界校验，见各 payload 分支的 kind 说明。 |
 
 ### `resetMockDataResult`
 

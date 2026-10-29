@@ -272,6 +272,18 @@
         "$ref": "#/$defs/ErrorResponse"
       }
     },
+    "listInterventions": {
+      "description": "读取作业介入事件副本，按 createdAt 升序，同刻保持记录顺序；stage / kind 可组合筛选，省略即不限制；未知作业返回 not_found。",
+      "params": {
+        "$ref": "#/$defs/listInterventionsParams"
+      },
+      "result": {
+        "$ref": "#/$defs/listInterventionsResult"
+      },
+      "error": {
+        "$ref": "#/$defs/ErrorResponse"
+      }
+    },
     "resetMockData": {
       "description": "显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。",
       "params": {
@@ -7916,6 +7928,42 @@
       "minItems": 2,
       "maxItems": 2,
       "description": "取消作业的位置参数。"
+    },
+    "listInterventionsParams": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "description": "jobId：介入事件所属作业唯一标识，非空。"
+        },
+        {
+          "description": "filter：可选组合条件，各条件同时满足；省略即不限制。",
+          "type": "object",
+          "properties": {
+            "stage": {
+              "description": "stage：可选阶段，精确匹配。",
+              "$ref": "#/$defs/Stage"
+            },
+            "kind": {
+              "description": "kind：可选介入类型，精确匹配。",
+              "$ref": "#/$defs/InterventionKind"
+            }
+          },
+          "additionalProperties": false
+        }
+      ],
+      "items": false,
+      "minItems": 1,
+      "maxItems": 2,
+      "description": "介入历史查询的位置参数。"
+    },
+    "listInterventionsResult": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Intervention"
+      },
+      "description": "按时间升序排列的介入事件副本，同刻保持记录顺序；没有匹配项时为空数组。"
     },
     "resetMockDataResult": {
       "type": "null",
