@@ -384,3 +384,72 @@ npm 安装两次都提示 `boolean@3.2.0` deprecated（既有传递依赖）；�
 - 完整日志/session/临时测试库不入Git；代码与证据未提交。最终diff与SHA清单留上述外部目录供协调者核对。
 - **六任务实现已到检查点、最后完整复跑通过，但保留 root-locked 一次未解释超时风险；不宣称稳定性问题已关闭。下一项 T-06b，本 session 不继续。** preload 已采用异步新契约，旧 onboarding.js 的同步 `backend()` 消费者刻意留给 T-06b；本批只证明页面加载/启动生命周期，**不声称现有设置业务可用**，未提前实现 T-06c 的 profile/onboarding 路由或设置入口。
 - 后续仍未验证：14错误码的每个真实GUI触发（本批只实际触发上述场景）、startup.html本身缺失的原生兜底、真实renderer崩溃恢复、打包后的app-config资源装配、日志滚动/脱敏/诊断导出、真实前端与作业/agent/drain、真实EIA注册/key、clean install、基准机15s、全部人工M-ID（含M-09焦点/M-16观感/M-18真实满盘）、toast/托盘、整体Converge、独立代码Review及Gate2。既有PYZ P3不变；settings-sources/csp/CORS正对照留后续，若需要改安全面则停报，不自行放宽。
+
+## 9. 2026-10-29 T-05k root-locked 有界诊断（风险仍 OPEN）
+
+### 9.1 固定输入、范围与预检
+
+- Implement/debug = **`openai/gpt-6-astra` via openai**；session **`01a18620-5f99-7422-91f6-e006cb8c47a3`**，PI 环境实核（只输出三个指定 PI 字段）。唯一 writer，未开其他 agent、未切模型/通道或修改配置。
+- 工作树 / 分支：`D:/2030/Futures-AI-desktop-implement` / `feat/desktop-shell-astra`；固定输入及结束 HEAD **`35e5f7869b9d80bcf49a37ab21336072ed611ffc`**；开始 `git status --short` 为空。`git diff --exit-code 40aff0c HEAD -- shell backend specs/desktop-shell docs` 为空。既有源码检查点 f7d347b 已在输入中，不是未提交旧 WIP。
+- 完整重读 AGENTS、HANDOFF（含最新 §13）、docs/plan/architecture、feature spec/plan/tasks/checklist/analyze/review/本证据；截断处用 offset 补读。没有改 UI，未触及 interaction/designUI 的设计范围。重读真实 scene、runner waitFor/launch/cleanup、Backend/main/hooks、Python Host/Service/write_lock；边界再次读取 T-05k、Plan §4.2、实际待改文件。Checklist 独立计数 **41 checked / 0 unchecked**，只读。
+- 历史失败原件仍存在：`%TEMP%/fai-lifecycle-01a185d9/e2e-final-2.log`；与 Git 中 `handoff-artifacts/20261029-lifecycle/e2e-intermittent-failure.txt` 的 SHA-256 均为 **`5f0bc33d580a31a2e0605098ce8b2063fb6064093204f7cd26e5b7a1e5d071a1`**。历史 **202/203、1 failure** 原样保留；此前单独16/16与最后213/213不是修复证明。
+- 宣告上限为最多4次定向诊断 + 1次全集诊断，另做要求的最终验证；实际只用 **2次定向（其中1次 profiling）+ 1次全集诊断**。未复现即停止增加诊断次数，不循环跑到绿灯。
+
+### 9.2 观测方法与真实结果
+
+全部新原始输出与验证产物留在仓库外 **`C:/Users/iswal/AppData/Local/Temp/fai-lockprobe-01a18620/`**（下称 RUN）；没有凭证、argv、请求/响应体、完整 child dump 或用户文档入日志。
+
+- 真实 root-locked 仍使用原 Python `Service.init()` 持锁 helper、真实 `python -m app`；没有 `FAI_BACKEND_CMD`、没有业务 mock、没有整读字节锁文件、没有为通过而删锁或杀 holder。
+- 临时 `src/test-hooks.js` 仅在 root-locked 下观测真实 spawn 系统边界：spawn返回/事件、stdout首次到达、**生产解析器已设置的 marker code**、exit/close、status。没有复制生产标记解析逻辑或改变命令、状态、deadline。时间来自 `process.hrtime.bigint()`；producer时钟起点为首次 command，scene另记接收时刻，二者不冒充同一原点。`marker-parsed` 由 setImmediate 读实际结果，是观测上界，不是精确 Python print 时刻。
+- profiling 仅通过该条命令的 `PYTHONPROFILEIMPORTTIME=1` 启用；临时 observer 只放行 `import time: <整数> | <整数> | <模块名>`，不转发其他 stderr。该环境也被 helper继承；没有修改 Python 源码或全局环境。**profiling和转发有额外开销，不能作为不变生产启动性能验收**；模块 cumulative时间有嵌套，不能相加。
+- 临时诊断源码差异保存在 RUN/`diagnostic.diff`，已在最终源码验证前全部移除（hooks恢复输入字节）。最终只保留 scene 的安全观察时间线，见 §9.3。
+
+诊断阶段首代测量（单位 ms；小数取整；spawn列以实际 Node spawn事件为零点）：
+
+| 运行 | helper ready（scene起点） | paths / control接收（scene起点） | spawn→stdout首次 / marker已解析 | spawn→exit3 / failed状态 | failed快照 / renderer code（scene起点） |
+|---|---:|---:|---:|---:|---:|
+| 定向普通 diag-1 | 1130 | 1347 / 1397 | 1801 / 1810 | 2110 / 2111 | 3842 / 3844 |
+| 定向 profiling diag-2 | 1160 | 1370 / 1416 | 1767 / 1767 | 2063 / 2064 | 3798 / 3805 |
+| 全集 diag-full 中 root-locked | 1255 | 1491 / 1546 | 2152 / 2152 | 2421 / 2421 | 4339 / 4347 |
+
+三次均实际收到/解析 `data_root_locked`、exit3 后才 failed；页面同码/含路径/另一进程提示、restarts0、失败PID清空、holder仍活、holder优雅exit0后retry gen2/restarts0/ready、全部 owned PID退出与temp删除均通过。普通定向 marker解析到exit约300ms，全集约268ms；未观测到多秒的marker运输/退出延迟。
+
+profiling 首代：`uvicorn` cumulative **214866µs**，`fastapi` **285820µs**，`data.service` **610265µs**（其中 pandas **486392µs**），`app.main` **1465718µs**；app.main导入完成的接收时刻3490ms，stdout首次3500ms，failed快照3798ms。只证明这一受测运行导入占启动时间主要部分，**不证明历史失败由 imports 导致**，也没有测到有效真实分类超过10s。
+
+**对历史现场的判断**：
+
+1. runner 的默认 `waitFor` 是10s；main/Backend 默认 producer deadline 是30s，Plan §4.2约定按本代deadline处理、kill后报health_timeout。两者不同且起点也不同：scene在paths/control就绪后开始等待，而main要等启动窗口显示后才spawn（本轮初始快照仍能看到idle）。这是可检验的预算假设，不是历史因果证明。
+2. `Service.__init__` 在开库之前调用 `write_lock`，已有且被持有的根会抛 `LockBusy`；没有名义上的10s锁获取等待。不能把未取得的import/调度/输出管道时序说成锁等待。
+3. 历史只有10s拒绝与清理前 gen1/waiting_health/port=null/PID存活，没有该PID的import进度、标记到达或退出时序；本轮没有复现。**根因 UNKNOWN，风险 OPEN**。未发现足以修改 main/backend 生命周期或接线的实证，也没有足以调整本场景观察预算的>10s有效启动证据。
+4. 本轮没有做“真实宿主受控慢启动>10s”或“丢失/错误marker”的新边界注入对照，因而**没有根因/修复的正负对照闭环**。全集中的既有 health-fail/timeout/restart-limit 及unit中的三条件健康/exit3标记对照均通过，但它们不能替代上述历史故障对照；不靠grep或通过次数宣布修复。
+
+### 9.3 最终最小差异（不是行为修复）
+
+- **`shell/test/e2e/root-locked.js`**：仅 +24/−2 行诊断接线。scene局部复用的trace以单调时钟输出helper启动/ready/exit、Electron启动/paths-control就绪、**变化时才输出**的快照白名单（phase/gen/restarts/pid/port/lastCode/OS alive）、renderer code、释放holder、retry-ready与Electron退出。等待拒绝时记最后观测与holder存活，**原错误重新抛出**。不输出完整snapshot、页面文本、path/令牌/argv或child字节流；不新增后台计时器、通用工具、持久遥测。
+- 原10s等待、外层scene30s、retry20s、producer30s和所有原断言/清理均未改；无新增弱化布尔断言。每次独立 root-locked仍 **16/16**（含清理）；最后全集仍 **213/213**，断言数量未被削减。
+- **本文件**只追加§9；历史§1～§8保持原文。`test-hooks.js` 的临时wrapper/观测字段/import处理已恢复，SHA-256与输入一致；`main.js`、`src/backend.js`、backend/**、其他scene/runner/unit、renderer/preload、依赖/lock及所有冻结文件均未改。没有产品修复，所以没有新增backend regression用例。
+
+### 9.4 全部本轮命令与结果（失败不隐藏）
+
+以下cwd均为shell，输出用 `{ time <命令>; } > RUN/<文件> 2>&1` 保存，随后实录退出码；profiling变量只作用于那一个命令。
+
+| 顺序 | 命令 | 结果 | 日志 / 墙钟 |
+|---|---|---|---|
+| 诊断1 | `npm run check -- root-locked` | 16/16、exit0 | diag-1.log / 7.499s |
+| 诊断2（额外开销） | `PYTHONPROFILEIMPORTTIME=1 npm run check -- root-locked` | 16/16、exit0 | diag-2-profile.log / 7.477s |
+| 唯一全集诊断 | `npm run check` | 14场景、213/213、exit0 | diag-full.log / 65.401s |
+| **最后源码编辑后** | `npm run test:unit` | **42 passed / 0 failed / 0 skipped / 0 cancelled，4974.143ms，exit0** | unit-final.log / 5.522s |
+| **最后源码编辑后** | `npm run check -- root-locked` | **16/16、exit0** | root-locked-final.log / 7.686s |
+| **最后源码编辑后** | 默认 `npm run check` | **14注册场景、213/213、failures0、exit0** | e2e-final.log / 67.203s |
+
+- 本轮没有新增真实测试FAIL、没有重跑失败直到通过；历史202/203、1failure仍未解释。hash校验相对输入返回1是预期的授权文件变更：追加本证据之前仅root-locked不匹配，其余212/213相同；最终只有scene与本证据两个差异。`rg`未勾选项无匹配exit1=0项；不是忽略测试红灯。Git的LF→CRLF提示保留，未改配置。
+- 最后独立scene：helper-ready1309ms、paths/control-ready1635ms、waiting_health观察1902ms、failed4024ms、页面4026ms、retry-ready6270ms。最后全集scene：helper-ready1802ms、paths/control-ready2058ms、waiting_health2414ms、failed4403ms、页面4404ms、retry-ready6643ms。均是**观察时刻**，未用快照倒推出真实spawn/import时刻；最后全集有一次OS已死但Node状态仍waiting_health的短暂快照，随后62ms内观测failed，不能据此声称生命周期bug。
+- 构建机实核 **Node v25.2.1 / npm11.7.0 / Python3.14.2**；真实Electron快照 **33.4.11 / 内嵌Node20.18.3 / Chrome130.0.6723.191**。未安装或改依赖、未重跑npm ci、未构建backend或运行Python全量；旧 **454/5 online skips、12/12**只为历史证据。不把本轮source-host测试写成打包或15s基准验收。
+
+### 9.5 清理、冻结与后续
+
+- 所有运行均使用runner新建的独立外部root；helper由实际Service成功信号确认，不读整份锁。退出走生产request-quit；runner的≤10s/owned树kill兜底与泄漏即FAIL规则未动。本轮root-locked无兜底kill，holder在断言后才结束stdin并正常退出；没有删锁求绿。
+- 两次全集内root-unwritable均恢复自有ACL，并通过真实`restored-write-proof`写入/读取断言；14场景均实际删除temp、所有跟踪backend/helper PID均死。最后CIM定向检查本工作树Electron及本次e2e/machine根Python/fixture，**OWNED_LOCKPROBE_PROCESSES=0**，不打印命令行；无后台服务/控制端口需保留。外部日志/manifest保留，未删除旧失败证据或其他任务文件。
+- 213个输入tracked文件指纹在 RUN/`input.sha256`；最终比对 **211个未改，2个授权差异**（scene、本证据）。`git diff --exit-code 35e5f78 -- . ':!shell/test/e2e/root-locked.js' ':!specs/desktop-shell/implementation-evidence.md'`为空；`git diff --check`通过；本证据numstat仅新增、零删除。完整诊断diff、最终diff与最终SHA清单留RUN供协调者核对。冻结spec/Plan/Tasks/Checklist/Analyze/Review/HANDOFF/README、backend与依赖均未动；HEAD未移动。未commit/push/PR/merge/reset。
+- **结论：只完成本轮有界诊断及安全观测补充，不是T-05k稳定性关闭，更不是Converge/代码Review/Gate2。T-06b未开始。** 不能用本轮绿灯给风险评级或代替用户接受。
+- 下一步仍限定T-05k：协调者先保留本证据和历史FAIL；若继续诊断，可用已保存的最小临时observer做一次受控真实宿主启动迟滞（10s以上、30s以内）与缺失/错误marker或deadline超时的负对照，证明或否定“本场景观察预算不足”，再决定是否只调整该scene；同时仍需自然失败的producer/import/exit记录才能解释历史因果。不得仅用受控sleep或绿灯反推历史原因。需要触及后端/安全面/冻结设计时继续停报；不直接推进T-06b。
