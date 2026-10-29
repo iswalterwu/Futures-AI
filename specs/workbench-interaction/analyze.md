@@ -1911,3 +1911,78 @@ spec / plan / tasks / 代码之间**无冲突**；第四批 5 项**已收口、�
 - 第五批 9 项**已收口，待第五批独立 A 代码 Review**；没有发现对冻结 AC / plan / tasks 的明确违反，不新增任务；定形只是精度（r6.12.4）。结构 73 / 107 h / 245 / 245 / 46 AC、唯一回边 T-B03 → T-B04、无环均不变。
 - 进度：**36 已实施（27 已完成 + 9 待 Review）/ 37 未开始**；46 AC 最终验收 0；feature 未收敛（含 H 组外部阻塞）。R3-B 代码已修、未关闭；R4-A / R2-C 维持关闭；其余 P3 未经风险接受。
 - **下一入口**：集成人提交本轮文档 → A 新会话第五批代码 Review（固定 `b67a227..e609c2e -- frontend`，重点见 converge-batch5 §9）。本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。
+
+## Analyze R26（只读；第五批 Review 通过后的 R5-A 普通业务一致性补修 r6.13 一致性报告，2026-10-30；当前索引，R25 及更早轮次正文不改；区别于 Checklist R11 与第五批代码 Review，**不是**审核结论）
+
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189d7-be3b-715b-9d9c-7387dc6926eb`；`claude-bridge` 本窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改配置；不因测试或审核结论换模型，也没有另找审核投票）。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。工作树 = 计划树 `D:/2030/Futures-AI-interaction-plan-batch4`，起点 HEAD `fe9c2c92ac4d6778b0c7117a23b94919b2b71232`（clean），没有新建 D:/2030 目录。本轮**没有运行产品测试**，没有写代码 / 测试，没有改 spec / checklist / 原 Review / 原 Converge / docs / HANDOFF / 其他树，没有 commit。结构脚本 `r5a-struct.py` 复制自 R25 的 `converge-struct.py`，只增加 T-C04a 的祖先 / 后代打印，判定逻辑未改；脚本、HEAD / WT dump 与日志都在协调器 Temp `wi-batch5-01a18388-q7s7olxl/r5a-plan-work/`，不是项目产物。
+
+### 1. 输入与性质
+
+- **重读**：AGENTS.md；`docs/plan.md`；冻结 spec（blob `102af73…`，46 AC）；plan 页首 r6.12.3 / r6.12.4 与 §2.3【r6.12】【r6.12.3】【r6.12.4】；tasks 页首、T-C02 / T-C03 / T-C04 全文、T-B04a（补修先例）、T-G09 / T-H04、§5 / §6；Checklist R11（`1f99f80`，blob `27a76aa6…`，26 / 26，只读）；本文件 R24 / R25；implementation-log §22 / §23；interface-handoff 页首 / §1 / §3；`converge-batch5.md` §5 O-B5-3；**`review-batch5.md` 全文**（原件 `fe9c2c9`）。
+- **真读源码与测试**（`fe9c2c9`，代码 = `e609c2e`）：
+  - `stores/intake.ts` 全文：`selectReceipt` 只写 `selection` / `previewStatus` / `previewError`；`clearPreview` 的条件是 `selection.upload.id === id || previewTarget.id === id`；`submit` / `confirm` 成功都只经 `selectReceipt`。
+  - `IntakeDrawer.vue`：只在 error 分支读 `previewTarget`。
+  - `unassigned-pool.spec.ts` 全文（30 例）、`extraction-preview.spec.ts` 中的 `previewTarget` 断言、`intake.spec.ts`、`e2e/jobs/intake.spec.ts` 全文（4 例与 helpers）。
+- **性质**：
+  - 第五批 Review 判通过（0 P1 / 0 P2 / 5 P3），R3-B 技术关闭。
+  - R5-A 由 A 明判为普通业务流程一致性问题、非 §5.1 防线，可按 AGENTS §2 第 9 步登记；集成人选择现在只修 R5-A。
+  - 本轮 = 该补修的 Task / Plan 一致性分析。不是需求变更，不是新机制，不改审核结论。
+
+### 2. 修正（逐项）
+
+| 落点 | 内容 | 结论 |
+|---|---|---|
+| plan 页首 r6.13 + §2.3【r6.13 成功回执同步】 | 私有 `selectReceipt` 写 `selection` 时同时写 `previewTarget` = 回执 upload 的 `structuredClone` 副本，submit / confirm 共享、自然同步；成功回执后 `selection.upload` 与 `previewTarget` 是同一个当前投放；`clearPreview` 条件不变 → 删除 / 归入另一 id 不误清；r6.12.3“`previewTarget` 不变”只指 `selectUpload` 读成功路径、仍有效；r6.12.3 页首 / R24“未改 submit / confirm 对 previewTarget 的处理”与【r6.12.4】事实登记自 r6.13 起失效（原文保留，r6.12.4 句末加注） | 是 R11 已审“当前预览目标”语义的一致落实；普通成功路径中的一次赋值，不加序号 / 锁 / 比较 / 禁用 / guard，不改 UI / 契约 / jobsStore / query / H-5 |
+| plan §5 AC-003-4 行 | 补 R5-A 落点（T-C04a，与 T-C02 共同承接） | 验收落点与 tasks 矩阵一致 |
+| tasks 新 **T-C04a** | 0.5 h；依赖 T-C03 / T-C04（均已完成，Review 过代码）；排 C04 后、D01 前；修改范围确定 3 文件；3 条标准 / 3 条命令，均引用 AC（AC-003-4 最终 ×2、AC-009-1 部分前置） | 编号前向、无新回边；不新增冻结 AC |
+| tasks 9 项状态行 | “已实施（待第五批 Review）”→“**已完成（第五批 Review 通过，非最终 AC）**（`fe9c2c9`）”，【A 前原文】保留；A13a 记 R3-B 技术关闭；C01 记 R5-B / R5-D 未修；C02 / C03 记 R5-A → T-C04a（待实施、未关闭）、R5-C 未修 | 状态记账，标准 / 命令 / 工时 / 依赖不改 |
+| tasks T-G09 | 依赖增 T-C04a（r6.13）；标准 / 命令 / 工时不改 | 全量检查与 T-H04 复验必经修复 |
+| tasks §5 / §6 / 页首 | AC-003-4 最终 = T-C02 + T-C04a，增两条 R5-A 命令；原 C02 标准与命令保留不削；§6 r6.13 行；页首 r6.13 块 | 记账 |
+| implementation-log / interface-handoff / README | 页首块 + §24（派工、模型、写权限表、前置、命令期望）；H-5 / 页面切片“候选 `e609c2e` 生产已核但已知 R5-A 待修，修后更新 ①，④ 缺”；README 本 feature 两行 | 记账；不填 ④，不代 v2 消费 |
+
+### 3. scope 与源码可行性（精确到行）
+
+- **生产**：`intake.ts` 的 `selectReceipt` 一行。`toRaw` / `structuredClone` 写法在 `selectUpload` 已有，无需新 import。修复后 `previewTarget` 只在 error 分支被 UI 读取，所以不改任何渲染路径。失败路径不调用 `selectReceipt`，`WI assign refresh` / `%s failure …` 等失败例不受影响。
+- **组件测试**：`unassigned-pool.spec.ts` 追加 `WI R5-A` 2 例（`test.each(['assign','remove'])`）。正常业务链为 loadPool → selectUpload A → submit 文本 B（`jobId` null）→ 正断言同步 → editMapping B → assign / remove A → B 的选中 / 草稿 / target 保持 → confirm → target 与 selection 的 status / mapping 等于回执。B 的合成映射 `{合成列 1, 待映射, 待确认}` 合法，改 `targetField` 即可确认。现有 imports（`toRaw` 等）与 `connect` / `note` 足够。
+- **唯一旧例冲突（源读取确认）**：`%s clears a receipt-only selection without a preview target`（第 452–461 行）第 456 行断言 submit 后 `previewTarget` 为 null，这正是 R5-A 缺陷状态，修复后必红。tasks 只许改该例 3 行：标题；第 456 行改为正断言；写后追加 `previewTarget` 为 null。用例数不变，文件仍是 30 + 2 = 32。
+  - 其他 `previewTarget` 断言都不受影响：第 260 / 342 / 383 / 475 行是同 id 写成功后为 null；第 356–364 / 393–397 / 437–447 行是失败或其他 id 下保持同一引用，均不经 `selectReceipt`；第 379 行是读失败后的 target。
+  - `extraction-preview.spec.ts` 第 140 行在 submit 之前、第 156 行在 `open()` 之后；`intake.spec.ts` 与全部 E2E 没有相关断言。**没有第二处**。
+  - 偏离说明：派工口径原写“原 30 例逐字保留”，按“以真实源码与测试可行为准”如实登记这 1 例 3 行，交 A 增量 Review 核对。
+- **E2E**：`e2e/jobs/intake.spec.ts` 追加 1 例 `WI R5-A…`。真实 UI 链在 normal 下运行：预览 A（`j-collect-source-1`）→ 同抽屉提交 B → 记 B 已保存的 mapping → 编辑“目标字段 1” → 快照不变 → 删除 A → 预览仍为 B、输入框仍为编辑值、快照仍为原值 → 确认 → 快照为编辑值、状态“已入库”。复用 `snapshot` / `fillText` 与现有 imports，不改原 4 例；不用窗口钩子 / fixture / 直接 API 写。
+- **期望数字**（来自 A 亲跑基线 + 增量；实际以实施者与 A 亲跑为准）：组件 2 / 32；E2E 1 / 79（78 + 1）；全量 39 files / 1130 / 0；contract 25 / 10 / 2；`git diff --stat e609c2e HEAD -- frontend` 只有 3 个文件（`e609c2e..fe9c2c9` 没有 frontend 差异，本轮也只改文档）。
+
+### 4. 结构复算（脚本只读；WT 对照 HEAD `fe9c2c9`）
+
+日志 Temp `r5a-plan-work/{HEAD,WT}.struct.log`：
+
+- **HEAD**：73 / 107 h / 245 / 245；27 done / 9 impl / 37 todo（= R25）。
+- **WT**：
+  - 规模：**74 个任务，约 107.5 h**（A 33 / 45.5、B 8 / 12、**C 6 / 9**、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4），每项 0.5～2 h；状态 **36 done / 0 impl / 38 todo / 0 other**。
+  - 标准 / 命令：完成标准 / 验证命令 **248 / 248**，逐任务 1:1、编号连续、每条标准含 AC（`PROBLEMS = []`）。
+  - 依赖与矩阵：`UNKNOWN_DEP = []`；`CYCLE None`；`BACKEDGES = [(T-B03, T-B04)]`（唯一有意回边，T-C04a 无回边）；spec 46 = 矩阵 46；`PARTIAL_NOT_ANCESTOR = []`；`BIDIR_BAD = []`；括注内非依赖任务号仍只有 T-A22（“原依赖 T-A10”）。
+  - T-C04a：0.5 h，依赖 [T-C03, T-C04]，3 条标准，todo。`T-C04a ∈ deps(T-G09)`，且是 T-G09 / T-G10 / T-H01～T-H04 的祖先；其他 46 行矩阵的祖先关系未变。
+- **逐任务 dump**：HEAD 与 WT 的差异只有三类，其余任务的预计 / 依赖 / 标准 / 命令全文**逐字相同**：
+  - 9 项 `status=impl → done`；
+  - 新增 T-C04a 一节；
+  - T-G09 依赖 + T-C04a。
+  没有任何旧标准或命令被删减、放宽或改写。
+- **可起步**（依赖全部已完成的未开始任务）：T-A14 / T-A15 / T-A16 / **T-C04a** / T-G04。
+
+### 5. 保护面
+
+- 以下 blob 与 HEAD 相同，本轮未改：spec `102af73…`；checklist `27a76aa6…`（= R11 原件 `1f99f80`，只读不勾）；`review-batch5.md` `61bff89…`；`converge-batch5.md` `1f5c95d…`；`review-batch4.md` / `review-batch4-r4a.md` 及更早 Review / Converge。
+- 改动范围：只有本 feature 的 plan / tasks / analyze / implementation-log / interface-handoff，以及 `specs/README.md` 本 feature 两行。`frontend` / `backend` / `docs` / AGENTS.md / HANDOFF.md 零差异；本文件 R25 及更早正文不改（只在末尾追加 R26）；`git diff --check` 无告警。
+- **未扩**：
+  - R5-B / R5-C 的任何防线（§5.1，须 Walter 本人决定，本轮不请求）；
+  - R5-D（file 输入 / `inputKind`）、R5-E（图标），以及并发 state、R4-B～R4-E、S-41、R3-C 等旧 P3：均未经风险接受，也不借 R4-A 许可。
+- **合并策略不变**：Draft PR #12 保持 Draft；main `072bb12` 不导入；不写 v2 树。
+
+### 6. 结论（Analyze R26，当前索引）
+
+- spec ↔ plan r6.13 ↔ tasks T-C04a ↔ implementation-log §24 ↔ interface-handoff 一致，无冲突或歧义残留。
+  - 现在生效的口径是 r6.13“成功回执同步”；r6.12.3 原句只作历史追溯。
+  - scope 确定为 3 文件，含 1 处源读取确认的旧例冲突（3 行）。
+  - 结构 74 / 107.5 h / 248 / 248 / 46 AC，唯一回边 T-B03 → T-B04，无环。
+  - 进度：**36 已完成 / 38 未开始**；46 AC 最终验收 0；feature 未收敛（含 H 组外部阻塞）。
+- 不是需求变更，不回 Clarify / Gate 1。R11 仍有效，不重开 Checklist、不另设 Checklist。
+- **下一入口**：集成人提交本轮文档 → Implement（openai/gpt-6-astra，新会话）做 T-C04a → Converge → A 新会话代码增量 Review（对象 `e609c2e..<T-C04a 提交> -- frontend`，重点核：一行修复、旧例 3 行例外、无第二处、无 guard）。本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。

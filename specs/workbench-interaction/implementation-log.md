@@ -1,6 +1,12 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
+> **当前状态（2026-10-30 r6.13：第五批 Review 通过 + R5-A 普通业务一致性补修登记；以本块为准。下一块 r6.12.4 中的“已实施待第五批 Review”“36 已实施（27 + 9 待 Review）/ 37 未开始”“R3-B 未关闭”为当时原文）**：
+> - **第五批 Review**：`review-batch5.md`，原件 `fe9c2c9`，A = claude-fable-5-1 via anthropic。判**通过：0 P1 / 0 P2 / 5 P3**。A 亲跑全量 39 files / 1128 / 0，33 条命令与实施者同数，全部 78 条 E2E 分批通过（34 + 44），工程门通过。第五批 9 项记**已完成（非最终 AC）**；**R3-B 技术关闭**。
+> - **R5-A → T-C04a**（r6.13，0.5 h，3 条标准 / 命令，未开始、可开码）：只改 `selectReceipt` 同步 `previewTarget`，另加组件 2 例、旧例 1 处 3 行、E2E 1 例（§24）。R5-B / R5-C 属 §5.1，未修、未请求；R5-D / R5-E 不顺带；均未经风险接受。
+> - **进度**：74 / 107.5 h / 248 / 248；**36 已完成 / 38 未开始**；46 AC 最终验收 0；未收敛。H-5 / 页面切片 ① 候选 `e609c2e` 生产已核但已知 R5-A 待修，④ 缺；H-6 缺 T-A21。
+> - 记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189d7-be3b-715b-9d9c-7387dc6926eb`；通道同前，未改配置）；只写规格文档，未运行产品测试，未 commit。
+
 > **当前状态（2026-10-30 r6.12.4：第五批 9 项已实施 + Converge batch5；以本块为准。下一块 r6.12.3 中的“33 已实施 / 40 未开始”“C02 无 WIP”“下一步再派 Astra”为当时原文）**：
 > - **已实施（待第五批独立代码 Review，不计完成）**：T-A01a `f65d3c6` → T-A13a `e1cd4d4` → T-A15a `a2efb98` → T-B06 `0d09748` → T-C01 `4af80e8` → T-C01a `6529f41` → T-C02 `d4e3fb6` → T-C03 `7b802d4` → T-C04 `e609c2e`（openai/gpt-6-astra，未回退）；代码 `b67a227..e609c2e -- frontend` = 9 个前端提交 / 28 文件 / +3672 / −24。实施者末轮：39 files / 1128 / 0、六守卫、contract 25 / 10 / 2、typecheck / lint、五份 E2E 34 / 0（§23.4）。
 > - **Converge**：`converge-batch5.md` 与 analyze.md「Analyze R25」判本批已收口、待 A；没有需补的任务；两处测试例外与许可逐行相同；观察 O-B5-1～O-B5-9 交 A（§23.6）。
@@ -1177,3 +1183,47 @@
 - 73 个任务 / 约 107 h / 245 / 245：**36 已实施（27 已完成 + 9 已实施待第五批 Review）/ 37 未开始**；46 AC 最终验收 0；feature 未收敛。标准 / 命令 / 工时 / 依赖 / 矩阵不变（analyze.md「Analyze R25」§6）。
 - 合并：Walter 已选全部完成后再合 main；Draft PR #12 保持 Draft；25 个本 feature 目录保留复用；main `072bb12` 不导入、继续 pin `90187f7`，R2-D 流程不变；不写 v2 树。
 - 下一步：集成人审阅并提交本文档；独立 A 新会话做第五批代码 Review（固定 `b67a227..e609c2e -- frontend`），重点见 `converge-batch5.md` §9。
+
+## 24. 第五批 Review 通过与 R5-A 普通业务一致性补修派工准备（r6.13，2026-10-30；登记与派工准备，未实施、不预写结果；不是 Converge / Review / Gate 2 / Handoff）
+
+- **记账者 / 通道**：Task / Plan / Analyze R26 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189d7-be3b-715b-9d9c-7387dc6926eb`）。bridge 本协调窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改 provider / key / 全局配置；没有因测试或审核结论换模型，也没有另找审核投票。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。
+- **工作树**：计划树 `D:/2030/Futures-AI-interaction-plan-batch4`，起点 HEAD `fe9c2c92ac4d6778b0c7117a23b94919b2b71232`（clean）。没有新建 D:/2030 目录。只写本 feature 的 plan / tasks / analyze / implementation-log / interface-handoff，以及 `specs/README.md` 本 feature 两行。未改源码 / 测试 / spec / checklist / 原 Review / 原 Converge / docs / HANDOFF / 其他树；未运行产品测试；未 commit / push / merge；未派子 agent。临时脚本与日志在 Temp `wi-batch5-01a18388-q7s7olxl/r5a-plan-work/`。
+
+### 24.1 第五批 Review 结论登记（只引用，数字归 A）
+
+- `review-batch5.md` 原件 `fe9c2c9` 判**本批通过（0 P1 / 0 P2 / 5 P3 R5-A～R5-E）**。A 亲跑结果：
+  - 全量单测 39 files / 1128 / 0；33 条任务命令与实施者同数；
+  - 五份 E2E 34 + 其余 7 份 44，全部 78 分批通过；`WI H-5` 8；
+  - 六守卫 / contract 25 / 10 / 2 / typecheck / lint 通过。
+- 9 项（T-A01a / A13a / A15a / B06 / C01 / C01a / C02 / C03 / C04）记“已完成（第五批 Review 通过，非最终 AC）”。源码固定点 `e609c2e`。
+- **R3-B 技术关闭**（`e1cd4d4`，review-batch5 §5）；R4-A / R2-C 维持关闭。
+- 未修、未经 Walter 风险接受：R5-B～R5-E；旧 P3（R4-B～R4-E、S-41、R3-C、R-A、R-B 残留、R-C / R2-A、R-D ①③④、R-E、R-F、R2-B（AgentClient 侧）、R2-D）。
+
+### 24.2 R5-A 派工准备（T-C04a；Implement 首选 openai/gpt-6-astra，新会话）
+
+- **授权依据**：A 明判 R5-A 是普通业务流程一致性问题，不是 §5.1 防线，可按 AGENTS §2 第 9 步、在现有功能授权内登记（review-batch5 §4 / §7-2）。集成人选择**现在只修 R5-A**。不借 R4-A 的 §5.1 许可，也不扩到 R5-B / R5-C / R5-D / R5-E 或任何并发 / 状态防护。
+- **前置**：
+  - plan r6.13 已改：r6.12.3“submit / confirm 不处理 previewTarget”与 r6.12.4 事实登记注明失效，原文保留追溯。
+  - Analyze R26 已读确认一致。
+  - 依赖 T-C03 / T-C04 均为“已完成（第五批 Review 通过）”。
+  - R11 `1f99f80`（blob `27a76aa…`）仍是有效 Checklist，只读、不勾、不重开；不额外设计 Checklist。
+- **写权限（只许写下列 3 个文件；超出即停下回报）**：
+
+| 文件 | 允许 | 不许 |
+|---|---|---|
+| `frontend/src/jobs/stores/intake.ts` | 私有 `selectReceipt` 内加一行：`previewTarget` = 回执 upload 的 `structuredClone` 副本 | `clearPreview` 条件、其他函数语句与顺序、返回对象、任何 guard / 序号 / 锁 / 禁用 |
+| `frontend/tests/component/jobs/unassigned-pool.spec.ts` | 追加 describe `WI R5-A` 2 例；旧例 `%s clears a receipt-only selection without a preview target`（@`e609c2e` 第 452–461 行）恰 3 行变化（标题、第 456 行改为正断言、写后追加 `previewTarget` 为 null） | 其余 28 例、imports、helpers、describe 名 |
+| `frontend/e2e/jobs/intake.spec.ts` | 追加 1 例 `WI R5-A…`（normal、真实 UI 链、只读快照与 DOM） | 原 4 例、helpers、imports、文件头注释、`playwright.config.ts`、窗口钩子 / fixture 覆盖 / 直接 API 写 |
+
+- **验证命令（1:1，原文以 tasks T-C04a 为准；前缀 `pnpm -C frontend`）**：
+  1. `test:unit …unassigned-pool.spec.ts -t "WI R5-A"`（期望 2）+ 整文件（期望 32）；
+  2. `test:e2e e2e/jobs/intake.spec.ts -g "WI R5-A"`（期望 1）+ `test:e2e` 全部（期望 79）；
+  3. 全量 `test:unit`（期望 39 files / 1130 / 0）+ typecheck / lint / check / `contract --check`（25 / 10 / 2）+ `git diff --stat e609c2e HEAD -- frontend`（期望只有 3 个文件）。
+  期望数以真实源码与测试可行为准；实际数字由实施者与 A 亲跑登记，本记账者不预写。
+- **提示（非新增标准）**：可先在旧代码下跑新增 3 例确认红，再修复转绿（同 T-B04a 口径）。修复后须 Converge → A 新会话代码增量 Review（对象 `e609c2e..<T-C04a 提交> -- frontend`），通过后才关闭 R5-A。
+
+### 24.3 H-x 与进度
+
+- H-5 / 页面切片：① 候选 `e609c2e` 已经 A 亲跑核对（生产已核），但已知 R5-A 待修；T-C04a 经增量 Review 通过后，① 更新为其提交。② R11；③ A 证据见 review-batch5 §6；**④ 仍缺**，不代 v2 消费方签收。H-6 缺 T-A21；D–F 仍为占位。
+- 74 个任务 / 约 107.5 h / 248 / 248：**36 已完成 / 38 未开始**；46 AC 最终验收 0；feature 未收敛。唯一有意回边 T-B03 → T-B04，无环（analyze.md「Analyze R26」）。
+- 合并策略不变：Walter 已选全部完成后再合 main；Draft PR #12 保持 Draft；main `072bb12` 不导入，继续 pin `90187f7`；不写 v2 树。
