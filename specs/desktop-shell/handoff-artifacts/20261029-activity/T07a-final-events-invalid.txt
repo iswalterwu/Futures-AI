@@ -1,0 +1,13 @@
+
+> futuresai-shell@0.1.0 check
+> node check.js events-invalid
+
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-events-invalid-s7u7qg"
+PASS events-invalid › 退出码 4
+PASS events-invalid › 输出 TEST_EVENTS_INVALID
+PASS events-invalid › 临时目录已删除
+SUMMARY 3/3 assertions; 1 scenes; failures=0
+
+real	0m1.317s
+user	0m0.077s
+sys	0m0.090s

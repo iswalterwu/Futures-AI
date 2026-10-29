@@ -7,6 +7,7 @@ const os = require('node:os')
 const path = require('node:path')
 const { spawn, spawnSync } = require('node:child_process')
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+let producer = null
 
 function alive(pid) {
   try { process.kill(pid, 0); return true } catch (error) {
@@ -110,7 +111,9 @@ class Context {
     }
     throw new Error(`condition timeout (${timeout}ms)`)
   }
-  async launch({ env = {}, args = [], second = false } = {}) {
+  async launch({ env = {}, args = [], second = false, expectEarlyExit } = {}) {
+    const earlyExit = expectEarlyExit === 'test-events-invalid'
+    if (expectEarlyExit !== undefined && !earlyExit) throw new Error('unknown early-exit contract')
     if (this.closed) throw new Error('scene closed')
     requireTools({ tools: ['taskkill'] })
     const childEnv = { ...this.env, ...env }
@@ -119,10 +122,15 @@ class Context {
     }
     assert.equal(childEnv.FAI_TEST_HOOKS, '1')
     assert.equal(childEnv.FAI_TEST_SCENARIO, this.name)
-    const child = spawn(require('electron'), ['.', ...args], { cwd: __dirname, env: childEnv,
+    const child = spawn(producer ? process.execPath : require('electron'), [producer || '.', ...args], { cwd: __dirname, env: childEnv,
       stdio: ['ignore', 'pipe', 'pipe'], windowsHide: false })
     const instance = { child, paths: null, controlPort: null, exited: false, code: null, error: null, smokeCount: 0 }
     this.instances.push(instance)
+    let closed = false, carry = '\n'
+    if (earlyExit) {
+      instance.markerSeen = false
+      child.once('close', () => { closed = true })
+    }
     instance.exit = new Promise(resolve => {
       child.once('exit', code => { instance.exited = true; instance.code = code; resolve(code) })
       child.once('error', error => { instance.error = error; instance.exited = true; resolve(null) })
@@ -153,10 +161,23 @@ class Context {
     child.stderr.on('data', data => {
       const type = data.toString().match(/\b(TypeError|ReferenceError|SyntaxError):/)
       if (type) instance.startupException = type[1]
+      if (earlyExit) {
+        const buf = carry + data.toString()
+        if (buf.includes('\nTEST_EVENTS_INVALID ')) instance.markerSeen = true
+        carry = buf.slice(-20)
+      }
     })
     await this.waitFor(() => {
       if (instance.startupException) throw new Error(`Electron startup exception: ${instance.startupException}`)
       if (instance.error) throw instance.error
+      if (earlyExit) {
+        if (!closed) return false
+        if (!instance.paths) throw new Error(`Electron exited before paths: ${instance.code}`)
+        if (instance.controlPort) throw new Error('early exit expected but control started')
+        if (instance.code !== 4) throw new Error(`early exit code mismatch: ${instance.code}`)
+        if (!instance.markerSeen) throw new Error('early exit marker missing')
+        return true
+      }
       if (instance.paths && (second || instance.controlPort)) return true
       if (instance.exited) throw new Error(`Electron exited before paths/control: ${instance.code}`)
       return false
@@ -224,6 +245,13 @@ async function main() {
   const dir = path.resolve(process.env.FAI_CHECK_E2E_DIR || path.join(__dirname, 'test', 'e2e'))
   let names
   try {
+    if (process.env.FAI_CHECK_PRODUCER !== undefined) {
+      const candidate = path.resolve(process.env.FAI_CHECK_PRODUCER)
+      const relative = path.relative(path.join(__dirname, 'test', 'fixtures', 'runner', 'producers'), candidate)
+      if (!process.env.FAI_CHECK_E2E_DIR || relative === '..' || relative.startsWith('..' + path.sep) ||
+          path.isAbsolute(relative) || path.extname(candidate) !== '.js') throw new Error('invalid runner producer')
+      producer = candidate
+    }
     names = require(path.join(dir, 'index.js'))
     assert.equal(Array.isArray(names), true)
     assert.equal(names.every(name => typeof name === 'string' && /^[a-z0-9-]+$/.test(name)), true)

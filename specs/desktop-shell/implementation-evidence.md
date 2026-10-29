@@ -681,3 +681,47 @@ cwd = `shell`，按顺序执行，所有命令退出0：
 - 唯一仓库改动为本文件追加§13，历史§1～12完整保留；源码/依赖/lockfile/全部冻结文档不改，无新源码需ignore检查。最终范围与冻结核对输出保存在 `postflight.log` / `freeze-final.log`，不改生成物。
 - RL-01继续 **P3 OPEN / UNKNOWN / nonblocking**；RL02正负对照、RL03生产时间戳所有权、RL04 UTF-8、RL05、PYZ、507 GUI、R5-02、R6-01/AN9-03 control与timeout测试缺口、R6-02蓄意替身变量误用残余全部保留。R5-01/03文档关闭不等于T08完成。
 - 真实作业/agent/drain、真实系统toast与托盘观感、立即relaunch M12、其他人工/外部验收均未取得。没有T07完成或29场景通过声明。未commit/push/PR/merge/reset；只保留未提交证据，交协调者处理新的窄范围Plan/A兼容缺口，下一实施恢复点仍为T07a而非T08a。
+
+## 14. 2026-10-29 T-07a 独立批次实现检查点（止于 T07b 前）
+
+### 14.1 身份、拆批授权与输入冻结
+
+- Implement = **openai/gpt-6-astra via openai**，同一 session **01a187d9-b23d-712f-8297-3106886f9e49**，唯一 writer。未换模型/通道、未启动其他 agent。工作树 `D:/2030/Futures-AI-desktop-implement` / `feat/desktop-shell-astra`；起始 HEAD **e8bfb09128cc0f2c33b0ca20f56797402974c9cf**，起始 status 干净，最终 HEAD 不变。
+- 本次由协调者依据用户“继续”授权拆分实施批次：**只做 T07a**，不让未来 B 的 null 兼容冲突阻塞 A；未声称用户单独批准拆批或扩写入权。重读 AGENTS、HANDOFF §20、Plan6 §3.5/§8.4、T07a 与前后边界、Checklist/A5实际记录；Checklist **41 checked / 0 unchecked**。批准仍为 A5（`anthropic/claude-fable-5-1`，session `01a187cd-186f-746e-995d-2f315089cdb5`，固定输入a59fb98，41/41、无P1/P2），不是本实施者审核。
+- 未读取/改动并行规划工作树 WIP；Plan/Tasks/Analyze/Checklist/Review/HANDOFF/Spec 等全部只读。§13 STOP 原文完整保留，不回写成已实现。
+- 仓库外新 RUN = **`C:/Users/iswal/AppData/Local/Temp/fai-t07a-01a187d9-kBTUlA/`**。首次源码改动前生成 **254 tracked 文件**的 `input.sha256`；清单 SHA-256 = **18d0adfcce0b838a22bd110ae24764e62dceb85c662caab6ec4d6a0fff873472**。
+- 输入 `shell/backend` 与§13基线提交7c61681的 Git diff 为空；本阶段不重跑输入基线、不冒称新基线。沿用§13真实 npm ci / **42 unit / 默认19场景310/310、98.741s**作为前阶段证据；本次最后源码验证独立见下。
+
+### 14.2 精确实现范围
+
+- 新增 `shell/src/activity.js`：纯 `initialState/apply`、边界 `validateEvent`；错误优先于运行/空闲，四通知种类、关闭通知不影响tray，退出询问/等待/取消、queued取消/新到拒收的log+hint effects、运行归零quit effect。`shell/test/unit/activity.test.js` **恰5个规定具名测试**，直接调用生产归约器、字面量期望，没有第6个可选测试。
+- `shell/check.js` 仅§8.4(1)(2)：唯一 `expectEarlyExit:'test-events-invalid'`，未定义以外的其他值在spawn前报错；原10s等待中以close确认stdio排空，保留异常/隔离→paths→control→code→marker优先级；marker只保留布尔及≤20字符carry，不输出原始stderr/原因/内容；默认launch/second及既有10s/30s和清理判失败逻辑保留。producer仅在有测试登记目录且resolve到批准producers目录内`.js`时于spawn边界替换Node，否则场景前REGISTRY_ERROR/2。
+- 新增 `test/fixtures/runner/early-exit/{index.js,early-exit.js}` 与 `producers/early-exit.js`，仅生成paths/退出码/跨块marker。`test/unit/check-runner.test.js` **只追加5例**（旧辅助函数与9例原文保留）：成功、错误码、缺marker、缺失/越界paths、默认启动仍FAIL；错误行首与隐私植入串也在这5例内验证，没有复制归约逻辑。
+- `src/test-hooks.js` 只在第一条paths后做绝对路径UTF-8 JSON数组及事件校验，失败同步固定枚举原因marker并 **ready前 `app.exit(4)`**；成功返回只读/冻结`testEvents`，不调度不归约。未延后至whenReady。main/preload/renderer/backend/prefs/paths均未改；快照仍为真实尚未接线的null，两个旧null场景完全不改。
+- 新增 `test/e2e/events-invalid.js` 与登记，写隔离目录的非法类型事件文件，真实Electron显式验证code4和markerSeen。**没有连接main或真实托盘，没有执行B/C/D/E。** 共10个源码/测试文件（4既有+6新增）及本证据追加；无依赖/lockfile/其他文档改动。
+
+### 14.3 执行顺序与最后源码验证
+
+cwd=`shell`。每个真实Electron命令均以进程局部 **`env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER`** 移除两变量；下面记录完整产品命令，墙钟由Bash `time` 包裹采集，stdout/stderr重定向至RUN，未用替身声称真实Electron。
+
+| 顺序 / 原始命令 | 结果（均退出0） | RUN日志 |
+|---|---|---|
+| 先 `node --test test/unit/check-runner.test.js` | **14 pass / 0 fail / 0 skip**，3673.6061ms，墙钟3.735s | `runner-unit.log` |
+| 后 `node --test test/unit/activity.test.js` | **5 pass / 0 fail / 0 skip**，71.6842ms，墙钟0.132s | `activity-unit.log` |
+| 首次实际早退 `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check -- events-invalid` | **3/3断言**（2业务+1清理），1场景，0 failures，墙钟0.955s | `events-invalid-first.log` |
+| 最后源码 `npm ci` | 70 packages，墙钟4.594s；既有boolean@3.2.0弃用警告 | `final-npm.log` |
+| 最后源码 `npm run test:unit` | **52 pass / 0 fail / 0 skipped / 0 cancelled**，5004.4119ms，墙钟5.635s | `final-unit.log` |
+| 最后源码 `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check -- events-invalid` | **3/3断言**，1场景，0 failures，墙钟1.317s | `final-events-invalid.log` |
+| 最后源码 `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check` | **默认全部20场景 / 313/313断言 / 0 failures**，墙钟**124.933s** | `final-e2e.log` |
+
+- 真实早退首次即通过，未改main/移动校验时点/反复重跑取绿；最后源码验证是要求的固定验收序列。默认20 = 原19不变 + events-invalid；不是29，也不是完整T07完成。没有实际产品失败；runner负例中的预期FAIL均被unit准确断言，不是掩盖失败。
+- 本轮root-locked自然通过：helper-ready2060ms、waiting_health3121ms、failed(data_root_locked)7158ms、retry-ready11216ms、electron-exit12112ms；原时限/清理/锁逻辑全部冻结。**不证明RL-01已修复**，继续P3 OPEN / UNKNOWN / nonblocking。
+- Runtime仍为 **Electron33.4.11 / Node20.18.3 / Chrome130.0.6723.191**；构建机Node25.2.1 / npm11.7.0 / Python3.14.2（`versions.log`）。
+
+### 14.4 冻结、清理、失败披露与下一边界
+
+- 最后源码10文件的 `source-final.sha256` 在最终验证前生成；清单 SHA-256 = **cb8581619e4c8964eb8a2c4856c86c67831bd77f7de888cfb750ab96b4d85b44**，验证后10/10复核通过（`source-recheck.log`）。最终除4个既有源码文件与本证据外，**249个原tracked文件SHA全部未变**（`frozen-final.log`）。6个新文件 `git check-ignore -v --no-index` 无输出、预期exit1（`ignore.log`），未被忽略。
+- 真实Electron三次运行合计22个独立temp roots均已删除，独立核查 **22 checked / 0 remaining**（`cleanup-roots.log`）；默认20场景原有PID/临时根清理断言全过，ACL恢复断言通过。CIM核对本实施树Electron、e2e Python及runner producer：**owned产品进程0 / listeners0 / services0**（`cleanup-cim.log`）。未人为kill或删锁促绿；外部日志/清单按要求保留。
+- 源码阶段 `git diff --check` 通过；追加证据后首次postflight发现 **EOF新增空行，diff-check exit2**（原始`postflight.log`保留）。仅去掉本节末尾多余空行并补记失败，未改源码/重跑测试；复核记于`postflight-final.log`。旧check-runner只加44行/删0行；证据只追加§14，不改§1～13。Git出现LF→CRLF提示，不是测试失败；一次read证据使用offset710超过当时684行，工具报越界后改为637读取，未动内容、未影响测试。无本阶段其他产品/辅助执行失败；ignore exit1为预期未忽略结果。
+- **状态：T07a自动化实施检查点完成；T07b待新的null兼容规划/Analyze/独立A批准与派工，当前未进入；T07c/d/e与T08a未进入。** 未启动正式Converge/Review/Gate2/Handoff；不声称真实业务作业、agent、drain、系统toast/托盘观感、立即relaunch M12或其他人工/外部验收已完成。
+- R5-02、R6/control-timeout缺口、UTF-8/PYZ/507 GUI、其余RL条目与人工外部边界全部保留；本次不扩修。不commit/push/PR/merge/reset、不改全局配置/真实凭证/用户数据、不碰其他工作树。待协调者处理未提交差异及B的批准输入。

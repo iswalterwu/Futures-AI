@@ -1,0 +1,25 @@
+The sixth-round record is in place and all history is preserved.
+
+## A 第 6 轮（Plan 修订 7）复查结论
+
+**身份 / 通道**：`anthropic/claude-fable-5-1` via anthropic（官方通道；bridge 同窗口已知耗尽不重试；未换模型、未启动其他 agent、未改配置；无 Bash，会话 ID 由协调者按元数据核实）。
+**输入**：固定 HEAD `a4fd997` vs 输入 `ec55aee`；真实 diff 只 4 个文档 +78/−2，2 行删除均为 T-07b/T-07e 修改范围的同条目替换；spec / 源码 / checklist 零差异。
+
+**计数**：41 `[x]` / 0 `[ ]`（开始与结束均如此；未新增、未取消勾选）。41 任务 / 62h 不变。
+
+**判定：Checklist 通过。P1 = 0，P2 = 0，P3 = 5（R7-01～R7-05）。**
+
+独立核实要点：
+- 触发事实属实：`harness-selftest.js:26`、`crash-restart.js:32` 的 `[null,null]`，`test-hooks.js:56` 快照恒 null，与证据 §13.3 一致。
+- `['idle', true]` 由 §3.5 直接推导（无错误/无作业 → idle；未进退出等待 → accepting=true），是**更强的正向真实状态断言而非弱化**；禁止伪造 null / 夹具下才建托盘 / 删不替换；不符则停不改期望。
+- 所有权落在 T-07b 正确（§8.4 ¶4 T-07a 快照仍为 null，故在途 T-07a 完成后旧断言仍成立，与 Astra 并行工作无冲突）；T-07e 只追加并保留新断言；其余全部旧断言仍为必须。
+- **不需** Walter 工程批准 / ADR / Gate 1（零新增复杂度，不改 what/AC/schema/控制面/安全面；A 不代 Walter 批准）。
+
+P3 发现：
+- **R7-01** plan 第 3 行页首仍写「修订 6」、tasks 页首缺「修订 7」行（疑为 checkout 重应用遗漏）；T-07b 标准 4 可标「最近 AC」。
+- **R7-02** §8.4 ¶6 引用「§3.5 '托盘短暂为 error'」出处实为 §9 WO-06 / T-07e 标准 3；§3.5 未明写 `backend.ready` 清除 `backend.error`，T-07a 单测亦无此用例——仅 T-07e 阶段才依赖。
+- **R7-03** `activity.accepting` 字段名是对在途 T-07a 状态形状的假设；AN10-02 停止规则成立，不一致属 Plan 一行更正，B 不得自改字面量。
+- **R7-04** 实施提示：T-07e 须在 `main.js:86–89` 同步 `backend.ready` 回调内派发归约器，否则 crash-restart 轮询可能取到 phase=ready 但托盘仍 error。
+- **R7-05** 流程偏差（`git checkout -- plan.md`）已如实登记；A 只审固定 HEAD 真实 diff，不据此改结论。
+
+**批准范围**：仅 T-07b（含两处各一行原位替换）与 T-07e「只追加」约束的 Implement 文档前置条件；不是 Converge / Review / Gate 2，不认证任何 T-07 代码或测试。只修改了 `specs/desktop-shell/checklist.md`。

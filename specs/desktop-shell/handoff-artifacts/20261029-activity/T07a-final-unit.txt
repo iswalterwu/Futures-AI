@@ -1,0 +1,68 @@
+
+> futuresai-shell@0.1.0 test:unit
+> node --test "test/unit/*.test.js"
+
+✔ 等待退出时排队项标 cancelled_on_exit (1.9538ms)
+✔ 等待退出时新作业标 rejected_exiting (0.2631ms)
+✔ 四类事件产生对应通知种类 (0.2762ms)
+✔ 托盘状态 error>running>idle (0.1697ms)
+✔ 通知关闭时托盘状态仍更新 (0.1749ms)
+✔ 就绪需 200+ok+data_ready (337.5682ms)
+✔ 端点文件存在但 health 503 不就绪 (119.0839ms)
+✔ 预算 3 次后 restart_limit 且就绪不清零 (3057.5865ms)
+✔ retry 清零预算 (589.9216ms)
+✔ 旧代际事件被忽略 (31.6934ms)
+✔ 超时先 kill 再 failed(health_timeout) (107.127ms)
+✔ 退出码 3 + 标记 → failed(code) 不重启 (561.0906ms)
+✔ spawn ENOENT → backend_missing (14.9247ms)
+✔ bootstrap：setPath×3 先于 requestSingleInstanceLock (7.8589ms)
+✔ bootstrap：未拿到锁不触碰数据目录 (6.3179ms)
+✔ bootstrap：默认 LOCALAPPDATA\FuturesAI (3.8006ms)
+✔ bootstrap：pending 生效后 dataRoot 为新目录 (10.8978ms)
+✔ bootstrap：打包且无钩子时忽略 FAI_DATA_ROOT (4.7381ms)
+✔ bootstrap：开发覆盖优先于偏好 (8.0175ms)
+✔ bootstrap：不可写返回 data_root_unwritable 且无临时目录 (98.6673ms)
+✔ runner：未知场景退出码 2 且未运行场景 (155.9509ms)
+✔ runner：登记表不一致退出码 2 (68.4118ms)
+✔ runner：零断言判 FAIL (71.2475ms)
+✔ runner：缺外部工具判 FAIL (198.2589ms)
+✔ runner：缺夹具判 FAIL (68.6614ms)
+✔ runner：断言 API 无布尔断言 (139.0205ms)
+✔ runner：两条断言通过退出码 0 (65.8661ms)
+✔ runner：临时目录已清理 (66.5235ms)
+✔ runner：临时目录外路径被拒 (164.7864ms)
+✔ runner：提前退出约定 标记跨块且退出码 4 通过 (451.7289ms)
+✔ runner：提前退出约定 退出码不符判 FAIL (435.48ms)
+✔ runner：提前退出约定 缺标记判 FAIL (436.7534ms)
+✔ runner：提前退出约定 paths 缺失或越界判 FAIL (1054.7672ms)
+✔ runner：默认启动遇提前退出仍判 FAIL (434.9445ms)
+✔ fake-backend：ok 就绪 (290.2723ms)
+✔ fake-backend：health-fail 503 (306.6604ms)
+✔ fake-backend：startup-failed 退出码 3 + 标记 (434.5638ms)
+✔ fake-backend：stdin EOF 退出 (290.8199ms)
+✔ fake-backend：spawns.jsonl 登记 (293.9266ms)
+✔ fake-backend：slow-ready / hang / exit-before-ready / crash-after-ready 协议模式 (1557.4533ms)
+✔ 默认数据目录 = LOCALAPPDATA\FuturesAI (0.9922ms)
+✔ LOCALAPPDATA 缺失 → localappdata_missing (0.7945ms)
+✔ FAI_DATA_ROOT 仅在未打包或测试钩子下生效 (0.4011ms)
+✔ 偏好数据目录优先于默认路径 (0.2839ms)
+✔ 偏好缺失使用完整 schema v1 默认值且不创建文件 (3.4512ms)
+✔ 可写探测 EACCES → data_root_unwritable (3.1213ms)
+✔ 可写探测 ENOSPC → disk_full (1.1847ms)
+✔ pending 可写 → 生效并清空 (7.7729ms)
+✔ pending 不可写 → data_root_invalid 且原目录不变 (5.1259ms)
+✔ 偏好损坏 → prefs_invalid 且文件未改写 (12.1201ms)
+✔ 偏好写入失败返回原因 (4.8782ms)
+✔ 偏好写入先 tmp 后 rename，rename 失败保留旧文件 (9.6951ms)
+ℹ tests 52
+ℹ suites 0
+ℹ pass 52
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5004.4119
+
+real	0m5.635s
+user	0m0.045s
+sys	0m0.121s
