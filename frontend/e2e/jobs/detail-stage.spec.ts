@@ -36,3 +36,17 @@ for (const suffix of ['', '/bogus']) {
     await expect(page.getByRole('region', { name: '处理工作区' })).toBeVisible()
   })
 }
+
+test('WI R4-A leaving a slow missing-stage detail through the sidebar is not undone by a late canonical replace', async ({ page }) => {
+  await page.goto('/jobs?scenario=slow')
+  const card = page.locator('.job-card h2 a[href="/jobs/j-process"]')
+  await expect(card).toBeVisible({ timeout: 15000 })
+  await card.click()
+  await expect(page).toHaveURL('/jobs/j-process')
+  await expect(page.getByRole('navigation', { name: '作业阶段' })).toHaveCount(0)
+  await page.getByRole('link', { name: '价格', exact: true }).click()
+  await expect(page).toHaveURL('/prices')
+  // The two real slow contract reads take 3000 ms; let the abandoned callback finish.
+  await page.waitForTimeout(3500)
+  await expect(page).toHaveURL('/prices')
+})

@@ -18,10 +18,12 @@ const viewedStage = computed(() => {
   return result.success ? result.data : null
 })
 
-watch([() => route.params.id, () => route.params.stage], async ([id]) => {
+watch([() => route.params.id, () => route.params.stage], async ([id], _old, onCleanup) => {
+  let stale = false
+  onCleanup(() => { stale = true })
   const stage = viewedStage.value
   const openedStage = await jobsStore.openJob(id as string, stage)
-  if (stage === null && openedStage !== null) {
+  if (!stale && stage === null && openedStage !== null) {
     await router.replace({ name: 'job-detail', params: { id, stage: openedStage } })
   }
 }, { immediate: true })
