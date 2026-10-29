@@ -6,6 +6,7 @@ import AppShell from './app/AppShell.vue'
 import { router } from './app/router.ts'
 import { agentClient } from './contracts/index.ts'
 import { registerJobRoutes } from './jobs/routes.ts'
+import { useJobsStore } from './jobs/stores/jobs.ts'
 import './design/base.css'
 
 const pinia = createPinia()
@@ -15,5 +16,8 @@ const app = createApp({
 const unsubscribe = agentClient.subscribe(useAgentStore(pinia).receive)
 app.onUnmount(unsubscribe)
 import.meta.hot?.dispose(unsubscribe)
+const unsubscribeJobs = agentClient.subscribe(useJobsStore(pinia).receiveAgentEvent)
+app.onUnmount(unsubscribeJobs)
+import.meta.hot?.dispose(unsubscribeJobs)
 registerJobRoutes(router, pinia)
 app.use(pinia).use(router).mount('#app')
