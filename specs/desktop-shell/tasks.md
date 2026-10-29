@@ -18,6 +18,7 @@
 > - **T07a最新停止点（2026-10-29）**：Astra从dad9352静态预检后STOP：ctx.launch不返回earlyexit4实例、stderr无固定安全标记观察；未获runner/旧unit/fixture写入权，未绕过launch或隔离。无T07代码/npm/产品测试，证据§12仅追加；先窄Plan/Tasks/Analyze/A再继续，T07b未开始，原42/310仅前序证据。
 > - **修订6最新质量批准（2026-10-29）**：Plan6/Analyze9固定a59fb98后独立A5新审41/41、无P1/P2、R6-01～05五P3，允许T07a恢复与b/c/e既有钩子接线；R5-01/03文字对齐由A关闭，R5-02保留。待同步固定新实施输入后按a→b→c→d→e推进、止于T08前；20及后续场景未跑，旧42/310仅前序证据，RL与人工/外部/Gate2边界不变。
 > - **最新拆批（2026-10-29）**：输入7c61681新基线42unit/19场景310通过；b预检发现harness-selftest/crash-restart的临时null断言与真实snapshot矛盾，整批未写源码，仅证据§13。协调改派a单项按A5实施，止于b；文档者独立树补两处最小兼容并Analyze/A后再b～e，不伪造null/弱化旧断言，20/29未跑。
+> - **最新a完成/兼容批准（2026-10-29）**：a已按A5保存9acd4c4，最后52unit/20场景313/313、0fail/skip；Plan7/Analyze10固定a4fd997后独立A6新审41/41、无P1/P2，批准b两旧null原位强化及e保留只追加。待串行同步固定新输入后b→c→d→e、止于T08前；29未跑，R7/R6/R5-02/RL及人工外部/Gate2边界保留，仍17任务。
 > - **工作树**：一个 Astra 实施工作树 / 分支串行完成全部任务；`shell/main.js`、`preload.js`、`renderer/onboarding.*`、`package.json`/`package-lock.json`、`backend/app/*` 是共享文件，不安排并行写入者。
 > - **登记约定**：各任务修改范围中的"`shell/check.js`（登记）"均指在登记表 `shell/test/e2e/index.js` 中加入场景名（plan §8.3），不改运行器逻辑。
 - **命令状态**：下列所有"待新增"的测试文件、测试名、e2e 场景、npm 脚本在 Implement 前**都不存在、都未运行**；本文件不表示任何验证已通过。测试名为约定名，实施时须按此命名，以便验证输出能逐条对上。
@@ -504,16 +505,18 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 ### T-07b 托盘 / 关窗行为 / 托盘菜单（AC-006-1、AC-006-4、WO-07）
 
 - **上下文**：现关窗即退出、无托盘。plan §4.3 第 1 步、§3.5。依赖：T-07a、T-06c。
-- **修改范围**：`shell/main.js`（Tray、`closeBehavior`、托盘菜单：打开主窗口/运行中作业/设置…/退出）；新增 `shell/test/e2e/close-to-tray.js`、`close-quit.js`、`tray-menu.js`；`shell/check.js`。修订 6（plan §8.4 第 4 段）：`shell/main.js` 另持有 `state.activity`、`state.tray`、`state.trayMenu`（传给 `tray.setContextMenu` 的同一真实 `Menu`），并作为事件来源适配器调度 `hooks.testEvents`；`shell/src/test-hooks.js` **只**改快照 `tray`/`activity` 从这些真实对象读取、`tray-click {path}` 取代 409 占位并调用真实托盘菜单项 `click()`（1～2 级标签精确匹配；400 `invalid_tray_path`、409 `tray_item_missing`/`tray_item_unavailable`），不新增命令或快照键。使用事件夹具的场景在结束前等到快照 `activity` 无运行中作业（夹具自带 `job.finished`），以兼容 T-07c 之后的运行器清理。
+- **修改范围**：`shell/main.js`（Tray、`closeBehavior`、托盘菜单：打开主窗口/运行中作业/设置…/退出）；新增 `shell/test/e2e/close-to-tray.js`、`close-quit.js`、`tray-menu.js`；`shell/check.js`。修订 6（plan §8.4 第 4 段）：`shell/main.js` 另持有 `state.activity`、`state.tray`、`state.trayMenu`（传给 `tray.setContextMenu` 的同一真实 `Menu`），并作为事件来源适配器调度 `hooks.testEvents`；`shell/src/test-hooks.js` **只**改快照 `tray`/`activity` 从这些真实对象读取、`tray-click {path}` 取代 409 占位并调用真实托盘菜单项 `click()`（1～2 级标签精确匹配；400 `invalid_tray_path`、409 `tray_item_missing`/`tray_item_unavailable`），不新增命令或快照键。使用事件夹具的场景在结束前等到快照 `activity` 无运行中作业（夹具自带 `job.finished`），以兼容 T-07c 之后的运行器清理。修订 7（plan §8.4 第 6 段）：T-07b 另拥有两处既有文件各一行的原位替换——`shell/test/e2e/harness-selftest.js` 第 26 行 `未实现 tray/activity 不伪造` → `托盘与活动来自真实状态`、`shell/test/e2e/crash-restart.js` 第 32 行 `不伪造托盘或活动` → `重启后托盘与活动来自真实状态`（字面期望 `['idle', true]`）；两文件其余行、其他旧场景、运行器、单测与夹具只读。
 - **估时**：1.5h
 - **完成标准**：
   1. AC-006-1：事件夹具运行中作业 + `close-window` → 窗口隐藏未销毁、后端存活、托盘状态 `running`（夹具驱动；真实作业【外部】）。
   2. WO-07（最近 AC：AC-006-1；Q-003）：预置 `closeBehavior:"quit"` 的偏好文件 → `close-window` 走退出流程，进程退出码 0。
   3. AC-006-4、WO-05：托盘菜单标签含"打开主窗口""运行中作业""设置…""退出"；点击后窗口可见、子菜单列出夹具作业标题、设置页打开、"退出"调用退出入口（"导出诊断"在 T-08d 补）。
+  4. AC-006-1、AC-006-4（修订 7，plan §8.4 第 6 段；托盘与活动状态来自真实生产对象，替换两条旧 null 断言）：`harness-selftest`（假后端 `ok`、无事件夹具）快照 `[tray.state, activity.accepting]` = `['idle', true]`；`crash-restart`（真实后端重启就绪后）同为 `['idle', true]`；两场景其余原断言全部保留且通过。
 - **验证**（待新增）：
   1. → `cd shell && npm run check -- close-to-tray`：`PASS close-to-tray › 窗口隐藏未销毁`、`› 后端存活`、`› 托盘 running`。
   2. → `cd shell && npm run check -- close-quit`：`PASS close-quit › 关窗后退出码 0`。
   3. → `cd shell && npm run check -- tray-menu`：`PASS tray-menu › 菜单标签齐全`、`› 打开主窗口后可见`、`› 子菜单列出作业`、`› 设置… 打开设置页`、`› 退出调用 requestQuit`；人工 M-05、M-07（T-M2a）。
+  4. → `cd shell && npm run check -- harness-selftest crash-restart close-to-tray close-quit tray-menu`：`PASS harness-selftest › 托盘与活动来自真实状态`、`PASS crash-restart › 重启后托盘与活动来自真实状态` 及两场景全部原断言名；随后 `npm run test:unit`（0 skip）与无参数 `npm run check`（全部登记场景、0 failures）。
 
 ### T-07c 退出守卫（AC-003-2、AC-003-4、WO-02）
 
@@ -542,7 +545,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 ### T-07e 系统通知（AC-006-2、AC-006-3、WO-06）
 
 - **上下文**：plan §3.5 通知、§7.3 `setAppUserModelId`。依赖：T-07a、T-07d、T-05i。
-- **修改范围**：`shell/main.js`（通知派发、`app.setAppUserModelId`、`backend.error/ready` 事件接入）；新增 `shell/test/e2e/notify.js`、`notify-off.js`；`shell/test/e2e/crash-restart.js`（补通知/托盘断言）；`shell/check.js`。修订 6（plan §8.4 第 4 段）：不改 `shell/src/test-hooks.js`；`main.js` 在钩子启用时使用现有出口 `hooks.outlets.Notification`，并把生命周期 `backend.error/ready` 接入归约器；“托盘曾为 error”由轮询快照 `tray.state` 证明，不新增历史字段。
+- **修改范围**：`shell/main.js`（通知派发、`app.setAppUserModelId`、`backend.error/ready` 事件接入）；新增 `shell/test/e2e/notify.js`、`notify-off.js`；`shell/test/e2e/crash-restart.js`（只追加通知/托盘断言；保留 T-07b 修订 7 替换后的 `重启后托盘与活动来自真实状态` 与全部原断言）；`shell/check.js`。修订 6（plan §8.4 第 4 段）：不改 `shell/src/test-hooks.js`；`main.js` 在钩子启用时使用现有出口 `hooks.outlets.Notification`，并把生命周期 `backend.error/ready` 接入归约器；“托盘曾为 error”由轮询快照 `tray.state` 证明，不新增历史字段。
 - **估时**：1h
 - **完成标准**：
   1. AC-006-2：`stage_completed` 事件 → 通知记录器收到 `stage_completed` 一条（系统 toast 观感留 M-06）。

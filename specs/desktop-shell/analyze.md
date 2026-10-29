@@ -504,3 +504,34 @@ P1：无。P2：无。
 
 1. A（新开独立会话，AGENTS §6）按 `activity-harness-review-request.md` 复查受影响项，结论只写入 `checklist.md`；全部复选框为勾选状态后 Astra 才可恢复 T-07a。A 提出 P1/P2 → 回 Plan/Tasks 修补并重跑 Analyze；A 若判定需 Walter 工程批准 → 停止，A 不代 Walter 批准。
 2. 协调者把四个规划文件集成为固定评审提交并同步到实施树，并给出 T-07a 静态核对用的 `<实施输入>`。
+
+## 迭代 10（Plan 修订 7：T-07b/T-07e 两条旧 null 断言兼容之后；只读）
+
+> 输入：固定提交 `ec55aeed3c2b24ac8d2ea80bbb8bd7efa78723e5`（内容同主树 `ac8c028`；含 A 第 5 轮 41/41 与证据 §13 的 T-07b 预检停止；源码仍为 T-06d 检查点）+ 四个规划文件工作副本（`plan.md` 修订 7、`tasks.md` T-07b/T-07e、本节、新增 `tray-compat-review-request.md`）。作者 = `anthropic/claude-opus-5-5` via anthropic，会话 `01a187bb-94f0-739b-a564-841bc4ccb516`（沿用 `ACTIVITY_PLAN_OK`，bridge 已知耗尽不重试，未回退）。本轮不是 Converge / Review / Gate 2；没有运行测试、npm 或 Electron，没有写源码，没有读取 Astra 的 T-07a 实施 WIP。
+
+### 1. 检查
+
+| 检查 | 结果 |
+|---|---|
+| 触发事实 | `rg -n` 核实 `shell/test/e2e/harness-selftest.js:26` 断言 `[snapshot.tray, snapshot.activity]` = `[null, null]`、`shell/test/e2e/crash-restart.js:32` 断言 `[after.tray, after.activity]` = `[null, null]`；T-07b 接入真实状态后两者必然失败 |
+| spec / checklist / 源码冻结 | `git diff --exit-code ec55aee --` spec / checklist / `shell` / `backend` 均无差异；checklist 仍 41/0 |
+| 改动集合 | 仅 `plan.md`（页首作者行、§0 修订 7、§8.4 第 6 段）、`tasks.md`（T-07b 修改范围 / 完成标准 4 / 验证 4，T-07e crash-restart 措辞）、本文件追加、新增请求文件；修订 6 的提前退出约定与 `FAI_CHECK_PRODUCER` 未改 |
+| 任务结构 | 41 块，估时 10×1h + 20×1.5h + 11×2h = 62h，顺序表与依赖未改；T-07b 仍 1.5h（只多两行原位替换） |
+| 完成标准 ↔ 验证 | T-07b 4/4，新增第 4 条含 AC-006-1、AC-006-4；验证 4 cwd `shell`，显式列出 `harness-selftest crash-restart close-to-tray close-quit tray-menu` |
+| 期望值来源 | 字面量 `['idle', true]`，依据 plan §3.5（无错误、无运行中作业 → idle；未进入退出等待 → accepting）；不用生产函数推算，不猜其他内部字段 |
+| T-07e 一致性 | T-07e 只追加通知/托盘断言并保留 T-07b 新断言；`backend.ready` 清除 `backend.error` 后仍为 `idle`，无矛盾 |
+| `git diff --check` | 通过 |
+
+### 2. 发现
+
+| # | 级别 | 内容 | 处置 |
+|---|---|---|---|
+| AN10-01 | P3（已修） | 两条旧 null 断言无写入所有权且与 T-07b 真实状态冲突 | plan §8.4 第 6 段 + T-07b 原位替换所有权与完成标准 4 |
+| AN10-02 | P3（接受） | `accepting` 字段名来自 plan §3.5 退出守卫语义；若 T-07a 实际归约器状态不暴露该字段，T-07b 须停止报告而不改期望 | 写入 §8.4 第 6 段停止规则 |
+
+P1：无。P2：无。R5-02、R6-01～05、RL-01 等既有 P3 / 义务不变。
+
+### 3. 结论与前置条件
+
+- 文档一致性通过（修订 7 范围）；迭代 1～9 原样保留。相关测试**未运行**。
+- A 第 6 轮（新开独立会话，只写 Checklist）按 `tray-compat-review-request.md` 复查前，T-07b 不得开始；当前 **A6 PENDING**。协调者集成四文档为固定评审提交。

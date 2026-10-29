@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前阶段：**T07b预检遇两条旧null断言兼容STOP；a按Plan6/A5拆批先做，b～e待窄Plan/A**。输入7c61681新基线42unit/19场景310通过（非T07完成），证据§13仅追加；无T07源码/20或29场景证据。RL/R5-02/R6/人工外部/Gate2不变。
+> 当前检查点：**T07a完成52unit/20场景313/313，保存9acd4c4；Plan7/Analyze10/A6新审41/41通过，无P1/P2，准备b～e**。只允许两旧null断言原位强化为['idle',true]，其余旧断言保持。29场景未跑，RL/R5-02/R6/R7及完整代码Review/Converge/Gate2边界不变。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -284,7 +284,15 @@ run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。以�
 
 - 首选Implement=openai/gpt-6-astra via openai，新session **01a187d9-b23d-712f-8297-3106886f9e49**（元数据实核），输入7c61681，无回退/配置改变。npm ci成功、42unit/0skip、真实默认19场景310/310（98.741s）；原始命令显式env-u两单测变量，运行时33.4.11/20.18.3/130.0.6723.191。19根删除、所属CIM进程/监听/服务0、ACL通过；辅助TEMP枚举第一次exit1/0根已修成19根/0残留，未重跑测试。
 - `harness-selftest.js:26` / `crash-restart.js:32` 精确null二元断言与T07b真实snapshot矛盾，前者只读、后者e只许追加，故整体预检STOP；不是产品失败/模型错误。唯一写入证据§13；a～e源码与目标20/29均未做，不隐藏状态求绿。
-- 协调拆分：Astra仅a按A5继续，b不接线前两旧断言仍合法；另由Opus在独立文档树最小说明两处替换/所有权并Analyze/A，不能提前接b。不同树/文件职责隔离，共享文件协调串行集成，不是需求改动/跳任务。原始新基线`C:/Users/iswal/AppData/Local/Temp/fai-t07-01a187d9-7exsC2/`。RL/R5/R6与人工/外部/Gate2义务不变，无push/PR/merge。
+- 协调拆分：Astra仅a按A5实施，Opus独立文档树处理b兼容；不同树/文件职责隔离，共享文件协调串行集成，不是需求改动/跳任务。以下记录完成与新批准；原始基线`C:/Users/iswal/AppData/Local/Temp/fai-t07-01a187d9-7exsC2/`保留。
+
+### T07a完成 / Plan7+Analyze10+A6批准
+
+- Implement首选openai/gpt-6-astra，同session01a187d9，输入e8bfb09；源码10文件与证据§14，main/preload/renderers/两旧场景未改。最后npm ci成功、**52unit/0skip、真实events-invalid3/3、默认20场景313/313（124.933s）**。真实命令env-u两单测变量，非producer替身；10SHA一致、249冻结文件不变、22根删除/所属进程监听服务0/ACL通过。无产品FAIL；EOF空行diff-check exit2和读offset越界已记录/修复，历史STOP13不改。
+- 结束后协调者核对/串行保存 **9acd4c4223193f115e5d7dd65e6f510ae8b76115**；仅将证据“用户明确拆批”改为协调者依据继续授权拆批的事实归因，非追加用户批准，代码SHA不动、未代跑测试。原始`C:/Users/iswal/AppData/Local/Temp/fai-t07a-01a187d9-kBTUlA/`。
+- 并行Plan7作者仍anthropic/claude-opus-5-5官方/session01a187bb，树输入ec55aee/内容同ac8c028，未读Astra WIP；四文档集成 **a4fd9976f08a01dfa58ecc90c16b0db860cb3c0d**，仅两临时null断言b原位替换为真实idle/acceptingtrue、e保留且只追加；其余旧断言不动、41任务62h。作者错误edit破坏自有plan第3行后违规用git checkout恢复到自有HEAD再重做，最终保护文件与范围无差异/丢失，A6登记R7-05；无provider/模型失败，不作回退借口。
+- **A6=anthropic/claude-fable-5-1官方**，新session **01a187ef-bc6d-7674-bdd0-2f3e2ce2f57d**，独立树/分支D:/2030/Futures-AI-desktop-tray-checklist/review/desktop-shell-tray-compat，HEAD固定a4fd997，真实ec55..HEAD仅四文档+78/-2。只写Checklist、不跑测试/源码；14输入SHA前后全一致、实际模型实核。**41/41、无P1/P2、5P3，b兼容与e只追加文档前置满足**，无额外工程批准/ADR/Gate1需求（不替Walter授权）。A6没读a的实现WIP，不认证a代码测试。
+- 新R7：01header修订6/Tasks无7页首、最近AC措辞；02引用出处/ready清errora未单测；03accepting字段不符STOP；04e在真实backend.ready回调同步归约器；05上述checkout流程偏差。R5-02/R6/RL保持。下阶段同步固定输入后b→c→d→e，不进T08；b需默认23、最终29，**29未跑**。仍17任务/人工外部，完整Converge/代码Review/Gate2未完成，无push/PR/merge。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 

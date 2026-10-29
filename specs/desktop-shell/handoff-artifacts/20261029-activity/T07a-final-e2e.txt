@@ -1,0 +1,358 @@
+
+> futuresai-shell@0.1.0 check
+> node check.js
+
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-harness-selftest-IZFNgV"
+PASS harness-selftest › paths 位于临时目录
+PASS harness-selftest › 默认数据目录 = LOCALAPPDATA\FuturesAI
+PASS harness-selftest › 窗口存在
+PASS harness-selftest › 后端存活
+PASS harness-selftest › spawns 恰 1 条
+PASS harness-selftest › registry PID = 快照 PID
+PASS harness-selftest › 标题含测试钩子标记
+PASS harness-selftest › 日志首行 TEST HOOKS ENABLED
+PASS harness-selftest › Electron 精确版本
+RUNTIME {"electron":"33.4.11","node":"20.18.3","chrome":"130.0.6723.191"}
+PASS harness-selftest › 控制通道 snapshot 路径一致
+PASS harness-selftest › 未实现 tray/activity 不伪造
+PASS harness-selftest › 未知命令 HTTP 400
+PASS harness-selftest › eval 调用真实窗口
+PASS harness-selftest › 无未应答对话框
+PASS harness-selftest › 退出码 0
+PASS harness-selftest › 后端 pid 已退出
+PASS harness-selftest › 后端 pid 已退出
+PASS harness-selftest › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-single-instance-XSzL17"
+PASS single-instance › 首实例后端存活
+PASS single-instance › 首次 spawns 恰 1 条
+PASS single-instance › 第二实例退出码 0
+PASS single-instance › 第二实例 10s 内退出
+PASS single-instance › 第二实例 OS PID 已退出
+PASS single-instance › 第二实例与首实例共享隔离状态目录
+PASS single-instance › 锁失败者未解析数据目录
+PASS single-instance › secondInstance 恰 1 条
+PASS single-instance › restore/show/focus 真实调用记录
+PASS single-instance › spawns 恰 1 条
+PASS single-instance › 后端 pid/端口不变
+PASS single-instance › registry 只有首实例后端 PID
+PASS single-instance › 首实例 Electron 仍存活
+PASS single-instance › 首实例后端仍存活
+PASS single-instance › 首窗口可见
+PASS single-instance › 首实例退出码 0
+PASS single-instance › 退出后 spawns 仍恰 1 条
+PASS single-instance › 后端 pid 已退出
+PASS single-instance › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-ready-quit-9Q5pVt"
+PASS ready-quit › 真实后端存活
+PASS ready-quit › 真实 health 200+ok+data_ready
+PASS ready-quit › 真实写锁存在
+PASS ready-quit › 真实只读端点存在
+PASS ready-quit › host.json 在状态目录 run
+PASS ready-quit › 数据根无 host.json
+PASS ready-quit › 真实宿主非夹具
+RUNTIME {"electron":"33.4.11","node":"20.18.3","chrome":"130.0.6723.191"}
+PASS ready-quit › 退出码 0
+PASS ready-quit › 后端 pid 已退出
+PASS ready-quit › 无 .lock
+PASS ready-quit › 无 mcp_endpoint.json
+PASS ready-quit › host.json 已删
+PASS ready-quit › 端口已释放
+PASS ready-quit › 后端 pid 已退出
+PASS ready-quit › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-health-fail-BvDxRn"
+PASS health-fail › phases 不含 ready
+PASS health-fail › lastCode = health_timeout
+PASS health-fail › spawns 恰 1
+PASS health-fail › 无残留后端
+PASS health-fail › 无自动重启
+PASS health-fail › 显示 health_timeout 页
+PASS health-fail › 错误页可见
+PASS health-fail › 退出码 0
+PASS health-fail › 后端 pid 已退出
+PASS health-fail › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-crash-restart-wrfguR"
+PASS crash-restart › 真实写锁存在
+PASS crash-restart › 定向结束后端成功
+PASS crash-restart › 重启后就绪且端口变化
+PASS crash-restart › restarts = 1
+PASS crash-restart › 旧进程已死且新进程存活
+PASS crash-restart › 新代令牌已轮换
+PASS crash-restart › 新端点真实健康
+PASS crash-restart › preload 返回新代端口
+PASS crash-restart › preload 返回新代令牌
+PASS crash-restart › 真实阶段包含 restarting
+PASS crash-restart › 不伪造托盘或活动
+PASS crash-restart › 真实宿主非夹具
+PASS crash-restart › 退出码 0
+PASS crash-restart › 后端 pid 已退出
+PASS crash-restart › 后端 pid 已退出
+PASS crash-restart › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-restart-limit-Oix8Pt"
+PASS restart-limit › spawns 恰 4
+PASS restart-limit › 观察到同时存活峰值 1
+PASS restart-limit › 同时存活后端 ≤ 1
+PASS restart-limit › lastCode = restart_limit
+PASS restart-limit › 就绪不清零预算
+PASS restart-limit › 每代都真实 ready
+PASS restart-limit › 四个后端全退出
+PASS restart-limit › 预算用尽无第五次 spawn
+PASS restart-limit › 显示 restart_limit 页
+PASS restart-limit › 错误页可见
+PASS restart-limit › 退出码 0
+PASS restart-limit › 后端 pid 已退出
+PASS restart-limit › 后端 pid 已退出
+PASS restart-limit › 后端 pid 已退出
+PASS restart-limit › 后端 pid 已退出
+PASS restart-limit › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-kill-shell-recover-9QHtvk"
+PASS kill-shell-recover › 仅结束外壳成功
+PASS kill-shell-recover › 后端 5 s 内退出
+BACKEND_AFTER_SHELL_KILL exitCode=0
+PASS kill-shell-recover › EOF 正常退出码 0
+PASS kill-shell-recover › 外壳 OS PID 已退出
+PASS kill-shell-recover › EOF 自行释放锁
+PASS kill-shell-recover › EOF 自行删除只读端点
+PASS kill-shell-recover › EOF 释放端口
+PASS kill-shell-recover › 同目录重新启动
+PASS kill-shell-recover › 再启动就绪
+PASS kill-shell-recover › 再启动无重试
+PASS kill-shell-recover › 新后端 PID
+PASS kill-shell-recover › 真实宿主非夹具
+PASS kill-shell-recover › 重启实例退出码 0
+PASS kill-shell-recover › 后端 pid 已退出
+PASS kill-shell-recover › 后端 pid 已退出
+PASS kill-shell-recover › 观测辅助 PID 已退出
+PASS kill-shell-recover › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-startup-visible-01IX11"
+PASS startup-visible › 就绪前窗口可见
+PASS startup-visible › 就绪前是本地启动页
+PASS startup-visible › 状态文字为正在启动
+PASS startup-visible › 渲染层无 Node
+PASS startup-visible › 稳定 backend mode
+PASS startup-visible › 仅批准的 preload 成员
+PASS startup-visible › 当前必需成员齐全
+PASS startup-visible › 成员类型符合契约
+PASS startup-visible › 不暴露高权限对象或任意导航
+PASS startup-visible › 未就绪 getBackend null
+PASS startup-visible › 日志含 startup_timing
+PASS startup-visible › shown/ready/interactive 真实顺序
+PASS startup-visible › 就绪后 getBackend 为当前端口
+PASS startup-visible › 退出码 0
+PASS startup-visible › 后端 pid 已退出
+PASS startup-visible › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-timeout-KMghnN"
+PASS timeout › health_timeout 页含重试与查看日志
+PASS timeout › 失败不静默转 mock
+PASS timeout › 超时后端先退出
+PASS timeout › 失败 getBackend null
+PASS timeout › 查看日志实际调用固定路径
+PASS timeout › 重试后 gen+1
+PASS timeout › unsubscribe 后不再回调
+PASS timeout › 重试不重叠进程
+PASS timeout › 无残留后端
+PASS timeout › 重试预算归零
+PASS timeout › 退出码 0
+PASS timeout › 后端 pid 已退出
+PASS timeout › 后端 pid 已退出
+PASS timeout › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-root-locked-Sg2yA8"
+LOCK_TIMELINE {"event":"helper-launch","ms":0}
+LOCK_TIMELINE {"event":"helper-ready","ms":2060,"pid":2260}
+PASS root-locked › 真实 Service 初始化后锁文件存在
+PASS root-locked › 真实持锁辅助进程存活
+LOCK_TIMELINE {"event":"electron-launch","ms":2060}
+LOCK_TIMELINE {"event":"paths-control-ready","ms":2571,"pid":44284}
+LOCK_TIMELINE {"event":"snapshot","ms":2635,"phase":"idle","gen":0,"restarts":0,"pid":null,"port":null,"lastCode":null,"alive":false}
+LOCK_TIMELINE {"event":"snapshot","ms":3121,"phase":"waiting_health","gen":1,"restarts":0,"pid":33960,"port":null,"lastCode":null,"alive":true}
+LOCK_TIMELINE {"event":"snapshot","ms":7097,"phase":"waiting_health","gen":1,"restarts":0,"pid":33960,"port":null,"lastCode":null,"alive":false}
+LOCK_TIMELINE {"event":"snapshot","ms":7158,"phase":"failed","gen":1,"restarts":0,"pid":null,"port":null,"lastCode":"data_root_locked","alive":false}
+LOCK_TIMELINE {"event":"renderer","ms":7161,"code":"data_root_locked"}
+PASS root-locked › 页面 code = data_root_locked
+PASS root-locked › 含路径
+PASS root-locked › 提示另一进程占用
+PASS root-locked › restarts = 0
+PASS root-locked › 启动失败进程已退出
+PASS root-locked › 持锁辅助进程未被误杀
+LOCK_TIMELINE {"event":"release-helper","ms":7161}
+LOCK_TIMELINE {"event":"helper-exit","ms":7488,"code":0}
+PASS root-locked › 辅助进程优雅退出
+LOCK_TIMELINE {"event":"retry-ready","ms":11216,"gen":2,"pid":51016}
+PASS root-locked › 解除占用后真实重试成功
+PASS root-locked › 真实后端非夹具
+PASS root-locked › 退出码 0
+LOCK_TIMELINE {"event":"electron-exit","ms":12112,"code":0}
+PASS root-locked › 后端 pid 已退出
+PASS root-locked › 后端 pid 已退出
+PASS root-locked › 锁辅助 PID 已退出
+PASS root-locked › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-root-unwritable-HX0mos"
+PASS root-unwritable › 真实拒写证明
+PASS root-unwritable › 页面 code = data_root_unwritable
+PASS root-unwritable › 含路径与权限不足
+PASS root-unwritable › 明确权限不足原因
+PASS root-unwritable › 数据目录未改到临时目录
+PASS root-unwritable › 探测失败不 spawn 后端
+PASS root-unwritable › 未创建默认替代数据目录
+PASS root-unwritable › ACL 已恢复
+PASS root-unwritable › 修复权限后真实重试成功
+PASS root-unwritable › 退出码 0
+PASS root-unwritable › 后端 pid 已退出
+PASS root-unwritable › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-startup-disk-full-Ny8P4H"
+PASS startup-disk-full › 页面 code = disk_full
+PASS startup-disk-full › 明确磁盘空间不足
+PASS startup-disk-full › 显示失败目录
+PASS startup-disk-full › 主进程存活
+PASS startup-disk-full › startup_failed 不重启
+PASS startup-disk-full › 只有一次 spawn
+PASS startup-disk-full › 失败子进程已退出
+PASS startup-disk-full › 退出码 0
+PASS startup-disk-full › 后端 pid 已退出
+PASS startup-disk-full › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-mock-Zg5kVp"
+PASS mock › mode = mock
+PASS mock › getBackend = null
+PASS mock › 无后端进程
+PASS mock › 夹具没有 spawn
+PASS mock › registry 文件不存在
+PASS mock › OS 子进程核查成功
+PASS mock › OS 无后端子进程
+PASS mock › mock 退出码 0
+PASS mock › 内置页 mock 横幅可见
+PASS mock › 明确设置业务不可用
+PASS mock › 环境变量显式 mock
+PASS mock › 内置 mock 也未 spawn
+PASS mock › 内置 mock 退出码 0
+PASS mock › 缺失打包配置不静默 builtin
+PASS mock › 配置形状无效返回资源错误而非抛异常
+PASS mock › bundled 路径不因文件缺失回退
+PASS mock › 明确 builtin 使用内置页
+PASS mock › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-frontend-missing-O3Z1Y9"
+PASS frontend-missing › 真实核心设置引导完成
+PASS frontend-missing › 页面 code = frontend_missing
+PASS frontend-missing › 含资源路径
+PASS frontend-missing › 含重试与打开日志
+PASS frontend-missing › 查看日志按钮存在
+PASS frontend-missing › 非白屏错误页可见
+PASS frontend-missing › 真实后端保持 ready
+PASS frontend-missing › 未静默 mock
+PASS frontend-missing › 日志动作真实固定目录
+PASS frontend-missing › 补齐资源后重试成功
+PASS frontend-missing › 重载资源不重启后端
+PASS frontend-missing › 重载后 getBackend 当前端口
+PASS frontend-missing › 退出码 0
+PASS frontend-missing › 后端缺失显示 backend_missing
+PASS frontend-missing › 后端缺失不静默 mock
+PASS frontend-missing › 后端缺失 getBackend null
+PASS frontend-missing › 后端缺失不重启
+PASS frontend-missing › 错误实例退出码 0
+PASS frontend-missing › 后端 pid 已退出
+PASS frontend-missing › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-settings-sources-wX31nt"
+PASS settings-sources › 真实核心设置引导完成
+PASS settings-sources › 真实宿主非夹具
+PASS settings-sources › file renderer
+PASS settings-sources › getBackend 当前端口
+PASS settings-sources › 组织类型下拉 12 项
+PASS settings-sources › eia 显示免凭证回退
+PASS settings-sources › 清除 key 按钮可见
+PASS settings-sources › 清除 key 后提示回退
+PASS settings-sources › 退出码 0
+PASS settings-sources › 后端 pid 已退出
+PASS settings-sources › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-ui-masking-7f94zK"
+PASS ui-masking › 真实核心写入加密档案
+PASS ui-masking › key 输入为 password
+PASS ui-masking › 显示遮蔽邮箱
+PASS ui-masking › 普通页面无完整邮箱
+PASS ui-masking › 用户字符串未作为 HTML 插入
+PASS ui-masking › 退出码 0
+PASS ui-masking › 真实核心读取成功
+PASS ui-masking › 真实邮箱未被覆盖
+PASS ui-masking › 姓名确已保存
+PASS ui-masking › 档案存储无明文邮箱
+PASS ui-masking › 后端 pid 已退出
+PASS ui-masking › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-onboarding-Hrg9jv"
+PASS onboarding › 首次进入引导
+PASS onboarding › 真实宿主非夹具
+PASS onboarding › 保存后进入设置区
+PASS onboarding › 保存经生产 openMain
+PASS onboarding › 首实例退出码 0
+PASS onboarding › 真实核心读取成功
+PASS onboarding › 真实核心 completed=true skipped=false
+PASS onboarding › 档案可保存且其余字段可空
+PASS onboarding › 第二次运行进入设置页
+PASS onboarding › 第二次引导区不显示
+PASS onboarding › 第二实例退出码 0
+PASS onboarding › 后端 pid 已退出
+PASS onboarding › 后端 pid 已退出
+PASS onboarding › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-onboarding-skip-w5Nhp3"
+PASS onboarding-skip › 有前端时仍先进入引导
+PASS onboarding-skip › 跳过后进入主界面
+PASS onboarding-skip › 未知菜单项 400
+PASS onboarding-skip › 无效菜单输入不导航
+PASS onboarding-skip › 真实菜单项点击已接受
+PASS onboarding-skip › 菜单设置… 打开设置页
+PASS onboarding-skip › navigation 记录 app-menu
+PASS onboarding-skip › 档案可保存
+PASS onboarding-skip › 返回主界面回到前端
+PASS onboarding-skip › renderer 设置入口共用生产处理器
+PASS onboarding-skip › 导航忽略参数且不打开外链
+PASS onboarding-skip › 导航不重启后端
+PASS onboarding-skip › 真实宿主非夹具
+PASS onboarding-skip › 退出码 0
+PASS onboarding-skip › 真实核心读取成功
+PASS onboarding-skip › 真实核心 skipped=true
+PASS onboarding-skip › 补填档案真实落盘
+PASS onboarding-skip › 后端 pid 已退出
+PASS onboarding-skip › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-registration-guide-97v76b"
+PASS registration-guide › 真实核心写入并读取完整加密档案
+PASS registration-guide › 真实宿主非夹具
+PASS registration-guide › 点击前指引区为空
+PASS registration-guide › 点击前不请求指引
+PASS registration-guide › 点击前无打开注册页
+PASS registration-guide › 档案表单邮箱为遮蔽值
+PASS registration-guide › 点击前普通页面无完整邮箱
+PASS registration-guide › 完整档案 指引五项等于核心值
+PASS registration-guide › Category 为官方标签
+PASS registration-guide › 含 Reason for use
+PASS registration-guide › 指引区不在表单内
+PASS registration-guide › 指引只读且安全渲染
+PASS registration-guide › 核心 notes 原样显示
+PASS registration-guide › 仅用户点击后请求一次
+PASS registration-guide › 打开指引不改变遮蔽表单
+PASS registration-guide › 未写入 Web 存储
+PASS registration-guide › openExternal 收到核心 URL
+PASS registration-guide › 点击外链不打开应用内页面
+PASS registration-guide › 无上游资源请求或 key 提交
+PASS registration-guide › 离开后指引清空 openMain
+PASS registration-guide › 导航后未写入 Web 存储 openMain
+PASS registration-guide › 离开后指引清空 openSettings
+PASS registration-guide › 导航后未写入 Web 存储 openSettings
+PASS registration-guide › 完整档案实例退出码 0
+PASS registration-guide › 真实核心写入缺项档案
+PASS registration-guide › 缺项档案 列出三项缺项
+PASS registration-guide › 核心 hint 原样显示
+PASS registration-guide › 无打开注册页
+PASS registration-guide › openExternal 记录为空
+PASS registration-guide › 缺项焦点在第一个缺项输入框
+PASS registration-guide › key 输入与验证按钮可用
+PASS registration-guide › 缺项无上游请求或 key 提交
+PASS registration-guide › 缺项未写入 Web 存储
+PASS registration-guide › 缺项档案实例退出码 0
+PASS registration-guide › 后端 pid 已退出
+PASS registration-guide › 后端 pid 已退出
+PASS registration-guide › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-events-invalid-mwMOeB"
+PASS events-invalid › 退出码 4
+PASS events-invalid › 输出 TEST_EVENTS_INVALID
+PASS events-invalid › 临时目录已删除
+SUMMARY 313/313 assertions; 20 scenes; failures=0
+
+real	2m4.933s
+user	0m0.075s
+sys	0m0.122s

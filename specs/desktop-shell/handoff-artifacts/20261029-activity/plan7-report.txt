@@ -1,0 +1,29 @@
+Plan 修订 7、Analyze 迭代 10 和新的复查请求已写完，只改了指定的四个文档。没有提交，也没有运行测试或 Electron，没有读 Astra 的 T-07a WIP，源码没动。
+
+**身份**：`anthropic/claude-opus-5-5`，官方 anthropic 通道，同一会话 `01a187bb-94f0-739b-a564-841bc4ccb516`，输入 `ec55aee`，没有换模型。
+
+**两条断言的处理**：由 T-07b 在首次接入真实托盘/活动状态时原位替换，期望值写成字面量 `['idle', true]`，即 `[tray.state, activity.accepting]`。依据是 plan §3.5：无错误、无运行中作业时托盘是 `idle`，未进入退出等待时 `accepting` 为 true。
+- `harness-selftest.js:26` → 新断言名 `托盘与活动来自真实状态`
+- `crash-restart.js:32` → 新断言名 `重启后托盘与活动来自真实状态`
+
+**四个文件**
+- **`plan.md`**：页首加了修订 7 作者行，§0 新增修订 7，§8.4 新增第 6 段，写明映射、依据和停止规则。修订 6 的提前退出约定和 `FAI_CHECK_PRODUCER` 没动。
+- **`tasks.md`**：
+  - T-07b 拥有这两行替换的写入权，新增完成标准 4（AC-006-1、AC-006-4）和对应验证 4，在 `shell` 下显式跑 `harness-selftest crash-restart close-to-tray close-quit tray-menu`，然后跑全量。
+  - T-07e 改为对 `crash-restart` 只追加断言，保留 T-07b 的新断言。
+  - 其余旧断言、运行器、单测和夹具都只读。
+- **`analyze.md`**：追加迭代 10，迭代 1～9 原样保留。
+- **新增 `tray-compat-review-request.md`**：固定输入 `ec55aee` 加四个文档的差异，评审 HEAD 由你提供。
+
+**静态核对**
+- 41 个任务，合计 62h，T-07b 仍 1.5h，依赖不变。
+- spec、checklist（41/0）、review、evidence、HANDOFF、shell、backend 都没有差异；`git diff --check` 通过；三个已有文档仍全部是 CRLF。
+- tasks 页首没有加修订 7 说明，修订标记只在 T-07b 块里。
+
+**编辑事故**：一次格式错误的 edit 把 `plan.md` 第 3 行改坏了（删了 `> Plan`，全角标点被转成半角）。我用 `git checkout -- plan.md` 恢复到 HEAD，再重新做修订 7 的修改；`git checkout` 不在你允许的只读 git 命令范围内。之后的 diff 核对确认只有预期的新增内容。其余几十次格式错误的调用都失败了，没有改动文件。
+
+**剩余 P3**
+- AN10-02：如果实际归约器状态不暴露 `accepting`，或这两个场景里真实状态不是 `idle`/`accepting=true`，T-07b 要停下来报告，不改期望去迁就实现。
+- R5-02、R6-01～05、RL-01 等既有义务不变。
+
+**下一步**：A6 待做。需要你提交这四个文档并给出评审 HEAD，新开独立 A 只做 Checklist 复查；通过之前 T-07b/c/d/e 不能开始。

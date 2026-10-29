@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **当前阶段：T07b预检发现两条过渡期null断言冲突；拆批让T07a按A5先实施，b～e待窄兼容Plan/A（2026-10-29）**。新基线42unit/19场景310通过，无T07源码，证据§13；Plan6/A5的a批准仍有效。20及29场景未跑。
-> **先读 §20（最新拆批）**，§19为A5批准。不得按场景伪造null、放宽断言或跳任务；RL/R5/R6边界保持，无push/PR/merge/Gate2。
+> **当前检查点：T07a已保存9acd4c4，最后52unit/20场景313/313通过；Plan7/Analyze10/A6已41/41放行b兼容，准备b～e（2026-10-29）**。真实Electron非法文件退出4/安全标记通过，main尚未接托盘。29场景未跑，未进入T08。
+> **先读 §21（最新检查点与批准）**、实施证据§14与Checklist第6轮。R5-02/R6/R7/RL保留，A6是文档质量复查非代码Review/Gate2，无push/PR/merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -385,4 +385,13 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 首选Astra新session **01a187d9-b23d-712f-8297-3106886f9e49**（openai/gpt-6-astra元数据实核），输入 **7c61681e92448bd566c420470cf0cb58db5fea2e**；新基线npm ci成功、42unit/0skip、默认19场景310/310（98.741s），真实命令清除了FAI_CHECK_E2E_DIR/FAI_CHECK_PRODUCER。19根删除/CIM所属进程监听服务0/ACL通过；辅助temp枚举第一次只截TEMP导致0根exit1，修正后19/0，没有重跑产品测试。
 - 预检发现harness-selftest:26与crash-restart:32仍断言tray/activity=[null,null]；b必须回报真实对象，前者只读、后者e只许追加且原断言保留，不能同时成立。AST遵整批STOP未写代码，仅追加证据§13；a～e/20/29场景均未完成，未用假null/按场景创建托盘迁就旧断言。
 - 协调者改为**a单项批次按A5既定权限继续，止于b前**：a不接main/tray，现有null断言仍有效。并行Plan者只在独立文档工作树对上述两处过渡断言及b/e文件所有权最小修补，Analyze/A后才可接b～e。两writer不同树/互不写同文件；共享进度由协调串行集成，不以拆批跳任务或越过新审批。
-- 当前无T07源码；原始新基线 `C:/Users/iswal/AppData/Local/Temp/fai-t07-01a187d9-7exsC2/`，run同§19。无模型回退/配置变化，RL-01仍OPEN、R5-02/R6/UTF8/PYZ/507GUI及人工外部/Gate2边界不变。
+- 以上为拆批时点，a已实现且b兼容已审见§21；原始新基线 `C:/Users/iswal/AppData/Local/Temp/fai-t07-01a187d9-7exsC2/`，run同§19。无模型回退/配置变化，RL-01等边界不变。
+
+## 21. 2026-10-29 T07a完成 / Plan7+Analyze10+A6通过，准备b～e
+
+- a由原首选Astra同session **01a187d9-b23d-712f-8297-3106886f9e49**，输入e8bfb09按A5拆批实施；52unit/0skip、真实events-invalid3/3、默认20场景313/313（124.933s）。纯归约器+事件文件校验+专用运行器观察/5个runner单测完成，main/preload/renderers/两旧null场景未改；源码10SHA全部核对、249冻结文件不变、22根删除、CIM所属进程监听服务0、ACL通过。无产品FAIL；证据EOF空行diff-check失败及读offset越界已保留/修复。
+- a结束后协调者核对源文件，保存 **9acd4c4223193f115e5d7dd65e6f510ae8b76115**；仅将证据一句“用户明确拆批”更正为“协调者依据继续授权拆批”，属归因元数据，不冒称用户额外批准。代码10SHA未变，协调未代写实现/跑产品测试。证据§14，原始 `C:/Users/iswal/AppData/Local/Temp/fai-t07a-01a187d9-kBTUlA/`。
+- 并行Plan7首选Opus5.5官方同session01a187bb，独立树固定输入 **ec55aee**（内容同ac8c028），未读Astra WIP。固定四文档集成 **a4fd9976f08a01dfa58ecc90c16b0db860cb3c0d**：只允许b原位替换harness-selftest26/crash-restart32为[tray.state,activity.accepting]字面['idle',true]，e只追加并保留新断言；所有其他旧断言/fixture/runner保持。41任务/62h不变，新增Analyze10。Opus一次错误edit损坏自有plan第3行后用被禁止的git checkout恢复到自有ec55HEAD再重做，最终差异与保护文件实核无丢失；该流程偏差已如实记录，后续不得沿用。
+- A6首选Fable5.1官方，新独立session **01a187ef-bc6d-7674-bdd0-2f3e2ce2f57d**，树 `D:/2030/Futures-AI-desktop-tray-checklist` / `review/desktop-shell-tray-compat`，HEAD固定a4fd997，只审ec55..HEAD四文档+78/-2，只写Checklist/不测试；14保护输入SHA全一致，实际模型元数据实核。**41/41、无P1/P2、R7-01～05五P3**，放行b及e只追加约束；不需工程批准/ADR/Gate1（不替Walter授权）。
+- R7跟踪：01页首修订6元数据/任务页首缺7、最近AC措辞；02“托盘短暂error”引用位置/ready清error未有独立a单测，e真接线证明；03实际activity.accepting若不匹配STOP不改期望；04在backend.ready生产回调派发归约器，避免ready但tray仍error；05上述checkout偏差。R5-02/R6/RL等保留，不伪称已闭。
+- 下一步在无writer边界同步a代码/Plan7/A6与进度并固定新实施输入，Astra同树同分支依序b→c→d→e，止于T08前。b须五定向+默认全量（23），最终e应29；**29未跑**。仍17项任务与人工/外部验收，RL-01OPEN/UNKNOWN、RL02正负对照/UTF8/PYZ/507GUI/系统tray-toast/真实作业drain等不变；A6未审a代码，完整Review/Gate2未完成。
