@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前阶段：**T-05b/c/d/m/e/f 六项基础任务自动化检查点完成，下一项 T-05g**。Astra 从 `83b91db` 串行实现后，最后源码上 `npm ci` 成功、**34 单测通过 / 0 skip**、真实 Electron **2 场景 / 37/37 断言通过**；实施源码提交 **a643f81**。进程/场景 temp 已清理，未开 T-05g / T-07。Checklist 41/41 与冻结需求不变；真实前台焦点 M-09、真实业务与后续 27 项仍待，不是 Converge、代码 Review 或 Gate 2。
+> 当前实现检查点：**T-05g～l 已实现，最后完整 42 unit / 14 场景 / 213/213 断言通过，但 T-05k 的 root-locked 间歇超时风险未关闭**。单独与最后全集复跑通过不证明根因已修；源码/证据已保存实施提交 **f7d347b**。下一步先复核 T-05k，不直接进入 T-06b/T-07。Checklist 41/41、冻结需求、Converge/独立代码 Review/Gate 2 边界不变。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -166,6 +166,34 @@ A 新增 P3 跟踪：**R4-01** 确认旧 `PYZ-00.toc` 中已有 `pyarrow.conftes
 失败历史保留于 `implementation-evidence.md` §7.4：一次 ACL 检查时机不当；两次 Notification 导出不可重定义导致启动异常，改为出口记录器；三次 `windowsHide:true` 导致真实 GUI 隐藏，修正为 false。没有弱化必要断言、改 renderer/安全配置、清理后伪称成功或切模型。单实例单独 20/20 后仅删除一条读取旧快照的冗余断言，最后完整复跑 unit 和两场景，最终 37/37；static no-index / EOF 检查小失败和 edit 修正同样记录。npm 既有 boolean@3.2.0 deprecated 提示未被伪称零警告。
 
 本批实施最终报告、明确派工范围、unit/e2e/npm 最终原始简短输出与源码指纹保存于 `handoff-artifacts/20261028-foundation/`（本批没有新 Plan 或 A 评审）；源码实际实现者为 Astra，协调者只复制/核对/保存。**本批六项完成；T-05g 及后续 27 项未开始**，基础设施/协议夹具不等于真实作业或设置业务。M-09 真实前台焦点未执行；未做整体 Converge、独立代码 Review 或 Gate 2，不 push / PR / merge。
+
+## 2026-10-29 04:10～04:46 UTC 生命周期与启动批次（实现检查点；T-05k 稳定性待复核）
+
+| 角色 / 范围 | 固定输入 | 实际模型 / session | 状态 |
+|---|---|---|---|
+| Implement：T-05g/h/i/j/k/l | 实施树 **e0fe1cd** / `feat/desktop-shell-astra`，主树 **6d4ce80**，相关内容一致、启动前均干净 | **openai/gpt-6-astra via openai**，新 session **01a185d9-e062-733e-b5af-f1175102c292** 元数据实核 | 原独立实施树唯一 writer；六项已实现、最后 42 unit / 213 e2e 断言通过；一项 root-locked 间歇超时未解释，不开始 T-06b/T-07；结束后协调者按26文件指纹核对并以 **f7d347b** 保存源码/证据 |
+| 协调 / 后续串行集成 | 同上 | `openai/gpt-6.1-sol`（PI 环境实核） | 仅派工、元数据与集成，不代写实现或跑产品测试，不进入新 Plan/Converge/Review |
+
+前置条件：完整 Checklist **41 checked / 0 unchecked**；不改需求/Plan/Checklist，未变任务的原批准有效。权限只含指定 shell 生命周期/启动文件、12 个新场景及必要的旧场景/运行器兼容和证据追加；backend、依赖、其他业务界面与全局配置只读，不重开 T-04b/PYZ 修补。
+
+验证要求：真实源后端证明 shutdown、写锁/只读端点/端口释放、崩溃重启、app-only 强杀后 stdin EOF 5s 自愈；假后端验证三条件健康、预算 3、超时/磁盘满错误等。所有 root/ACL/helper PID 只用自有隔离夹具；不手删锁、不复合布尔伪断言、不 skip 缺工具、不加 CORS 或放宽 Chromium 安全。最后源码必须全 unit + 全登记 e2e（包括原两场景）通过才结算本批。
+
+仓库外 run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-lifecycle-GULOgc3i/`；全部测试日志 `C:/Users/iswal/AppData/Local/Temp/fai-lifecycle-01a185d9/`。
+
+| 验证 | 本轮真实结果 |
+|---|---|
+| 新基线 | npm ci 成功；34 unit、2场景37/37，未只引用历史 |
+| 最后完整 unit | **42 passed / 0 failed / 0 skipped，4988.49ms** |
+| 最后默认 npm run check | **14场景、213/213断言、0 failures、exit0，67.092s** |
+| 真实源码宿主 | 正常退出清理锁/只读端点/端口；崩溃重启新端口/令牌与restarts1；仅杀app后≤5s后端exit0自行清理并同目录再就绪 |
+| 启动/错误/资源 | 初始页就绪前可见、真实retry与日志出口、锁占用/真实ACL错误、显式mock不spawn、缺失资源错误/补齐后重载，故障协议不冒充真实满盘 |
+| 冻结/复制/清理 | backend/包版本/规划审核等只读路径零差异；26个源/证据文件SHA逐字节一致后集成，实施提交 **f7d347b**；owned进程0，ACL恢复且实写验证、所有场景temp清理，agent已退出 |
+
+实现范围仅8个既有shell文件、17个新文件与证据追加。Windows app-only kill 原两次出现exit0但锁/端点残留，使用 spawn `detached:win32` 隔离控制台（不unref，仍由同状态机/pipeEOF/owned taskkill托管）后真实资源清理通过；无Job Object/后端改动/新依赖。真实锁文件整读EBUSY的试验性断言已改用Service.init成功信号、锁存在、helper存活，必需断言均保留。app-config合法JSON null的入口形状问题已修，新增一条测试并完整重跑。
+
+**未关闭风险（未评级、非用户接受）**：首轮全集212/212后，补config-null的全集出现 **202/203、1failure**，root-locked在10s内尚未从gen1/waiting_health/port=null进入失败态。失败运行已清理；不改超时/断言的单场景16/16与最后全集213/213通过，但**根因未确认，不称已修复**。已在 `implementation-evidence.md` §8.3 记录全部失败/重跑，并把失败原始输出与绿灯共同保存在 `handoff-artifacts/20261029-lifecycle/`。T-05k 保留稳定性复核待关闭，不因最终绿灯把它结算为风险已解决，不自动评级P3；后续先诊断/复核，再进入T-06b。
+
+本批真实runtime仍为Electron33.4.11 / Node20.18.3 / Chrome130；旧Python454/5和打包12/12未复跑。旧onboarding.js消费者刻意未迁移，不称设置业务可用；真实前端/作业、基准机15s、全部人工M-ID、打包资源和诊断等未取得。未做整体Converge/独立代码Review/Gate2，不push/PR/merge。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 

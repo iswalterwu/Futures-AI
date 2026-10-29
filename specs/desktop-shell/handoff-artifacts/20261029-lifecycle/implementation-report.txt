@@ -1,0 +1,25 @@
+已按 **T-05g → h → i → j → k → l** 完成本批实现，**停在 T-06b 之前**。未提交；HEAD 仍为 `e0fe1cd`。
+
+### 实现结果
+- `shell/src/backend.js`：生产与单测共用生命周期状态机，严格健康检查、代际隔离、3 次重启预算、用户重试归零、退出清理。
+- `shell/main.js`、`preload.js`、`renderer/startup.*`：启动页先可见、窄异步接口、中文错误页、重试与日志入口。
+- 目标资源选择、显式 mock、资源缺失处理；新增 12 个 Electron 场景。
+- 真实后端已验证正常退出、崩溃重启、仅杀外壳后的 EOF 清理及同目录恢复；真实锁占用与 ACL 拒写/恢复也已验证。
+
+### 最后源码编辑后的验证
+| 命令 | 最终结果 |
+|---|---|
+| `npm run test:unit` | **42/42，通过；0 skipped** |
+| 默认 `npm run check` | **14 场景，213/213 断言通过** |
+| `git diff --check`、冻结文件核查 | 通过 |
+
+**仍有一项未关闭风险：**此前一次联合运行中，`root-locked` 等待 10 秒超时，后端停在 `waiting_health`。未修改超时或断言的单独复跑及最终全集均通过，但根因尚未确定，不能称已修复。失败记录已保留。
+
+### 边界与清理
+- backend、依赖、冻结规格及 checklist 未修改。
+- 测试进程及辅助进程已退出，ACL 已恢复并实写确认，临时目录已删除；最终核查 owned processes 为 **0**。
+- 未进入设置业务、托盘、诊断或构建任务；旧 `onboarding.js` 接口迁移留给 T-06b，**不声称设置业务已可用**。
+- 未做整体 Converge、独立 Review 或 Gate 2。
+
+证据已追加到 **`specs/desktop-shell/implementation-evidence.md` §8（2026-10-29）**，包含全部失败历史、命令、清理及未验证项。完整日志和 diff/SHA 清单位于：
+`C:/Users/iswal/AppData/Local/Temp/fai-lifecycle-01a185d9/`

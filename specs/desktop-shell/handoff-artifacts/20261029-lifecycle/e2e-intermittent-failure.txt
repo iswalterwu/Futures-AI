@@ -1,0 +1,230 @@
+
+> futuresai-shell@0.1.0 check
+> node check.js
+
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-harness-selftest-3M4Ihf"
+PASS harness-selftest › paths 位于临时目录
+PASS harness-selftest › 默认数据目录 = LOCALAPPDATA\FuturesAI
+PASS harness-selftest › 窗口存在
+PASS harness-selftest › 后端存活
+PASS harness-selftest › spawns 恰 1 条
+PASS harness-selftest › registry PID = 快照 PID
+PASS harness-selftest › 标题含测试钩子标记
+PASS harness-selftest › 日志首行 TEST HOOKS ENABLED
+PASS harness-selftest › Electron 精确版本
+RUNTIME {"electron":"33.4.11","node":"20.18.3","chrome":"130.0.6723.191"}
+PASS harness-selftest › 控制通道 snapshot 路径一致
+PASS harness-selftest › 未实现 tray/activity 不伪造
+PASS harness-selftest › 未知命令 HTTP 400
+PASS harness-selftest › eval 调用真实窗口
+PASS harness-selftest › 无未应答对话框
+PASS harness-selftest › 退出码 0
+PASS harness-selftest › 后端 pid 已退出
+PASS harness-selftest › 后端 pid 已退出
+PASS harness-selftest › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-single-instance-KqGczi"
+PASS single-instance › 首实例后端存活
+PASS single-instance › 首次 spawns 恰 1 条
+PASS single-instance › 第二实例退出码 0
+PASS single-instance › 第二实例 10s 内退出
+PASS single-instance › 第二实例 OS PID 已退出
+PASS single-instance › 第二实例与首实例共享隔离状态目录
+PASS single-instance › 锁失败者未解析数据目录
+PASS single-instance › secondInstance 恰 1 条
+PASS single-instance › restore/show/focus 真实调用记录
+PASS single-instance › spawns 恰 1 条
+PASS single-instance › 后端 pid/端口不变
+PASS single-instance › registry 只有首实例后端 PID
+PASS single-instance › 首实例 Electron 仍存活
+PASS single-instance › 首实例后端仍存活
+PASS single-instance › 首窗口可见
+PASS single-instance › 首实例退出码 0
+PASS single-instance › 退出后 spawns 仍恰 1 条
+PASS single-instance › 后端 pid 已退出
+PASS single-instance › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-ready-quit-XhzoyQ"
+PASS ready-quit › 真实后端存活
+PASS ready-quit › 真实 health 200+ok+data_ready
+PASS ready-quit › 真实写锁存在
+PASS ready-quit › 真实只读端点存在
+PASS ready-quit › host.json 在状态目录 run
+PASS ready-quit › 数据根无 host.json
+PASS ready-quit › 真实宿主非夹具
+RUNTIME {"electron":"33.4.11","node":"20.18.3","chrome":"130.0.6723.191"}
+PASS ready-quit › 退出码 0
+PASS ready-quit › 后端 pid 已退出
+PASS ready-quit › 无 .lock
+PASS ready-quit › 无 mcp_endpoint.json
+PASS ready-quit › host.json 已删
+PASS ready-quit › 端口已释放
+PASS ready-quit › 后端 pid 已退出
+PASS ready-quit › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-health-fail-dmN0j4"
+PASS health-fail › phases 不含 ready
+PASS health-fail › lastCode = health_timeout
+PASS health-fail › spawns 恰 1
+PASS health-fail › 无残留后端
+PASS health-fail › 无自动重启
+PASS health-fail › 显示 health_timeout 页
+PASS health-fail › 错误页可见
+PASS health-fail › 退出码 0
+PASS health-fail › 后端 pid 已退出
+PASS health-fail › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-crash-restart-wRLahG"
+PASS crash-restart › 真实写锁存在
+PASS crash-restart › 定向结束后端成功
+PASS crash-restart › 重启后就绪且端口变化
+PASS crash-restart › restarts = 1
+PASS crash-restart › 旧进程已死且新进程存活
+PASS crash-restart › 新代令牌已轮换
+PASS crash-restart › 新端点真实健康
+PASS crash-restart › preload 返回新代端口
+PASS crash-restart › preload 返回新代令牌
+PASS crash-restart › 真实阶段包含 restarting
+PASS crash-restart › 不伪造托盘或活动
+PASS crash-restart › 真实宿主非夹具
+PASS crash-restart › 退出码 0
+PASS crash-restart › 后端 pid 已退出
+PASS crash-restart › 后端 pid 已退出
+PASS crash-restart › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-restart-limit-cIjw8m"
+PASS restart-limit › spawns 恰 4
+PASS restart-limit › 观察到同时存活峰值 1
+PASS restart-limit › 同时存活后端 ≤ 1
+PASS restart-limit › lastCode = restart_limit
+PASS restart-limit › 就绪不清零预算
+PASS restart-limit › 每代都真实 ready
+PASS restart-limit › 四个后端全退出
+PASS restart-limit › 预算用尽无第五次 spawn
+PASS restart-limit › 显示 restart_limit 页
+PASS restart-limit › 错误页可见
+PASS restart-limit › 退出码 0
+PASS restart-limit › 后端 pid 已退出
+PASS restart-limit › 后端 pid 已退出
+PASS restart-limit › 后端 pid 已退出
+PASS restart-limit › 后端 pid 已退出
+PASS restart-limit › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-kill-shell-recover-z0w7bM"
+PASS kill-shell-recover › 仅结束外壳成功
+PASS kill-shell-recover › 后端 5 s 内退出
+BACKEND_AFTER_SHELL_KILL exitCode=0
+PASS kill-shell-recover › EOF 正常退出码 0
+PASS kill-shell-recover › 外壳 OS PID 已退出
+PASS kill-shell-recover › EOF 自行释放锁
+PASS kill-shell-recover › EOF 自行删除只读端点
+PASS kill-shell-recover › EOF 释放端口
+PASS kill-shell-recover › 同目录重新启动
+PASS kill-shell-recover › 再启动就绪
+PASS kill-shell-recover › 再启动无重试
+PASS kill-shell-recover › 新后端 PID
+PASS kill-shell-recover › 真实宿主非夹具
+PASS kill-shell-recover › 重启实例退出码 0
+PASS kill-shell-recover › 后端 pid 已退出
+PASS kill-shell-recover › 后端 pid 已退出
+PASS kill-shell-recover › 观测辅助 PID 已退出
+PASS kill-shell-recover › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-startup-visible-CzTKcY"
+PASS startup-visible › 就绪前窗口可见
+PASS startup-visible › 就绪前是本地启动页
+PASS startup-visible › 状态文字为正在启动
+PASS startup-visible › 渲染层无 Node
+PASS startup-visible › 稳定 backend mode
+PASS startup-visible › 仅当前 preload 子集
+PASS startup-visible › 未就绪 getBackend null
+PASS startup-visible › 日志含 startup_timing
+PASS startup-visible › shown/ready/interactive 真实顺序
+PASS startup-visible › 就绪后 getBackend 为当前端口
+PASS startup-visible › 退出码 0
+PASS startup-visible › 后端 pid 已退出
+PASS startup-visible › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-timeout-BBZ0OX"
+PASS timeout › health_timeout 页含重试与查看日志
+PASS timeout › 失败不静默转 mock
+PASS timeout › 超时后端先退出
+PASS timeout › 失败 getBackend null
+PASS timeout › 查看日志实际调用固定路径
+PASS timeout › 重试后 gen+1
+PASS timeout › unsubscribe 后不再回调
+PASS timeout › 重试不重叠进程
+PASS timeout › 无残留后端
+PASS timeout › 重试预算归零
+PASS timeout › 退出码 0
+PASS timeout › 后端 pid 已退出
+PASS timeout › 后端 pid 已退出
+PASS timeout › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-root-locked-uIkNGz"
+PASS root-locked › 真实 Service 初始化后锁文件存在
+PASS root-locked › 真实持锁辅助进程存活
+FAIL root-locked › 场景执行: condition timeout (10000ms)
+CLEANUP_OBSERVED {"backend":{"phase":"waiting_health","phases":["idle","spawning","waiting_health"],"gen":1,"restarts":0,"pid":15640,"port":null,"lastCode":null},"window":{"exists":true,"visible":true,"url":"file:///D:/2030/Futures-AI-desktop-implement/shell/renderer/startup.html"}}
+PASS root-locked › 后端 pid 已退出
+PASS root-locked › 锁辅助 PID 已退出
+PASS root-locked › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-root-unwritable-C29jQu"
+PASS root-unwritable › 真实拒写证明
+PASS root-unwritable › 页面 code = data_root_unwritable
+PASS root-unwritable › 含路径与权限不足
+PASS root-unwritable › 明确权限不足原因
+PASS root-unwritable › 数据目录未改到临时目录
+PASS root-unwritable › 探测失败不 spawn 后端
+PASS root-unwritable › 未创建默认替代数据目录
+PASS root-unwritable › ACL 已恢复
+PASS root-unwritable › 修复权限后真实重试成功
+PASS root-unwritable › 退出码 0
+PASS root-unwritable › 后端 pid 已退出
+PASS root-unwritable › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-startup-disk-full-BsEF5k"
+PASS startup-disk-full › 页面 code = disk_full
+PASS startup-disk-full › 明确磁盘空间不足
+PASS startup-disk-full › 显示失败目录
+PASS startup-disk-full › 主进程存活
+PASS startup-disk-full › startup_failed 不重启
+PASS startup-disk-full › 只有一次 spawn
+PASS startup-disk-full › 失败子进程已退出
+PASS startup-disk-full › 退出码 0
+PASS startup-disk-full › 后端 pid 已退出
+PASS startup-disk-full › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-mock-wH34f2"
+PASS mock › mode = mock
+PASS mock › getBackend = null
+PASS mock › 无后端进程
+PASS mock › 夹具没有 spawn
+PASS mock › registry 文件不存在
+PASS mock › OS 子进程核查成功
+PASS mock › OS 无后端子进程
+PASS mock › mock 退出码 0
+PASS mock › 内置页 mock 横幅可见
+PASS mock › 明确设置业务不可用
+PASS mock › 环境变量显式 mock
+PASS mock › 内置 mock 也未 spawn
+PASS mock › 内置 mock 退出码 0
+PASS mock › 缺失打包配置不静默 builtin
+PASS mock › 配置形状无效返回资源错误而非抛异常
+PASS mock › bundled 路径不因文件缺失回退
+PASS mock › 明确 builtin 使用内置页
+PASS mock › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-frontend-missing-5cPDBS"
+PASS frontend-missing › 页面 code = frontend_missing
+PASS frontend-missing › 含资源路径
+PASS frontend-missing › 含重试与打开日志
+PASS frontend-missing › 查看日志按钮存在
+PASS frontend-missing › 非白屏错误页可见
+PASS frontend-missing › 真实后端保持 ready
+PASS frontend-missing › 未静默 mock
+PASS frontend-missing › 日志动作真实固定目录
+PASS frontend-missing › 补齐资源后重试成功
+PASS frontend-missing › 重载资源不重启后端
+PASS frontend-missing › 重载后 getBackend 当前端口
+PASS frontend-missing › 退出码 0
+PASS frontend-missing › 后端缺失显示 backend_missing
+PASS frontend-missing › 后端缺失不静默 mock
+PASS frontend-missing › 后端缺失 getBackend null
+PASS frontend-missing › 后端缺失不重启
+PASS frontend-missing › 错误实例退出码 0
+PASS frontend-missing › 后端 pid 已退出
+PASS frontend-missing › 临时目录已删除
+SUMMARY 202/203 assertions; 14 scenes; failures=1
+
+real	1m40.950s
+user	0m0.060s
+sys	0m0.075s
