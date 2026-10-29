@@ -1,16 +1,30 @@
 # Feature: desktop-shell 实施计划（plan.md）
 
-> Plan 阶段产物（**修订 4**，2026-10-28；修订 4 只做 T-04b 后端产物的构建收集源头修正，见 §0「修订 4」与 §7.5；修订 3 为修订 2 之后按审核员 A 的 Checklist 发现 F-01～F-07 与协调者静态关注点修补），由已冻结的 `spec.md` v1 生成（Gate 1：Walter 于 2026-10-28 在会话内批准，见 `review.md`）。
+> Plan 阶段产物（**修订 5**，2026-10-29；修订 5 只做 T-06c/T-06d 的设置导航、应用菜单测试驱动与两个旧场景兼容的实现设计修正，见 §0「修订 5」与 §6.1；修订 4 只做 T-04b 后端产物的构建收集源头修正，见 §0「修订 4」与 §7.5；修订 3 为修订 2 之后按审核员 A 的 Checklist 发现 F-01～F-07 与协调者静态关注点修补），由已冻结的 `spec.md` v1 生成（Gate 1：Walter 于 2026-10-28 在会话内批准，见 `review.md`）。
 > 需求以 spec 为准；本文只写实现机制、契约与验证方式，不新增需求、不改 AC。
 >
 > - **作者 / 通道**：Plan = claude-opus-5-5 via anthropic（claude-bridge 的 seven_day 额度已确认耗尽，本窗口不再探活；官方通道最小真实调用成功）。协调会话 = openai/gpt-6.1-sol（不是 Plan 或 Implement 作者）。
 > - **基线**：`8ba1b6a304f916e3d57ebdd6b89790b75a15f14c`，分支 `plan/desktop-shell-resume`。
+- **修订 5 作者 / 输入**：Plan / Tasks / Analyze = `anthropic/claude-opus-5-5` via anthropic，会话 `01a186ae-a724-7435-9516-4e3e3028f6a5`（PI 环境实核）。`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽（约 2026-10-30 重置），按 AGENTS §6.5 不重复探活；本轮官方最小真实调用返回 `ROUTING_PLAN_OK`；不是因测试变红而换模型。固定输入 `4b0c3c510906bba83f41eac4ac34bbbccf1c1a30`（分支 `plan/desktop-shell-settings-routing`，主树 T-06b 检查点；实施提交 `d77ce69` 代码相同），原始源码基线仍为 `8ba1b6a`。A 对修订 4 的 41/41 **不自动**覆盖修订 5。
 - **修订 4 作者 / 输入**：Plan = `anthropic/claude-opus-5-5` via anthropic（本轮官方通道最小真实调用成功；`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽，按 AGENTS §6.5 不重复探活；不是因测试变红而换模型）。固定输入 `1275ae2`（分支 `plan/desktop-shell-build-assets`），原始源码基线仍为 `8ba1b6a`。下方「阶段状态」是修订 3 时点的历史描述；修订 4 的审批状态以 `checklist.md` / `review.md` 为准，A 对修订 3 的 41/41 **不自动**覆盖修订 4。
 > - **阶段状态**：A 已对修订 2 出具初轮 Checklist（`anthropic/claude-fable-5-1`，30/41 勾选，结论"F-01、F-02 修补后可进入 Tasks"）；修订 3 处理全部 F-01～F-07，新 tasks.md 已写，Analyze 见 `analyze.md`。截至本文件生成时 A 尚未复查（含 Tasks/Analyze 对齐项）；**当前审批状态以 `checklist.md` / `review.md` 为准**。Implement、Converge、Review、Gate 2 均未开始。
 > - **配套产物**：`plan-gaps.md`（Tasks 之前的初步漂移与缺口报告，历史记录，不是 Analyze）、`manual-acceptance.md`（人工验收步骤 M-01～M-26，不是 checklist）、`tasks.md`、`analyze.md`（只读一致性报告）、`checklist-review-request.md`（交给 A 的复查请求）。
 > - **标记约定**：【现有】= 基线源码里已经有的行为；【计划】= 尚未实现的设计；【外部】= 依赖本 checkout 之外的产物或环境，本 feature 只能给出过渡证据。
 
 ## 0. 修订摘要
+
+### 修订 5（相对修订 4；T-06c/T-06d 设置导航与测试兼容，不改 spec、不改 AC、不改安全面）
+
+授权：Walter 对已批准的 desktop-shell 指示“继续”。本修订是**已批准 R-005 / AC-005-1/2/3 与冻结 spec 之内的实现设计修正**，不是需求变更、不是安全面变更、不是 Gate 2。协调 = `openai/gpt-6.1-sol`（只协调）。
+
+| 项 | 内容 |
+|---|---|
+| 触发（观测事实） | T-06b 已在实施提交 `d77ce69` 通过（42 unit / 16 场景 236/236；真实 `file://` 设置页对回环后端的 GET/PUT/DELETE 成功，**未触发** §10 CORS 停止规则）。实施者在写 T-06c/d 代码之前停止，`implementation-evidence.md` §10.4 记录三处冲突，本轮 Plan 另核出第四处：① `shell/test/e2e/startup-visible.js` 第 18 行断言 `Object.keys(window.futuresai)` **严格等于**当前五个成员，与 §3.3 已批准的 `openSettings()` 冲突；② `shell/test/e2e/frontend-missing.js` 第 10、33～35 行用**引导未完成**的全新真实根，却期望先进入外部前端，与 §4.1 第 6 步“未完成引导先进入内置引导页”冲突；③ §8.3 固定控制命令只有尚未实现的 `tray-click`，没有应用菜单点击驱动；`eval` 只在隔离的渲染层执行，在页面里调用 API 不能当作“菜单设置…”的证据；④ 引导“保存/跳过”与设置页“返回”需要回到已配置目标页的显式导航，§3.3 只列了 `openSettings()`，没有回到目标页的固定入口 |
+| 修正 | 见 §6.1：主进程单一路由 `routeToMain()`（就绪、`openMain()`、资源错误重试共用；`GET /settings/profile` 只读真实核心响应）；应用菜单“设置…”（固定 id `fai-settings`）与 IPC 共用同一生产处理器 `openSettings(via)`；§3.3 新增唯一的固定用途成员 `openMain()`；§8.3 新增测试专用命令 `app-menu-click {item:"settings"}`（调用真实应用菜单项的 `click`）；`startup-visible` 的成员断言改为“批准全集 + 当前必需子集 + 显式禁止项”；`frontend-missing` 的资源场景先用真实 settings 核心标记引导完成；T-06d 的注册指引细则 |
+| 不变 | spec 与 38 条 AC、schema；`backend/**`（路由、数据、settings 行为）；生命周期 `src/backend.js`、运行器 `check.js`、`src/paths.js`、`src/prefs.js`、`fake_backend.py`、`frontend-stub`；依赖、版本、lockfile；`.gitignore`；Chromium/CSP/CORS/sandbox/webSecurity/权限；测试钩子的启用旗标与隔离（仍不设控制令牌）；其余 14 个旧场景；任务数 41 |
+| 范围判定 | R-005 的 what（引导完成后不再重复、可跳过进入主界面、设置入口常驻可达）与 §3.3 `openSettings()`、§6“托盘菜单和应用菜单都有‘设置…’”“引导页与设置页之间提供显式导航，不再依赖 `location.reload()`”早已批准。`openMain()` 是 §6“显式导航”的最小固定用途落点（§6.1 第 4 段说明现有接缝为何不够）；`app-menu-click` 是与已批准 `tray-click` 同类的测试接缝，用于验证 T-06c 既有完成标准（AC-005-2 / WO-05“菜单设置… 打开设置页”），不新增任何权限（§6.1 第 5 段）。因此不需回 Clarify / Gate 1，不需新 ADR，不需 AGENTS §5.1 额外批准；若 A 判断其中任何一项需要 Walter 的工程批准，按停止处理，A 不代 Walter 批准 |
+| 任务 | 不拆新任务：T-06c 的上下文、修改范围、完成标准、验证改写并增加执行细则，估时 1.5h → 2h（合计 61h → 61.5h）；T-06d 的完成标准与验证细化；依赖与执行顺序不变 |
+| 审批 | 须由 A（新开独立会话）按 `settings-routing-review-request.md` 复查受影响质量项并记入 `checklist.md`，全部复选框为勾选状态后，Astra 才可实施 T-06c/d |
 
 ### 修订 4（相对修订 3；T-04b 构建收集源头修正，不改 spec、不改 AC、不改黑名单）
 
@@ -224,9 +238,11 @@ futuresai-backend --root <dir> --port-file <path> --token <hex> [--port 0] [--ex
 | `chooseDataRoot(): Promise<{pendingDataRoot}\|{cancelled}\|{error}>`、`relaunch()` | AC-004-4 |
 | `getLastCrash(): Promise<record \| null>` | AC-010-3 |
 | `getUpdateState()` / `checkForUpdates()` / `dismissUpdate(version)` / `openUpdateDownload()` | AC-008-2/3；下载交给系统浏览器 |
-| `openSettings()` | 在主窗口加载内置设置页（即使当前加载的是前端产物也可用） |
+| `openSettings(): Promise<{opened:true}\|{error:'not_ready'}>` | 在主窗口加载内置设置页（即使当前加载的是前端产物也可用）。与应用菜单“设置…”、托盘“设置…”（T-07b）共用主进程同一处理器；不接受参数（修订 5，§6.1） |
+| `openMain(): Promise<{opened:true}\|{error:'not_ready'}>` | 【修订 5 新增】回到主界面：主进程按真实 `GET /settings/profile` 重新路由——引导未完成 → 内置引导页，否则 → 已配置目标页（前端产物或内置设置页）。供引导“保存并继续/跳过”与设置页“返回主界面”使用；不接受参数，渲染层不能指定任何路径或 URL（§6.1） |
 
 - **不暴露** `ipcRenderer`、`shell`、任意 URL 打开、文件系统。
+- 上表是 `window.futuresai` 的**批准全集**（18 个成员）；各任务按依赖逐步实现其中的成员。e2e 对成员集合的断言规则见 §6.1 第 6 段：不得出现全集之外的成员，且当前阶段必需成员必须齐全。
 - 外链仍由主进程的 `setWindowOpenHandler` / `will-navigate` 统一处理。
 - 这份契约同时是给 `frontend-workbench` 的跨 feature 接口：前端读 `mode` 与 `getBackend()`；`window.futuresai` 不存在时（纯浏览器开发）走前端自己的 mock。前端侧是否采纳由该 feature 决定（plan-gaps D-03）。
 
@@ -393,12 +409,12 @@ futuresai-backend --root <dir> --port-file <path> --token <hex> [--port 0] [--ex
    - 探测失败不回退到临时目录。
 4. mock 模式（`--mock` 参数或 `FAI_MODE=mock`）→ 不启动后端，`mode='mock'`，直接执行第 7 步（AC-002-4）。
 5. 后端状态机启动（§4.2）。窗口通过 `onShellStatus` 显示"正在启动 / 等待健康检查 / 重启中（第 n/3 次）"。
-6. 就绪 → `GET /settings/profile`。`onboarding.completed=false` → 加载内置引导页（AC-005-1）；否则加载目标页（WO-01）。
+6. 就绪 → `GET /settings/profile`。`onboarding.completed=false` → 加载内置引导页（AC-005-1）；否则加载目标页（WO-01）。（修订 5）由主进程单一路由 `routeToMain()` 执行，`openMain()` 与资源错误重试复用同一函数；只读真实核心响应、入口校验形状，不另存引导状态（§6.1 第 2 段）。
 7. 目标页：
    - 打包时指定了前端（`app-config.frontend="bundled"`）→ `resources/frontend/index.html`；
    - 开发期 → `FAI_FRONTEND_DIST` 指定的目录；
    - 两者都没有 → 内置设置页。
-   - 目标页（前端产物**或**内置引导/设置页）文件缺失、`did-fail-load` 或 `render-process-gone` → 回到启动页显示 `frontend_missing`（文案"界面资源缺失或加载失败"，附路径）/ `renderer_crashed`，提供重试（重新加载）和打开日志（AC-007-3）。
+   - 目标页（前端产物**或**内置引导/设置页）文件缺失、`did-fail-load` 或 `render-process-gone` → 回到启动页显示 `frontend_missing`（文案"界面资源缺失或加载失败"，附路径）/ `renderer_crashed`，提供重试（经同一路由 `routeToMain()` 重新选页并加载，修订 5：保证引导未完成时重试也不会越过引导）和打开日志（AC-007-3）。
    - 启动页 `startup.html` 本身缺失时无法显示任何页面，退化为 `dialog.showErrorBox`（含日志路径）后退出；这是唯一使用原生错误框的路径。
    - "有意不带前端"（builtin 构建或未设置 `FAI_FRONTEND_DIST`）与"应有前端但缺失"这两种情况分开处理。
 8. 记录 `startup_timing {shown_ms, ready_ms, interactive_ms}`（`interactive_ms` = 目标页 `did-finish-load` 的时间），供 M-02 在基准机上判定。
@@ -485,7 +501,109 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
 - 关于（版本、构建信息、后端版本、手动检查更新、更新提示）
 - 诊断（上次异常、日志写入错误、"打开日志目录"、"导出诊断"）
 
-托盘菜单和应用菜单都有"设置…"，随时可以进入（WO-05）。引导页与设置页之间提供显式导航，不再依赖 `location.reload()` 切换视图。
+托盘菜单和应用菜单都有"设置…"，随时可以进入（WO-05）。引导页与设置页之间提供显式导航，不再依赖 `location.reload()` 切换视图。导航入口、应用菜单与旧场景兼容的具体设计见 §6.1（修订 5）。
+
+### 6.1 设置导航、应用菜单与旧场景兼容（修订 5，承载 AC-005-1、AC-005-2、AC-005-3 的界面子句）
+
+本节只定 T-06c/T-06d 的实现落点；不改 spec、AC、schema、后端路由、生命周期、依赖与安全配置。触发事实见 §0「修订 5」。
+
+**1. 职责划分**
+
+| 层 | 只做 | 不做 |
+|---|---|---|
+| settings 核心（经后端宿主，现有） | 档案读写、引导状态（`onboarding.completed/skipped`）、注册指引 `prepare` / `registration_hint` | —— |
+| 主进程 `main.js` | 页级路由（引导页 vs 目标页）、应用菜单、两个导航 IPC 处理器 | 不读写 settings 文件、不缓存或推导引导状态、不代理渲染层请求 |
+| 预加载 `preload.js` | 暴露无参数的 `openSettings()` / `openMain()` | 不暴露 `ipcRenderer`、路径、URL、文件系统 |
+| 内置页 `renderer/onboarding.*` | 渲染核心结果、在同一文件内按核心 `onboarding.completed` 选择显示引导区或设置区、调用两个导航成员 | 不自拼业务字段、不使用 `location.reload()` |
+
+**2. 单一路由 `routeToMain()`（`main.js`）**
+
+- 调用方只有三个：后端 `backend.ready` 事件、IPC `fai:open-main`（即 `openMain()`）、启动页对 `frontend_missing` / `renderer_crashed` 的"重试"（替换现有直接 `loadTarget()` 的分支）。
+- mock 模式：直接 `loadTarget()`（无后端，不请求档案；行为与现有一致）。
+- 后端模式：取当前代际端点 `state.backend.getBackend()`；为 null（未就绪）则不动作，页面由生命周期状态驱动。否则用 `src/backend.js` 已导出的 `httpJson(port, token, 'GET', '/settings/profile', 5000)`（只读复用，本机回环、不新增出站点）读取**真实核心响应**。
+- 入口校验（AGENTS §5.2）：只接受 `status===200` 且 `typeof body.onboarding.completed === 'boolean'`。`false` → 加载内置页 `renderer/onboarding.html`；`true` → `loadTarget()`（§4.1 第 7 步原逻辑不变）。
+- 失败：请求期间代际已变或后端已不在 ready → 静默返回（生命周期的 restarting/failed 状态负责界面）；代际未变且仍 ready 却拿不到合法响应 → `setStatus({phase:'failed', code:'startup_internal'})` 并显示启动页，"重试"走现有 `backend.retry()`。不新增错误码。
+- 主进程不保存 `completed` 副本：每次路由都重新读取核心响应。
+
+**3. 内置页的视图选择（为何不用 URL 参数）**
+
+- 主进程对"引导未完成"与"目标页 = 内置设置页"加载的是同一个文件 `onboarding.html`；页面用它本来就要请求的 `GET /settings/profile` 结果中的 `onboarding.completed` 决定显示 `#view-onboard` 还是 `#view-settings`（现有 `boot()` 逻辑保留）。两处都直接消费同一个核心字段，没有任何一方推导或存储引导状态。
+- 不给 `loadFile` 加 `query`/`hash`：现有场景（`startup-visible`、`settings-sources`、`ui-masking`、`mock`）用 `window.url.endsWith('/onboarding.html')` 判定页面，加参数会无故破坏这些只读旧场景。
+- 推论：引导未完成时从菜单打开"设置…"仍显示引导区（首启优先）；用户保存或跳过后即可在设置区编辑档案（AC-005-2"跳过后可从设置再次进入补填"）。
+
+**4. 导航入口**
+
+| 入口 | 主进程处理 | 前提 |
+|---|---|---|
+| 应用菜单"文件 › 设置…"（`id:'fai-settings'`，`accelerator:'CmdOrCtrl+,'`） | `openSettings('app-menu')` | —— |
+| `window.futuresai.openSettings()` → IPC `fai:open-settings` | `openSettings('renderer')` | —— |
+| 托盘"设置…"（T-07b，本修订不实现） | `openSettings('tray')` | T-07b 复用同一处理器 |
+| `window.futuresai.openMain()` → IPC `fai:open-main` | `routeToMain()`，记 `via:'renderer'` | —— |
+
+- `openSettings(via)`：后端 ready（`getBackend()` 非 null）或 mock 时加载内置页并返回 `{opened:true}`；否则返回 `{error:'not_ready'}`，保持启动/错误页。`openMain()` 的前提与返回相同。两个 IPC 处理器忽略渲染层传入的任何参数。
+- 应用菜单：`app.whenReady()` 中、**启动测试控制通道之前**调用 `Menu.setApplicationMenu(Menu.buildFromTemplate([...]))`。模板 = 自定义"文件"菜单（设置… / 分隔线 / `role:'quit'` 退出）+ `{role:'editMenu'}` + `{role:'viewMenu'}` + `{role:'windowMenu'}`，即 Electron Windows 默认菜单把"文件"换成含"设置…"的版本；默认"帮助"菜单只有指向 Electron 官网的链接，不保留。`role:'quit'` 经现有 `before-quit` → `gracefulQuit` 退出，与默认菜单的退出行为相同。
+- 钩子启用时，两个处理器各向 `hooks.records.navigation` 追加 `{action:'open-settings'|'open-main', via, result:'opened'|'not_ready'}`（与现有 `records.secondInstance` 同一模式，生产路径无钩子时不记录）。
+- 内置页：引导"保存并继续"（`PUT /settings/profile` → `POST /settings/onboard {skip:false}`）与"跳过"（`POST /settings/onboard {skip:true}`）成功后调用 `openMain()`；设置区新增"返回主界面"按钮（`#back-main`）调用 `openMain()`。删除全部 `location.reload()`。目标页本身就是内置设置页时，`openMain()` 重新加载同一页面，结果一致。
+
+现有接缝是否够用（结论：不够，只新增 `openMain()` 一个成员）：
+
+| 现有接缝 | 为何不能承担"回到目标页" |
+|---|---|
+| `location.reload()` | §6 已明确禁用；只会重载内置页，到不了前端产物目标页 |
+| `retryStartup()` | 语义是故障重试：后端 ready 时会 `backend.retry()` 停止并重启后端，代价与语义都不对 |
+| `openSettings()` | 方向相反（去设置页） |
+| `will-navigate` 允许 `file:` | 渲染层须自行知道并指定目标文件路径，等于暴露任意本地路径导航 |
+| `onShellStatus()` | 只有主进程 → 渲染层单向推送 |
+
+**5. 测试专用菜单驱动 `app-menu-click`（§8.3）**
+
+- 只在 `src/test-hooks.js` 的控制通道中实现：`{command:'app-menu-click', item:'settings'}`。`item` 是只有一个值的枚举，用 `message.item === 'settings'` 精确比较（不做对象键查找）映射到固定 id `fai-settings`；其他值或缺失 → 400 `{error:'unknown_menu_item'}`。
+- 处理：`electron.Menu.getApplicationMenu()?.getMenuItemById('fai-settings')`；菜单或菜单项不存在 → 409 `{error:'menu_item_missing'}`；`enabled===false` 或 `visible===false` → 409 `{error:'menu_item_unavailable'}`；否则调用该菜单项真实的 `click()`（Electron `MenuItem.click`，会执行生产模板里的同一回调 `openSettings('app-menu')`），返回 200 `{clicked:'settings'}`。命令本身不导航、不调用 `openSettings`，场景通过窗口 URL、页面视图与 `records.navigation` 验证效果。
+- 必要性：T-06c 的既有完成标准与 plan §9 AC-005-2 / WO-05 要求自动证明"菜单设置… 打开设置页"。`eval` 只能在渲染层调用 `openSettings()`，走的是 IPC 而不是菜单回调；原生 GUI 自动化不稳定且需要新工具；mock 业务处理器违反 AGENTS §5.6。调用真实菜单项的 `click` 是验证这条既有子句的最小方式，不是为猜测的风险新增复杂度。
+- 权限边界：与已批准的 `tray-click` / `close-window` / `request-quit` 同类——只触发用户本来就能点击的一个生产菜单项；不执行主进程 JS、不接受任意菜单路径/URL/文件路径、不返回菜单模板以外的数据；只在 `FAI_TEST_HOOKS=1`、回环监听、隔离临时目录下存在；不新增令牌或任何生产权限。若实施中发现必须更高权限（例如主进程任意 JS）才能驱动菜单，停止并报回 Plan。
+
+**6. `startup-visible` 的预加载成员断言（替换"严格等于五项"的一条断言）**
+
+测试内以字面量写出三组期望值：
+
+- `APPROVED` = §3.3 批准全集 18 项：`chooseDataRoot, checkForUpdates, dismissUpdate, exportDiagnostics, getAppInfo, getBackend, getLastCrash, getShellPrefs, getUpdateState, mode, onShellStatus, openLogs, openMain, openSettings, openUpdateDownload, relaunch, retryStartup, setShellPrefs`；
+- `REQUIRED_NOW` = T-06c 起必须存在的 7 项：`getBackend, mode, onShellStatus, openLogs, openMain, openSettings, retryStartup`；
+- `FORBIDDEN` = 显式禁止名：`ipcRenderer, shell, require, process, fs, openExternal, openUrl, openPath, send, invoke, loadURL, navigate`。
+
+断言（均为显式期望值，无单参数布尔断言）：`仅批准的 preload 成员`（不在 `APPROVED` 中的成员列表 = `[]`）；`当前必需成员齐全`（`REQUIRED_NOW` 中缺失的列表 = `[]`）；`成员类型符合契约`（`mode` 为 `string`，其余均为 `function`）；`不暴露高权限对象或任意导航`（`FORBIDDEN` 中出现的列表 = `[]`）。保留的保证：不得出现任何未批准成员（含 `ipcRenderer`/`shell`/`fs`/任意 URL）；放开的只是"后续任务按 §3.3 增加已批准成员时不必再改本场景"。该场景其余断言不变。
+
+**7. `frontend-missing` 的资源场景前提**
+
+首次启动前，用真实 settings 核心在场景自有根目录 `<LOCALAPPDATA>\FuturesAI` 执行 `set_onboard_state(root, completed=True)`（与 `settings-sources` 相同的写法，`cwd=backend`，不复制状态 schema），并新增断言 `真实核心设置引导完成`（退出码 0；失败即中止且不打印载荷）。缺失前端 → `frontend_missing` 页、日志动作、补齐资源后重试成功、重载不重启后端、`getBackend` 当前端口、后端缺失分支等**全部原断言保留不改**。生产路由优先级不为该场景改变；钩子与夹具不伪造引导状态。
+
+**8. 新场景（场景细节与断言名见 tasks T-06c / T-06d）**
+
+- `onboarding`（真实宿主，全新根，目标页 = 内置设置页）：首次进入引导 → 保存并继续 → 设置区；真实核心读出 `completed=true, skipped=false` 与档案；第二次启动直接显示设置区。
+- `onboarding-skip`（真实宿主，全新根，`FAI_FRONTEND_DIST=frontend-stub`）：已有前端时仍先进入引导 → 跳过 → 前端夹具（主界面）→ `app-menu-click` → 设置区、保存档案 → "返回主界面" → 前端夹具；真实核心读出 `skipped=true` 与补填字段。用前端夹具作目标页，使三次导航的 URL 互不相同。
+- `registration-guide`（真实宿主，真实核心写入的加密档案）：见第 9 段。
+- 登记表按序追加三项，T-06d 完成时共 19 个场景（原 16 个 + 3）。
+
+**9. T-06d 注册指引（§3.1.4 隐私区分的落点）**
+
+- 删除 `renderPrefill` 与写死的 `REGISTER_URL`；设置区 EIA 卡片新增"准备注册信息"按钮（`#prepare-guide`）与只读指引区（`#guide`，不在任何 `<form>` 内，只含文本元素，不含 `input`/`textarea`/`select`）。
+- 只在点击后请求 `GET /settings/registration-guide`（每次操作经 `getBackend()` 取当前端点与令牌，`cache:'no-store'`）；用 `textContent`/`createElement` 渲染。
+- 齐全（`missing` 为空）：逐项显示核心返回的五个 `{label, value}`（Email 为档案真实值）与 `notes`；只在此时创建"在浏览器打开 EIA 注册页"按钮（`#open-register`），点击用核心返回的 `submit.url` 经 `window.open` → 主进程 `setWindowOpenHandler` → `openExternal`。
+- 缺项：列出核心 `missing` 中的每个字段名（元素带 `data-missing=<字段名>`）与核心 `hint`，并把焦点移到 `#profile-form` 中第一个缺项对应的输入框；不创建 `#open-register`，不打开浏览器；粘贴 key 输入框与"验证并保存"保持可用。
+- 离开即清空：指引只存在于当前文档；`openMain()` / `openSettings()` 都会重新加载页面，指引随之消失；页面不把指引写入 `localStorage`/`sessionStorage`/IndexedDB。外壳不记录渲染层请求内容（§3.1.7）。
+- 普通档案表单不变：始终显示遮蔽邮箱，只提交被修改的邮箱（T-06b 已实现并通过）。
+- 后续任务注意：T-08e `external-link` 与 T-08d `diagnostics-privacy` 需要先用真实核心写入完整档案并点击"准备注册信息"，才会出现"打开注册页"按钮。
+
+**10. 写入范围（T-06c + T-06d 合计，下一位实施者唯一可写集合）**
+
+- 既有文件：`shell/main.js`、`shell/preload.js`、`shell/src/test-hooks.js`（只加 `records.navigation` 初始化与 `app-menu-click` 一个命令分支）、`shell/renderer/onboarding.html`、`shell/renderer/onboarding.js`、`shell/test/e2e/index.js`（只追加三项登记）、`shell/test/e2e/startup-visible.js`（只替换第 6 段所述一条断言）、`shell/test/e2e/frontend-missing.js`（只加第 7 段的核心前提与一条断言）、`specs/desktop-shell/implementation-evidence.md`（只追加）。
+- 新文件：`shell/test/e2e/onboarding.js`、`shell/test/e2e/onboarding-skip.js`、`shell/test/e2e/registration-guide.js`。
+- 只读：`backend/**`、`shell/check.js`、`shell/src/{backend,paths,prefs}.js`、`shell/renderer/startup.*`、`shell/test/unit/**`、`shell/test/fixtures/**`、其余 14 个 e2e 场景、`shell/package.json` / `package-lock.json`、`.gitignore`、spec / plan / tasks / checklist / analyze / review / README / HANDOFF / root-lock-risk-review、全局配置与已安装依赖。
+
+**11. 验证、停止与回滚**
+
+- 验证（cwd `shell`，在最后源码上）：`npm ci`；`npm run test:unit`（现有单测全部通过、0 skip）；`npm run check -- startup-visible frontend-missing onboarding onboarding-skip registration-guide settings-sources ui-masking`；最终无参数 `npm run check`（19 个登记场景、0 failures）。逐条命令、断言名与静态核对见 tasks T-06c"修订 5 执行细则"。
+- 停止规则：真实 `file://` 请求被 CORS/OPTIONS/权限阻止（§10）；驱动菜单需要比第 5 段更高的权限；任何旧场景只有改动第 10 段以外的文件或弱化其断言才能通过；主进程路由需要改后端或 settings 核心；`MenuItem.click()` 无法以编程方式执行生产回调。出现即停，写证据并报协调者，不自行扩大范围。
+- 回滚：只涉及第 10 段列出的 `shell/` 文件，回退即回到 T-06b 检查点；不触及用户数据与后端。
 
 ## 7. 打包与构建
 
@@ -630,10 +748,10 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
 - `FAI_BACKEND_CMD`（JSON 字符串数组）替换后端命令；`FAI_TEST_EVENTS`（§3.5，事件数组文件路径）；`FAI_UPDATE_FEED_URL`（仅 `http://127.0.0.1:*`）；`FAI_HEALTH_TIMEOUT_MS`（就绪超时）。
 - Chromium 开关 `host-resolver-rules=MAP remote.fai.test 127.0.0.1`：让"远程主机"`remote.fai.test` 在被放行时会真实打到回环夹具服务，从而可以用服务端命中数证明拦截（AC-009-2），无需外网。
 - **控制通道**：在 `127.0.0.1:0` 起一个 HTTP 服务（不另设鉴权：只在 `FAI_TEST_HOOKS=1` 时存在、只监听回环、被测进程使用隔离临时目录；生产后端的 Bearer 令牌不受影响），stdout 输出 `SMOKE {"event":"control","port":N}`。`POST /cmd` 的固定命令集（未知命令 → 400）：
-  - `snapshot` → `{paths, versions:{electron,node,chrome}, window:{exists,visible,minimized,url,title}, backend:{phase,phases,gen,restarts,pid,port,lastCode}, tray:{state,tooltip,menu}, records:{dialogs,notifications,external,secondInstance}, activity, prefs}`；
+  - `snapshot` → `{paths, versions:{electron,node,chrome}, window:{exists,visible,minimized,url,title}, backend:{phase,phases,gen,restarts,pid,port,lastCode}, tray:{state,tooltip,menu}, records:{dialogs,notifications,external,secondInstance,navigation}, activity, prefs}`；
   - `eval {js}` → 主窗口 `executeJavaScript` 的 JSON 结果；
   - `answer {queue}` → 追加对话框应答（如 `{type:"message",button:"取消退出"}`、`{type:"open",paths:[…]}`）；
-  - `close-window`（等同用户点关闭）、`tray-click {path:[菜单标签…]}`（调用托盘菜单项真实 `click`）、`request-quit`（调用生产退出入口）。
+  - `close-window`（等同用户点关闭）、`tray-click {path:[菜单标签…]}`（调用托盘菜单项真实 `click`）、`app-menu-click {item:"settings"}`（修订 5：单值枚举，只调用应用菜单固定 id `fai-settings` 菜单项真实 `click`；其他值/缺失 400 `unknown_menu_item`，菜单项缺失 409 `menu_item_missing`、不可用 409 `menu_item_unavailable`；细则见 §6.1 第 5 段）、`request-quit`（调用生产退出入口）。
   - 控制通道只调用生产函数，不含业务判断。不用 stdin：Electron 在 Windows 上读 stdin 的可靠性未经验证；stdout 只承载 `SMOKE` 行（现有 `check.js` 已证明可读）。
 
 **假后端 `test/fixtures/fake_backend.py`**（进程边界夹具，不是业务实现）：与真实宿主相同的命令行（`--root --port-file --token [--port] [--exit-on-stdin-eof]`）、端点文件、`FAI_HOST` 标记行、退出码 3 语义与 stdin EOF；端点只有 `/health`、`/shutdown`、`GET /settings/profile`（只返回路由需要的 `onboarding` 形状，由 `--onboarded 0|1` 决定，默认 1）。模式 `--mode`：`ok`、`slow-ready:<ms>`、`health-fail`（/health 恒 503）、`hang`（不监听）、`exit-before-ready`、`crash-after-ready:<ms>`（每个实例就绪 `<ms>` 后以退出码 1 退出）、`startup-failed:<code>`。登记：`FAI_FAKE_REGISTRY=<dir>` 下每次启动追加 `spawns.jsonl`（pid、时间），运行器据此统计启动次数，并用 pid 存活检查断言"同时最多一个后端"。重启预算在就绪后**不**清零，只在用户"重试"时清零（§4.2），所以 `crash-after-ready` 下应恰好启动 4 次（1 + 3 次重启）。
