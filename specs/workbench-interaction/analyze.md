@@ -3,6 +3,7 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
+> **当前结论（2026-10-30 r6.12.3：T-C02 开码前第二次源检查停的最小 scope / 类型精度修正）：见文末「Analyze R24」**（当前索引；只读登记，结构无变化；下一行指向 R23 的页首块及 R23 / R22 正文为当时原文，不改）。T-C02 另获 C01a `collect renders all input kinds…` 第 528 行总按钮数断言 → “投放到本作业”入口恰 1 个的一行替换（C03 继承不再改），与 r6.12.2 首例例外合为两处已知阶段性测试约束纠正、不删除验收覆盖；扫描无第三处；内部只读 `previewTarget: DeepReadonly<Upload> | null` 补“同一投放重试”的类型 / 清理点精度。33 已实施 / 40 未开始；标准 / 命令 / 工时 / 依赖 / AC 不变，R11 原件只读、不重开 Checklist；可再派 Astra 做 T-C02。
 > **当前结论（2026-10-30 r6.12.2：T-C02 / T-C03 开码范围冲突最小修正）：见文末「Analyze R23」**（当前索引；只读登记，结构无变化；下一行指向 R22 的页首块及 R22 / R21 正文为当时原文，不改）。第五批前 6 项已实施待 Review（`f65d3c6` … `6529f41`），33 已实施（27 已完成 + 6 待 Review）/ 40 未开始；T-C02 / T-C03 各获 `intake.spec.ts` 首例一条断言替换的唯一例外，标准 / 命令 / 工时 / 依赖 / AC 不变，R11 原件只读、不重开 Checklist；可再派 Astra 做 T-C02。
 > **当前结论（2026-10-30 r6.12.1：Checklist R11 已通过 + P3 S-44～S-48 吸收）：见文末「Analyze R22」**（当前索引；只读登记，结构无变化）。Checklist R11 原件 `1f99f80`（A = claude-fable-5-1 via anthropic，blob `27a76aa6…`）通过 26 / 26、0 P1 / P2；第五批 9 项仍未实施，可按 R11 开码。下一行指向 R21 的页首块及 R21 正文中的“未审核”“须 R11 后才可开码”“R3-B 由 R11 判定 / 判为 §5.1 时其余 8 项照常推进”为当时原文，正文不改，其条件分支已由 R11 判定废止。本行不是审核结论。
 > **当前结论（2026-10-29 r6.12 第五批派工准备）：见文末「Analyze R21」**（当前索引；下一行“R20 仍是最新 Analyze 索引”为当时原文，R20 及更早轮次正文不改）。第五批 = T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04（9 项，约 12 h，33 条命令）；结构 73 个任务 / 107 h / 245 / 245，27 已完成 / 46 未开始；唯一编号回边 T-B03 → T-B04，无环；AC 矩阵 46 行双向一致。**未审核、未实施**：须独立 A 新会话 Checklist R11 定向复核通过并提交后才可开码；R10 不自动覆盖新接口。本行不是审核结论。
@@ -1798,4 +1799,48 @@ spec / plan / tasks / 代码之间**无冲突**；第四批 5 项**已收口、�
 
 - 冲突已按最小范围修正：只给 T-C02 / T-C03 各一条 `intake.spec.ts` 首例断言替换许可，负断言换为正向初值 + 只读断言；结构 73 / 107 h / 245 / 245 / 46 AC、唯一回边 T-B03 → T-B04、无环均不变。不是需求变更，不回 Clarify / Gate 1；R11 已审 selection / pool 机制未变，原 R11 覆盖，不重开 Checklist / 投票。
 - **下一入口**：再派 Astra（openai/gpt-6-astra，新会话，实施树自 `6529f41`）按 DAG 做 T-C02 → T-C03 → T-C04，按 implementation-log §21.3 核对例外 diff；批末 Converge → 独立 A 第五批代码 Review（须核例外未削减业务 / 隐私断言并判 R3-B）。
+- 本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。
+
+## Analyze R24（只读；T-C02 开码前第二次源检查停后的最小 scope / 类型精度修正 r6.12.3，2026-10-30；当前索引，R23 / R22 及更早轮次正文不改；区别于 Checklist R11，**不是**审核结论）
+
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18989-2181-70b0-8a2d-5f03380ff6aa`；bridge 本窗口既有限额不重试，官方同模型调用成功；未改配置）。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。工作树 = 计划树 `D:/2030/Futures-AI-interaction-plan-batch4`，起点 HEAD `af31ddaba357600235de5abf4ab0d138766eb1fb`（clean，= 实施树），没有新建 D:/2030 目录。本轮没有运行产品测试，没有写代码 / 测试 / fixture，没有改 spec / checklist / 旧 Review / 旧 Converge / docs / HANDOFF / interface-handoff，没有 commit。结构脚本（复制自 R23 的 `scope-fix-struct.py`，逻辑未改）、HEAD / WT dump 与日志在协调器 Temp `wi-batch5-01a18388-q7s7olxl/scope-fix2-work/`，不是项目产物。
+
+### 1. 输入与性质
+
+- 重读：AGENTS.md；`docs/plan.md`；spec（blob `102af73bb448224fda5002430842868632b5b66a`）；plan §2.3【r6.12 / r6.12.1】；tasks 页首与 T-C01 / T-C01a / T-C02 / T-C03（r6.12.2）；Checklist R11（`1f99f80`，blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`，26 ☑ / 0 ☐）；本文件 R23；implementation-log §20 / §21；真读 `intake.spec.ts` 全 614 行、`stores/intake.ts`、`IntakeDrawer.vue`、`CollectWorkspace.vue`，及其他已运行 jobs 组件 / E2E 测试中的相关断言；实施者停止记录 `astra-preview-pool-summary.md`。
+- 事实：Astra 第二次在 T-C02 开码前按源读取停下（无 WIP、无红测、未回退）：C01a 用例 `collect renders all input kinds in contract order and consumes readonly caches without modifying them` 第 528 行 `expect(collect.findAll('button')).toHaveLength(1)` 与 T-C02 每行“预览 / 修正”、T-C03 每行“删除来源”必然冲突；r6.12.2 例外只覆盖 `WI H-5 store` 首例。
+- 另一个精度缺口（Plan 自查）：r6.12 要求预览读失败时 `ErrorState` 重试同一投放，但 `selection` 只在读成功后写入，失败时 Drawer 拿不到目标。
+- 性质：tasks 内部的**阶段性测试约束与后续任务权限冲突** + 已审机制的类型 / 清理点精度；不是 spec ↔ plan 冲突、不是新需求、不是模型调用失败；两次停止都是正常范围结果，不换模型。
+
+### 2. 修正（逐项）
+
+| 落点 | 内容 | 结论 |
+|---|---|---|
+| tasks T-C02 修改范围 | 【r6.12.3】第二处已知例外：只把第 528 行整行替换为 `expect(collect.findAll('button').filter(button => button.text() === '投放到本作业')).toHaveLength(1)`；该用例标题 / setup / 其余断言与其他旧例逐字不动；禁止链接化 / 隐藏 / 条件渲染新按钮 | 从“阶段总数”纠正为“入口唯一”，入口点击 → `open(job.id)` 由同 describe 另两例真实覆盖；行级按钮由 C02 / C03 新测覆盖；**不删除验收覆盖** |
+| tasks T-C02 / T-C03 | “一律不改”句与 r6.12.2 条加注“两处已知例外”；r6.12.2 首例例外内容原样保留；T-C03 继承第 528 行替换、不再改，仍只有 pool 行权限 | 例外仍逐行枚举，可用 `git diff` 限定核对 |
+| tasks T-C02 只读扫描结论 | 无第三处冲突；列出须照常满足的既有断言（入口为首个 button、行首 `aria-hidden` 为状态徽图标且不嵌 `li`、默认无 `role="status"`、抽屉根类名 / 首 `h2` / 头部首按钮 / 非模态源码禁词 / 无 router 可挂载、`$state` 为空、T-C01a 全局选择器规则） | 只列确定冲突，不泛化“旧测试都可修” |
+| plan §2.3 + tasks T-C02 / T-C03 store | 内部只读 `previewTarget: DeepReadonly<Upload> \| null`（初值 null，私有 ref + `computed`）：`selectUpload` 读前写副本；成功 `selection.mapping` 仍取 `upload.mapping`；`open()` 一并清；Drawer error 分支以它重试；C03 `assign` / `remove` 成功同 id（selection 或 previewTarget）清两者并复位 `previewStatus='idle'` / `previewError=null` | 类型精度，非新机制：H-5 四项、方法数、`selectUpload` / `confirm` / `submit` / 写后刷新语义不变；无通用 retry / 序号 / 取消 / guard |
+| tasks 页首 / implementation-log / README | 页首 r6.12.3 块；implementation-log 页首 + §20.2 指针 + §22；README 本 feature 行 | 记账 |
+
+**扫描范围与结果**：`intake.spec.ts` 中严格 DOM 总数类断言只有第 528 行冲突（第 488 / 499 / 611 行数抽屉实例）；`not.toHaveProperty` 只有第 260 / 261 行（R23 已处理）；`Object.keys` 两处不冲突（`$state` 为 `[]` 要求新字段含 `previewTarget` 走私有 ref + `computed`）。`job-detail` / `job-list` / `job-create` / `intervention-history` 组件测试与 `detail-stage` / `list-create` E2E 的相关断言或限定在子树、或不涉及采集区新元素、或已由 T-C01a 既有规则覆盖。**无第三处**。
+
+**未做 / 不扩**：未改 `submit` / `confirm` 对 `previewTarget` / 预览读状态的处理（原语义未要求，按最小原则不扩）；`interface-handoff.md` 内部成员列举未补 `previewTarget`（不在本轮写入范围，H-5 交接成员不变，交付登记时同步）；未改 Checklist；R11 已审“同一投放重试”机制未改语义，由第五批代码 Review 核实际类型。
+
+### 3. 结构复算（脚本只读；WT 对照 HEAD `af31dda`）
+
+日志 Temp `scope-fix2-work/scope-fix2-verify.log`：
+
+- **WT = HEAD**：73 个任务，约 107 h（A 33 / 45.5、B 8 / 12、C 5 / 8.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4），每项 0.5～2 h；完成标准 / 验证命令 245 / 245，逐任务 1:1，`PROBLEMS = []`；`UNKNOWN_DEP = []`；`CYCLE None`；`BACKEDGES = [(T-B03, T-B04)]`（唯一有意回边）；spec 46 = 矩阵 46；`PARTIAL_NOT_ANCESTOR = []`；`BIDIR_BAD = []`。第五批 9 项 / 12 h / 33 条命令，依赖不变（C02 ← C01 / C01a / A23；C03 ← C02 / A13 / C01a / A13a；C04 ← C03 / B04 / B06）。
+- **逐任务 dump**（预计 / 依赖 / 状态 / 每条标准与命令全文）HEAD 与 WT **逐字相同**（`cmp` 一致），结构日志亦相同：没有标准或命令被删减、放宽或改写；改动只在页首与 T-C02 / T-C03 修改范围。
+- 脚本按状态行计 27 done / 46 todo（6 项状态行保留派工原文，未 Converge 回写，历史状态）；真实进度以页首为准 = **33 已实施（27 已完成 + 6 已实施待 Review）/ 40 未开始**，46 AC 最终验收 0。
+
+### 4. 保护面
+
+- spec blob `102af73…`、checklist blob `27a76aa6…`（= R11 原件 `1f99f80`，26 ☑ / 0 ☐）与 HEAD 相同；改动只涉及本 feature 的 plan / tasks / analyze / implementation-log 与 `specs/README.md` 本 feature 行；`frontend` / `backend` / `docs` / `AGENTS.md` / `HANDOFF.md` / interface-handoff / 旧 Review / 旧 Converge 零差异；R23 / R22 正文不改。
+- 两处已知例外都是**阶段性测试约束纠正**，不是删除验收覆盖：AC-003-2 白名单、必填、metadata only（File / FileReader / `createObjectURL` 0 次）、`fai.jobs.v1` 不含正文、快照 / 刷新恰一次 / 失败不刷新、采集列表行序 / 种类 / 用途 / 状态徽 / 正文不显示 / 缓存不改等业务与隐私断言全部不动。
+
+### 5. 结论（Analyze R24，当前索引）
+
+- 第二处冲突已按最小范围修正：T-C02 只多一行断言替换许可（C03 继承），连同 r6.12.2 首例例外共两处，均逐行枚举、可 diff 核对；`previewTarget` 只补类型 / 清理点精度。结构 73 / 107 h / 245 / 245 / 46 AC、唯一回边 T-B03 → T-B04、无环均不变（以 §3 日志为准）。不是需求变更，不回 Clarify / Gate 1；R11 维持只读，不重开 Checklist / 投票。
+- **下一入口**：再派 Astra（openai/gpt-6-astra，新会话，实施树）按 DAG 做 T-C02 → T-C03 → T-C04，按 implementation-log §21.3 / §22.5 核对例外 diff；批末 Converge → 独立 A 第五批代码 Review（核两处例外、`previewTarget` 实际类型与清理点，并判 R3-B）。
 - 本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。
