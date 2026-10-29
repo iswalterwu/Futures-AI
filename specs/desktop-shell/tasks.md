@@ -4,6 +4,7 @@
 >
 > - **作者 / 通道**：Tasks = `anthropic/claude-opus-5-5`（`claude-bridge` seven_day 额度在当前窗口已确认耗尽，不重试；官方通道最小真实调用成功）。协调 = `openai/gpt-6.1-sol`（不是作者）。
 > - **输入**：冻结 `spec.md` v1（Gate 1 2026-10-28）+ `plan.md` 修订 3 + A 的初轮 `checklist.md`（只读）。固定源码基线 `8ba1b6a304f916e3d57ebdd6b89790b75a15f14c`，规划文件为未提交工作副本。
+> - **修订 4（2026-10-28，T-04b 构建收集源头修正）**：作者同上（`anthropic/claude-opus-5-5` via anthropic，本轮官方通道最小真实调用成功；bridge 同窗口已知耗尽，不重复探活）。输入 = 固定提交 `1275ae2` + `plan.md` 修订 4（§0、§7.5）。只改 T-04b 的上下文、修改范围、估时、完成标准、验证与执行细则，以及执行顺序表第 8 行和合计；任务数仍为 41，其他任务、依赖与历史计数不变。A 对修订 3 的 41/41 不自动覆盖修订 4，T-04b 的修订 4 部分须等 A 独立复查后才能实施。
 > - **执行前置条件（硬）**：Implement 开始前重新读取 `checklist.md` 全文，**全部复选框均已由 A 勾选**才可开始。本文件生成时 A 初轮为 30/41、Tasks/Analyze 对齐项待 A 复查；**当前审批状态以 `checklist.md` / `review.md` 为准**，未全部勾选前 Implement 不得开始。
 > - **执行者**：全部实施任务（含纠偏任务）由 `openai/gpt-6-astra` 执行；仅在调用失败（额度/鉴权/持续错误）时按 AGENTS §6 回退 `deepseek/deepseek-flash`，测试变红不是回退理由。**2026-10-28 17:25 UTC 用户明确恢复；原 Astra 会话从 `782aa20` 完成后端复验（最终 451 passed / 5 online skips），真实构建成功，但 T-04b 冒烟因 `_internal/pyarrow/tests` 黑名单命中而 blocked（11/12）。按冻结规则停止，未启动 T-05；实际进度见本文件末尾、`review.md` 与根目录 `HANDOFF.md`，不能将后端子句通过等同于最终 AC 验收。**
 > - **工作树**：一个 Astra 实施工作树 / 分支串行完成全部任务；`shell/main.js`、`preload.js`、`renderer/onboarding.*`、`package.json`/`package-lock.json`、`backend/app/*` 是共享文件，不安排并行写入者。
@@ -37,7 +38,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 | 5 | T-02c 内部只读通道 | 1.5h | T-01c、T-02b |
 | 6 | T-03b 设置端点纠偏 | 1.5h | T-01b |
 | 7 | T-03c 注册指引端点（暴露核心 prepare / registration_hint） | 1h | T-03b |
-| 8 | T-04b 打包冒烟与回环断言加强 | 1.5h | T-01b～T-03c |
+| 8 | T-04b 打包冒烟与回环断言加强 + 后端产物收集源头修正（修订 4） | 2h | T-01b～T-03c |
 | 9 | T-05b 路径/偏好纯模块 | 1.5h | — |
 | 10 | T-05c 启动引导 `bootstrap`（路径 → 单实例锁 → 数据目录） | 1.5h | T-05b |
 | 11 | T-05d e2e 运行器 + 运行器单测 | 2h | T-05b |
@@ -73,7 +74,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 | 41 | T-10d 打包产物 e2e | 1h | T-10c |
 | — | T-M1、T-M2a～c 人工验收批次（非代码任务） | 各 1.5–2h | T-10d |
 
-合计 41 个实施任务、约 **60.5 h**；另 4 个人工验收批次（约 6–8 h，执行人为人，不是 Implement 模型）。
+合计 41 个实施任务、约 **61 h**（修订 4：T-04b 1.5h → 2h；修订 3 时为 60.5h）；另 4 个人工验收批次（约 6–8 h，执行人为人，不是 Implement 模型）。
 
 ---
 
@@ -163,19 +164,94 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
   1. → `cd backend && python -m pytest tests/test_app_settings_api.py -q -v`：`TestRegistrationGuide::test_complete_profile_matches_core_labels`、`TestRegistrationGuide::test_missing_profile_lists_core_missing` PASSED（期望值写成字面量，不在测试里复算核心逻辑）。
   2. → 同上：`TestRegistrationGuide::test_requires_token`、`TestRegistrationGuide::test_no_key_in_response_and_no_email_in_logs` PASSED；既有用例无回归。
 
-### T-04b 打包冒烟与回环断言加强（纠偏 T-04，A-14、A-17）
+### T-04b 打包冒烟与回环断言加强 + 后端产物收集源头修正（纠偏 T-04，A-14、A-17；plan 修订 4）
 
-- **上下文**：`shell_check.py` 在健康检查从未成功时也判就绪；回环测试在仅回环机器上不断言。plan §8.2、§7.4。依赖：T-01b、T-01c、T-02b、T-02c、T-03b、T-03c（产物须包含这些改动）。
-- **修改范围**：`backend/tools/shell_check.py`；`backend/tests/test_app_health.py`（`TestLoopbackBind`）。
-- **估时**：1.5h
+- **上下文**：`shell_check.py` 在健康检查从未成功时也判就绪；回环测试在仅回环机器上不断言。plan §8.2、§7.4。依赖：T-01b、T-01c、T-02b、T-02c、T-03b、T-03c（产物须包含这些改动）。**修订 4**：上述加强已在实施 WIP 中写成并真实运行过（就绪判据正反例、回环、扫描夹具，以及真实 exe 的 11 项检查通过），但首次真实冒烟为 11/12：`_internal/pyarrow/tests` 命中冻结黑名单。根因是 contrib `hook-pyarrow.py` 的 `collect_data_files('pyarrow')` 没有排除测试数据，而 `--exclude-module tests` 不影响数据文件（plan §7.5 第 1 段）。本任务追加构建收集源头修正（plan §7.5），在 AC-001-4 冻结范围内，不改 spec、AC、黑名单。
+- **实施前置（修订 4）**：A 对修订 4 的独立复查（`build-assets-review-request.md`）已记入 `checklist.md`，且全部复选框为勾选状态。A 对修订 3 的 41/41 不自动覆盖修订 4。
+- **修改范围**：
+  - 修订 3 范围（已在 WIP 中，本次修正**只读**）：`backend/tools/shell_check.py`；`backend/tests/test_app_health.py`（`TestLoopbackBind`、`TestPackagedSmokeChecks`）。
+  - 修订 4 授权写入（仅限以下各项）：`backend/tools/build_backend.py`（只加仓库 hook 目录常量、`--additional-hooks-dir` 参数与 docstring 一行）；新增 `backend/tools/pyinstaller_hooks/hook-pyarrow.py`；新增 `backend/tests/test_app_packaging.py`；`specs/desktop-shell/implementation-evidence.md`（**追加**新一节，不改写、不删除已有的失败记录与警告）。
+  - 禁止改动：`spec.md`；plan §7.4 黑名单与 `shell_check.py`（含 `package_exclusions()`）；`test_app_health.py`；site-packages（含 contrib hook）与全局 pi 配置；`constraints.txt`、`pyproject.toml` 与任何包版本；`backend/app`、`backend/data`、`backend/settings`；`shell/`、`packaging/`；`checklist.md`、`tasks.md`、`review.md`、`specs/README.md`、`HANDOFF.md`（属于协调者或 A）。生成目录 `backend/build/`、`backend/dist/` 不手改，只能由 `build_backend.py --clean` 重新生成。
+- **估时**：2h（修订 3 为 1.5h；修订 4 追加 hook、接线、聚焦测试与干净重建复验）
 - **完成标准**：
-  1. AC-002-2：`shell_check.py` 只有看到 `/health` 200 + `data_ready:true` 才判就绪。
+  1. AC-002-2：`shell_check.py` 只有看到 `/health` 200 + `data_ready:true` 才判就绪；在干净重建的产物上成立。
   2. AC-009-1：pytest 与 `shell_check.py` 都用 `netstat -ano -p TCP` 按 pid 断言 LISTENING 地址只有 127.0.0.1，不依赖本机是否有非回环地址。
-  3. AC-001-4（后端产物）：`shell_check.py` 按 plan §7.4 黑名单扫描后端产物。
-- **验证**：
-  1. → `cd backend && python tools/build_backend.py && python tools/shell_check.py`（现有命令，加强后）：输出含 `PASS  就绪：/health 200 且 data_ready（AC-002-2）`。
-  2. → `cd backend && python -m pytest tests/test_app_health.py -q -v`：`TestLoopbackBind::test_listening_sockets_of_pid_are_loopback_only`（待新增，替换旧用例）PASSED；同 1 的命令输出含 `PASS  监听地址仅 127.0.0.1（AC-009-1）`；外部机器连接人工 M-26（可选，T-M2c）。
-  3. → 同 1 的命令输出含 `PASS  产物不含黑名单文件（AC-001-4）`；`cd backend && python -m pytest tests/ -q` 全量无回归。
+  3. AC-001-4（后端产物）：未修改的 `shell_check.py` 按 plan §7.4 冻结黑名单扫描 `build_backend.py --clean` 重新生成的产物，无命中；整份冒烟 12/12、退出码 0；与阻塞产物相比只少了 `_internal/pyarrow/tests/**`。
+  4. AC-001-4（收集源头，修订 4）：构建命令经 `--additional-hooks-dir` 把仓库 hook 目录交给 PyInstaller，真实构建确实加载了仓库 hook；真实执行仓库 `hook-pyarrow.py` 时，`datas`/`binaries` 没有目标位于 `pyarrow/tests` 下的条目，`hiddenimports` 没有 `pyarrow.tests*`；其 `hiddenimports`、`binaries` 与已安装 contrib hook 集合相等，`datas` 等于 contrib `datas` 去掉 `pyarrow/tests` 目标后的集合（plan §7.5 第 3、4 段）。
+- **验证**（cwd 均为 `backend`，第 7 步为仓库根目录；完整命令、顺序与停止规则见下方"修订 4 执行细则"）：
+  1. → 细则第 4、5 步：`python tools/build_backend.py --clean` 后 `python tools/shell_check.py`，输出含 `PASS  就绪：/health 200 且 data_ready（AC-002-2）`。
+  2. → `python -m pytest tests/test_app_health.py -q -v`：`TestLoopbackBind::test_listening_sockets_of_pid_are_loopback_only` PASSED（细则第 2 步的全量已包含此文件）；同 1 的输出含 `PASS  监听地址仅 127.0.0.1（AC-009-1）`；外部机器连接人工 M-26（可选，T-M2c）。
+  3. → 同 1 的输出含 `PASS  产物不含黑名单文件（AC-001-4）` 与 `12/12 项通过`，退出码 0；细则第 3、6 步产物清单对比退出码 0；细则第 2 步全量 `tests/` 全部通过且 skip 恰为 5 个 `tests/test_smoke_online.py`；细则第 7 步冻结文件 diff 为空。
+  4. → 细则第 1 步 `python -m pytest tests/test_app_packaging.py -q -vv`：`test_build_command_wires_repository_hook_dir`、`test_pyarrow_hook_collects_no_test_assets`、`test_pyarrow_hook_matches_contrib_except_tests` 均 PASSED（不得 skip）；细则第 4 步构建日志显示 `hook-pyarrow.py` 来自仓库 hook 目录；细则第 7 步 `git check-ignore` 确认新增两个文件不被忽略。
+
+#### 修订 4 执行细则（T-04b 内，按序执行）
+
+所有 pytest 均用 `PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8`、`-p no:cacheprovider`，每次用 `tempfile.mkdtemp` 新建仓库外 basetemp（沿用 `implementation-evidence.md` §2 的包装写法）；不开启在线冒烟，不读取真实凭证，不访问上游。第 1～6 步 cwd = `backend`。
+
+1. 聚焦测试：
+
+   ```bash
+   PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python -c "import tempfile,subprocess,sys; sys.exit(subprocess.call([sys.executable,'-m','pytest','tests/test_app_packaging.py','-q','-vv','-rs','-p','no:cacheprovider','--basetemp='+tempfile.mkdtemp(prefix='fai-t04b-pack-')]))"
+   ```
+
+   期望 3 passed、0 skipped。测试只在 `subprocess.run` 边界注入；两个 hook 测试真实执行仓库 hook 与已安装 contrib hook（plan §7.5 第 3 段）。
+2. 全量回归：
+
+   ```bash
+   PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python -c "import tempfile,subprocess,sys; sys.exit(subprocess.call([sys.executable,'-m','pytest','tests/','-q','-rs','-p','no:cacheprovider','--basetemp='+tempfile.mkdtemp(prefix='fai-t04b-full-')]))"
+   ```
+
+   期望全部通过，skip 恰为 5 个 `tests/test_smoke_online.py`（未开启的在线冒烟，不算成功）；任何其他 skip（含 pyarrow 的 `importorskip`）都不算通过。
+3. 重建前记录阻塞产物的文件清单（只读，不改 `dist/`）：
+
+   ```bash
+   python -c "import json,tempfile; from pathlib import Path; d=Path('dist/futuresai-backend'); out=Path(tempfile.mkdtemp(prefix='fai-t04b-before-'))/'files.json'; out.write_text(json.dumps(sorted(p.relative_to(d).as_posix() for p in d.rglob('*') if p.is_file())),encoding='utf-8'); print('BEFORE',out)"
+   ```
+
+   阻塞产物 `dist/futuresai-backend` 必须存在（实施树中保留的 11/12 产物）；不存在时停止并报协调者，不得在没有对照的情况下宣称"只少了 tests"。
+4. 干净重建（`--clean` 是现有脚本的正常再生成；完整输出写入仓库外日志，警告如实保留）：
+
+   ```bash
+   PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python -c "import tempfile,subprocess,sys,time; from pathlib import Path; log=Path(tempfile.mkdtemp(prefix='fai-t04b-build-'))/'build.txt'; print('BUILD_LOG',log,flush=True); start=time.monotonic(); out=log.open('w',encoding='utf-8'); result=subprocess.run([sys.executable,'tools/build_backend.py','--clean'],stdout=out,stderr=subprocess.STDOUT); out.close(); print('BUILD_EXIT',result.returncode,'SECONDS',round(time.monotonic()-start,2)); sys.exit(result.returncode)"
+   rg -n "hook-pyarrow.py" <BUILD_LOG>
+   ```
+
+   期望构建退出码 0；PyInstaller 的 `Processing standard module hook 'hook-pyarrow.py' from …` 行指向 `backend\tools\pyinstaller_hooks`，且没有指向 `_pyinstaller_hooks_contrib` 的 `hook-pyarrow.py` 行。
+5. 完整冒烟（不修改脚本、不加参数）：
+
+   ```bash
+   PYTHONDONTWRITEBYTECODE=1 PYTHONIOENCODING=utf-8 python tools/shell_check.py
+   ```
+
+   期望退出码 0、`12/12 项通过`。
+6. 产物清单对比（`<BEFORE>` 为第 3 步打印的路径）：
+
+   ```bash
+   python -c "import json,sys; from pathlib import Path; b=set(json.loads(Path(sys.argv[1]).read_text(encoding='utf-8'))); d=Path('dist/futuresai-backend'); a={p.relative_to(d).as_posix() for p in d.rglob('*') if p.is_file()}; rm=sorted(b-a); add=sorted(a-b); bad=[p for p in rm if not p.startswith('_internal/pyarrow/tests/')]; print('REMOVED',len(rm),'ADDED',len(add),'OTHER_REMOVED',len(bad)); [print('ADD',p) for p in add]; [print('OTHER',p) for p in bad]; sys.exit(0 if rm and not add and not bad else 1)" <BEFORE>
+   ```
+
+   期望 `REMOVED` > 0、`ADDED 0`、`OTHER_REMOVED 0`，退出码 0。
+7. 静态核对（cwd = 仓库根目录；`<输入基线>` = 协调者给定的、含 T-04b WIP 的固定实施输入提交）：
+
+   ```bash
+   git diff --check
+   git diff --exit-code <输入基线> -- specs/desktop-shell/spec.md backend/tools/shell_check.py backend/tests/test_app_health.py
+   git check-ignore -v --no-index backend/tools/pyinstaller_hooks/hook-pyarrow.py backend/tests/test_app_packaging.py   # 期望无输出、退出码 1（不被忽略）
+   git status --short --ignored -- backend/tools backend/tests specs/desktop-shell
+   rg -n "import pyarrow|from pyarrow" backend/app backend/data backend/settings   # 期望无命中（plan §7.5 第 4 段）
+   ```
+
+**停止规则**（出现即停，写入证据并报协调者，不自行扩大范围）：
+
+- 第 3 步阻塞产物不存在（无法对照）；
+- 第 5 步出现 pyarrow 以外的第三方黑名单命中，或 `pyarrow/tests` 仍被命中；
+- 第 6 步出现 `_internal/pyarrow/tests/` 以外的增删；
+- 第 1 步只有 mock `collect_*` 才能运行，或参照测试显示仓库 hook 与 contrib 在 tests 以外有差异；
+- 第 4 步日志显示 pyarrow hook 仍来自 contrib；
+- 第 5 步黑名单之外的检查（就绪、回环、三源、鉴权、退出、清理）失败；
+- 任何需要改动"禁止改动"清单中文件的情况；需要改 spec、黑名单或 AC 时回 Clarify / Gate 1。
+
+**证据**：在 `implementation-evidence.md` 末尾追加"修订 4 构建收集源头修正"一节，写明模型/会话、输入提交、改动文件、上述 7 步的实际命令与输出摘要（含失败与重跑历史、构建警告），以及仍未取得的外部边界。修正前的 11/12 结果与警告原样保留。实施者不提交、不 push / PR / merge（由协调者处理）。
 
 ### T-05b 路径 / 偏好纯模块（纠偏 T-05，A-06）
 

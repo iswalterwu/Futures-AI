@@ -1,15 +1,30 @@
 # Feature: desktop-shell 实施计划（plan.md）
 
-> Plan 阶段产物（**修订 3**，2026-10-28；修订 2 之后按审核员 A 的 Checklist 发现 F-01～F-07 与协调者静态关注点修补），由已冻结的 `spec.md` v1 生成（Gate 1：Walter 于 2026-10-28 在会话内批准，见 `review.md`）。
+> Plan 阶段产物（**修订 4**，2026-10-28；修订 4 只做 T-04b 后端产物的构建收集源头修正，见 §0「修订 4」与 §7.5；修订 3 为修订 2 之后按审核员 A 的 Checklist 发现 F-01～F-07 与协调者静态关注点修补），由已冻结的 `spec.md` v1 生成（Gate 1：Walter 于 2026-10-28 在会话内批准，见 `review.md`）。
 > 需求以 spec 为准；本文只写实现机制、契约与验证方式，不新增需求、不改 AC。
 >
 > - **作者 / 通道**：Plan = claude-opus-5-5 via anthropic（claude-bridge 的 seven_day 额度已确认耗尽，本窗口不再探活；官方通道最小真实调用成功）。协调会话 = openai/gpt-6.1-sol（不是 Plan 或 Implement 作者）。
 > - **基线**：`8ba1b6a304f916e3d57ebdd6b89790b75a15f14c`，分支 `plan/desktop-shell-resume`。
+- **修订 4 作者 / 输入**：Plan = `anthropic/claude-opus-5-5` via anthropic（本轮官方通道最小真实调用成功；`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽，按 AGENTS §6.5 不重复探活；不是因测试变红而换模型）。固定输入 `1275ae2`（分支 `plan/desktop-shell-build-assets`），原始源码基线仍为 `8ba1b6a`。下方「阶段状态」是修订 3 时点的历史描述；修订 4 的审批状态以 `checklist.md` / `review.md` 为准，A 对修订 3 的 41/41 **不自动**覆盖修订 4。
 > - **阶段状态**：A 已对修订 2 出具初轮 Checklist（`anthropic/claude-fable-5-1`，30/41 勾选，结论"F-01、F-02 修补后可进入 Tasks"）；修订 3 处理全部 F-01～F-07，新 tasks.md 已写，Analyze 见 `analyze.md`。截至本文件生成时 A 尚未复查（含 Tasks/Analyze 对齐项）；**当前审批状态以 `checklist.md` / `review.md` 为准**。Implement、Converge、Review、Gate 2 均未开始。
 > - **配套产物**：`plan-gaps.md`（Tasks 之前的初步漂移与缺口报告，历史记录，不是 Analyze）、`manual-acceptance.md`（人工验收步骤 M-01～M-26，不是 checklist）、`tasks.md`、`analyze.md`（只读一致性报告）、`checklist-review-request.md`（交给 A 的复查请求）。
 > - **标记约定**：【现有】= 基线源码里已经有的行为；【计划】= 尚未实现的设计；【外部】= 依赖本 checkout 之外的产物或环境，本 feature 只能给出过渡证据。
 
 ## 0. 修订摘要
+
+### 修订 4（相对修订 3；T-04b 构建收集源头修正，不改 spec、不改 AC、不改黑名单）
+
+授权：Walter 明确同意"修构建收集源头、排除第三方测试资产、保持黑名单不变，先修 Plan/Tasks、Analyze 和 A 独立复查，再交 Astra 实施"。该授权只针对这一具体构建修正，不是黑名单例外、需求变更、新机制、Gate 2 或 push/PR/merge。协调 = `openai/gpt-6.1-sol`（只协调）。
+
+| 项 | 内容 |
+|---|---|
+| 触发（观测事实） | 实施会话 `01a18285-2349-7290-b570-c8f9b2e18658`：后端全量 451 passed / 5 online skips；真实 `build_backend.py` 退出 0；真实 `shell_check.py` 11/12，唯一失败 = `_internal/pyarrow/tests`（含 `.pyx` 与 feather/orc/parquet 测试数据，非空目录）。见 `implementation-evidence.md` §4 |
+| 根因（只读核对已安装源码） | contrib `hook-pyarrow.py` 的 `datas = collect_data_files('pyarrow')` 没有排除 `tests`；现有 `--exclude-module tests` 只排除名为 `tests` 的模块，不影响数据文件（§7.5 第 1 段） |
+| 修正 | 仓库内 `backend/tools/pyinstaller_hooks/hook-pyarrow.py` 覆盖 contrib hook：只在 `datas` 上加 `excludes=['tests']`，`hiddenimports` / `binaries` 与 contrib 等价；`build_backend.py` 增加 `--additional-hooks-dir`；新增聚焦测试 `backend/tests/test_app_packaging.py`（§7.5） |
+| 不变 | spec 与 38 条 AC；§7.4 黑名单与 `shell_check.py`（含 `package_exclusions()`）；`backend/tests/test_app_health.py`；constraints / 包版本；site-packages 与全局 hook；运行时代码（`backend/app`、`backend/data`、`backend/settings`）；`shell/`、`packaging/`；任务数（41） |
+| 范围判定 | 落在冻结 AC-001-4"安装包内不含……开发期产物"之内：§7.4 早已把 `tests/` 列入黑名单，本修正只让构建产物满足既有规则，不新增或改动需求、AC、schema → 不需回 Clarify / Gate 1。PyInstaller sidecar 已由 D-007 决定，仓库 hook 与现有 `--exclude-module` 同属构建实现细节 → 不需新 ADR。它修的是已观测到的真实失败，改动约 10 行源码，经 Walter 授权，不属于 AGENTS §5.1 所说的猜测性复杂度 |
+| 任务 | 不拆新任务：T-04b 的修改范围、完成标准与验证改写，估时 1.5h → 2h（合计 60.5h → 61h），依赖与执行顺序不变 |
+| 审批 | 须由 A 独立复查受影响的质量项（`build-assets-review-request.md`）并记入 `checklist.md` 后，Astra 才能实施本修正 |
 
 ### 修订 3（相对修订 2；处理 A 的发现，不改 spec、不新增 AC）
 
@@ -516,6 +531,63 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
 
 后端产物沿用 `shell_check.py` 的测试依赖检查并补上同一黑名单。
 
+### 7.5 后端产物中第三方测试资产的收集源头（修订 4，AC-001-4）
+
+**1. 根因（只读核对已安装源码：PyInstaller 6.22.3、pyinstaller-hooks-contrib 2026.9、pyarrow 22.0.0）**
+
+- `_pyinstaller_hooks_contrib/stdhooks/hook-pyarrow.py`：`hiddenimports = collect_submodules('pyarrow', filter=lambda x: "tests" not in x)`、`datas = collect_data_files('pyarrow')`、`binaries = collect_dynamic_libs('pyarrow')`。三者中只有 `hiddenimports` 排除了 tests。
+- `collect_data_files`（`PyInstaller/utils/hooks/__init__.py`）：先按 includes（默认 `**/*`）收集包内全部文件，再去掉 Python 源码、字节码与扩展模块后缀（`.py`、`.pyc`、`.pyd` 等）的文件。`pyarrow/tests` 下的 `.pyx`、`.parquet`、`.orc`、`.feather`、`.gz`、`.md` 因此都作为数据收进 `pyarrow/tests`，与实测命中内容一致。
+- `excludes` 的语义：每个 glob 相对包目录匹配；命中目录时追加 `<目录>/**/*`，把该目录下的所有文件从收集集合中移除。`excludes=['tests']` 正好移除 `pyarrow/tests/**`，不影响其他目录。已枚举：已安装 pyarrow 中名为 `tests` 的目录只有包根这一处；`include/arrow/testing` 不在 §7.4 黑名单内，不处理。
+- `collect_dynamic_libs` 的模式是 `*.dll`、`*.dylib`、`lib*.so`，在 `pyarrow/tests` 下没有命中；纯 Python 模块进 PYZ 归档，不会生成 `_internal/pyarrow/tests` 目录。所以该目录**只**来自 `datas`。
+- 模块排除不等于数据排除：`--exclude-module tests` 只作用于名为 `tests` 的模块，`collect_data_files` 不读模块排除列表。
+- hook 选择规则：每个模块只启用一个 hook，取优先级最高者（`depend/imphook.py` 第 128～136 行）；`--additional-hooks-dir` 的优先级 1000 高于 contrib 的 −1000（`depend/analysis.py` 第 61～64 行，`building/build_main.py` 第 525～533 行）。因此仓库 hook 会**整体替换** contrib hook，必须自己给出与 contrib 等价的 `hiddenimports` 和 `binaries`。
+
+**2. 设计（最小改动）**
+
+| 文件 | 状态 | 内容 |
+|---|---|---|
+| `backend/tools/pyinstaller_hooks/hook-pyarrow.py` | 【计划】新增 | 只用 PyInstaller 公开 hook API 写三条赋值：`hiddenimports` 与 contrib 相同（`collect_submodules('pyarrow', filter=…)`，排除名称含 `tests` 的子模块）；`datas = collect_data_files('pyarrow', excludes=['tests'])`；`binaries = collect_dynamic_libs('pyarrow')`。文件头用一句注释说明用途（覆盖 contrib hook，只排除 `pyarrow/tests` 数据）与对照的 contrib 版本；不复制 contrib 文件正文和许可证头 |
+| `backend/tools/build_backend.py` | 【现有→改】 | 新增仓库 hook 目录常量（`BACKEND / "tools" / "pyinstaller_hooks"`），PyInstaller 命令加 `--additional-hooks-dir <该目录绝对路径>`；docstring"要点"补一行。其余参数（含 `--exclude-module pytest` / `tests`、`--add-data`）与 `--clean` 行为不变 |
+| `backend/tests/test_app_packaging.py` | 【计划】新增 | 见第 3 段 |
+
+- hook 目录名用下划线且不放 `__init__.py`：它不是 Python 包，不会被 `--collect-submodules` 或 pytest 收集。`git check-ignore -v --no-index` 已核对 `backend/tools/pyinstaller_hooks/hook-pyarrow.py`、`backend/tests/test_app_packaging.py` 均不被忽略。
+- 只覆盖 pyarrow 一个 hook，因为真实冒烟只报了这一处。**如果干净重建后出现其他第三方黑名单命中，停止并报回 Plan**，不得顺手扩大排除范围或放宽黑名单。
+
+放弃的方案：
+
+| 方案 | 不采用的原因 |
+|---|---|
+| `--exclude-module pyarrow.tests` | 只影响模块，`collect_data_files` 仍会收集测试数据（见根因） |
+| `--exclude-module pyarrow`，整个去掉 pyarrow | 改变运行时依赖集合（pandas 的可选 pyarrow 路径），超出"只排除测试资产"的授权 |
+| 改用仓库内 `.spec` 文件，在 Analysis 之后过滤 `datas` | 要把 CLI 构建换成 spec 构建，改动面更大 |
+| 改 site-packages 中的 contrib hook，升级/降级 contrib 或 pyarrow，改 constraints | 不在仓库内、不可复现，且被明确禁止 |
+| 构建后手工删除 `dist/…/pyarrow/tests` | 伪造结果；生成物不手改 |
+| 黑名单对第三方 `tests/` 豁免 | 是对冻结 §7.4 / AC-001-4 的变更，须回 Clarify / Gate 1，不在授权内 |
+
+**3. 测试（测真实实现，只在子进程边界注入）**
+
+`backend/tests/test_app_packaging.py`（cwd `backend`）：
+
+| 测试 | 断言 |
+|---|---|
+| `test_build_command_wires_repository_hook_dir` | 只把 `subprocess.run`（系统边界）换成记录器并返回非零退出码；调用真实 `build_backend.main`（不带 `--clean`，不删任何目录）→ 返回该非零码；记录的命令中 `--additional-hooks-dir` 恰出现一次，其值等于 `backend/tools/pyinstaller_hooks` 的绝对路径，且该目录含 `hook-pyarrow.py`；`--exclude-module pytest`、`--exclude-module tests`、`--add-data` 仍在；`cwd` 为 `backend` |
+| `test_pyarrow_hook_collects_no_test_assets` | 用 `runpy.run_path` 真实执行仓库 hook（真实 `collect_*` 作用于已安装 pyarrow）：`datas` 与 `binaries` 中没有目标路径（统一成 `/` 分隔）等于 `pyarrow/tests` 或以 `pyarrow/tests/` 开头的条目；`hiddenimports` 中没有 `pyarrow.tests` 及其子模块 |
+| `test_pyarrow_hook_matches_contrib_except_tests` | 同样真实执行已安装的 contrib hook（只读）作为独立参照：仓库 hook 的 `hiddenimports`、`binaries` 与 contrib 集合相等；仓库 `datas` = contrib `datas` 去掉目标位于 `pyarrow/tests` 之下的条目；被去掉的条目在当前受测环境非空（复现前提）；字面量锚点：`hiddenimports` 含 `pyarrow.lib`、`pyarrow.compute`、`pyarrow.parquet`，`binaries` 文件名含 `arrow.dll`、`parquet.dll`，`datas` 含目标为 `pyarrow/include/arrow` 的 `api.h` |
+
+- 参照规则"目标路径不在 `pyarrow/tests` 之下"是 §7.4 黑名单的需求表述，与生产 hook 的 glob `excludes` 是不同机制，不是把生产过滤逻辑抄进测试。
+- 两个 hook 各执行一次（模块级 fixture）；`collect_submodules` 会在隔离子进程中导入 pyarrow 子模块，这是 PyInstaller 自身的行为。
+- 未安装 pyarrow 的环境里该 hook 不会生效，两个 hook 测试用 `pytest.importorskip("pyarrow")` 并写明原因；**当前受测环境已安装 pyarrow，最终证据中这两个测试必须 PASSED，出现 skip 即不算通过**。如果脱离构建执行 hook 必须靠 mock 才能运行，停止并报回 Plan，不得 mock `collect_*`。
+- 不用真实凭证，不访问上游。
+
+**4. pyarrow 运行时可用性为何足够（限本修正范围）**
+
+1. 等价性：第 3 段的参照测试证明仓库 hook 与 contrib hook 的 `hiddenimports`、`binaries` 完全相同，`datas` 只少测试资产 → 冻结产物中 pyarrow 的模块、扩展、DLL 与非测试数据都与修正前一致。这是 pyarrow 可用性的主要保证。
+2. 真实产物：`build_backend.py --clean` 重新生成后运行**未修改**的 `shell_check.py`：真实 exe 启动并加载依赖链，`/health` 对两库做真实探测，三源随包，鉴权、优雅退出与清理全部通过（12/12）。注意 pandas 导入时尝试加载 pyarrow 但会吞掉 `ImportError`，所以冒烟本身**不能单独**证明 pyarrow 可导入，只证明应用整体可用。
+3. 产物差异：重建前记录阻塞产物的文件清单，重建后对比：被移除的路径非空且全部在 `_internal/pyarrow/tests/` 之下，没有其他增删。出现其他差异时停止并报告，不自行解释为通过。
+4. 静态事实：`backend/app`、`backend/data`、`backend/settings` 中没有 `import pyarrow` / `from pyarrow`（`rg` 核对），本 feature 的 AC 不直接调用 pyarrow API。因此不新增 pyarrow 功能探针——那需要改冻结的冒烟脚本或运行时代码，超出授权。
+
+**5. 证据与停止规则**：见 tasks T-04b。生成物只由 `build_backend.py --clean` 重新生成；修正前的 11/12 失败与构建兼容性警告保留在证据中。
+
 ## 8. 验证体系
 
 ### 8.1 三类证据，不得混用
@@ -536,6 +608,8 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
 | `cd backend && python -m pytest tests/test_app_startup_errors.py tests/test_app_channel.py tests/test_app_disk_full.py -q` | 待新增 | 启动分类与端口、只读通道、磁盘满（stdin EOF 用例加在现有 `test_app_lifecycle.py`，回环 netstat 用例加在现有 `test_app_health.py`） |
 | `cd backend && python -m pytest tests/ -q` | 现有 | 全量回归（提交前） |
 | `cd backend && python tools/build_backend.py` | 现有 | 无 `--backend-only` 参数 |
+| `cd backend && python tools/build_backend.py --clean` | 现有（`--clean` 是脚本已有参数） | 修订 4：T-04b 最终验证必须干净重建；构建将带 `--additional-hooks-dir`（待新增） |
+| `cd backend && python -m pytest tests/test_app_packaging.py -q -vv` | 待新增（修订 4） | 构建命令接线 + 仓库 pyarrow hook 的真实收集（§7.5） |
 | `cd backend && python tools/shell_check.py` | 现有（待加强） | 加强点：就绪必须看到健康检查成功；netstat 校验监听地址；黑名单扫描 |
 | `cd shell && npm ci` | 现有 lockfile | 所有外壳命令的前置步骤 |
 | `cd shell && npm run test:unit` | 待新增 | 脚本 `node --test "test/unit/*.test.js"`（Node 25 内置 glob）；输出逐条测试名 |
@@ -595,7 +669,7 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
 | AC-001-1 | §7 打包；§4.1 启动 | `build.ps1` 全流程 + 运行 unpacked 产物冒烟（e2e `packaged-ready`，新） | M-01 | 干净机【外部】；Q-009 允许已装运行时的过渡验收，可用 Windows Sandbox 获取真实干净环境证据 |
 | AC-001-2 | §4.1 第 2、8 步（立即显示启动页 + 计时） | e2e `startup-visible`（fake `slow-ready:3000`：就绪前页面为"正在启动"），新 | M-02 | 15 s 只能在基准机上判定【外部】；开发机计时仅供参考 |
 | AC-001-3 | §7.3 NSIS + `installer.nsh` | `builder-config.test.js`（读取真实 `electron-builder.config.js` 与 `installer/installer.nsh`：按用户安装、可改目录、`deleteAppDataOnUninstall:false`、`customUnInstall` 只删 `FuturesAI-Shell\session` 与 `run`、不触碰 `FuturesAI` 与 `shell-prefs.json`）（新）；安装/卸载效果无法自动化 | M-03 | 配置可自动化；卸载效果仅人工 |
-| AC-001-4 | §7.3 白名单 `files`；§7.4 扫描 | `builder-config.test.js`（`files` 白名单）（新）；`scan-package.test.js`（临时目录正/负夹具）（新）；`build.ps1` 第 7 步对真实 `dist/win-unpacked` 运行 `scan-package.js`（新）；`shell_check.py` 黑名单（加强） | M-04 | 可自动化 |
+| AC-001-4 | §7.3 白名单 `files`；§7.4 扫描 | `builder-config.test.js`（`files` 白名单）（新）；`scan-package.test.js`（临时目录正/负夹具）（新）；`build.ps1` 第 7 步对真实 `dist/win-unpacked` 运行 `scan-package.js`（新）；`shell_check.py` 黑名单（加强）；`test_app_packaging.py`（构建命令接线 + 真实执行仓库 pyarrow hook：无 `pyarrow/tests` 目标、其余与 contrib hook 一致）（新，修订 4）；T-04b 以 `build_backend.py --clean` 干净重建 + 未修改的 `shell_check.py` 12/12 验收（§7.5） | M-04 | 可自动化 |
 | AC-002-1 | `renderer/startup.*`；`onShellStatus` | e2e `startup-visible`（同上） | M-02 | 可自动化 |
 | AC-002-2 | §3.1.3 真实探测；§4.2 三条件就绪 | pytest：探测失败 → 503、`data_ready:false`（新，在访问层边界注入异常）；e2e `health-fail`（fake `health-fail`）：快照 `backend.phases` 从未出现 `ready`，超时后进入 `health_timeout` 页（新）；`shell_check.py` 必须看到健康检查成功 | —— | 可自动化 |
 | AC-002-3 | §4.2 重启预算 3 次 + `restart_limit` 页（含"导出诊断"） | e2e `crash-restart`（真实后端：结束后端 pid → 重启后就绪、端口变化、`restarts=1`）；e2e `restart-limit`（fake `crash-after-ready:300`：`spawns.jsonl` 恰好 4 条、同时存活后端 ≤ 1、最终 `restart_limit` 页）（新）；"导出诊断"入口在诊断包任务接入后由 `restart-limit` 复验：点击后 ZIP 文件存在（新） | M-16 | 可自动化 |
@@ -661,8 +735,11 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
 | 新文件被 `.gitignore` 忽略而未入库 | 外壳模块放 `shell/src/`；Implement 每个任务提交前跑 `git status --short --ignored shell packaging` 确认新增文件未被忽略 |
 | 页面（`file://`）对回环后端的带令牌 XHR 是否触发 CORS 预检未在 Plan 中核实（宿主无 CORS 处理；历史 T-06 记录称内置页能加载组织类型，但未经本轮复验） | `settings-sources` 与 `csp` 的正对照会直接暴露；若失败，Implement 停止并报回 Plan（是否给宿主加 CORS 属于安全面变更，需先改 plan 并经 A 复查），不得自行放宽 |
 | 控制通道/钩子误入生产行为 | 仅 `FAI_TEST_HOOKS=1` 时加载 `src/test-hooks.js`；启用时标题与日志带标记；控制通道只在钩子启用时存在、只监听回环，不另设令牌 |
+| （修订 4）第三方包把测试资产作为数据随包（实测 `pyarrow/tests`） | 仓库 hook 在收集源头排除（§7.5）；只处理已观测到的 pyarrow；重建后若出现其他第三方命中，停止并报回 Plan，不扩大排除、不放宽黑名单 |
+| （修订 4）contrib hook 或 pyarrow 版本变化使仓库 hook 偏离 | `test_pyarrow_hook_matches_contrib_except_tests` 以已安装 contrib hook 为参照，偏离即失败；pyarrow 未在 `constraints.txt` 锁定、随环境进入产物——这是既有事实，本修正不改包版本 |
+| （修订 4）PYZ 内可能经 `pyarrow.conftest` 的导入链带入 `pyarrow.tests` 纯模块（未核实） | 不在冻结的文件系统黑名单扫描范围内，也未被观测为失败；按 AGENTS §5.1 不做推测性加固，只登记为残余边界，交 A / Review 判断 |
 
-**回滚**：本 feature 只改动 `backend/app/`、`backend/tools/{build_backend,shell_check}.py`、`backend/tests/test_app_*`、`shell/`、`packaging/`。回退这些文件即可回到 data-layer + settings 的状态，不影响用户数据。
+**回滚**：本 feature 只改动 `backend/app/`、`backend/tools/{build_backend,shell_check}.py`、`backend/tools/pyinstaller_hooks/`（修订 4）、`backend/tests/test_app_*`、`shell/`、`packaging/`。回退这些文件即可回到 data-layer + settings 的状态，不影响用户数据。
 
 **按 AGENTS §5.1 有意不做的事**：下列任何一项如果要做，都需要 Walter 先批准：
 
