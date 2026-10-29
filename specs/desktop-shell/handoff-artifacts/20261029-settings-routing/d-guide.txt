@@ -1,0 +1,47 @@
+
+> futuresai-shell@0.1.0 check
+> node check.js registration-guide
+
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-registration-guide-9bcKAS"
+PASS registration-guide › 真实核心写入并读取完整加密档案
+PASS registration-guide › 真实宿主非夹具
+PASS registration-guide › 点击前指引区为空
+PASS registration-guide › 点击前不请求指引
+PASS registration-guide › 点击前无打开注册页
+PASS registration-guide › 档案表单邮箱为遮蔽值
+PASS registration-guide › 点击前普通页面无完整邮箱
+PASS registration-guide › 完整档案 指引五项等于核心值
+PASS registration-guide › Category 为官方标签
+PASS registration-guide › 含 Reason for use
+PASS registration-guide › 指引区不在表单内
+PASS registration-guide › 指引只读且安全渲染
+PASS registration-guide › 核心 notes 原样显示
+PASS registration-guide › 仅用户点击后请求一次
+PASS registration-guide › 打开指引不改变遮蔽表单
+PASS registration-guide › 未写入 Web 存储
+PASS registration-guide › openExternal 收到核心 URL
+PASS registration-guide › 点击外链不打开应用内页面
+PASS registration-guide › 无上游资源请求或 key 提交
+PASS registration-guide › 离开后指引清空 openMain
+PASS registration-guide › 导航后未写入 Web 存储 openMain
+PASS registration-guide › 离开后指引清空 openSettings
+PASS registration-guide › 导航后未写入 Web 存储 openSettings
+PASS registration-guide › 完整档案实例退出码 0
+PASS registration-guide › 真实核心写入缺项档案
+PASS registration-guide › 缺项档案 列出三项缺项
+PASS registration-guide › 核心 hint 原样显示
+PASS registration-guide › 无打开注册页
+PASS registration-guide › openExternal 记录为空
+PASS registration-guide › 缺项焦点在第一个缺项输入框
+PASS registration-guide › key 输入与验证按钮可用
+PASS registration-guide › 缺项无上游请求或 key 提交
+PASS registration-guide › 缺项未写入 Web 存储
+PASS registration-guide › 缺项档案实例退出码 0
+PASS registration-guide › 后端 pid 已退出
+PASS registration-guide › 后端 pid 已退出
+PASS registration-guide › 临时目录已删除
+SUMMARY 37/37 assertions; 1 scenes; failures=0
+
+real	0m9.636s
+user	0m0.061s
+sys	0m0.091s

@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **当前阶段：Plan修订5 / Analyze8 / A第4轮质量复查完成（41/41，无P1/P2），准备恢复T-06c/d实现（2026-10-29）**。固定规划提交 **38c482c**，明确openMain、真实应用菜单驱动和两旧场景最小兼容；未改需求/后端/安全。T-06b已通过42unit/16场景236/236，CORS STOP未触发；19场景尚未运行，不进T-07。
-> **先读 §16（本轮批准）**及Plan5/Checklist第4轮。RL-01 P3 OPEN及对照义务、R5新跟踪项保留；本质量复查不是代码Review/完整Gate2，不push/PR/merge。
+> **当前检查点：T-06b/c/d自动化子句已完成，最后源码42unit/19场景310/310、0fail/skip（2026-10-29）**。T06c/d实施保存 **209262e**、输入be6efe8；Plan5/Analyze8/A第4轮41/41先通过，未改需求/后端/安全，未触发CORS STOP。已停在T07a之前，无活跃worker/服务/端口。
+> **先读 §17（最新检查点）**、实施证据§11及Checklist第4轮。RL-01 P3 OPEN及对照义务、R5跟踪项保留；代码/人工/外部完整Review和Gate2均未完成，不push/PR/merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -351,4 +351,14 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 设计：无参数openMain固定返回目标；routeToMain真实GETprofile决定首启/目标；openSettings共用生产处理器。仅test-hooks新增app-menu-click单值settings驱动真实MenuItem.click，不开放任意主进程JS/路径；startup-visible用批准18全集/当前7必需/禁止项，frontend-missing核心标记完成后验证资源，均保留原保证。任务仍41、61.5h（T06c=2h）。无Spec/AC/CORS/后端/依赖变更。
 - A=**anthropic/claude-fable-5-1**官方，本轮SETTINGS_REVIEW_OK真实探活成功，同窗口不重试已耗尽bridge；新独立session **01a186df-a8d4-7549-a450-deb727c6dd65** 元数据实核。独立树 `D:/2030/Futures-AI-desktop-settings-checklist` / `review/desktop-shell-settings-routing`，HEAD固定38c482c，只写Checklist；17份输入指纹前后全一致，不跑测试。
 - **A第4轮结论：41 checked/0 unchecked，无P1/P2，R5-01～04四项P3，T06c/d修订5文档前置满足**。R5-01完成/验证编号不对位但具名覆盖全，Converge按断言核对；R5-02菜单409不可达分支缺自动化跟踪；R5-03 **实施T08e前必须补依赖T06d及完整档案+点击准备注册前提**；R5-04接口类型eval与空window not_ready为必要兼容。无额外工程批准/ADR/Gate1需求，A不授予更大范围。
-- 接下来在无writer边界同步四规划+A Checklist到原实施树并固定新输入，才由同首选Astra恢复T06c/d。当前代码仍T06b检查点，19场景未执行；原RL/PYZ/UTF8等跟踪与Gate2边界不变。run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。
+- 上述为文档批准时点。之后批准文件已同步并固定实施输入 **be6efe8**，实际T06c/d实施见§17；原RL/PYZ/UTF8与Gate2边界未变。run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。
+
+## 17. 2026-10-29 T-06c/d检查点：42unit / 19场景310，下一步T-07a
+
+- 唯一Implement=**openai/gpt-6-astra via openai**，新独立session **01a186ef-ba6d-74d6-987e-a3a349fc1f5e**，元数据及PI字段实核；原实施树/分支不变，输入 **be6efe8a9a7e62a7596c17107a2240e1df131e45**，退出后协调者核对/本地保存 **209262e3835c82c7a50b699d89cc27e1d8374fd3**。无其他并行writer，无模型/权限/配置变化。
+- T06c：真实核心引导状态决定首启优先级，保存/跳过走固定openMain，已有前端可从真实生产应用菜单进入设置并返回；无参数窄bridge。测试菜单命令调用实际MenuItem.click、非直接导航，未知输入400/不导航；固定回调记录仅action/via/result。两个旧场景只做Plan批准兼容，其余断言/控制面/runner不动。
+- T06d：只在显式准备注册点击后GET核心guide，五项官方值含Reason for use；普通档案仍遮蔽，完整合成邮箱只出只读指引区。缺项列表/焦点/不生成外链，齐全才按核心URL走既有外链出口。安全DOM、表单外、两个导航后清空和Web存储负向验证通过；未提交key、未真实开浏览器/访问EIA，不是注册/诊断隐私人工验收。
+- 本轮真实新基线42unit/16场景236；C后42unit/18场景273；D单场景37/37，最后定向7场景129/129；**最后源码42unit/0skip，默认全集19场景310/310、0failure（99.586s）**。3次npm ci成功。无产品测试FAIL；辅助Bash引号exit2、证据尾空行diff-check失败已修复并保留，不删历史root-lock/来源清除失败。
+- 仅授权8个既有源码+3新场景+证据§11；11源码SHA核对、冻结差异、git diff --check通过。全部68场景临时根已删，CIM/监听/服务所属计数均0，ACL原断言通过，无强制清理改绿。Coordinator只核对/串行集成，未代跑产品测试。原始log `C:/Users/iswal/AppData/Local/Temp/fai-routing-01a186ef/`，仓库精简 `specs/desktop-shell/handoff-artifacts/20261029-settings-routing/`。
+- **下一项T-07a**（活动归约器+事件夹具来源），未开工。仍18项任务及人工/外部验收未完成；RL-01 OPEN/UNKNOWN、RL-02正负对照和RL-04UTF8等整体Converge/Review前义务不变。R5-02菜单409自动化缺口保留，R5-03在T08e前必须由规划者补T06d依赖+完整档案/点击前提；R5-04已落实但空window保护仅静态核对，不冒充GUI断言。M13/14/15、真实前端/作业/agent/drain/上游、诊断隐私、干净Windows安装/15s基准/系统托盘toast等均无验收。
+- 主/实施树已内容同步、本地提交，无push/PR/merge；独立A第4轮只是规划质量复查，**不是完整代码Review/Converge/Gate2**。下次先重读本节、Plan5、Tasks T07a、Checklist41/41和全部保留风险，另派Astra，不跳任务。

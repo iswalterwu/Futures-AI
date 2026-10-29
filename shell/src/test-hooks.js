@@ -9,7 +9,7 @@ function install(electron, startup, state, requestQuit) {
     sessionData: app.getPath('sessionData'), crashDumps: app.getPath('crashDumps'),
     dataRoot: startup.dataRoot ?? null }
   emit({ event: 'paths', paths, gotLock: startup.gotLock })
-  const records = { dialogs: [], notifications: [], external: [], secondInstance: [] }
+  const records = { dialogs: [], notifications: [], external: [], secondInstance: [], navigation: [] }
   const answers = []
   const outlets = { Notification: electron.Notification }
   if (process.env.FAI_TEST_SCENARIO) {
@@ -87,6 +87,16 @@ function install(electron, startup, state, requestQuit) {
             answers.push(...message.queue); send(200, { queued: answers.length }); break
           case 'close-window': state.window.close(); send(200, { accepted: true }); break
           case 'tray-click': send(409, { error: 'tray_not_implemented' }); break
+          case 'app-menu-click': {
+            if (message.item === 'settings') {
+              const item = electron.Menu.getApplicationMenu()?.getMenuItemById('fai-settings')
+              if (!item) { send(409, { error: 'menu_item_missing' }); break }
+              if (item.enabled === false || item.visible === false) { send(409, { error: 'menu_item_unavailable' }); break }
+              item.click()
+              send(200, { clicked: 'settings' })
+            } else send(400, { error: 'unknown_menu_item' })
+            break
+          }
           case 'request-quit':
             send(200, { accepted: true })
             setImmediate(() => requestQuit())

@@ -1,0 +1,24 @@
+The write is complete and only `specs/desktop-shell/checklist.md` was touched.
+
+## 第 4 轮（Plan 修订 5）复查结论
+
+**身份 / 输入**：A = `anthropic/claude-fable-5-1` via anthropic（官方探活 `SETTINGS_REVIEW_OK`；bridge 同窗口已知耗尽未重试；未换模型、无 agent / 配置改动）。固定输入 `4b0c3c5`，固定 HEAD `38c482c6c97085d25c913e3cfdee2c0938854201`，未移动、未提交。真实 diff 只含四个规划文件（+234/−21，21 行删除全为同条目替换），spec / 源码零差异。只用 read/edit，无 Bash、无测试。
+
+**计数**：41 / 41 勾选，0 未勾选（开始与结束均如此，未新增条目）。
+
+**P1：0；P2：0；P3：4（新增 R5-01～R5-04，接受并跟踪）**
+
+| # | 内容 | 处置 |
+|---|---|---|
+| R5-01 | T-06c 完成标准↔验证按**条数** 5/5 成立，按**序号**不对位（标准 3 证据在验证 2 内；4↔3；5↔4；验证 5 为回归）。覆盖完整、每条有具名断言 | 不阻塞；作者下次触碰 tasks 时加括注；Converge 按断言名核对 |
+| R5-02 | `app-menu-click` 409 两分支生产下不可达、无自动化（AN8-03） | 接受；不造假菜单（§5.6）；Handoff 登记 |
+| R5-03 | plan §6.1 第 9 段已写 T-08e 需"真实核心完整档案 + 点击准备注册信息"，但 tasks T-08e 依赖（仍 T-05l/T-06b）与前提未同步；T-08d 已同步 | 不阻塞 T-06c/d（顺序表中 T-08e 在 T-06d 之后）；实施 T-08e 前补依赖 T-06d 与前提 |
+| R5-04 | 实施提示：`startup-visible` 的类型断言需同步扩展现有 `eval` 返回 `typeof`（属“替换该断言”的必要改动）；`openSettings(via)`/`routeToMain()` 实施时对 `state.window` 为空返回 `not_ready` 即可 | 记录，不改文档 |
+
+**独立验证要点**（均以审核树真实源码核实）：§0 修订 5 ①～④ 四处触发属实；§3.3 18 成员与 §6.1 `APPROVED` 字面量逐项相同、`REQUIRED_NOW` 7 = 现有 5 + 新 2；`httpJson` 已导出且签名相符；`fake_backend.py` 已实现 `/settings/profile`（默认 onboarded=1），故假后端场景无需改夹具；`settings-sources`/`ui-masking` 用 `url.endsWith('/onboarding.html')` → “不加 query/hash”是必要约束；`frontend-missing` 前提与 `settings-sources` 的真实核心写法同型；`ctx.rawCommand` 可断言 400 且 `check.js` 不需改；`setWindowOpenHandler` 仅 `https?://` → `openExternal`，钩子下已换记录器。
+
+**是否需要 Walter 工程批准 / ADR / Gate 1**：A 独立判定**不需要**（无 spec/AC/schema/后端/CORS/生命周期/依赖/安全面变更；无分层决策；每行改动对应已观测冲突与既有完成标准，`app-menu-click` 比现有 `eval` 权限更窄）。此为流程判定，**A 不代 Walter 批准任何事**。
+
+**门槛**：仅 T-06c/T-06d 修订 5 的 Implement **文档前置条件**成立，可交 `openai/gpt-6-astra`（协调者先同步四个规划文件到实施树并给出实施基线；Astra 开始前重读全部 41 个复选框）。**不是** feature 完成、Converge、代码 Review、Gate 2；T-06c/d 未实施、19 场景未运行；RL-01 P3 OPEN / PYZ / UTF-8 等既有登记不变。
+
+**写入**：只写 `specs/desktop-shell/checklist.md`（页首表新增第 4 轮行、统计行、15 个受影响条目的“修订 5 复查”、新增“复查记录（第 4 轮）”与结论首条）；全部历史轮次与失败记录原样保留。校验和由协调者按 `review-inputs.sha256` 比对（本轮无 Bash，未自算）。

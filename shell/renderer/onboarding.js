@@ -2,8 +2,6 @@
 // 内置引导/设置页（desktop-shell T-06）：页面只做视图，业务逻辑全在 settings 核心（经后端宿主）。
 // AC-005-1 首启进引导、AC-005-2 可跳过、AC-005-3 开通与状态、AC-005-4 不显示明文。
 
-const REGISTER_URL = 'https://www.eia.gov/opendata/register.php'
-
 const $ = (sel) => document.querySelector(sel)
 const displayedEmails = new WeakMap()
 const status = (el, text, kind) => {
@@ -94,21 +92,6 @@ async function renderSources() {
   $('#open-unregister').hidden = false
 }
 
-async function renderPrefill(profile) {
-  const rows = [
-    ['First Name', profile.first_name],
-    ['Last Name', profile.last_name],
-    ['Email', profile.email],
-    ['Category', profile.sector],
-  ]
-  $('#prefill').replaceChildren()
-  for (const [label, value] of rows) {
-    const row = document.createElement('div')
-    row.textContent = `${label}: ${value || '（未填）'}`
-    $('#prefill').append(row)
-  }
-}
-
 async function boot() {
   const backend = await window.futuresai.getBackend()
   if (!backend) {
@@ -129,7 +112,6 @@ async function boot() {
     show('view-onboard')
   } else {
     show('view-settings')
-    await renderPrefill(data.profile)
     await renderSources()
   }
 }
@@ -141,7 +123,7 @@ $('#onboard-form').addEventListener('submit', async (e) => {
   try {
     await api('/settings/profile', { method: 'PUT', body: JSON.stringify(payload) })
     await api('/settings/onboard', { method: 'POST', body: JSON.stringify({ skip: false }) })
-    location.reload()
+    await window.futuresai.openMain()
   } catch (err) {
     status($('#onboard-status'), `保存失败：${err.message}`, 'err')
   }
@@ -150,13 +132,14 @@ $('#onboard-form').addEventListener('submit', async (e) => {
 $('#skip-onboard').addEventListener('click', async () => {
   try {
     await api('/settings/onboard', { method: 'POST', body: JSON.stringify({ skip: true }) })
-    location.reload()
+    await window.futuresai.openMain()
   } catch (err) {
     status($('#onboard-status'), `跳过失败：${err.message}`, 'err')
   }
 })
 
 // ---- 设置 ----
+$('#back-main').addEventListener('click', () => window.futuresai.openMain())
 $('#profile-form').addEventListener('submit', async (e) => {
   e.preventDefault()
   const payload = profilePatch(e.target)
@@ -164,14 +147,53 @@ $('#profile-form').addEventListener('submit', async (e) => {
     const data = await api('/settings/profile', { method: 'PUT', body: JSON.stringify(payload) })
     fillForm(e.target, data.profile)
     status($('#profile-status'), '档案已保存', 'ok')
-    await renderPrefill(data.profile)
   } catch (err) {
     status($('#profile-status'), `保存失败：${err.message}`, 'err')
   }
 })
 
-$('#open-register').addEventListener('click', () => {
-  window.open(REGISTER_URL, '_blank') // 主进程会交给系统浏览器（AC-009-3）
+$('#prepare-guide').addEventListener('click', async () => {
+  const guide = $('#guide')
+  guide.replaceChildren()
+  $('#open-register')?.remove()
+  try {
+    const data = await api('/settings/registration-guide', { cache: 'no-store' })
+    if (data.missing.length) {
+      const hint = document.createElement('p')
+      hint.textContent = data.hint
+      guide.append(hint)
+      for (const field of data.missing) {
+        const row = document.createElement('div')
+        row.dataset.missing = field
+        row.textContent = field
+        guide.append(row)
+      }
+      $('#profile-form').elements[data.missing[0]].focus()
+      return
+    }
+    const fields = document.createElement('dl')
+    for (const { label, value } of data.prefill) {
+      const term = document.createElement('dt')
+      term.textContent = label
+      const detail = document.createElement('dd')
+      detail.textContent = value
+      fields.append(term, detail)
+    }
+    guide.append(fields)
+    for (const note of data.submit.notes) {
+      const text = document.createElement('p')
+      text.textContent = note
+      guide.append(text)
+    }
+    const open = document.createElement('button')
+    open.type = 'button'
+    open.id = 'open-register'
+    open.textContent = '在浏览器打开 EIA 注册页'
+    open.addEventListener('click', () => window.open(data.submit.url, '_blank'))
+    $('#registration-actions').append(open)
+  } catch (err) {
+    guide.textContent = `准备失败：${err.message}`
+  }
 })
 
 $('#verify-key').addEventListener('click', async () => {

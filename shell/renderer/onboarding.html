@@ -73,6 +73,7 @@
 
       <!-- 设置（AC-005-3/4） -->
       <section id="view-settings">
+        <button type="button" id="back-main">返回主界面</button>
         <h2>用户档案</h2>
         <p class="hint">档案仅存本机、不上传。邮箱在界面中遮蔽显示。</p>
         <form id="profile-form" class="card">
@@ -91,9 +92,9 @@
           用档案信息填写 EIA 注册表单，由你本人在浏览器提交；key 会发送到你的邮箱。程序不会代你提交表单，也不会读取你的邮箱。
         </p>
         <div class="card">
-          <div id="prefill" class="muted"></div>
-          <div class="actions">
-            <button type="button" id="open-register">在浏览器打开 EIA 注册页</button>
+          <div id="guide" class="muted" aria-live="polite"></div>
+          <div class="actions" id="registration-actions">
+            <button type="button" id="prepare-guide">准备注册信息</button>
             <button type="button" id="open-unregister" class="quiet" hidden>清除已保存的 key</button>
           </div>
           <label style="margin-top:14px">粘贴收到的 API key</label>

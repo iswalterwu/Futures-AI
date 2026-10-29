@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前阶段：**Plan5 / Analyze8 / 独立A第4轮质量复查41/41通过，无P1/P2，准备恢复T06c/d**。规划固定38c482c，明确固定导航/真实菜单驱动/两旧场景兼容；R5-01～04四P3跟踪，非新安全权限。T06b的42unit/16场景236/236为已验代码，19场景未运行；RL-01 OPEN与完整Review/Gate2边界不变，不进T-07。
+> 当前检查点：**T06b/c/d自动化子句完成，最后源码42unit/19场景310/310、0fail/skip**。T06c/d保存209262e（输入be6efe8），按Plan5/Analyze8/A第4轮41/41批准范围实施，无安全放宽/CORS STOP。未进入T07a；RL-01 OPEN与R5跟踪项保留，完整代码Review/Converge/Gate2尚未完成。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -251,7 +251,17 @@ A第4轮=**anthropic/claude-fable-5-1**（官方SETTINGS_REVIEW_OK），新sessi
 
 P3跟踪：**R5-01**条数5/5但标准/验证序号不一，覆盖完整，Converge按断言名核对；**R5-02**菜单409两分支不可达/无自动化，接受记录；**R5-03**实施T08e前必须补依赖T06d和真实完整档案+准备注册前提（Plan已写、Task未同步）；**R5-04**startup-visible eval需同步类型字段、state.window空返回not_ready是必要兼容。未把这些写成已修。
 
-run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。下一步串行同步批准文件/给实际新实施HEAD后交Astra，当前T06c/d尚未写代码、19场景未执行，非Converge/代码Review/Gate2。
+run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。以上是文档批准时点，之后已串行同步并实施，最新如下；质量复查不等于代码Review/Gate2。
+
+### T06c/d自动化实施检查点（下一步T07a，未启动）
+
+- 实际Implement=**openai/gpt-6-astra via openai**，session **01a186ef-ba6d-74d6-987e-a3a349fc1f5e**，session/PI实核，无回退/子agent/并行writer；原实施树输入 **be6efe8a9a7e62a7596c17107a2240e1df131e45**。结束后协调者核对11源码SHA、冻结/范围、原日志，再本地提交 **209262e3835c82c7a50b699d89cc27e1d8374fd3**，原样集成；协调者未跑产品测试。
+- **T06c通过自动化子句**：真实核心completed路由、首启优先、保存/跳过/返回固定openMain、真实应用菜单共用openSettings、最小驱动真实MenuItem.click与不合法参数400；bridge18批准/7必需与危险项断言、资源场景真实前提/旧断言保留，其他旧场景不改。
+- **T06d通过自动化子句**：显式点击核心guide、五字段/官方Category/Reason、完整合成邮箱只读表单外，缺项提示/焦点/无打开注册页，核心URL经既有http(s)出口记录，安全DOM/两入口离开清空/Web存储负向均验证。无key提交、真实浏览器/外网EIA调用、CORS权限STOP或安全面改动。
+- 新基线：42unit/16scene236；C定向7/110、C最后42unit/18scene273；D单场景37/37；最终定向7/129；**最后源码42unit/0skip、默认19scene310/310、0failure（99.586s）**。3次npm ci成功。无产品测试FAIL；辅助清理命令引号exit2与文档尾空行diff-check失败已修/记录，旧root/source失败历史保留。
+- 冻结比对230tracked中221相同/9授权差异，另3新场景，未改backend/runner/生命周期/依赖/权限/其他旧scene。68临时根全部删除、所属进程/监听/服务0、ACL断言通过，未用强杀/删锁消除失败；git diff --check、11源码指纹与字节集成核对通过。
+- 实施证据 **§11**；原始 `C:/Users/iswal/AppData/Local/Temp/fai-routing-01a186ef/`，精简归档 `handoff-artifacts/20261029-settings-routing/`。完成23项的自动化实施范围，仍18项任务及人工/外部证据。下一T07a未开工；M13/14/15等未验，独立整体代码Review/Gate2未做。
+- RL-01仍OPEN/UNKNOWN，三次全集未复现不是根因修复；RL02对照/UTF8/PYZ/507GUI等仍待既定节点。R5-02菜单409缺自动化保留；R5-03在T08e前补T06d依赖与完整档案+准备注册前提；R5-04代码已落实，空window分支只有静态核对。无用户风险接受、无push/PR/merge。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 
