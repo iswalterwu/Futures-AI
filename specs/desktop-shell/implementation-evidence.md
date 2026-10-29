@@ -633,3 +633,51 @@ a0d926709e28cf6cc9e7fd245e4c4f9f54d9f28605986c11abdc873bae6cd212  shell/test/e2e
 - 本轮未启动 Electron、Python 宿主/helper、监听器或服务，未创建 scene roots、未改 ACL，无需 kill/删锁/恢复 ACL；本轮自有产品进程、监听、服务及 scene roots 均为 **0（未创建，不是已跑场景的清理证明）**。仅保留 Git 外证据目录；没有服务/端口需保留。
 - **T-07a 未实施/未完成，T-07b NOT STARTED**；未进入 T-07c/d/e、T-08、Converge、代码 Review、Gate2 或人工 M-ID。RL-01 仍 P3 OPEN / UNKNOWN / nonblocking；本轮无 root-lock 运行，不能称未复现或已修。RL-02 对照、UTF-8、PYZ、R5-02/03 与全部人工/真实作业/drain/上游义务保留。
 - 未 commit/push/PR/merge/reset；等待协调者安排上述窄范围规划与所有权处理，不在本调用绕过停止点继续写 reducer。
+
+## 13. 2026-10-29 T-07a～e 新基线与预检停止（旧场景 null 断言冲突，未实施）
+
+### 13.1 身份、批准输入与冻结
+
+- Implement = **openai/gpt-6-astra via openai**；session **01a187d9-b23d-712f-8297-3106886f9e49**（仅打印 PI_PROVIDER / PI_MODEL / PI_SESSION_ID）。唯一 writer，未换模型、通道或启动其他 agent。
+- 工作树 `D:/2030/Futures-AI-desktop-implement`，分支 `feat/desktop-shell-astra`；固定输入 HEAD **7c61681e92448bd566c420470cf0cb58db5fea2e**，起始干净。与主输入 **66289830abb94877a0000ff6aedfd5acb251c884** 的 whole-tree Git diff 为空。未修改其他工作树、provider/auth/全局配置。
+- 已重读 AGENTS、docs 四权威文件、冻结 Spec、完整 Plan6 / Tasks / Checklist（续读全部截断部分）、Analyze 迭代9、Review、HANDOFF §19、证据§12、root-lock-risk-review 最终v2及实际源码接口。Checklist **41 checked / 0 unchecked**；本次依据新 A5 批准，不复用旧41假放行。未修改审核/规划文档。
+- 仓库外 RUN = **`C:/Users/iswal/AppData/Local/Temp/fai-t07-01a187d9-7exsC2/`**。修改前生成 **254个 tracked 文件**的 `input.sha256`；清单自身 SHA-256 = **e2a05d52df699517d3ff30af5fead42102d2bca58739ef4f87f5e42ffc75a65d**。追加本节前 `sha256sum -c` 全部通过（`freeze-before-evidence.log`）。完整原始命令/工具结果保留本 session；日志、manifest 均在 Git 外。
+
+### 13.2 本轮真实新基线（不是历史42/310引用）
+
+cwd = `shell`，按顺序执行，所有命令退出0：
+
+| 原始命令 | 实际结果 | RUN 原始日志 |
+|---|---|---|
+| `npm ci` | 70 packages，3.499s墙钟；既有 `boolean@3.2.0` deprecated 警告仍在 | `baseline-npm.log` |
+| `npm run test:unit` | **42 passed / 0 failed / 0 skipped / 0 cancelled**；测试4973.9338ms，墙钟5.535s | `baseline-unit.log` |
+| `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check` | **默认全部19场景，310/310断言，0 failures，98.741s墙钟** | `baseline-e2e.log` |
+
+- 真实 Electron 命令在父环境中以进程局部 `env -u` 明确移除了 **FAI_CHECK_E2E_DIR、FAI_CHECK_PRODUCER**，没有替身、没有指定聚焦场景；未改全局环境。
+- 本轮 runtime 快照：**Electron33.4.11 / 内嵌Node20.18.3 / Chrome130.0.6723.191**；构建机 **Node25.2.1 / npm11.7.0 / Python3.14.2**（`versions.log`）。
+- root-locked 本轮自然运行：helper-ready1194ms、waiting_health1696ms（alive=true）、failed(data_root_locked)3748ms、重试ready6182ms、Electron退出6801ms。未复现历史10s失败；**不证明RL-01根因已修**，10s/30s与所有原断言/时间线保持冻结。
+- 无本轮产品测试FAIL。未运行T07目标测试或最终源码验证；上表只是输入源码基线，不能标为T07最终结果。
+
+### 13.3 新发现的 STOP：旧场景硬编码 null 与真实状态接线不兼容
+
+**BLOCKED（静态预检，未制造运行时红灯）**。基线输出显示旧场景仍验证“未实现 tray/activity 不伪造”“不伪造托盘或活动”，随即用 read 核对实际文件：
+
+| 位置 | 当前精确断言 / 授权冲突 |
+|---|---|
+| `shell/test/e2e/harness-selftest.js:26` | `ctx.expectEqual('未实现 tray/activity 不伪造', [snapshot.tray, snapshot.activity], [null, null])`；本次文件全只读 |
+| `shell/test/e2e/crash-restart.js:32` | `ctx.expectEqual('不伪造托盘或活动', [after.tray, after.activity], [null, null])`；T07e只准追加通知/托盘断言、不能删除原断言 |
+| Plan6 §8.4(4)、Tasks T07b | main必须持有真实 `state.activity/state.tray/state.trayMenu`，hooks快照必须从真实对象读取；这些场景到ready后不能再返回 `[null,null]` |
+
+因此实现T07b后，真实对象快照与两条旧断言不能同时成立；T07e追加通知/托盘断言也不能消除既有null断言冲突。不能按场景隐藏真实对象、仅在有事件文件时创建托盘、让重启ready后丢失托盘/活动，或在hooks伪造null来迁就旧测试。`blocker.log` 保留实际行号与5份源码SHA。
+
+- 触发派工“需要超出精确授权集合/旧场景兼容改动 → STOP报Plan/A”。**发现时未写任何T07源码**；按STOP停止整个本调用，不因T07a局部可做而继续写代码或跳过后续冲突。
+- 所需后续：由Plan/Tasks作者明确这两条“实现尚不存在”过渡断言的最小兼容替换及文件所有权，保留真实对象/无伪造保证和其他旧断言，再经Analyze与独立A复查。此处仅报告冲突，未替规划者决定测试期望或扩大范围。
+- 状态：**T07a NOT STARTED；T07b BLOCKED（预检）；T07c/d/e NOT STARTED；T08a未进入**。无activity文件、5个runner新用例、events-invalid或其他新场景；真实app.exit4与marker未验证，20/29场景均未运行。未启动正式Converge/Review/Handoff/Gate2或任何M-ID验收。
+
+### 13.4 清理、辅助失败与最终边界
+
+- 默认全集19个场景全部有临时目录删除断言；CIM核对本实施树Electron与fai-e2e Python进程 **0**，相应owned listeners **0**、services **0**（`cleanup-cim.log`）。未保留服务；未人为kill或删锁使失败变绿；root-unwritable原场景ACL恢复与修复后真实重试断言通过。
+- 独立temp存在性核查首条辅助命令错误地用 `rg '^TEMP ' -o` 只取前缀，导致 **ROOTS_CHECKED=0 / exit1**（`cleanup-roots.log`）；不是产品失败，也未当作清理通过。修正为完整TEMP行后，只读枚举原日志中根名称并核对：**ROOTS_CHECKED=19 / ROOTS_REMAINING=0 / exit0**（`cleanup-roots-fixed.log`）。未重跑产品测试。前述口头提示的harness行号25更正为实际26，以`blocker.log`为准。
+- 唯一仓库改动为本文件追加§13，历史§1～12完整保留；源码/依赖/lockfile/全部冻结文档不改，无新源码需ignore检查。最终范围与冻结核对输出保存在 `postflight.log` / `freeze-final.log`，不改生成物。
+- RL-01继续 **P3 OPEN / UNKNOWN / nonblocking**；RL02正负对照、RL03生产时间戳所有权、RL04 UTF-8、RL05、PYZ、507 GUI、R5-02、R6-01/AN9-03 control与timeout测试缺口、R6-02蓄意替身变量误用残余全部保留。R5-01/03文档关闭不等于T08完成。
+- 真实作业/agent/drain、真实系统toast与托盘观感、立即relaunch M12、其他人工/外部验收均未取得。没有T07完成或29场景通过声明。未commit/push/PR/merge/reset；只保留未提交证据，交协调者处理新的窄范围Plan/A兼容缺口，下一实施恢复点仍为T07a而非T08a。

@@ -17,6 +17,7 @@
 > - **修订5最新实施检查点（2026-10-29）**：Plan5/Analyze8固定38c482c与A第4轮41/41先通过；Astra以be6efe8实施T06c/d，保存209262e，最后源码42unit/19场景310/310、0fail/skip。固定导航/真实菜单驱动/两旧场景兼容与核心指引自动化通过，尚无人工M13/14/15；下一T07a未启动，仍18任务及外部验收。原RL条件/R5-02与R5-03的T08e依赖前提补齐义务不得漏过。
 > - **T07a最新停止点（2026-10-29）**：Astra从dad9352静态预检后STOP：ctx.launch不返回earlyexit4实例、stderr无固定安全标记观察；未获runner/旧unit/fixture写入权，未绕过launch或隔离。无T07代码/npm/产品测试，证据§12仅追加；先窄Plan/Tasks/Analyze/A再继续，T07b未开始，原42/310仅前序证据。
 > - **修订6最新质量批准（2026-10-29）**：Plan6/Analyze9固定a59fb98后独立A5新审41/41、无P1/P2、R6-01～05五P3，允许T07a恢复与b/c/e既有钩子接线；R5-01/03文字对齐由A关闭，R5-02保留。待同步固定新实施输入后按a→b→c→d→e推进、止于T08前；20及后续场景未跑，旧42/310仅前序证据，RL与人工/外部/Gate2边界不变。
+> - **最新拆批（2026-10-29）**：输入7c61681新基线42unit/19场景310通过；b预检发现harness-selftest/crash-restart的临时null断言与真实snapshot矛盾，整批未写源码，仅证据§13。协调改派a单项按A5实施，止于b；文档者独立树补两处最小兼容并Analyze/A后再b～e，不伪造null/弱化旧断言，20/29未跑。
 > - **工作树**：一个 Astra 实施工作树 / 分支串行完成全部任务；`shell/main.js`、`preload.js`、`renderer/onboarding.*`、`package.json`/`package-lock.json`、`backend/app/*` 是共享文件，不安排并行写入者。
 > - **登记约定**：各任务修改范围中的"`shell/check.js`（登记）"均指在登记表 `shell/test/e2e/index.js` 中加入场景名（plan §8.3），不改运行器逻辑。
 - **命令状态**：下列所有"待新增"的测试文件、测试名、e2e 场景、npm 脚本在 Implement 前**都不存在、都未运行**；本文件不表示任何验证已通过。测试名为约定名，实施时须按此命名，以便验证输出能逐条对上。
