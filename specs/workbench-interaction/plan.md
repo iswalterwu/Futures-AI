@@ -21,6 +21,11 @@
 > - §3：持久化读写、降级、损坏、重置与状态订阅的确定语义。
 >
 > 冻结 spec v1.1、46 AC、方法集、动作矩阵（13 kind）、九场景、样例表、迁移表、定稿语义、任务数 / 依赖 / 工时均不变；不是需求变更（analyze.md「Analyze R12」）。**唯一触及既有硬约束文字的一处**：§3 持久化白名单补列 Upload 既有可选结构化字段 `quarantineReason`（fixture 合成的隔离判定说明，非投放原文），并登记一个内部 `mappingHistory`（修正前映射，不是 API）。隐私边界实质不变，提请第三批独立代码 Review 明确核对。作者 = claude-opus-5-5 via anthropic（本轮协调器真实最小调用 `claude-bridge/claude-opus-5-5` exit 1，quota / rate / spend_limit 类；同模型官方通道 exit 0；本窗口不重试已明确限额通道，未改配置）。
+> **2026-10-29 r6.7（Converge batch3 精度登记，实施后）**：第三批 T-A11 / T-A12 / T-A13 / T-A22a 已实施（代码 diff `ab742f5..0032fc6 -- frontend`，待第三批独立代码 Review）。按实际代码只补 §2.4 的两处读法精度（标【r6.7】）：
+> - `CreateJobInput` 与 reason 的“去空白”是变换后保存；
+> - 首次投放时 ingest 锚到同次新建的 dataset（Checklist R9 S-39 的建议读法）。
+>
+> 方法签名与 §2.3 / §3【r6.6】一致，无须改。不改行为、方法集、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC 与任务结构；不是需求变更（analyze.md「Analyze R13」、`converge-batch3.md` §3）。作者 = claude-opus-5-5 via anthropic（本轮协调器对 `claude-bridge/claude-opus-5-5` 的最小真实调用 exit 1 = quota / rate / spend_limit 类；同模型官方通道成功；本窗口不重试，未改配置）。
 > **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
@@ -163,6 +168,9 @@ resetMockData()
     - cancel：status=cancelled + reason；currentStage / stages / 产物不变；写 cancel_job（stage=currentStage，artifactId / baseRev 为 null）；不 abort 已有 run（晚到事件隔离归 T-A18）。
     - 凡以作业为目标的写（带 jobId 的 submit、已归属投放的 confirm / remove、assign 的目标、cancel）在入口对目标作业查一次 delivered / cancelled → validation_error。这是 §4.6 既有领域只读规则，不是新 guard；全方法只读门及其逐方法测试仍归 T-A17。每个以作业为目标的成功写把该作业 `updatedAt` 置为写入时刻。
   - **当前列表投影（唯一位置）**：`listUnassignedUploads()` 只返回 `jobId=null` 且 `removed=false` 的池记录；`getStageWorkspace(jobId,'collect').uploads` 不含 `removed=true` 的记录（这是删除来源的“当前视图”，与阶段态无关）。状态层与快照保留全部记录、预览、旧修订与事件，不在 commit / 存储中过滤；不新增公开的投放历史读取 API。
+- 【r6.7 精度（Converge batch3 登记；实际代码读法，不改签名 / 行为口径）】
+  - `CreateJobInput.title` / `subject`，以及 `removeUpload` / `cancelJob` 的 `reason`：“去空白非空”由契约 schema 的 trim 变换实现，写入的是去掉两端空白后的值。
+  - submit 的 jobId 非空、且该作业尚无 dataset 时，同一次写内建立 `<jobId>-dataset`（draft / external / source）。ingest 的 `artifactId` 即该 dataset（含本次新建者），`baseRev` = 原最新修订，首次建立时为 null（R9 S-39）。
 - 错误形态沿用 `{error:{code,message,retryable}}` 与既有 code；本 feature 的无效操作/只读写入/定稿未决项均返回 validation_error，payload 含说明；未知锚返回 not_found。方法输入/输出/参数字义写进 `methods.ts` 与生成文档
 
 #### 动作 → 契约方法 → 介入 kind（B-01）

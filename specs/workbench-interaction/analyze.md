@@ -3,6 +3,13 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
+> **当前结论（2026-10-29 第三批实施后 Converge batch3）：见文末「Analyze R13」**
+> - **本批**：T-A11 / T-A12 / T-A13 / T-A22a 已实施（代码 `ab742f5..0032fc6 -- frontend`，5 个前端提交，含 A12 test-fix `0a2d1a5`）。Converge 判本批范围**已收口、待第三批独立代码 Review**，未新增任务；实施定形只是精度，已同步 plan / tasks / interface-handoff（r6.7）。
+> - **feature 整体**：**20 / 67 已实施**（16 已完成 + 4 待审）、**47 未开始**，**未收敛**（尚未实施 + H 组外部阻塞）；46 AC 最终验收 0。H-2·列表生产方 ①②③ 具备、④ 缺；H-x 无一已交付。
+> - **有效 Checklist**：R9 `ab742f5`（未改）。上游 main `072bb12` 未同步。
+> - **不是** Review / Gate 2 / Handoff。
+>
+> 【历史原文】以下 r6.6.2 / r6.6.1 / r6.6 三条为第三批开工前的当时结论，其“本批 4 项待实施 / 16 / 67”已由 R13 取代。
 > **当前结论补记（2026-10-29 r6.6.2 语义回归许可）：见文末「Analyze R12.2」**——只许 T-A12 改 `tests/unit/jobs/persistence.spec.ts` 中 `WI non-normal` 参数化用例的 error 分支，以符合已批准的 error 拒绝时机（commit 内、替换状态前）；T-A13 对该文件无许可；plan / 标准 / 命令 / 结构不变，R12 / R12.1 其余结论有效。
 > **当前结论补记（2026-10-29 r6.6.1 范围精度）：见文末「Analyze R12.1」**——只补 T-A11 / A12 / A13 对本 feature 自有 `tests/unit/jobs/real-stubs.spec.ts` 的“`requests` 表追加本任务新增方法键”写入许可；需求 / 方法 / 标准 / 命令 / 结构不变，R12 其余结论有效。
 > **当前结论（2026-10-29 第三批开工前精度澄清 r6.6）：见文末「Analyze R12」**
@@ -916,3 +923,97 @@
 - G-5 是已批准语义下的旧测试维护，G-6 是 tasks 写入范围遗漏，已由 r6.6.2 关闭；G-7 确认无伪绿，红作为失败留痕保留。第三批范围内 spec ↔ plan ↔ tasks ↔ implementation-log ↔ 真实代码在本补记后无冲突。R12 / R12.1 其余结论有效。
 - **状态**：规范进度仍 16 / 67 已完成。T-A11 `c7ebccb`、T-A12 `742d6aa` 已实施，待正式批次 Review；T-A13 仍未提交（工作区改动保留），待 A12 test-fix 落地、全量回归后再交付；T-A22a 未开始。不预写 A13 成功，也不预写“本轮全绿”。
 - **feature**：**未收敛**；46 AC 最终验收 0；H-x 无一已交付。本报告不是 Review / Gate 2 / Handoff。
+
+---
+
+## Analyze R13（只读；第三批 T-A11 / T-A12 / T-A13 / T-A22a 实施后的 Converge 配套分析，2026-10-29；当前索引；区别于 Checklist R9，**不是**审核结论）
+
+> **阶段记录（脱敏）**：
+> - **角色与模型**：Converge / 进度登记 + 本分析；实际模型 = **claude-opus-5-5 via anthropic**（PI_SESSION_ID `01a18715-bffa-74e9-8b0d-483f569eee2b`）。
+> - **通道**：本轮协调器对 `claude-bridge/claude-opus-5-5` 的最小真实调用 exit 1，失败类别 = **quota / rate / spend_limit**；同模型官方通道成功。按 AGENTS §6 规则 2 / 5 只换通道、不换模型，本窗口不重试，未改 provider / key / 路由 / 全局配置。测试红不是换模型理由。
+> - **派工**：集成人协调会话 `01a18388-a371-7746-8158-9fb15d55d819`。Walter 的“允许”授权与集成人指定在既有 tasks 范围内持续有效。
+> - **性质**：只读报告，不勾选 checklist。当前有效审核 = **Checklist R9**（`ab742f5`，本树 blob `74084c1337491a042c944096e1f290fe07aab324`，未改）。
+>
+> **写入与执行边界**：
+> - **可写范围**：唯一可写 worktree `D:/2030/Futures-AI-interaction-converge-batch3`（`docs/workbench-interaction-batch3-converge`，固定起点 `0032fc6`，起始 clean）。只写 plan / tasks / analyze / implementation-log / interface-handoff、新建 `converge-batch3.md`，以及 `specs/README.md` 本 feature 行。
+> - **未改动**：代码 / 测试 / fixture / spec / checklist / 已有 Review 与 Converge 原件 / 权威 docs / 根 HANDOFF / 其他 worktree。
+> - **未执行**：未 commit / push / merge；未安装；未启动服务或子 agent；**未运行任何产品测试**。
+> - **只读脚本与日志**（非项目产物，不清理）：`C:/Users/iswal/AppData/Local/Temp/wi-batch3-01a18388-0yit2j1a/` 下：
+>   - 沿用 `analyze-r12-struct.py`，本轮输出 `converge-r13-structure.log`（本轮 tasks）与 `converge-r13-structure-HEAD.log`（`0032fc6`）；
+>   - `converge-stdcmd.py` → `converge-r13-std-cmd-diff.log`；
+>   - `converge-ready.py`（依赖已满足的下一批任务）；
+>   - `converge-a13-committed.patch`（A13 WIP 保全复算）。
+
+### 1. 重新读取与输入
+
+- **工作流与权威文档**：AGENTS.md（§2 / §3 / §5 / §6）、`docs/plan.md`。
+- **本 feature 规格**：冻结 spec.md、plan.md（§2.3 / §2.4 / §3【r6.6】）、tasks.md（页首 r6.6 / r6.6.1 / r6.6.2、§1、§2a、T-A10～T-A13、T-A22a、§5～§7）、checklist R9（只读）、本报告 R12 / R12.1 / R12.2、implementation-log、interface-handoff、`converge-batch2.md`、`review-batch2.md`、`review-batch-a09a.md`、`specs/README.md`。
+- **真实代码（逐文件读）**：固定 diff `ab742f5..0032fc6 -- frontend` 的 17 个文件，即 `contracts/{client,methods,types}.ts`、`contracts/mock/{index,job-state}.ts`、`contracts/real/index.ts`、`jobs/persistence.ts`、`jobs/stores/jobs.ts`、`main.ts`、六份 jobs 测试，以及生成物的变更段。另读 `agent/events.ts` 的终态判别。
+- **实施者回报**：四份脱敏回报只作结果来源，不代替代码阅读。
+- **固定输入**：
+  - spec / checklist / plan / interface-handoff / README / docs / AGENTS 在 `ab742f5..0032fc6` 中零差异；
+  - 区间内纯文档提交 `e4031fa`、`1988463`，后者三份 blob 与来源 `8c4660f` 相同；
+  - 生产方集成树 = `0032fc6`；main = `072bb12`，不是祖先；v2 消费分支 = `3f63273`，不含本批及前两批切片 ①。
+
+### 2. 本批范围与结论
+
+| 项 | 结果 |
+|---|---|
+| 范围 | T-A11、T-A12（+ test-fix `0a2d1a5`）、T-A13、T-A22a（4 项，约 7 h）；全部是“部分前置” |
+| 代码 ↔ 完成标准 | 4 / 4 有对应实现（逐条证据见 `converge-batch3.md` §2）；19 条命令的 `-t` 标题全部存在，展开数与回报数一致（A11 6 / 3 / 4 / 13，A12 11 / 5 / 10 / 5，A13 15 / 4 / 8，A22a 5 / 4 / 7 / 9） |
+| 命令结果 | **实施者执行、本会话未重跑**：逐任务原定命令全部通过。clean 全量依次为 `c7ebccb` 28 / 860 / 0、`a5ad11c` 30 / 926 / 0、`0032fc6` 31 / 951 / 0；六守卫；`contract --check` 24 / 10 / 2；既有 shell + agent E2E 24 / 0 |
+| 失败留痕 | A11 新测试 spy / 类型问题（只修新测试）；A12 `jobId` typecheck；含 A13 WIP 的首次批量 925 / 1（旧 error 分支）→ 范围停止 → r6.6.2 → 单独 test-fix。`742d6aa` 与 `0a2d1a5` 都没有各自的 clean 全量，本报告不补造 |
+| 所有权 | 逐提交文件清单与 implementation-log §10 写权限一致；fixture、v1 三份契约测试、`app` / `shared` / `agent` / `workbench`、scripts、package / 锁、配置、e2e 均零差异；test-fix 只动 error 分支；`real-stubs.spec.ts` 只增键（共 9 键） |
+| 新增任务 | 无 |
+| 本批判定 | **已收口，待第三批独立代码 Review** |
+| feature 判定 | **未收敛（尚未实施 + H 组外部阻塞）**：20 / 67 已实施（16 已完成 + 4 待审）、47 未开始；46 AC 最终验收 0 |
+
+### 3. 实施定形 ↔ 需求（是否变更）
+
+| 实施事实 | 依据 | 判定 |
+|---|---|---|
+| `DataClient` 九个新方法的签名、`CreateJobInput`、`IntakeReceipt = WriteReceipt + {upload, preview}`；`dataMethods` 共 22 个，加 agent 2 个 = 24 methods | plan §2.4【r6.6】 | 一致（已审签名的落地） |
+| title / subject / reason 由 zod trim 变换后保存 | plan §2.4【r6.6】“去空白非空” | 精度（plan §2.4【r6.7】一句） |
+| 首次投放时，ingest 锚到同次新建的 dataset，baseRev 为 null | plan §2.4【r6.6】；R9 S-39 | 精度（落在 S-39 建议的读法；plan【r6.7】一句） |
+| `persistence.ts` 导出与 plan §3 / T-A11【r6.6】一致；`mappingHistory` 在 A11 落地 | T-A11 / T-A12【r6.6 精度】 | 批内落点顺序差异，终态一致（O-B3-1，交 Review） |
+| `useJobsStore()` 导出（只读视图 + 五个 action + `ListJobsFilter` 类型）；`applyFilter` 成功时置 ready | T-A22a【r6.6 精度】 | 一致；成功口径沿用 refresh（O-B3-4，交 Review） |
+
+**结论**：都是已审设计的落地或名称 / 类型精度，**不是需求变更**，不回 Clarify / Gate 1。已以【r6.7 精度（Converge batch3 登记）】同步：plan 页首与 §2.4 一处；tasks 页首、四个状态行、T-A11 / A12 / A22a 修改范围注；interface-handoff 页首、§1 两行、§3 落地核对。没有新增要求、AC、标准、命令或机制。
+
+### 4. 关键口径逐项核对（只读）
+
+- **持久化业务子集**：`saveJobsSnapshot` 只按六个业务字段投影序列化；Upload 走 strict schema，任何正文 / File / 字节 / 完整 input 进 state 都会在 commit 边界被拒；快照入口也是 strict，多余运行时或正文字段一律按 unreadable 处理、原值保留。`mappingHistory` 条目 = `{uploadId, mapping, status, replacedAt}`；confirm 只接受 pending_validation，所以每条投放至多一条（测试中二次 confirm 被拒后长度仍为 1）。`quarantineReason` 读回不丢（测试断言恢复后记录逐字段相等）。R9 交代的“白名单补列 + `mappingHistory` 须在代码 Review 按真实 diff 核对”仍待第三批 Review，本报告不代判。
+- **坏 key / 模式零访问**：坏 JSON、version 2、schema 不符、多余字段四类测试均保持原值，saveJobs 不写，reset 解除闩锁；八个非 normal 场景与 normal + 覆盖（两种）对两键 get / set / remove / clear 计数都为 0，包括旧 client reset。
+- **R2-B**：工厂顺序为 scenario / override 各读一次 → 解析 → 建 state → 条件 hydrate，有测试在 getItem 回调中断言 state 已建好；没有加 guard。AgentClient 侧（T-A18）仍在后续。
+- **R2-E**：新增读、reset、写都用 `jobState.getJobScenario()`；v1 十个方法的工厂闭包行为未改。
+- **S-38 / S-40**：均已有断言（`converge-batch3.md` §4）。
+- **R-A / R-C / R-E / R-F / R2-A / R2-C / R2-D**：本批未处理，未冒称关闭。R-D ②⑤ 已由写方法按构造保持，①③④ 仍归后续。
+- **T-A17 只读门 / 定稿 / Agent 隔离**：未完成，本批只有 §4.6 既有规则的入口查询（`writableJob`）。
+- **S-31（tasks §7）**：本批唯一已接入 UI 层的写路径是 `useJobsStore().createJob`，成功后恰一次 refresh、失败不刷新，有定向断言。其他 DataClient 写 API 目前没有 store / UI 调用方（只读 grep 核实），写后 refresh 由 T-C01 / C02 / C03 / B05 / G04 接入时逐条核对。**不能据此声称全部写管线已交付**，这也不是本批缺口。
+- **观察项**（交第三批 Review 判定，不是缺口）：O-B3-1～O-B3-6，见 `converge-batch3.md` §5。
+
+### 5. 状态回写与结构复核（tasks §1-8）
+
+- **状态**：四个任务的状态行改为“**已实施（batch3，待第三批独立代码 Review；不表示 AC 最终验收）**”，附固定 commit、test-fix、逐命令结果与失败留痕，**不写“已完成 / 已验收”**。前两批 16 项的状态行不改。
+- **页首**：新增“当前实施进度（Converge batch3）”块，写明 20 / 67 已实施、47 未开始、下一可起步任务。r6.6 块标为历史原文。
+- **结构复算**（脚本作用于本轮 tasks 与 HEAD `0032fc6`）：
+  - 67 个任务、编号唯一、排序正确；102.0 h（A 28 / 43、B 7 / 10.5、C 5 / 7.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4）。
+  - 完成标准 / 命令 **224 / 224**，problems = []；依赖无环；AC 矩阵 46 行，部分前置均为祖先，双向一致；第三批命令 19 条、7.0 h。
+  - 两份结构日志的差异**只有**状态计数（16 × 已完成 / 51 × 未开始 → 16 × 已完成 / 4 × 已实施 / 47 × 未开始）和集合打印顺序。
+- **逐任务文本比对**：预计 / 依赖 / 每条标准 / 每条命令，以及 §5～§7 全文均**无差异**（`converge-r13-std-cmd-diff.log` = “NO DIFF”）。`git diff` 的 hunk 只落在页首块、四个状态行和三处【r6.7】注。
+- **下一可起步**（`converge-ready.py`，以 20 项计入）：T-A14 / T-A15 / T-A16、T-B01、T-C01。
+
+### 6. 上游与 H-x
+
+- **上游**：main `072bb12` 不在本树祖先，继续 pin `90187f7`。R2-D 同步流程不变，不新增人工门；本会话不写 v2 树。
+- **H-2·列表**：提供任务 T-A01 / A02 / A10 / A12 / A22a 已齐。① 当前 `0032fc6`；② 当前有效 R9 `ab742f5`；③ `jobs-store.spec.ts -t "WI H-2 …"` 5 / 4 / 7 / 9 pass（实施者执行，待本批 Review）；④ 缺 → 待消费方集成（未交付）。
+- **H-6**：T-A11 已提供覆盖只在内存 / normal 持久化，仍缺 T-A21，未交付。
+- **H-5 / 页面切片**：未做。
+- **H-1 / H-2·标签 / H-3 / H-4**：历史生产方证据保留，当前有效 Checklist 可并记 R9；④ 仍缺，不代填。
+
+### 7. 结论（Analyze R13，当前索引）
+
+- **一致性**：在第三批范围内，spec ↔ plan ↔ tasks ↔ interface-handoff ↔ implementation-log ↔ 真实代码**无冲突**；实施定形差距已按精度同步，没有需要回 Clarify 的歧义。R12 / R12.1 / R12.2 的开工前结论按当时原文保留。
+- **本批**（4 项）：**已收口、待第三批独立代码 Review**。
+- **feature**：**未收敛**（47 项未实施 + H 组外部阻塞）；46 AC 最终验收 0。
+- **不是** Review 通过、Gate 2 或 Handoff；H-x 无一“已交付”。
