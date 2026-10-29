@@ -1,0 +1,52 @@
+
+> futuresai-shell@0.1.0 check
+> node check.js change-root prefs-ui
+
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-change-root-RXDRGF"
+PASS change-root › 非法目录被拒
+PASS change-root › 拒绝目录不写偏好
+PASS change-root › 非法目录被拒
+PASS change-root › 拒绝目录不写偏好
+PASS change-root › 非法目录被拒
+PASS change-root › 拒绝目录不写偏好
+PASS change-root › 非法目录被拒
+PASS change-root › 拒绝目录不写偏好
+PASS change-root › 不可写目录探测失败
+PASS change-root › 探测失败不写偏好
+PASS change-root › 只设置 pending
+PASS change-root › 当前实例仍使用原目录
+PASS change-root › 显示待生效路径与立即重启
+PASS change-root › 首实例退出码 0
+PASS change-root › 新目录就绪
+PASS change-root › 偏好 dataRoot 为新目录
+PASS change-root › 旧目录哨兵仍在
+PASS change-root › 未迁移旧目录数据
+PASS change-root › 真实宿主非夹具
+PASS change-root › 第二实例退出码 0
+PASS change-root › 后端 pid 已退出
+PASS change-root › 后端 pid 已退出
+PASS change-root › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-prefs-ui-5cmQ5G"
+PASS prefs-ui › notifications=false 已持久化
+PASS prefs-ui › closeBehavior 已持久化
+PASS prefs-ui › 未配置更新源时禁用并说明
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 首实例退出码 0
+PASS prefs-ui › 再次启动回显
+PASS prefs-ui › 真实宿主非夹具
+PASS prefs-ui › 持久化关窗即退出生效
+PASS prefs-ui › 后端 pid 已退出
+PASS prefs-ui › 后端 pid 已退出
+PASS prefs-ui › 临时目录已删除
+SUMMARY 41/41 assertions; 2 scenes; failures=0
+
+real	0m14.165s
+user	0m0.090s
+sys	0m0.015s

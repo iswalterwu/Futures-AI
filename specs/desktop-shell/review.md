@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前检查点：**T07a完成52unit/20场景313/313，保存9acd4c4；Plan7/Analyze10/A6新审41/41通过，无P1/P2，准备b～e**。只允许两旧null断言原位强化为['idle',true]，其余旧断言保持。29场景未跑，RL/R5-02/R6/R7及完整代码Review/Converge/Gate2边界不变。
+> 当前检查点：**T07a～e自动化子句完成；最后52unit/0skip、29场景414/414、0failure**。b～e输入559c697→保存9a4e0d0，真实托盘/退出守卫/偏好与目录/通知接通，未进T08a；仍13实施任务与人工外部证据。RL-01OPEN及R5/R6/R7条件、完整代码Review/Converge/Gate2边界不变。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -292,7 +292,16 @@ run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。以�
 - 结束后协调者核对/串行保存 **9acd4c4223193f115e5d7dd65e6f510ae8b76115**；仅将证据“用户明确拆批”改为协调者依据继续授权拆批的事实归因，非追加用户批准，代码SHA不动、未代跑测试。原始`C:/Users/iswal/AppData/Local/Temp/fai-t07a-01a187d9-kBTUlA/`。
 - 并行Plan7作者仍anthropic/claude-opus-5-5官方/session01a187bb，树输入ec55aee/内容同ac8c028，未读Astra WIP；四文档集成 **a4fd9976f08a01dfa58ecc90c16b0db860cb3c0d**，仅两临时null断言b原位替换为真实idle/acceptingtrue、e保留且只追加；其余旧断言不动、41任务62h。作者错误edit破坏自有plan第3行后违规用git checkout恢复到自有HEAD再重做，最终保护文件与范围无差异/丢失，A6登记R7-05；无provider/模型失败，不作回退借口。
 - **A6=anthropic/claude-fable-5-1官方**，新session **01a187ef-bc6d-7674-bdd0-2f3e2ce2f57d**，独立树/分支D:/2030/Futures-AI-desktop-tray-checklist/review/desktop-shell-tray-compat，HEAD固定a4fd997，真实ec55..HEAD仅四文档+78/-2。只写Checklist、不跑测试/源码；14输入SHA前后全一致、实际模型实核。**41/41、无P1/P2、5P3，b兼容与e只追加文档前置满足**，无额外工程批准/ADR/Gate1需求（不替Walter授权）。A6没读a的实现WIP，不认证a代码测试。
-- 新R7：01header修订6/Tasks无7页首、最近AC措辞；02引用出处/ready清errora未单测；03accepting字段不符STOP；04e在真实backend.ready回调同步归约器；05上述checkout流程偏差。R5-02/R6/RL保持。下阶段同步固定输入后b→c→d→e，不进T08；b需默认23、最终29，**29未跑**。仍17任务/人工外部，完整Converge/代码Review/Gate2未完成，无push/PR/merge。
+- 新R7：01header修订6/Tasks无7页首、最近AC措辞；02引用出处/ready清errora未单测；03accepting字段不符STOP；04e在真实backend.ready回调同步归约器；05上述checkout流程偏差。以上为批准时点，后续b～e完成如下；R5-02/R6/RL与完整Converge/代码Review/Gate2边界不变。
+
+### T07b→c→d→e自动化完成检查点（止于T08a前）
+
+- 实际Implement **openai/gpt-6-astra via openai**，同session01a187d9，唯一writer原实施树/分支，输入 **559c6977173968e9170cadd75fa196c09526db25**。Plan7/Analyze10/A6先批，未因测试或流程发现换模型/放权限。结束后协调核对17源码SHA/冻结/原始日志并本地保存 **9a4e0d09bb06ede77c6142f99d4e2c38b3eddc3b**、原样集成，未代写代码/跑产品测试。
+- b真Tray/同一Menu/活动与fixture来源，隐藏/退出配置及两旧一行兼容；c生产共用guard、等待/取消/排队取消/拒收/托盘提示与自动退出；d偏好真实持久化/回显、目录严格校验/pending重启生效/旧哨兵保留；e既有通知出口/实际backenderror-ready同步状态，关闭通知托盘仍更新。所有其余旧断言保留，无fake business/null/高权限控制/安全开关变化。
+- 实际逐阶段：b60/60+全23场景339/339；c22/22+全25场景361/361；d41/41；e28/28。**最后npm ci成功、unit52/52且0skip/cancel、定向12场景138/138、默认29场景414/414（143.586s）**；真实Electron命令明确env-u两单测替身变量，运行时33.4.11/20.18.3/130.0.6723.191。各产品命令首过，无产品失败/自然root失败/反复取绿；旧静态STOP12/13与全部旧失败历史完整保留。辅助ignore xargs123是9新文件无命中exit1汇总，非失败。
+- 17源文件（8既有/9新）+证据§15；17/17SHA测试前后及集成字节相同，262冻结文件不变，diff-check通过。8次验证101临时根全删、所属CIM进程/监听/服务0、ACL通过，无广杀/删锁。协调一次误猜日志名final-e2e导致ENOENT，枚举后读final-all，非产品失败。原始 `C:/Users/iswal/AppData/Local/Temp/fai-t07be-01a187d9-CpBTSK/`，精简归档`handoff-artifacts/20261029-activity/`。
+- **下一T08a未启动，剩13实施任务与人工/外部验收**。R6-04早退运行、R7-03字段/R7-04ready接线由实际证据落实，不改历史质量评审记录；R5-02/控制与超时未单测/R7元数据及流程偏差/RL01OPEN/UNKNOWN与RL02对照/UTF8/PYZ/507GUI义务保持。人工tray/toast、M12立即relaunch、真实工作台/作业/agent/drain/EIA/key、诊断隐私、安装/15s/发布等仍未验。
+- 本检查点不是整体Converge/独立代码Review/Gate2，不替Walter接受风险；源代码测试通过不冒充夹具以外业务验收，无push/PR/merge。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 

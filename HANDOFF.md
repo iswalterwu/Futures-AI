@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **当前检查点：T07a已保存9acd4c4，最后52unit/20场景313/313通过；Plan7/Analyze10/A6已41/41放行b兼容，准备b～e（2026-10-29）**。真实Electron非法文件退出4/安全标记通过，main尚未接托盘。29场景未跑，未进入T08。
-> **先读 §21（最新检查点与批准）**、实施证据§14与Checklist第6轮。R5-02/R6/R7/RL保留，A6是文档质量复查非代码Review/Gate2，无push/PR/merge。
+> **当前检查点：T07a～e自动化实施子句完成；最后52unit/29场景414/414、0fail/skip（2026-10-29）**。b～e输入559c697→保存9a4e0d0，真实Tray/退出守卫/应用偏好与目录/通知接通；未进入T08a，无活跃worker/测试服务端口。
+> **先读 §22（最新检查点）**、证据§15与Checklist第6轮。仍13实施任务及人工/外部验收；RL-01 OPEN及R5/R6/R7条件不变，未做完整代码Review/Converge/Gate2，无push/PR/merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -394,4 +394,13 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 并行Plan7首选Opus5.5官方同session01a187bb，独立树固定输入 **ec55aee**（内容同ac8c028），未读Astra WIP。固定四文档集成 **a4fd9976f08a01dfa58ecc90c16b0db860cb3c0d**：只允许b原位替换harness-selftest26/crash-restart32为[tray.state,activity.accepting]字面['idle',true]，e只追加并保留新断言；所有其他旧断言/fixture/runner保持。41任务/62h不变，新增Analyze10。Opus一次错误edit损坏自有plan第3行后用被禁止的git checkout恢复到自有ec55HEAD再重做，最终差异与保护文件实核无丢失；该流程偏差已如实记录，后续不得沿用。
 - A6首选Fable5.1官方，新独立session **01a187ef-bc6d-7674-bdd0-2f3e2ce2f57d**，树 `D:/2030/Futures-AI-desktop-tray-checklist` / `review/desktop-shell-tray-compat`，HEAD固定a4fd997，只审ec55..HEAD四文档+78/-2，只写Checklist/不测试；14保护输入SHA全一致，实际模型元数据实核。**41/41、无P1/P2、R7-01～05五P3**，放行b及e只追加约束；不需工程批准/ADR/Gate1（不替Walter授权）。
 - R7跟踪：01页首修订6元数据/任务页首缺7、最近AC措辞；02“托盘短暂error”引用位置/ready清error未有独立a单测，e真接线证明；03实际activity.accepting若不匹配STOP不改期望；04在backend.ready生产回调派发归约器，避免ready但tray仍error；05上述checkout偏差。R5-02/R6/RL等保留，不伪称已闭。
-- 下一步在无writer边界同步a代码/Plan7/A6与进度并固定新实施输入，Astra同树同分支依序b→c→d→e，止于T08前。b须五定向+默认全量（23），最终e应29；**29未跑**。仍17项任务与人工/外部验收，RL-01OPEN/UNKNOWN、RL02正负对照/UTF8/PYZ/507GUI/系统tray-toast/真实作业drain等不变；A6未审a代码，完整Review/Gate2未完成。
+- 以上为a完成/兼容批准时点；b～e已按其后新输入完成见§22。A6未审a代码，完整Review/Gate2未完成。
+
+## 22. 2026-10-29 T07a～e自动化完成：52unit / 29场景414，下一T08a
+
+- 首选Implement **openai/gpt-6-astra via openai**，同session **01a187d9-b23d-712f-8297-3106886f9e49**，原实施树/分支唯一writer；b～e输入 **559c6977173968e9170cadd75fa196c09526db25**、主输入c8be968，起始干净/全树一致。按Plan7/Analyze10/A6新批准串行b→c→d→e，结束后协调核对保存 **9a4e0d09bb06ede77c6142f99d4e2c38b3eddc3b**，代码17SHA集成前后一致；无模型/权限/配置回退或其他writer。
+- b真实Tray/Menu/生产状态与事件来源接线、关闭隐藏/退出配置；两旧null各一行按A6强化，其余旧断言保留。c共用退出守卫、等待/取消、queued取消与新到拒收的可见/日志标记，运行归零退出、托盘取消等待恢复接单。d应用偏好持久化/回显、窄IPC、数据目录校验/pending下次启动生效且旧哨兵不删。e用既有Notification出口，真实backend.error/ready同步更新归约器与托盘；通知关闭不影响托盘。事件夹具不等于真实作业/drain，系统toast/托盘观感仍人工。
+- b定向5场景60/60、全23场景339/339；c定向22/22、全25场景361/361；d定向41/41；e定向28/28。**最后源码npm ci成功、52unit/0skip、12定向138/138、默认29场景414/414（143.586s）**。所有真实Electron命令均env-u两个FAI_CHECK单测变量；各产品命令首次通过，无产品FAIL/自然root失败/重复取绿，历史两次静态STOP与全部失败仍在证据§12/13及前文。
+- 17源码+证据§15，8既有+9新；17SHA验证前后/两树复制完全一致，262冻结文件不变，diff-check通过。101临时根独立确认全删，CIM所属进程/监听/服务0、ACL断言通过；无广杀/删锁改绿。原始 `C:/Users/iswal/AppData/Local/Temp/fai-t07be-01a187d9-CpBTSK/`，精简归档`specs/desktop-shell/handoff-artifacts/20261029-activity/`。协调未代跑产品测试；一次读错final-e2e日志名ENOENT后枚举并改读final-all，非产品失败。
+- **下一项T08a：脱敏+滚动日志模块，未启动。仍13实施任务+人工/外部验收**；不得提前当作诊断/安全/更新/安装功能已完成。R6-04退出4、R7-03字段与R7-04真实ready接线已有本轮证据，历史质量记录不改；R5-02/R6控制及超时缺单测/R7元数据/流程偏差、RL-01OPEN/UNKNOWN和整体Converge/Review前RL02正负对照/UTF8/PYZ/507GUI义务仍保留。
+- 人工M05～15/M12立即重启、真实前端工作台/作业/agent/drain、EIA/key/上游、诊断隐私、干净Windows安装/15s基准/发布/系统toast等未取得。**不等于整feature完成/Converge/独立代码Review/Gate2或用户风险接受**。主/实施树串行同步、本地保存，无push/PR/merge；下次重读本节/Tasks T08a/Plan/Checklist41/0后另派Astra。

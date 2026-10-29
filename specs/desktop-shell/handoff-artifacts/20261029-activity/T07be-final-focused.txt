@@ -1,0 +1,164 @@
+
+> futuresai-shell@0.1.0 check
+> node check.js events-invalid harness-selftest crash-restart close-to-tray close-quit tray-menu quit-guard-cancel quit-guard-wait change-root prefs-ui notify notify-off
+
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-events-invalid-dBTN3r"
+PASS events-invalid › 退出码 4
+PASS events-invalid › 输出 TEST_EVENTS_INVALID
+PASS events-invalid › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-harness-selftest-TOn1RS"
+PASS harness-selftest › paths 位于临时目录
+PASS harness-selftest › 默认数据目录 = LOCALAPPDATA\FuturesAI
+PASS harness-selftest › 窗口存在
+PASS harness-selftest › 后端存活
+PASS harness-selftest › spawns 恰 1 条
+PASS harness-selftest › registry PID = 快照 PID
+PASS harness-selftest › 标题含测试钩子标记
+PASS harness-selftest › 日志首行 TEST HOOKS ENABLED
+PASS harness-selftest › Electron 精确版本
+RUNTIME {"electron":"33.4.11","node":"20.18.3","chrome":"130.0.6723.191"}
+PASS harness-selftest › 控制通道 snapshot 路径一致
+PASS harness-selftest › 托盘与活动来自真实状态
+PASS harness-selftest › 未知命令 HTTP 400
+PASS harness-selftest › eval 调用真实窗口
+PASS harness-selftest › 无未应答对话框
+PASS harness-selftest › 退出码 0
+PASS harness-selftest › 后端 pid 已退出
+PASS harness-selftest › 后端 pid 已退出
+PASS harness-selftest › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-crash-restart-UHTvp3"
+PASS crash-restart › 真实写锁存在
+PASS crash-restart › 定向结束后端成功
+PASS crash-restart › 托盘曾为 error
+PASS crash-restart › 重启后就绪且端口变化
+PASS crash-restart › restarts = 1
+PASS crash-restart › 旧进程已死且新进程存活
+PASS crash-restart › 新代令牌已轮换
+PASS crash-restart › 新端点真实健康
+PASS crash-restart › preload 返回新代端口
+PASS crash-restart › preload 返回新代令牌
+PASS crash-restart › 真实阶段包含 restarting
+PASS crash-restart › 重启后托盘与活动来自真实状态
+PASS crash-restart › 通知含 backend_error
+PASS crash-restart › 真实宿主非夹具
+PASS crash-restart › 退出码 0
+PASS crash-restart › 后端 pid 已退出
+PASS crash-restart › 后端 pid 已退出
+PASS crash-restart › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-close-to-tray-eenr3f"
+PASS close-to-tray › 窗口隐藏未销毁
+PASS close-to-tray › 后端存活
+PASS close-to-tray › 托盘 running
+PASS close-to-tray › 夹具作业完成后清理
+CLEANUP_OBSERVED {"backend":{"phase":"ready","phases":["idle","spawning","waiting_health","ready"],"gen":1,"restarts":0,"pid":67056,"port":63647,"lastCode":null},"window":{"exists":true,"visible":false,"url":"file:///D:/2030/Futures-AI-desktop-implement/shell/renderer/onboarding.html"}}
+PASS close-to-tray › 后端 pid 已退出
+PASS close-to-tray › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-close-quit-Ur4rbo"
+PASS close-quit › 关窗后退出码 0
+PASS close-quit › 关窗后后端已退出
+PASS close-quit › 后端 pid 已退出
+PASS close-quit › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-tray-menu-hMF7K0"
+PASS tray-menu › 菜单标签齐全
+PASS tray-menu › 子菜单列出作业
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 缺失菜单项被拒
+PASS tray-menu › 打开主窗口后可见
+PASS tray-menu › 真实二级菜单可点击
+PASS tray-menu › 作业菜单激活窗口
+PASS tray-menu › 设置… 打开设置页
+PASS tray-menu › 禁用菜单项被拒
+PASS tray-menu › 退出调用 requestQuit
+PASS tray-menu › 后端 pid 已退出
+PASS tray-menu › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-quit-guard-cancel-sj0Zsa"
+PASS quit-guard-cancel › 应用仍在
+PASS quit-guard-cancel › 后端存活
+PASS quit-guard-cancel › 作业仍运行
+PASS quit-guard-cancel › 取消询问不改活动
+PASS quit-guard-cancel › 托盘取消等待恢复接单
+PASS quit-guard-cancel › 对话框均有显式应答
+PASS quit-guard-cancel › 取消等待后不自动退出
+CLEANUP_OBSERVED {"backend":{"phase":"ready","phases":["idle","spawning","waiting_health","ready"],"gen":1,"restarts":0,"pid":48028,"port":63679,"lastCode":null},"window":{"exists":true,"visible":true,"url":"file:///D:/2030/Futures-AI-desktop-implement/shell/renderer/onboarding.html"}}
+PASS quit-guard-cancel › 后端 pid 已退出
+PASS quit-guard-cancel › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-quit-guard-wait-QgRK4Y"
+PASS quit-guard-wait › 对话框列出排队作业
+PASS quit-guard-wait › 对话框有显式应答
+PASS quit-guard-wait › 等待时停止接单
+PASS quit-guard-wait › 排队取消新到拒收
+PASS quit-guard-wait › 日志含 cancelled_on_exit
+PASS quit-guard-wait › 日志含 rejected_exiting
+PASS quit-guard-wait › 托盘提示取消标记
+PASS quit-guard-wait › 托盘提示拒收标记
+PASS quit-guard-wait › 等待时提供取消退出
+PASS quit-guard-wait › 作业结束后退出码 0
+PASS quit-guard-wait › 等待退出后后端已退出
+PASS quit-guard-wait › 后端 pid 已退出
+PASS quit-guard-wait › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-change-root-vvkODd"
+PASS change-root › 非法目录被拒
+PASS change-root › 拒绝目录不写偏好
+PASS change-root › 非法目录被拒
+PASS change-root › 拒绝目录不写偏好
+PASS change-root › 非法目录被拒
+PASS change-root › 拒绝目录不写偏好
+PASS change-root › 非法目录被拒
+PASS change-root › 拒绝目录不写偏好
+PASS change-root › 不可写目录探测失败
+PASS change-root › 探测失败不写偏好
+PASS change-root › 只设置 pending
+PASS change-root › 当前实例仍使用原目录
+PASS change-root › 显示待生效路径与立即重启
+PASS change-root › 首实例退出码 0
+PASS change-root › 新目录就绪
+PASS change-root › 偏好 dataRoot 为新目录
+PASS change-root › 旧目录哨兵仍在
+PASS change-root › 未迁移旧目录数据
+PASS change-root › 真实宿主非夹具
+PASS change-root › 第二实例退出码 0
+PASS change-root › 后端 pid 已退出
+PASS change-root › 后端 pid 已退出
+PASS change-root › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-prefs-ui-uhJZcA"
+PASS prefs-ui › notifications=false 已持久化
+PASS prefs-ui › closeBehavior 已持久化
+PASS prefs-ui › 未配置更新源时禁用并说明
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 非法 patch 被拒且文件不变
+PASS prefs-ui › 首实例退出码 0
+PASS prefs-ui › 再次启动回显
+PASS prefs-ui › 真实宿主非夹具
+PASS prefs-ui › 持久化关窗即退出生效
+PASS prefs-ui › 后端 pid 已退出
+PASS prefs-ui › 后端 pid 已退出
+PASS prefs-ui › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-notify-ChUOgJ"
+PASS notify › 收到 stage_completed 通知
+PASS notify › 通知时托盘运行中
+PASS notify › 阶段通知恰一条
+CLEANUP_OBSERVED {"backend":{"phase":"ready","phases":["idle","spawning","waiting_health","ready"],"gen":1,"restarts":0,"pid":50032,"port":63738,"lastCode":null},"window":{"exists":true,"visible":true,"url":"file:///D:/2030/Futures-AI-desktop-implement/shell/renderer/onboarding.html"}}
+PASS notify › 后端 pid 已退出
+PASS notify › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-notify-off-9mjxR7"
+PASS notify-off › 无通知记录
+PASS notify-off › 托盘状态仍变化
+PASS notify-off › 实际通知偏好关闭
+CLEANUP_OBSERVED {"backend":{"phase":"ready","phases":["idle","spawning","waiting_health","ready"],"gen":1,"restarts":0,"pid":47372,"port":63749,"lastCode":null},"window":{"exists":true,"visible":true,"url":"file:///D:/2030/Futures-AI-desktop-implement/shell/renderer/onboarding.html"}}
+PASS notify-off › 后端 pid 已退出
+PASS notify-off › 临时目录已删除
+SUMMARY 138/138 assertions; 12 scenes; failures=0
+
+real	0m50.458s
+user	0m0.136s
+sys	0m0.000s

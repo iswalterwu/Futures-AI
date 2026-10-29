@@ -1,0 +1,35 @@
+**已按 STOP 规则停止；本轮未实施 T07 源码。** 新基线通过，但发现两条旧场景断言与 T07b 的真实托盘接线冲突，需要窄范围 Plan/A 兼容批准。
+
+### 阻塞事实
+- `shell/test/e2e/harness-selftest.js:26` 强制 `[snapshot.tray, snapshot.activity] === [null, null]`；文件本次只读。
+- `shell/test/e2e/crash-restart.js:32` 同样强制二者为 `null`；T07e 仅允许追加断言，原断言必须保留。
+- T07b 要求快照读取真实 Tray/activity，不能同时满足上述断言。未按场景隐藏状态或修改旧测试绕过。
+
+**任务状态：** a 未开始；b 预检阻塞；c/d/e 未开始。未进入 T08a。
+
+### 本轮实测
+| 项目 | 结果 |
+|---|---|
+| `npm ci` | 成功，3.499s；既有 deprecated 警告保留 |
+| 全 unit | **42 passed，0 failed/skip**；4973.934ms |
+| 默认全部19场景 | **310/310，0 failures**；98.741s |
+| 真实运行时 | Electron 33.4.11 / Node 20.18.3 / Chrome 130.0.6723.191 |
+
+真实 E2E 原始命令：
+```bash
+env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check
+```
+以上仅为新基线，**不是 T07 最终验证**；20/29 场景未跑。无产品测试失败；一次辅助根目录核查命令错误导致计数0/exit1，修正后核对 **19根全部删除**，未重跑产品测试。
+
+### 身份、证据与清理
+- 模型：`openai/gpt-6-astra via openai`
+- Session：`01a187d9-b23d-712f-8297-3106886f9e49`
+- 输入 HEAD：`7c61681e92448bd566c420470cf0cb58db5fea2e`
+- 唯一改动：`specs/desktop-shell/implementation-evidence.md` **追加 §13（48行，零删除）**
+- 原始日志/manifest：`C:/Users/iswal/AppData/Local/Temp/fai-t07-01a187d9-7exsC2/`
+- 253份非证据 tracked 文件 SHA 全部未变；`git diff --check` 通过。
+- 输入清单 SHA-256：`e2a05d52df699517d3ff30af5fead42102d2bca58739ef4f87f5e42ffc75a65d`
+- CIM：自有产品进程/监听/服务均 **0**；ACL 恢复断言通过。
+- 未提交、推送或修改全局配置。
+
+RL-01 仍 OPEN/UNKNOWN，其余 R5/R6、UTF-8/PYZ/507 GUI 与人工/外部缺口保留。**下一步应明确两条过渡期 null 断言的最小兼容范围，经 Plan/Analyze/A 后从 T07a 恢复；不是进入 T08a。**
