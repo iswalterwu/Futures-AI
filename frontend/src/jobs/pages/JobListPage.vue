@@ -2,12 +2,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { JobStatusLabel, JobStatusSchema, JobTypeLabel, JobTypeSchema, type JobStatus, type JobType } from '../../contracts/types.ts'
 import JobCard from '../components/JobCard.vue'
+import JobCreatePanel from './JobCreatePanel.vue'
 import { useJobsStore, type ListJobsFilter } from '../stores/jobs.ts'
 import EmptyState from '../../shared/components/EmptyState.vue'
 import ErrorState from '../../shared/components/ErrorState.vue'
 import Loading from '../../shared/components/Loading.vue'
 
 const jobsStore = useJobsStore()
+const createExpanded = ref(false)
 const status = ref<JobStatus | ''>(jobsStore.filter?.status ?? '')
 const type = ref<JobType | ''>(jobsStore.filter?.type ?? '')
 const title = ref(jobsStore.filter?.title ?? '')
@@ -36,6 +38,15 @@ function clearFilter() {
     aria-label="作业列表"
   >
     <h1>作业</h1>
+    <button
+      class="job-create-toggle"
+      type="button"
+      :aria-expanded="createExpanded"
+      @click="createExpanded = !createExpanded"
+    >
+      新建作业
+    </button>
+    <JobCreatePanel v-if="createExpanded" />
     <div class="job-filters">
       <label>
         状态
@@ -127,6 +138,7 @@ function clearFilter() {
   color: var(--fai-text-secondary);
 }
 
+.job-create-toggle,
 .job-filters select,
 .job-filters input,
 .job-filters button {
@@ -138,10 +150,16 @@ function clearFilter() {
   font: inherit;
 }
 
+.job-create-toggle,
 .job-filters button {
   cursor: pointer;
 }
 
+.job-create-toggle {
+  justify-self: start;
+}
+
+.job-create-toggle:focus-visible,
 .job-filters select:focus-visible,
 .job-filters input:focus-visible,
 .job-filters button:focus-visible {
