@@ -1,6 +1,9 @@
 // Loaded exclusively by main.js when FAI_TEST_HOOKS === '1'. System boundaries only.
 'use strict'
 const http = require('node:http')
+const fs = require('node:fs')
+const path = require('node:path')
+const { validateEvent } = require('./activity')
 const { EventEmitter } = require('node:events')
 
 function install(electron, startup, state, requestQuit) {
@@ -9,6 +12,13 @@ function install(electron, startup, state, requestQuit) {
     sessionData: app.getPath('sessionData'), crashDumps: app.getPath('crashDumps'),
     dataRoot: startup.dataRoot ?? null }
   emit({ event: 'paths', paths, gotLock: startup.gotLock })
+  const loaded = loadTestEvents()
+  if (loaded.error) {
+    fs.writeSync(2, `TEST_EVENTS_INVALID ${loaded.error}\n`)
+    app.exit(4)
+    return
+  }
+  const testEvents = loaded.events
   const records = { dialogs: [], notifications: [], external: [], secondInstance: [], navigation: [] }
   const answers = []
   const outlets = { Notification: electron.Notification }
@@ -114,7 +124,24 @@ function install(electron, startup, state, requestQuit) {
     app.once('will-quit', () => server.close())
     emit({ event: 'control', port: server.address().port })
   }
-  return { records, outlets, backendCommand, startControl }
+  return { records, outlets, backendCommand, startControl, get testEvents() { return testEvents } }
+}
+function loadTestEvents() {
+  const file = process.env.FAI_TEST_EVENTS
+  if (file === undefined) return { events: Object.freeze([]) }
+  if (!path.isAbsolute(file)) return { error: 'file_unreadable' }
+  let bytes
+  try { bytes = fs.readFileSync(file) } catch { return { error: 'file_unreadable' } }
+  let events
+  try { events = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) } catch {
+    return { error: 'json_invalid' }
+  }
+  if (!Array.isArray(events)) return { error: 'not_array' }
+  for (const event of events) {
+    const error = validateEvent(event)
+    if (error) return { error }
+  }
+  return { events: Object.freeze(events.map(event => Object.freeze(event))) }
 }
 function emit(message) { process.stdout.write(`SMOKE ${JSON.stringify(message)}\n`) }
 module.exports = { install }

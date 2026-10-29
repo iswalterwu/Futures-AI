@@ -79,3 +79,47 @@ test('runner：临时目录外路径被拒', async t => {
   const result = await run(t, 'ok', [], { FAI_RUNNER_CASE: 'outside' })
   assert.equal(result.code, 1); assert.match(result.out, /isolation path outside owned temp root/)
 })
+
+test('runner：提前退出约定 标记跨块且退出码 4 通过', async t => {
+  const result = await run(t, 'early-exit', [], {
+    FAI_CHECK_PRODUCER: path.resolve(__dirname, '../fixtures/runner/producers/early-exit.js'), FAI_RUNNER_CASE: 'ok',
+  })
+  assert.equal(result.code, 0)
+  assert.match(result.out, /PASS early-exit › 退出码 4/)
+  assert.match(result.out, /PASS early-exit › 标记已观察/)
+  assert.doesNotMatch(result.out, /FAIPLANT-REASON/)
+})
+test('runner：提前退出约定 退出码不符判 FAIL', async t => {
+  const result = await run(t, 'early-exit', [], {
+    FAI_CHECK_PRODUCER: path.resolve(__dirname, '../fixtures/runner/producers/early-exit.js'), FAI_RUNNER_CASE: 'wrong-code',
+  })
+  assert.equal(result.code, 1)
+  assert.match(result.out, /early exit code mismatch: 3/)
+  assert.doesNotMatch(result.out, /FAIPLANT-REASON/)
+})
+test('runner：提前退出约定 缺标记判 FAIL', async t => {
+  const result = await run(t, 'early-exit', [], {
+    FAI_CHECK_PRODUCER: path.resolve(__dirname, '../fixtures/runner/producers/early-exit.js'), FAI_RUNNER_CASE: 'missing-marker',
+  })
+  assert.equal(result.code, 1)
+  assert.match(result.out, /early exit marker missing/)
+  assert.doesNotMatch(result.out, /FAIPLANT-REASON/)
+})
+test('runner：提前退出约定 paths 缺失或越界判 FAIL', async t => {
+  for (const [scenario, expected] of [['missing-paths', /exited before paths/], ['outside', /isolation path outside owned temp root/]]) {
+    const result = await run(t, 'early-exit', [], {
+      FAI_CHECK_PRODUCER: path.resolve(__dirname, '../fixtures/runner/producers/early-exit.js'), FAI_RUNNER_CASE: scenario,
+    })
+    assert.equal(result.code, 1)
+    assert.match(result.out, expected)
+    assert.doesNotMatch(result.out, /FAIPLANT-REASON/)
+  }
+})
+test('runner：默认启动遇提前退出仍判 FAIL', async t => {
+  const result = await run(t, 'early-exit', [], {
+    FAI_CHECK_PRODUCER: path.resolve(__dirname, '../fixtures/runner/producers/early-exit.js'), FAI_RUNNER_CASE: 'default',
+  })
+  assert.equal(result.code, 1)
+  assert.match(result.out, /Electron exited before paths\/control: 4/)
+  assert.doesNotMatch(result.out, /FAIPLANT-REASON/)
+})
