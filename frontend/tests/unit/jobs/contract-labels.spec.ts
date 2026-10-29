@@ -61,3 +61,24 @@ test('WI contract notes — AC-008-1 S-14 / S-16 are in generated CONTRACT.md', 
   expect(document).toContain('source_pref / value_fix 归后续处理台 / data-layer 映射 feature')
   expect(document).toContain('本契约用独立的 finalize 承载')
 })
+
+describe('WI reliability label — AC-003-3 / AC-008-1 schema 前置', () => {
+  test('ordered keys, approved text and nonempty icons share literal schemas', () => {
+    expect(Object.keys(c.ReliabilityLabel)).toEqual(c.SourceNoteSchema.shape.reliability.options)
+    expect(Object.values(c.ReliabilityLabel).map(label => label.text)).toEqual(['高', '中', '低', '未知'])
+    expect(c.ReliabilityLabelSchema.parse(c.ReliabilityLabel)).toEqual(c.ReliabilityLabel)
+    for (const key of c.SourceNoteSchema.shape.reliability.options) {
+      const label = c.ReliabilityLabel[key]
+      expect(label.icon.trim()).not.toBe('')
+      expect(c.ReliabilityLabelSchema.safeParse({ ...c.ReliabilityLabel, [key]: { ...label, text: 'wrong' } }).success).toBe(false)
+    }
+  })
+  test('registered mapping generates all four text and icon literals', () => {
+    expect(c.contractSchemas.ReliabilityLabel).toBe(c.ReliabilityLabelSchema)
+    const section = document.split('### `ReliabilityLabel`')[1]!.split('\n### ')[0]!
+    for (const { text, icon } of Object.values(c.ReliabilityLabel)) {
+      expect(section).toContain(JSON.stringify(text))
+      expect(section).toContain(JSON.stringify(icon))
+    }
+  })
+})

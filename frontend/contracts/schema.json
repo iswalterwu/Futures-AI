@@ -6203,6 +6203,103 @@
       "additionalProperties": false,
       "description": "作业类型展示映射。"
     },
+    "ReliabilityLabel": {
+      "type": "object",
+      "properties": {
+        "high": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "高",
+              "description": "显示文案。"
+            },
+            "icon": {
+              "type": "string",
+              "const": "↑",
+              "description": "非颜色状态图标。"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false,
+          "description": "high 的文案与图标。"
+        },
+        "medium": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "中",
+              "description": "显示文案。"
+            },
+            "icon": {
+              "type": "string",
+              "const": "＝",
+              "description": "非颜色状态图标。"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false,
+          "description": "medium 的文案与图标。"
+        },
+        "low": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "低",
+              "description": "显示文案。"
+            },
+            "icon": {
+              "type": "string",
+              "const": "↓",
+              "description": "非颜色状态图标。"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false,
+          "description": "low 的文案与图标。"
+        },
+        "unknown": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "const": "未知",
+              "description": "显示文案。"
+            },
+            "icon": {
+              "type": "string",
+              "const": "?",
+              "description": "非颜色状态图标。"
+            }
+          },
+          "required": [
+            "text",
+            "icon"
+          ],
+          "additionalProperties": false,
+          "description": "unknown 的文案与图标。"
+        }
+      },
+      "required": [
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ],
+      "additionalProperties": false,
+      "description": "来源可靠性展示映射：高 / 中 / 低 / 未知，文案与图标同源。"
+    },
     "TradingDate": {
       "type": "string",
       "format": "date",

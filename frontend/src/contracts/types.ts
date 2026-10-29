@@ -202,6 +202,12 @@ export const JobTypeLabel = {
   daily: { text: '日报', icon: '▤' }, research: { text: '专题', icon: '⌕' }, adhoc: { text: '临时', icon: '◇' },
 } as const
 
+export const ReliabilityLabel = {
+  high: { text: '高', icon: '↑' }, medium: { text: '中', icon: '＝' },
+  low: { text: '低', icon: '↓' }, unknown: { text: '未知', icon: '?' },
+} as const
+export const ReliabilityLabelSchema = labelSchema(ReliabilityLabel).describe('来源可靠性展示映射：高 / 中 / 低 / 未知，文案与图标同源。')
+
 export const JobStatusLabelSchema = labelSchema(JobStatusLabel).describe('作业状态展示映射：文案与图标同源。')
 export const StageLabelSchema = labelSchema(StageLabel).describe('阶段展示映射，顺序同 Stage。')
 export const StageStateLabelSchema = labelSchema(StageStateLabel).describe('阶段态展示映射；conflict 也用于运行失败，原因见 Job.reason。')
@@ -667,6 +673,7 @@ export const contractSchemas = {
   SourceLabel: SourceLabelSchema,
   OriginLabel: OriginLabelSchema,
   JobTypeLabel: JobTypeLabelSchema,
+  ReliabilityLabel: ReliabilityLabelSchema,
   TradingDate: TradingDateSchema,
   Timestamp: TimestampSchema,
   Semantic: SemanticSchema,
