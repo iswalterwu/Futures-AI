@@ -3,7 +3,12 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
-> **当前结论（2026-10-29 第四批实施后 Converge batch4 + r6.10）：见文末「Analyze R17」**（当前索引；下方 R16 页首块及更早轮次为当时原文，正文不改）
+> **当前结论（2026-10-29 第四批 Review 未通过 + R4-A 工程审批等待）：见文末「Analyze R18」**（当前索引；下方 R17 页首块及更早轮次为当时原文，正文不改）
+> - **本轮**：第四批代码 Review（`review-batch4.md`，原件 `9812f64`）判**未通过**：1 P2 R4-A + 4 P3 R4-B～R4-E，结论原样保留。R4-A 修复草案 = tasks **T-B04a**（0.5 h）+ plan §2.1 / §2.3【r6.11 草案】，**blocked_by: Walter AGENTS §5.1 批准**；草案**不授权实施**。这不是需求变更，不重过 Gate 1；不是全 feature Gate 2 / Handoff。
+> - **结构**：70 个任务 / 104.5 h；235 / 235；**21 已完成 + 5 已实施（第四批 Review 未通过）+ 44 未开始（其中 T-B04a 待工程批准）**；真实依赖图无环，唯一编号回边仍为 T-B03 → T-B04；AC 矩阵 46 行双向一致，部分前置都是最终任务的祖先（AC-002-2 最终 = T-B04 + T-B04a，v2 后 T-H04 回归）；46 AC 最终验收 0；feature **未收敛**。
+> - **有效 Checklist**：R10 `37e2f71`（blob `4537c55…`，未改）。R2-C 代码经 A 核实，但关闭条件（本批通过）未满足；R4-B～R4-E、S-41、R3-B / R3-C 等均未经风险接受。
+>
+> 【历史原文（R17 撰写时）】**当前结论（2026-10-29 第四批实施后 Converge batch4 + r6.10）：见文末「Analyze R17」**（当前索引；下方 R16 页首块及更早轮次为当时原文，正文不改）
 > - **本轮**：第四批 T-B01 / B02 / A22d / B04 / B03 已实施（代码 `37e2f71..6c082fd -- frontend`，5 提交 17 文件），Converge（`converge-batch4.md`）判**已收口、待第四批独立代码 Review**；无对冻结 AC 的明确违反，不新增任务；实施定形只是类型 / 读法精度（r6.10）。静读观察 O-B4-1～6 交 A。
 > - **结构**：69 个任务 / 104 h；232 / 232；**21 已完成 + 5 已实施（待 Review）+ 43 未开始**；真实依赖图无环，唯一编号回边 T-B03 → T-B04（R10 已认可）；AC 矩阵 46 行祖先与双向一致；46 AC 最终验收 0；feature **未收敛**。
 > - **有效 Checklist**：R10 `37e2f71`（blob `4537c55…`，未改）。R2-C 代码已修、待 A 确认关闭；R10 S-41 归 T-B05 开工前精度轮；S-42 已落实；S-43 已在 plan 登记。**不是** Review / Gate 2 / Handoff。
@@ -1411,3 +1416,103 @@
 ### 6. 结论（Analyze R17，当前索引）
 
 spec / plan / tasks / 代码之间**无冲突**；第四批 5 项**已收口、待第四批独立代码 Review**；无须新增任务，结构不变（69 / 104 h / 232 / 232）。实施定形登记为 r6.10 精度。R2-C 关闭、O-B4-1～6 严重度、H-2·标签 ① 是否转生产已核，均由独立 A 判定。feature **未收敛**。本报告不是审核结论，不勾选 checklist。
+
+## Analyze R18（只读；第四批 Review 未通过后的状态登记与 R4-A 补修草案，2026-10-29；工程审批 blocked，草案不授权实施；当前索引，R17 及更早轮次历史保留；区别于 Checklist R10，**不是**审核结论）
+
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18834-f443-750c-ae53-bba830191e22`；`claude-bridge` 本协调窗口已确认 quota / rate / spend_limit，不重试；官方通道真实调用成功；未改配置）。派工 = 集成人协调会话 `01a18388-a371-7746-8158-9fb15d55d819`。
+> 本轮**没有运行任何产品测试**，也没有写代码 / 测试 / fixture；测试数字全部引自 A 原件 `review-batch4.md` 与实施者日志。只读脚本 `status-blocked-struct.py`（基于 Converge batch4 的 `converge-struct.py`，只把 T-B04a 加进批次统计，并加了祖先 / 依赖打印）及其日志 `status-blocked-structure*.log`、`status-blocked-std-cmd-diff.log` 放在协调器 Temp，不是项目产物。
+
+### 0. 性质与边界
+
+- **不是需求变更**：冻结 spec v1.1 与 46 AC 不变，不回 Clarify，不重过 Gate 1。
+- **不是全 feature Gate 2 / Handoff**，也不是用户叫停。当前只是 AGENTS §5.1 的**工程变更审批**硬边界。
+- **草案的状态**：plan【r6.11】与 tasks T-B04a 都标“待批，不生效”。本报告只做静态审查：说明草案和 R17 的差异、风险、授权与结构是否一致，**不宣称已可实施**。
+- **A 原件不改**：`review-batch4.md`（原件 `9812f64`，blob `0c04f6ad11830aa458ff8b6d33d317d9d61fe947`）的结论固定为**未通过：1 P2 R4-A + 4 P3 R4-B～R4-E**。
+
+### 1. 重新读取与输入
+
+- 规则与方案：AGENTS.md §2 / §5.1 / §6；`docs/plan.md`。
+- 冻结 spec：LF SHA256 `ed0f6c6c…942d9`，末次提交仍为种子 `8753fa9`；46 AC；R-002 / AC-002-2；R-008 的“延迟”场景。
+- plan：r6.9 / r6.10，§2.1 / §2.3。
+- tasks：当前 69 项；T-B01 / B02 / A22d / B04 / B03 的全部状态、修改范围、标准与命令；T-B05 / G09 / H04；§1、§2a、§5～§7。
+- Checklist R10 节（只读）：S-41～S-43、O-B4-2 句。blob `4537c55f226f0bdc4f39b19e7c369731cf23abba`，LF SHA256 `53285183…a115b`。
+- analyze R17；implementation-log §8 / §14 / §15；interface-handoff。
+- **`review-batch4.md` 全文**；`converge-batch4.md`（blob `2e4ea2c4…`，只读）；A 的只读探针日志 `review-probe/probe-results.log`（Temp）。
+- 代码：只读 `JobDetailPage.vue` :21–27，以及 `job-detail.spec.ts` / `detail-stage.spec.ts` 的用例标题（11 / 4）。
+
+### 2. 草案相对 R17 的差异
+
+| 位置 | 变化 | 是否改动既有标准 / 命令 / 工时 |
+|---|---|---|
+| tasks 页首 | 新增“第四批 Review 未通过 + R4-A 工程审批等待”块；Converge batch4 块标为历史 | — |
+| T-B01 / B02 / A22d / B04 / B03 状态行 | 改为“**已实施，第四批 Review 未通过（R4-A 待 §5.1 批准 / 修复）**”，附 A 亲跑数字；原状态行作为原文保留 | 否（标准 / 命令 / 工时 / 依赖逐字不变，脚本 dump 对比无差异） |
+| **T-B04a**（新增，B04 后、B05 前） | R4-A 最小修复草案：0.5 h，依赖 T-B04 / T-B03 的已实施代码，3 条标准 / 3 条命令，`blocked_by: Walter §5.1 批准` | 新任务 |
+| T-G09 | 依赖增 T-B04a（状态行注明 r6.11 草案） | 标准 / 命令 / 工时不变 |
+| §5 AC-002-2 | 最终列 = T-B04 + T-B04a（原 B04 承接与命令保留），命令列追加 `WI R4-A` 两条；表头加 r6.11 注 | 其余 45 行不变 |
+| §6 | 追加 r6.11 结构条目 | — |
+| §2a 页面切片 | 加注：本批未通过；若 T-B04a 获批，也须完成并经增量 Review | 提供任务列表不变 |
+| plan | 页首 r6.11 行；§2.1【r6.11 草案】；§2.3 S-43 句后【r6.11 草案】 | 不改 r6.9 / r6.10 原文；r6.9“不加 guard”在获批前继续有效 |
+
+### 3. 风险与授权
+
+- **授权边界**：
+  - R4-A 的修复本质上是“异步回调完成后检查自己是否仍有效”，与 plan §2.1【r6.9】“不加比较 / 去重 guard”字面冲突；§2.3【r6.10】又写明任何新增 guard 都要按 §5.1 先报 Walter。因此 T-B04a 在 Walter 对**这一项**单独批准之前不得开码。
+  - 协调器已在本轮 commentary 报告 §5.1 要求的三项依据（怎么出错 / 概率 / 代码量），但 Walter **尚未回复**。向集成人报告不等于 Walter 同意；Walter 的通用代码授权仍然有效，但不覆盖 plan 明确不做的新机制。
+  - 本草案不使用“清理回调不是 guard”之类的说法来绕开授权。
+- **流程纠偏**：
+  - A 原件 §3 / §7 中“Gate 2 待 Walter”“选 (b) 风险接受可改判通过”属于流程建议文字。按 AGENTS §2，Gate 2 是全 feature Review 之后的人工闸门，批次 Review 不另设 Gate 2，所以这些文字不创设批次 Gate 2，也不降低 P2。
+  - 当前状态以 AGENTS 为准：**Review 未通过**，直到 P2 修复并经 A 新会话增量技术复核。
+  - 集成人建议 Walter 只批准最小修复，不请求以风险接受把 P2 当作 P3 放行。
+  - 不因 Review 结论红而换模型，也不另找 A 求通过。
+- **草案本身的技术风险**（静态，不是实测）：
+  - Vue 3.5 的 `watch` 第三参数 `onCleanup` 在回调再次触发前和 watcher 停止（组件卸载）时都会调用，正好覆盖 A 的 2a（侧栏离开）、2b（Back）、2c（同作业选阶段）、2d（换作业）四条路径。
+  - `selectStage` 是同步 replace，不受影响。合法 stage 入口不经 canonical 分支，行为不变。
+  - 草案不取消 `openJob`，因此离开后仍有一次可接受的额外读，store 的迟到写入 R4-E 仍在（P3，自愈，归 `api` feature）。
+  - 新 E2E 依赖真实 slow 延迟（实际等待 ≥ 3500 ms）。只要窗口 > 3000 ms 就能确定性断言，不需要改配置。
+  - 组件第 2 例必须先让同作业进入缓存（轨道可见）才能在读期间点阶段，草案已写明这一前置。
+- **未选的替代方案**：A 列出的 (b) 风险接受、(c) 改设计（JobCard 默认带 stage）都不在本草案内；是否采用由 Walter 决定，本报告不代做。
+- **范围确定性**：只改三个文件——`JobDetailPage.vue`、`job-detail.spec.ts`（只新增 `WI R4-A` 2 例）、`detail-stage.spec.ts`（只新增 1 例 `WI R4-A`）。原 11 例组件测试与原 4 例 E2E 不改。API / 契约 / 输入 / 私有存储均无变化。标准 3 用 `git diff --stat 6c082fd HEAD -- frontend` 固定文件白名单。
+
+### 4. 结构复算（脚本，只读，作用于本轮最终工作树；HEAD = `9812f64` 对照）
+
+- **任务与工时**：70 个任务，编号唯一、排序正确（T-B04a 在 T-B04 后、T-B05 前）；104.5 h（A 30 / 44.5、B 8 / 11.5、C 5 / 7.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4）；每项 0.5～2 h。HEAD 对照为 69 / 104 h。
+- **状态**：**21 已完成 + 5 已实施（Review 未通过）+ 44 未开始**；`OTHER` 0。HEAD 对照为 21 / 5 / 43。
+- **标准 / 命令**：**235 / 235**，逐任务 1:1；`MISSING_AC` = []，`PROBLEMS` = []。
+- **依赖**：`UNKNOWN_DEP` = []；真实依赖图 DFS 结果 `CYCLE None`。编号前向检查 `BACKEDGES` = [(T-B03, T-B04)]，仍是唯一有意回边；T-B04a 的两个依赖都在它之前，不新增回边。
+- **AC**：spec 46 = 矩阵 46；`PARTIAL_NOT_ANCESTOR` = []；`BIDIR_BAD` = []。
+  - AC-002-2 最终 = [T-B04, T-B04a, T-H04]，部分前置 A22 / A22d 都是 T-B04a 的祖先。
+  - T-B04a 标准 1 / 2 引用 AC-002-2，标准 3 引用 AC-009-1（工程门）。
+- **执行顺序**：T-G09 依赖 = [G06, G07, G08, **B04a**]，且 T-B04a ∈ ancestors(T-H04)，所以全量检查与 v2 复验都排在修复之后。
+- **逐任务对比 HEAD**（`status-blocked-std-cmd-diff.log`）：只有新增的 T-B04a 一节和 T-G09 的 deps 一列不同。其余 69 项的预计 / 依赖 / 状态 / 标准 / 命令逐字相同；§1、§3、§7 全文相同。
+- **依赖已满足、未开始的任务**：
+  - 已完成和已实施都计入时：T-A14 / T-A15 / T-A16 / **T-B04a** / T-C01。其中 T-B04a 只是结构上可起步，受 Walter §5.1 批准外部阻塞。
+  - 只计已完成时：T-A14 / T-A15 / T-A16 / T-C01。
+  - 以第四批未通过任务为前提的下游（如 T-B05 / T-B06 / T-G02 / T-G04 与 C–F 的 B04 入口），是否在 R4-A 处置前派工由集成人决定。**本轮按协调指令不派任何代码。**
+- 第四批 + 草案合计：6 项 8 h、20 条命令（原 5 项 7.5 h / 17 条 + T-B04a 0.5 h / 3 条）。
+
+### 5. Checklist 与复核路径
+
+- 有效 Checklist 仍是 **R10** `37e2f71`（blob `4537c55…`），本轮未改、未勾。R10 审的是 r6.9，r6.11 草案还没有经过 A 审查。
+- A 原件 §3 (a) 建议的路径是“登记小任务 → Implement → A 定向复核”，复核对象为 `JobDetailPage.vue` diff、新回归用例、`job-detail.spec` 整文件与四份 E2E，即**实施后的增量 Review**，并没有要求开码前另开一轮 Checklist。
+- 本报告据此登记：获批后按该路径执行。开码前是否再加一次 A 设计定向复核（Checklist R10.1），由 Walter / 集成人在批准时一并决定，本轮不调用 A，也不预设。
+
+### 6. 状态、台账与固定值核对
+
+- **代码固定**：`6c082fd`；`6c082fd..9812f64` 只有文档。
+- **固定值核对**：
+  - 冻结 spec、`checklist.md`、`review-batch4.md` 与 R10 原件 / Review 原件逐字相同（blob 见 §0 / §1）。
+  - 旧 Review / Converge 原件与 `9812f64` 零差异。
+  - 本轮禁止路径（`frontend/`、`backend/`、`docs/`、`templates/`、AGENTS.md、根 HANDOFF、spec / checklist / 各 review / converge、其他 feature）零差异，`git diff --check` 通过。
+- **P3 与未关项**（均未经风险接受）：
+  - R2-C 代码经 A 核实，关闭条件（本批通过）未满足，不记关闭。
+  - R4-B～R4-E 按 A 原件 §5 的承接登记。
+  - S-41 仍归 T-B05 开工前精度轮；R3-B / R3-C 及前两批未关项归属不变。
+- **H-x**：H-2·标签 ① 候选 `5c00cf6` **不转生产已核**（② R10、③ A 亲跑 48 / 18 / 9 / 21、④ 缺）；H-2·列表 ① 仍 `af24c82`；页面切片未通过、C 组未做 → 未交付。main `072bb12` 不导入，继续 pin `90187f7`。
+- **验收与收敛**：46 AC 最终验收 **0**；feature **未收敛**（第四批未通过 + 44 项未实施 + H 组外部阻塞）。
+
+### 7. 结论（Analyze R18，当前索引）
+
+- spec / plan / tasks / 代码之间没有新的冲突。第四批 Review 的 P2 R4-A 已登记为**待批的最小补修草案 T-B04a**：结构一致（70 / 104.5 h / 235 / 235，无环，AC 双向一致且祖先可达），原 5 项的标准 / 命令 / 工时未削减。
+- 草案处于 **blocked（等待 Walter AGENTS §5.1 单独批准）**，不授权实施。获批后按 Implement → Converge → A 新会话增量 Review 的顺序执行，通过后才关闭 R4-A、改判第四批。
+- 在此之前，第四批 Review 维持**未通过**，feature **未收敛**。
+- 本报告不是审核结论，不勾选 checklist。
