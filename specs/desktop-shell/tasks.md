@@ -5,12 +5,15 @@
 > - **作者 / 通道**：Tasks = `anthropic/claude-opus-5-5`（`claude-bridge` seven_day 额度在当前窗口已确认耗尽，不重试；官方通道最小真实调用成功）。协调 = `openai/gpt-6.1-sol`（不是作者）。
 > - **输入**：冻结 `spec.md` v1（Gate 1 2026-10-28）+ `plan.md` 修订 3 + A 的初轮 `checklist.md`（只读）。固定源码基线 `8ba1b6a304f916e3d57ebdd6b89790b75a15f14c`，规划文件为未提交工作副本。
 > - **修订 4（2026-10-28，T-04b 构建收集源头修正）**：作者同上（`anthropic/claude-opus-5-5` via anthropic，本轮官方通道最小真实调用成功；bridge 同窗口已知耗尽，不重复探活）。输入 = 固定提交 `1275ae2` + `plan.md` 修订 4（§0、§7.5）。只改 T-04b 的上下文、修改范围、估时、完成标准、验证与执行细则，以及执行顺序表第 8 行和合计；任务数仍为 41，其他任务、依赖与历史计数不变。A 对修订 3 的 41/41 不自动覆盖修订 4，T-04b 的修订 4 部分须等 A 独立复查后才能实施。
+> - **修订 5（2026-10-29，T-06c/T-06d 设置导航与测试兼容）**：作者同上（`anthropic/claude-opus-5-5` via anthropic；bridge 同窗口已知耗尽不重复探活，官方探活 `ROUTING_PLAN_OK`；同一 Plan 阶段收尾，非回退）。输入 = 固定提交 `4b0c3c5`（代码同 `d77ce69`）+ `plan.md` 修订 5（§0、§3.3、§4.1、§6.1、§8.3）。只改 T-06c / T-06d 的上下文、修改范围、完成标准、验证与执行细则，T-06c 估时 1.5h → 2h，执行顺序表第 22/23 行与合计（61h → 61.5h）；任务数仍 41，依赖与顺序不变，spec/AC 不变。A 对修订 4 的 41/41 不自动覆盖修订 5；T-06c/d 须等 A 按 `settings-routing-review-request.md` 独立复查后才能实施。
 > - **执行前置条件（硬）**：Implement 开始前重新读取 `checklist.md` 全文，**全部复选框均已由 A 勾选**才可开始。本文件生成时 A 初轮为 30/41、Tasks/Analyze 对齐项待 A 复查；**当前审批状态以 `checklist.md` / `review.md` 为准**，未全部勾选前 Implement 不得开始。
 > - **执行者**：全部实施任务（含纠偏任务）由 `openai/gpt-6-astra` 执行；仅在调用失败（额度/鉴权/持续错误）时按 AGENTS §6 回退 `deepseek/deepseek-flash`，测试变红不是回退理由。**2026-10-28 17:25 UTC 用户明确恢复；原 Astra 会话从 `782aa20` 完成后端复验（最终 451 passed / 5 online skips），真实构建成功，但 T-04b 冒烟因 `_internal/pyarrow/tests` 黑名单命中而 blocked（11/12）。按冻结规则停止，未启动 T-05；实际进度见本文件末尾、`review.md` 与根目录 `HANDOFF.md`，不能将后端子句通过等同于最终 AC 验收。**
 > - **最新后端检查点（2026-10-28）**：T-04b 修订 4 已由 Astra 从 `3a9ec35` 完成七步验证并交协调者保存为实施提交 `c1e33e0`：聚焦 3 passed、全量 454 passed / 5 online skips、干净重建成功、未修改冒烟 12/12、文件路径仅少目标测试资产 17（新增/其他移除均 0）。黑名单未改；详见实施进度与 `implementation-evidence.md` §6，不代表全 feature/GUI/外部 AC 或 Gate 2 完成。当时停在 T-05b 之前，当前批次见下一行。
 > - **当前检查点（2026-10-28）**：Astra 从 `83b91db` 依序完成 T-05b/c/d/m/e/f，实施源码本地保存为 `a643f81`；最后源码 `npm ci` 成功、**34 unit passed / 0 skipped**、真实 Electron **2 场景 / 37/37 断言通过**，自有进程与场景 temp 已清理。Checklist 41/41 与需求不变；真实前台焦点 M-09 等边界不随之完成。下一项 T-05g，未开始。
 > - **最新实现检查点（2026-10-29）**：Astra 从 `e0fe1cd` 按顺序实现 T-05g/h/i/j/k/l，实施提交 `f7d347b`；最后 **42 unit / 14场景213/213通过**，但一次root-locked的10s等待失败根因未确认，**T-05k稳定性复核未关闭**。后续先复核此项，不直接进入T-06b/T-07，不以最后绿灯掩盖失败；详见实施证据§8。
 > - **最新风险评估检查点（2026-10-29）**：Astra有界诊断未复现，只补安全时间线，实施681d4bb；最后42unit/14场景213通过。独立A专项评估无P1/P2，RL-01=P3 OPEN/UNKNOWN、非阻塞，可从T-06b继续；**不是根因已修或用户风险接受**。整体Converge/Review前需按A报告§4与既定文档流程补正负对照，其他RL事项仍跟踪。
+> - **最新设置检查点（2026-10-29）**：Astra从c33fa9d完成T-06b并保存d77ce69：42unit/0skip、16场景236/236，真实file设置XHR未触发CORS。T-06c/d因两个旧场景兼容与菜单驱动方案缺口暂停；先Plan/Tasks/Analyze/A窄修补确认，不隐匿API/假菜单或改生产路由取绿，不进入T-07；RL-01仍OPEN非阻塞。
+> - **修订5最新批准（2026-10-29）**：Plan5/Analyze8固定38c482c后，独立A第4轮41/41、无P1/P2通过，仅R5-01～04跟踪；批准T06c/d的新导航/真实菜单驱动/两旧场景最小兼容。待同步固定实施输入后才继续；19场景未运行，原RL条件和R5-03的T08e依赖/前提补齐义务不得漏过。
 > - **工作树**：一个 Astra 实施工作树 / 分支串行完成全部任务；`shell/main.js`、`preload.js`、`renderer/onboarding.*`、`package.json`/`package-lock.json`、`backend/app/*` 是共享文件，不安排并行写入者。
 > - **登记约定**：各任务修改范围中的"`shell/check.js`（登记）"均指在登记表 `shell/test/e2e/index.js` 中加入场景名（plan §8.3），不改运行器逻辑。
 - **命令状态**：下列所有"待新增"的测试文件、测试名、e2e 场景、npm 脚本在 Implement 前**都不存在、都未运行**；本文件不表示任何验证已通过。测试名为约定名，实施时须按此命名，以便验证输出能逐条对上。
@@ -56,8 +59,8 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 | 19 | T-05k 启动错误页（标记码） | 1.5h | T-05j、T-01c、T-01d |
 | 20 | T-05l 目标页选择 / mock / 资源缺失 | 1.5h | T-05j |
 | 21 | T-06b 内置页纠偏 | 1.5h | T-03b、T-05j |
-| 22 | T-06c 引导路由与设置入口 | 1.5h | T-06b、T-05l |
-| 23 | T-06d 内置页注册指引（缺项先引导） | 1.5h | T-03c、T-06c |
+| 22 | T-06c 引导路由与设置入口（修订 5：`routeToMain`/`openMain`/应用菜单/`app-menu-click`/两旧场景兼容） | 2h | T-06b、T-05l |
+| 23 | T-06d 内置页注册指引（缺项先引导；修订 5 细则） | 1.5h | T-03c、T-06c |
 | 24 | T-07a 活动归约器 + 事件夹具 | 1.5h | T-05e |
 | 25 | T-07b 托盘 / 关窗行为 / 托盘菜单 | 1.5h | T-07a、T-06c |
 | 26 | T-07c 退出守卫 | 1.5h | T-07b |
@@ -78,7 +81,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 | 41 | T-10d 打包产物 e2e | 1h | T-10c |
 | — | T-M1、T-M2a～c 人工验收批次（非代码任务） | 各 1.5–2h | T-10d |
 
-合计 41 个实施任务、约 **61 h**（修订 4：T-04b 1.5h → 2h；修订 3 时为 60.5h）；另 4 个人工验收批次（约 6–8 h，执行人为人，不是 Implement 模型）。
+合计 41 个实施任务、约 **61.5 h**（修订 5：T-06c 1.5h → 2h；修订 4 时为 61h：T-04b 1.5h → 2h；修订 3 时为 60.5h）；另 4 个人工验收批次（约 6–8 h，执行人为人，不是 Implement 模型）。
 
 ---
 
@@ -433,29 +436,43 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 
 ### T-06c 引导路由与设置入口（纠偏 T-06，A-13）
 
-- **上下文**：引导判定只在内置页内部；加载前端后无法进入设置。plan §4.1 第 6 步、§6。依赖：T-06b、T-05l。
-- **修改范围**：`shell/main.js`（就绪后 `GET /settings/profile` 选页；应用菜单"设置…"；`openSettings`）；`shell/preload.js`（`openSettings`）；`shell/renderer/onboarding.*`（引导↔设置显式导航，去掉 `location.reload()` 切换）；新增 `shell/test/e2e/onboarding.js`、`onboarding-skip.js`；`shell/check.js`。
-- **估时**：1.5h
+- **上下文**：引导判定只在内置页内部；加载前端后无法进入设置；T-06b 后静态核出两旧场景与批准接口/路由冲突、无应用菜单测试驱动、无回到目标页的固定入口（`implementation-evidence.md` §10.4；plan §0 修订 5 ①～④）。设计权威：plan §3.3、§4.1 第 6 步与资源错误重试、§6.1 第 1～8、10、11 段、§8.3。依赖：T-06b、T-05l。
+- **修改范围**（plan §6.1 第 10 段；T-06c/d 合计唯一可写集合）：`shell/main.js`（`routeToMain()`：就绪事件 / `fai:open-main` / `frontend_missing`·`renderer_crashed` 重试共用，只读真实 `GET /settings/profile`；`openSettings(via)`；应用菜单 `fai-settings`；钩子启用时 `records.navigation`）；`shell/preload.js`（新增无参数 `openSettings()`、`openMain()`）；`shell/renderer/onboarding.html`、`onboarding.js`（保存并继续/跳过后 `openMain()`、`#back-main`、删除全部 `location.reload()`）；`shell/src/test-hooks.js`（**只**加 `records.navigation` 初始化与 `app-menu-click` 一个命令分支）；`shell/test/e2e/startup-visible.js`（**只**替换严格五项断言为 §6.1 第 6 段四条）；`shell/test/e2e/frontend-missing.js`（**只**加 §6.1 第 7 段核心前提与一条断言）；新增 `shell/test/e2e/onboarding.js`、`onboarding-skip.js`；`shell/test/e2e/index.js`（按序追加登记）；`specs/desktop-shell/implementation-evidence.md`（只追加）。其余全部只读（§6.1 第 10 段）；`settings-sources`、`ui-masking`、`mock` 不改，只需在新路由下继续通过（它们用 `url.endsWith('/onboarding.html')`，§6.1 第 3 段保证不加 query/hash）。
+- **估时**：2h（修订 5）
 - **完成标准**：
-  1. AC-005-1、WO-01（最近 AC：AC-005-1）：全新目录第一次运行进引导 → 提交 → 第二次运行直接进目标页（内置设置页）。
-  2. AC-005-2、WO-05（最近 AC：AC-005-2）：引导"跳过"进入主界面；之后经应用菜单"设置…"可打开设置并编辑档案（托盘入口在 T-07b）。
-- **验证**（待新增）：
-  1. → `cd shell && npm run check -- onboarding`：`PASS onboarding › 首次进入引导`、`› 第二次运行进入设置页`。
-  2. → `cd shell && npm run check -- onboarding-skip`：`PASS onboarding-skip › 跳过后进入主界面`、`› 菜单设置… 打开设置页`、`› 档案可保存`；人工 M-13（T-M2b）。
+  1. AC-005-1、WO-01（最近 AC：AC-005-1）：全新目录第一次运行进引导 → 保存并继续 → 设置区；真实核心读出 `completed=true, skipped=false` 与档案；第二次运行直接进目标页（内置设置页）。
+  2. AC-005-2、WO-05（最近 AC：AC-005-2）：已配置前端夹具时全新根仍先进引导；"跳过"→ 前端夹具（主界面）；`app-menu-click {item:"settings"}` 调用真实菜单项 `click` → 设置区，`records.navigation` 含 `{action:'open-settings', via:'app-menu', result:'opened'}`；保存档案；`#back-main` → `openMain()` → 前端夹具；真实核心读出 `skipped=true` 与补填字段（托盘入口在 T-07b）。
+  3. AC-005-2（接缝契约，plan §6.1 第 5 段）：`app-menu-click` 的 `item` 缺失或非 `settings` → 400 `unknown_menu_item`；命令本身不导航，效果只经真实菜单回调产生。
+  4. AC-009-2 / plan §3.3（preload 面不扩大）：`startup-visible` 的成员断言为 APPROVED 18 项全集外成员 `[]`、REQUIRED_NOW 7 项缺失 `[]`、类型契约、FORBIDDEN 出现 `[]`；该场景其余断言不变。
+  5. AC-007-3（保持）：`frontend-missing` 先用真实核心 `set_onboard_state(root, completed=True)` 再首启，原有缺失页 / 打开日志 / 补齐后重试成功 / 重载不重启后端 / `getBackend` 当前端口 / 后端缺失分支 / 清理断言**全部保留不改**。
+- **验证**（待新增；cwd `shell`，最后源码上）：
+  1. → `npm run check -- onboarding`：`PASS onboarding › 首次进入引导`、`› 保存后进入设置区`、`› 真实核心 completed=true skipped=false`、`› 第二次运行进入设置页`。
+  2. → `npm run check -- onboarding-skip`：`PASS onboarding-skip › 有前端时仍先进入引导`、`› 跳过后进入主界面`、`› 菜单设置… 打开设置页`、`› navigation 记录 app-menu`、`› 档案可保存`、`› 返回主界面回到前端`、`› 真实核心 skipped=true`、`› 未知菜单项 400`；人工 M-13（T-M2b）。
+  3. → `npm run check -- startup-visible`：`PASS startup-visible › 仅批准的 preload 成员`、`› 当前必需成员齐全`、`› 成员类型符合契约`、`› 不暴露高权限对象或任意导航`，其余原断言名照旧通过。
+  4. → `npm run check -- frontend-missing settings-sources ui-masking mock`：`PASS frontend-missing › 真实核心设置引导完成` + 全部原断言名；另三场景原断言全部通过（未改文件）。
+  5. → `npm ci`；`npm run test:unit`（现有单测全部通过、0 skip）；无参数 `npm run check`（**18** 个登记场景、0 failures；T-06d 后为 19）。
+- **修订 5 执行细则**：
+  - 顺序：main/preload/菜单/路由 → test-hooks 命令 → onboarding.* 导航 → 两旧场景兼容 → 两新场景与登记 → 验证 → 证据追加。
+  - 静态核对（Converge 复核）：`rg -n "location\.reload" shell/renderer` 无命中；`git diff --stat 4b0c3c5 -- shell` 只含修改范围内文件；`rg -n "app-menu-click" shell/src/test-hooks.js` 仅一个分支且以 `=== 'settings'` 精确比较；`git status --short --ignored shell` 新场景不被忽略。
+  - 停止规则（plan §6.1 第 11 段）：`file://` 请求被 CORS/OPTIONS/权限阻止；驱动菜单需比 §6.1 第 5 段更高权限（如主进程任意 JS）或 `MenuItem.click()` 不能编程执行生产回调；任何旧场景只有改动范围外文件或弱化断言才能通过；路由需要改后端/settings 核心。出现即停，写证据报协调者。
+  - 禁止：隐藏/按场景裁剪 bridge；在钩子或夹具伪造引导状态；为场景改生产路由优先级；`eval` 调 `openSettings()` 冒充菜单证据；给 `loadFile` 加 query/hash。
+  - 回滚：只回退上述 `shell/` 文件即回到 T-06b 检查点。
 
 ### T-06d 内置页注册指引：消费核心结果、缺项先引导（AC-005-3，Analyze 迭代 5）
 
-- **上下文**：现 `renderPrefill(profile)` 用遮蔽后的 `/settings/profile` 自拼字段：Category 显示 key、缺 Reason for use、忽略 `missing_for_registration`，缺项时仍可打开注册页。改为只渲染 T-03c 端点返回的核心结果。plan §3.1.4"隐私区分"、§9 AC-005-3。依赖：T-03c、T-06c（同一页面文件串行；引导/设置导航已就绪）。
-- **修改范围**：`shell/renderer/onboarding.html`、`shell/renderer/onboarding.js`（删除 `renderPrefill`；新增"准备注册信息"按钮：点击后请求 `/settings/registration-guide`，用 `textContent`/`createElement` 渲染；缺项时列出缺项与核心 `hint`、定位档案表单对应输入框、不显示"打开注册页"；齐全时显示五项指引与 `notes`，"打开注册页"使用响应中的 `submit.url`；指引区只读、不在任何表单内、离开设置页清空）；新增 `shell/test/e2e/registration-guide.js`；`shell/test/e2e/index.js`（登记）。
+- **上下文**（修订 5 设计权威：plan §6.1 第 9 段）：现 `renderPrefill(profile)` 用遮蔽后的 `/settings/profile` 自拼字段：Category 显示 key、缺 Reason for use、忽略 `missing_for_registration`，缺项时仍可打开注册页。改为只渲染 T-03c 端点返回的核心结果。plan §3.1.4"隐私区分"、§9 AC-005-3。依赖：T-03c、T-06c（同一页面文件串行；引导/设置导航已就绪）。
+- **修改范围**：`shell/renderer/onboarding.html`、`shell/renderer/onboarding.js`（删除 `renderPrefill`；新增"准备注册信息"按钮：点击后请求 `/settings/registration-guide`，用 `textContent`/`createElement` 渲染；缺项时列出缺项与核心 `hint`、定位档案表单对应输入框、不显示"打开注册页"；齐全时显示五项指引与 `notes`，"打开注册页"使用响应中的 `submit.url`；指引区只读、不在任何表单内、离开设置页清空）；新增 `shell/test/e2e/registration-guide.js`；`shell/test/e2e/index.js`（登记）；`specs/desktop-shell/implementation-evidence.md`（只追加）。修订 5 细则：删除写死的 `REGISTER_URL`；`#prepare-guide` 按钮、`#guide` 只读区（只含文本元素，无 `input`/`textarea`/`select`）；只在点击后经 `getBackend()` 当前端点与令牌请求、`cache:'no-store'`；齐全时才创建 `#open-register`，用核心 `submit.url` 经 `window.open` → `setWindowOpenHandler` → `openExternal`；缺项时元素带 `data-missing=<字段名>`、焦点移到 `#profile-form` 第一个缺项输入框；`openMain()`/`openSettings()` 重载即清空，不写 `localStorage`/`sessionStorage`/IndexedDB；不提交 key、不访问网络（EIA/上游）。其余文件只读（plan §6.1 第 10 段）。
 - **估时**：1.5h
 - **完成标准**：
   1. AC-005-3（预填）：运行器启动前用 settings 核心写入完整加密档案（真实后端）→ 点击"准备注册信息"后指引五项文本等于核心值（Category 为官方标签、含 Reason for use、Email 为档案真实值）→ 点击"打开注册页"→ `openExternal` 记录器恰收到核心返回的注册页 URL；全程不访问 EIA（`openExternal` 只记录不打开）。
   2. AC-005-3（缺项引导，settings AC-003-1）：缺 last_name/email/sector 的档案 → 指引区列出三项缺项与核心提示、页面无"打开注册页"、`openExternal` 记录为空；key 粘贴输入框与"验证并保存"按钮仍可用（已有 key 不必重新注册）。
   3. AC-005-4（隐私区分）：点击前指引区为空；普通档案表单仍只显示遮蔽邮箱；指引区元素不位于任何 `<form>` 内。日志/诊断中不含邮箱由 T-08d `diagnostics-privacy`（其流程包含打开指引）作为它自己的完成标准证明。
+  4. AC-005-3、AC-005-4（修订 5，plan §6.1 第 9 段）：缺项时焦点移到第一个缺项输入框；`openMain()`/`openSettings()` 重载后指引清空且未写入 Web 存储；全程不提交 key、不访问网络；无参数 `npm run check` 19 个登记场景 0 failures，静态无 `renderPrefill`/`REGISTER_URL`/`location.reload`。
 - **验证**（待新增）：
   1. → `cd shell && npm run check -- registration-guide`：`PASS registration-guide › 完整档案 指引五项等于核心值`、`› Category 为官方标签`、`› 含 Reason for use`、`› openExternal 收到核心 URL`。
   2. → 同上：`PASS registration-guide › 缺项档案 列出三项缺项`、`› 无打开注册页`、`› openExternal 记录为空`、`› key 输入与验证按钮可用`。
   3. → 同上：`PASS registration-guide › 点击前指引区为空`、`› 档案表单邮箱为遮蔽值`、`› 指引区不在表单内`；人工 M-14、M-15（T-M2b）。
+  4. → 同上（修订 5）：`PASS registration-guide › 缺项焦点在第一个缺项输入框`、`› 离开后指引清空`、`› 未写入 Web 存储`；随后 cwd `shell`：`npm ci`；`npm run test:unit`（0 skip）；`npm run check -- startup-visible frontend-missing onboarding onboarding-skip registration-guide settings-sources ui-masking`；最终无参数 `npm run check`（**19** 个登记场景、0 failures）；静态 `rg -n "renderPrefill|REGISTER_URL|location\.reload" shell/renderer` 无命中。
 
 ### T-07a 活动归约器 + 事件夹具来源
 
@@ -714,5 +731,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 | T-05b/c/d/m/e/f（6 项） | **本批自动化检查点完成**：Astra 从 `83b91db` 实施，源码提交 `a643f81`；最终 npm ci 成功、34 unit / 0 skip、真实 Electron 2 场景 / 37/37 断言；单实例后端 spawn 与事件恰 1，首后端 PID/port 不变；不把基础设施/夹具写成真实业务、M-09 或整体 AC 完成，详见 `implementation-evidence.md` §7 |
 | T-05g/h/i/j/l（5 项） | 本批实现/自动化检查点通过：状态机、真实后端清理恢复、启动页与资源/mock；最后完整42unit、14场景213/213；实施提交 `f7d347b`，不代表整feature/人工/业务验收 |
 | T-05k（1 项） | 实现/末次验证通过；A专项评估 **RL-01=P3 OPEN/UNKNOWN、非阻塞**，不再暂阻T-06b。原10s根因未确认，安全时间线已加，生产零改；整体Converge/Review前必须补对照，不能称已修/用户接受，详见 `root-lock-risk-review.md` v2 / 证据§9 |
-| T-06b 起其余 21 项（含 T-07～T-10） | ⬜ 未开始；独立A已允许带明确OPEN跟踪继续Implement，下一项 **T-06b**，按既定依赖串行，不跳T-07；对照实验及其他RL事项须依报告条件另行安排，不得漏过整体Converge/Review |
+| T-06b（1 项） | 本任务自动化子句通过：42unit/0skip、16场景236/236，两个新真实设置场景23/23；file-origin GET/PUT/DELETE实证成功，backend/安全未改，实施d77ce69，见证据§10 |
+| T-06c/d（2 项） | 新方案文档前置已满足：Plan5/Analyze8与A第4轮41/41、无P1/P2通过，明确导航/菜单驱动/两旧场景最小兼容；尚未实施，待同步固定输入后继续，不把19场景或注册指引当已通过 |
+| T-07a 起其余 18 项（含 T-07～T-10） | ⬜ 未开始；待本批后按依赖串行从T-07a推进；RL对照等条件仍需整体Converge/Review前另行安排，不因非阻塞漏项 |
 | T-M1、T-M2a～c | ⬜ 未执行 |

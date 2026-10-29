@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **最新检查点：T-05k 有界诊断及独立技术复核完成，RL-01 为 P3 OPEN / UNKNOWN、非阻塞；下一项 T-06b（2026-10-29）**。A 未发现本窄范围 P1/P2，允许继续 Implement；这不是根因修复或用户风险接受。Astra 只补安全时间线与证据，实施提交 **`681d4bb`**，生产代码/现有超时/断言未改；最新42unit、14场景213/213通过。
-> **先读 §14 和 `root-lock-risk-review.md` 最终v2结论**。整体Converge/Review前必须补正负对照；若复现进程观测缺陷则升级回修。当前无后台worker，Checklist41/41不变，完整feature Review/Gate2未完成，不push/PR/merge。
+> **当前阶段：Plan修订5 / Analyze8 / A第4轮质量复查完成（41/41，无P1/P2），准备恢复T-06c/d实现（2026-10-29）**。固定规划提交 **38c482c**，明确openMain、真实应用菜单驱动和两旧场景最小兼容；未改需求/后端/安全。T-06b已通过42unit/16场景236/236，CORS STOP未触发；19场景尚未运行，不进T-07。
+> **先读 §16（本轮批准）**及Plan5/Checklist第4轮。RL-01 P3 OPEN及对照义务、R5新跟踪项保留；本质量复查不是代码Review/完整Gate2，不push/PR/merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -332,3 +332,23 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 主集成检查点=本文件所在HEAD；实施源码观察提交=681d4bb，若同步进度文档以实施树git log查询最新HEAD。两棵树相关代码/文档会在无writer边界串行同步；不得从历史审核树回拷旧进度。
 - 当前权威证据：`implementation-evidence.md` **§9** + **`root-lock-risk-review.md`最终v2**。分派/最终报告/普通时间线/最终unit/e2e/审核输入指纹与A勘误摘要在 **`handoff-artifacts/20261029-lockprobe/`**；原始历史失败仍在前序lifecycle目录。
 - 原始run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-lockprobe-FiY0hypq/`；原始测试/诊断 `C:/Users/iswal/AppData/Local/Temp/fai-lockprobe-01a18620/`。大型profile日志、完整session、diff/测试库不入Git。本轮两个agent均结束，无服务、控制端口或自有进程需保留。
+
+## 15. 2026-10-29 设置宿主界面（T-06b检查点通过；T-06c/d待方案兼容修补）
+
+- 用户继续后，主树输入 `8a5ea69` / 实施树输入 **`c33fa9d`**，开始均干净，相关源码/feature文档/交接内容一致。Checklist41 checked/0 unchecked；A已判RL-01非阻塞但保持OPEN，未把根因当已修。
+- 唯一实施writer=session **`01a18698-0ad0-7456-8578-dd4892e22bd5`**，元数据实核 **openai/gpt-6-astra via openai**，原树/分支，无回退；协调仅派工、记录及后续串行集成。
+- 仅T-06b→c→d：异步当前端点与安全DOM/邮箱保护、引导与菜单设置入口、显式消费核心注册指引；仅授权shell界面/导航/五场景与证据追加。backend/**、依赖/生命周期/规划审核/全局配置只读，不开始T-07，也不重开RL控制实验或PYZ修补。
+- 必须真实settings-sources XHR正对照、真实加密档案夹具；组织类型11后台项+1占位=12options。e2e不验证/提交真实key，不访EIA，外链只经记录器；注册指引只在用户点击后显示真实合成邮箱，离开清空，不入日志/缓存。
+- **硬停止规则**：真实file://→127.0.0.1请求若被CORS/OPTIONS/权限阻止，保留Node同端点与renderer的安全诊断差异，停在受影响任务；禁止加CORSMiddleware、关闭webSecurity/CSP/sandbox、加main/preload代理或mock API/硬编码列表取绿，须先回Plan/Analyze/A复查及必要人工批准。
+- run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-settings-owBsqdLT/`；Astra已在07:52结束，**T-06b**最后源码42unit/0skip、16场景236/236，两个新业务场景23/23；真实file页面12options/EIA回退/DELETE空key/PUT姓名均成功，未触发CORS，未改backend/安全。最初清除按钮隐藏8/10失败已修且保留。六文件指纹核对后保存实施提交 **d77ce69520f2530532476f32a0735aa76691c301**；owned进程0，temp已删。
+- **T-06c/d未实施**：旧startup-visible严格等于五成员bridge，与已批准openSettings冲突；旧frontend-missing使用未完成引导的新根却要求直接进frontend，与Plan首启优先冲突；测试固定命令没有真实应用菜单点击驱动。禁止隐匿API/假点击/改生产路由迎合旧测试，需先明确最小兼容写权限与菜单方案。
+- Plan/Tasks/Analyze窄范围修补进行中（非需求变更、非CORS调整），原目标/AC不变。固定主检查点 **4b0c3c510906bba83f41eac4ac34bbbccf1c1a30**；独立规划树 `D:/2030/Futures-AI-desktop-settings-plan` / `plan/desktop-shell-settings-routing`，session **01a186ae-a724-7435-9516-4e3e3028f6a5** 元数据实核 **anthropic/claude-opus-5-5**。同窗口不重试已耗尽bridge，本轮官方真实最小调用ROUTING_PLAN_OK。
+- 规划者仅写plan/tasks/analyze（新增迭代）与settings-routing-review-request；此处为开工时点描述。现Plan5/Analyze8与A第4轮已完成，最新批准见§16，非复用旧41/41假放行。
+
+## 16. 2026-10-29 Plan5 / Analyze8 / A第4轮质量批准
+
+- 四份规划文档固定提交 **38c482c6c97085d25c913e3cfdee2c0938854201**（相对4b0c3c5仅四文档）。同一首选 **anthropic/claude-opus-5-5** via官方：首会话01a186ae-a724-7435-9516-4e3e3028f6a5设计、聚焦收尾01a186cd-cda4-7695-a01c-0c406624215d；长生成在无活动tool边界由协调者保存/中止后同模型通道续作，人工exit1不是额度/鉴权/模型失败，不触发回退。草稿150tab/CRLF格式障碍由协调者仅用edit修格式，未代写技术方案。静态曾有awk/od等读取快捷方式，不作为后续工具惯例。
+- 设计：无参数openMain固定返回目标；routeToMain真实GETprofile决定首启/目标；openSettings共用生产处理器。仅test-hooks新增app-menu-click单值settings驱动真实MenuItem.click，不开放任意主进程JS/路径；startup-visible用批准18全集/当前7必需/禁止项，frontend-missing核心标记完成后验证资源，均保留原保证。任务仍41、61.5h（T06c=2h）。无Spec/AC/CORS/后端/依赖变更。
+- A=**anthropic/claude-fable-5-1**官方，本轮SETTINGS_REVIEW_OK真实探活成功，同窗口不重试已耗尽bridge；新独立session **01a186df-a8d4-7549-a450-deb727c6dd65** 元数据实核。独立树 `D:/2030/Futures-AI-desktop-settings-checklist` / `review/desktop-shell-settings-routing`，HEAD固定38c482c，只写Checklist；17份输入指纹前后全一致，不跑测试。
+- **A第4轮结论：41 checked/0 unchecked，无P1/P2，R5-01～04四项P3，T06c/d修订5文档前置满足**。R5-01完成/验证编号不对位但具名覆盖全，Converge按断言核对；R5-02菜单409不可达分支缺自动化跟踪；R5-03 **实施T08e前必须补依赖T06d及完整档案+点击准备注册前提**；R5-04接口类型eval与空window not_ready为必要兼容。无额外工程批准/ADR/Gate1需求，A不授予更大范围。
+- 接下来在无writer边界同步四规划+A Checklist到原实施树并固定新输入，才由同首选Astra恢复T06c/d。当前代码仍T06b检查点，19场景未执行；原RL/PYZ/UTF8等跟踪与Gate2边界不变。run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。

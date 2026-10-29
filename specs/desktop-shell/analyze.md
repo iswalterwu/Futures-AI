@@ -403,3 +403,50 @@ P1：无。P2：无。
 1. 审核员 A（新开独立会话，模型按 AGENTS §6）按 `build-assets-review-request.md` 复查受影响项，结论只写入 `checklist.md`；记录完成且全部复选框为勾选状态后，Astra 才可实施 T-04b 的修订 4 部分。A 若提出 P1/P2，回到 Plan/Tasks 修补并重新运行 Analyze。
 2. 协调者把四个规划文件集成为固定提交、同步到实施树，并给出细则第 7 步的 `<输入基线>`。
 3. 工程批准：除 Walter 已给出的这一项构建修正授权外，没有待批项；不需回 Clarify / Gate 1；不需新 ADR。
+
+## 迭代 8（Plan 修订 5：T-06c/T-06d 设置导航与测试兼容之后；只读）
+
+> 输入：固定提交 `4b0c3c510906bba83f41eac4ac34bbbccf1c1a30`（分支 `plan/desktop-shell-settings-routing`；代码同实施提交 `d77ce69`）+ 四个规划文件工作副本（`plan.md` 修订 5、`tasks.md` T-06c/d、本节追加、新增 `settings-routing-review-request.md`）。作者 = `anthropic/claude-opus-5-5` via anthropic（同一 Plan 阶段收尾；bridge 同窗口已知耗尽不重复探活，官方探活 `ROUTING_PLAN_OK`；中途两次协调者取消与一处行格式修复均非模型/通道失败，未回退）。协调 = `openai/gpt-6.1-sol`。日期 2026-10-29。
+> 本轮**不是** Converge、Review、产品测试通过或 Gate 2；没有运行任何测试、构建、npm 或联网请求；没有执行 19 个场景。
+
+### 1. 重读的输入
+
+AGENTS.md；`docs/plan.md`；`spec.md`（R-005 / AC-005-1～4）；`plan.md` 修订 5 的页首、§0、§3.3、§4.1 第 6 步与资源错误重试、§6 / §6.1 全文、§8.3 控制通道；`tasks.md` 页首、执行顺序表、T-06b/c/d；`implementation-evidence.md` §10.2～10.5（T-06b 检查点 42 unit / 16 场景 236/236 与 §10.4 停止理由）；`checklist.md` 审批页首与受影响项；本文件迭代 7。修补后再次重读 plan §6.1、§8.3 与 tasks T-06c/d。
+
+### 2. 执行的检查（只有静态检查）
+
+| 检查 | 方法 | 结果 |
+|---|---|---|
+| spec 冻结 | `git diff --exit-code 4b0c3c5 -- specs/desktop-shell/spec.md` | 无差异；AC 编号抽取 39（含 settings 的 AC-003-5）→ 38，与此前一致 |
+| 只读文件 | `git diff --exit-code 4b0c3c5 --` spec / checklist / review / README / HANDOFF / implementation-evidence / `shell` / `backend` | 均无差异；checklist 未改（审批仍待 A） |
+| 空白 | `git diff --check` | 通过（协调者修复了 plan §8.3 快照行的 150 个制表符残留，未改技术措辞） |
+| 任务结构 | `rg` 抽取顺序表与任务块估时 | 41 行 / 41 块；顺序表合计 = 任务块合计 = **61.5h**；全部 0.5～2h；T-06c 2h、T-06d 1.5h；依赖与顺序未变、无前向依赖 |
+| 完成标准 ↔ 验证 | 逐条对照 | T-06c 5/5（另附执行细则）；T-06d 4/4；每条完成标准含 AC 编号（AC-005-1/2/3/4、AC-007-3、AC-009-2） |
+| 修订 5 只改 T-06c/d | `git diff 4b0c3c5 -- specs/desktop-shell/tasks.md` | 限于页首修订 5 说明、顺序表第 22/23 行、合计行、T-06c/T-06d 块；协调者所有的“实施进度”未改 |
+| 所有权 | plan §6.1 第 10 段 vs tasks T-06c/d 修改范围 | 一致：main / preload / onboarding.* / test-hooks（只加 `records.navigation` 与 `app-menu-click`）/ startup-visible（只替换一条断言）/ frontend-missing（只加核心前提与一条断言）/ 三个新场景 / index 登记 / 证据追加；`settings-sources`、`ui-masking`、`mock` 与其余旧场景、`check.js`、`src/{backend,paths,prefs}.js`、夹具、依赖只读 |
+| 设计一致 | `rg app-menu-click|openMain|fai-settings|REQUIRED_NOW` | plan §0/§3.3/§4.1/§6.1/§8.3 与 tasks 一致；§8.3 原缺 `app-menu-click` 条目（§0 已声称新增）→ 本轮补入 §8.3 命令集（AN8-01） |
+| 场景计数 | plan §6.1 第 8 段 vs tasks | 16 → T-06c 后 18 → T-06d 后 19；T-06c 验证的无参数全集为 18、T-06d 为 19 |
+| cwd | tasks 验证 | 全部 `shell`，与 plan §6.1 第 11 段一致 |
+| `.gitignore` | `git check-ignore -v --no-index` 三个新场景与本请求文件 | 无输出、退出码 1（不被忽略） |
+
+### 3. 发现
+
+| # | 级别 | 内容 | 处置 |
+|---|---|---|---|
+| AN8-01 | P3（已修） | plan §0 修订 5 声称 §8.3 新增 `app-menu-click`，但 §8.3 固定命令集未列 | 在 §8.3 命令列表加入该命令与错误码，指向 §6.1 第 5 段 |
+| AN8-02 | P3（已修） | T-06d 修订 5 新增两条验证（焦点/清空/Web 存储；19 场景回归）无对应完成标准 | 新增完成标准 4（AC-005-3/4），验证合并为 4 条，一一对应 |
+| AN8-03 | P3（接受，测试缺口） | `app-menu-click` 的 409 分支（菜单项缺失/不可用）无自动化覆盖；正常生产模板下不可达 | 不为不可达分支构造假菜单（AGENTS §5.1/§5.6）；交 A 判断 |
+| AN8-04 | P3（协调者动作） | 四个规划文件须集成为固定评审提交并同步到实施树；本请求不自报其提交哈希 | 见 `settings-routing-review-request.md` |
+
+P1：无。P2：无。
+
+### 4. 正式结论（迭代 8）
+
+- **文档一致性通过（修订 5 范围）**：冻结 spec、plan 修订 5 与 tasks（41 个任务，61.5h）之间无 P1/P2；不改 spec / AC / 后端 / CORS / 生命周期 / 依赖 / 全局配置 / 安全面，不需回 Clarify / Gate 1，不需新 ADR。迭代 1～7 原样保留。
+- 本结论**不**代表代码已实现或任何测试已运行；T-06b 检查点（42 unit / 16 场景 236/236）是既有实施证据，19 场景**未执行**。
+- **审批待定**：A 对修订 4 的 41/41 不自动覆盖修订 5。
+
+### 5. 实施前置条件（修订 5）
+
+1. A（新开独立会话，AGENTS §6）按 `settings-routing-review-request.md` 复查受影响项，结论只写入 `checklist.md`；全部复选框为勾选状态后 Astra 才可实施 T-06c/d。A 提出 P1/P2 → 回 Plan/Tasks 修补并重跑 Analyze；A 若判定需 Walter 工程批准 → 停止。
+2. 协调者把四个规划文件集成为固定评审提交并同步到实施树。
