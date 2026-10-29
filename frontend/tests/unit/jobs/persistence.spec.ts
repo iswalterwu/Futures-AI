@@ -258,7 +258,15 @@ describe('WI non-normal — session ownership and zero storage access', () => {
     const remove = vi.spyOn(localStorage, 'removeItem')
     const clear = vi.spyOn(localStorage, 'clear')
     const current = clientFor(scenario)
-    commit(state => { if (state.jobs[0]) state.jobs[0].goal = 'memory edit' })
+    if (scenario === 'error') {
+      const beforeJob = getJob('j-collect')
+      expect(() => commit(state => { state.jobs[0].goal = 'memory edit' })).toThrow(
+        expect.objectContaining({ error: expect.objectContaining({ code: 'adapter_error' }) }),
+      )
+      expect(getJob('j-collect')).toEqual(beforeJob)
+    } else {
+      commit(state => { if (state.jobs[0]) state.jobs[0].goal = 'memory edit' })
+    }
     const reset = oldClient.resetMockData()
     await vi.advanceTimersByTimeAsync(1500)
     await expect(reset).resolves.toBeNull()
