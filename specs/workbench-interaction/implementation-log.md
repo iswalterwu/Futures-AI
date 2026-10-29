@@ -1,6 +1,12 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
+> **当前状态补记（2026-10-29 r6.6.1 范围精度；以本块为准，下一块 r6.6 其余内容仍有效）**：
+> - **Checklist**：R9 通过（26 / 26，0 P1 / P2，P3 S-38～S-40），集成人提交 `ab742f5801628b15324fc998f03959482fd31d9d`（`checklist.md` blob `74084c1337491a042c944096e1f290fe07aab324`，本轮未改）。第三批当前有效 Checklist = **R9 `ab742f5`**；下一块“当前有效仍为 R8.1”为当时原文。
+> - **Implement 开码前停止**：Astra（`openai/gpt-6-astra`，实施树 `feat/workbench-interaction-astra` @ `ab742f5`）在 T-A11 开码前按范围纪律停下。原因是确定的范围遗漏：`tests/unit/jobs/real-stubs.spec.ts` 的 `requests` 表以 `satisfies` 强制覆盖全部 `DataClient` 键，新增 `resetMockData` 必须加键，但该文件不在 r6.6 写入清单内。Astra 未改代码、未提交，**未运行本轮任何验证命令**。这**不是**模型调用失败（不触发回退），也**不是**产品测试红。
+> - **r6.6.1**：T-A11 / A12 / A13 修改范围显式允许只在该 `requests` 表追加本任务新增方法的真实 stub 调用（A11 一键、A12 / A13 各四键）。67 任务 / 约 102 h / 224 ↔ 224 / 46 AC / 依赖 / 16 已完成 51 未开始均不变。见 §10 与 analyze.md「Analyze R12.1」。
+> - **下一步**：集成人提交本修订并同步实施树后，派 Astra 继续 T-A11；不预写成功。
+>
 > **当前状态（2026-10-29 第三批派工准备 r6.6；以本块为准。下一块为第二批 Review 后记账原文，其进度数字仍然有效）**：
 > - **进度**：仍为 **16 / 67 已完成**、**51 未开始**；46 AC 最终验收 0；feature **未收敛**。
 > - **第三批**：**T-A11 → T-A12 → T-A13 → T-A22a**（4 项，约 7 h），开码前精度已补（plan §2.3 / §2.4 / §3【r6.6】，tasks 四个任务的【r6.6 精度】，analyze.md「Analyze R12」），**全部待实施**；完成后预计 20 / 67，不预写成功。派工范围、写权限与口径见 §10。
@@ -188,6 +194,10 @@
 | 2026-10-29 | 集成人 | 原样提交审核原件并 ff | `858025d` | — | 提交 `f72a1a187405e9f9dcba5bb22f47ad840141702d`；ff 到本文档树与生产方集成树 `integration/workbench-interaction`；实施树仍 `27e59e6`（代码相同） |
 | 2026-10-29 | 计划 / 分析类（第二批 Review 后纯文档记账，非 Handoff、非 Gate 2） | tasks 六项状态 + 页首、本日志、interface-handoff、plan §2.4 R2-E 一句精度、README 本 feature 两行；临时目录交接摘要 | 文档树 HEAD `f72a1a1` | `anthropic/claude-opus-5-5`（PI_SESSION_ID `01a18647-6186-7141-8ea5-ad1a1da07c72`；协调器对 `claude-bridge/claude-opus-5-5` 最小调用 exit 1 = provider / invocation error，未确认 quota；同模型官方通道成功；只换通道、未改配置） | 文档完成；未改代码 / 测试 / spec / checklist / 旧 Review / converge / analyze / 审核原件 / 根 HANDOFF / docs；未跑产品测试；未 commit（由集成人提交） |
 | 2026-10-29 | 计划 / 分析类（第三批开工前精度澄清 r6.6 + Analyze R12，非实施） | 第三批 T-A11 / A12 / A13 / A22a 派工准备：持久化语义与 API、写方法签名 / 回执 / 时机、投放写入规则与 `mappingHistory`、当前列表投影、jobsStore 精度；plan / tasks / analyze / 本日志 / interface-handoff / README 本 feature 行 | 文档树 `docs/workbench-interaction-batch3-plan` @ `f1b7c06`（代码 = `27e59e6`） | `anthropic/claude-opus-5-5`（本轮协调器对 `claude-bridge/claude-opus-5-5` 最小真实调用 exit 1 = **quota / rate / spend_limit 类**；同模型官方通道 exit 0；本窗口不重试已明确限额通道；未改配置） | 文档完成；未改代码 / fixture / 测试 / spec / checklist / 旧 Review / 根 HANDOFF / 权威 docs；未跑产品测试；未 commit（由集成人提交） |
+| 2026-10-29 | 集成人 | 提交 r6.6 规格文档 | `f1b7c06` | — | 提交 `ef64c1853f79ea1e18e99a7b0ff22de2152de40c` |
+| 2026-10-29 | 审核员 A（新会话、独立 worktree `D:/2030/Futures-AI-interaction-checklist-batch3`） | Checklist R9：第三批 r6.6 限定范围定向复核 | `ef64c18` | `anthropic/claude-fable-5-1`（协调器对 `claude-bridge/claude-opus-5-5` 的最小调用 exit 1 = quota / rate / spend_limit 类，本窗口不重试；未单独探 fable 的 bridge；只换通道） | **通过**：26 / 26，0 P1 / P2，P3 S-38～S-40；集成人原样提交 `ab742f5` |
+| 2026-10-29 | Implement（新会话，实施树 `feat/workbench-interaction-astra`） | T-A11（第三批首项） | `ab742f5` | `openai/gpt-6-astra`（首选，调用正常，未回退） | **开码前停止**：确定的范围遗漏（`real-stubs.spec.ts` 的 `requests` 表须为 `resetMockData` 加键，但不在 r6.6 写入清单）；未改代码、未提交、未运行本轮验证命令。不是模型调用失败，也不是测试红 |
+| 2026-10-29 | 计划 / 分析类（Tasks 范围小补 r6.6.1 + 只读 Analyze R12.1，非实施） | T-A11 / A12 / A13 修改范围允许 `real-stubs.spec.ts` 的 `requests` 表按本任务新增方法加键；同步本日志 §10 所有权 | 文档树 `docs/workbench-interaction-batch3-plan` @ `ab742f5` | `anthropic/claude-opus-5-5`（PI_SESSION_ID `01a186d0-43c8-7219-9857-eadff71941bb`；bridge 本窗口已明确 quota / rate / spend_limit，不重试；官方通道正常；未改配置） | 文档完成；只改 tasks / analyze / 本日志；未改代码 / 测试 / spec / plan / checklist；未跑产品测试；未 commit（由集成人提交） |
 
 ## 8. 首批 Review P3 后续定位（只登记，不改规范机制；**均未经 Walter 风险接受**，本批不修代码）
 
@@ -273,17 +283,20 @@
     - 新建 `frontend/src/jobs/persistence.ts`、`tests/unit/jobs/persistence.spec.ts`。
     - 改 `contracts/{mock/job-state.ts, mock/index.ts, client.ts, methods.ts, real/index.ts}`；生成物只经 `pnpm -C frontend contract`。
     - 只在语义变更处改 `tests/unit/jobs/job-state-read.spec.ts`：增加 `beforeEach` 清 localStorage，并改写 `WI scenarios read` 中的两例（tasks T-A11【r6.6 精度】）。
+    - 【r6.6.1】`tests/unit/jobs/real-stubs.spec.ts`：只在 `requests` 表追加 `resetMockData` 一键。既有键、`satisfies`、断言与 describe / test 不改。
   - **T-A12**：
     - 改 `contracts/types.ts`（只加 `CreateJobInputSchema` / `IntakeReceiptSchema` 并注册），以及 `jobs/persistence.ts`（`mappingHistory`）、`contracts/{mock/job-state.ts, mock/index.ts, client.ts, methods.ts, real/index.ts}`；生成物。
     - 新建 `tests/unit/jobs/job-state-intake.spec.ts`。
+    - 【r6.6.1】`tests/unit/jobs/real-stubs.spec.ts`：只在 `requests` 表追加 `createJob` / `submitIntake` / `getIntakePreview` / `confirmIntake` 四键（参数取最小合法值），其余不改。
   - **T-A13**：
     - 改 `contracts/{mock/job-state.ts, mock/index.ts, client.ts, methods.ts, real/index.ts}`；生成物。
     - 新建 `tests/unit/jobs/job-state-pool.spec.ts`。
+    - 【r6.6.1】`tests/unit/jobs/real-stubs.spec.ts`：只在 `requests` 表追加 `listUnassignedUploads` / `assignUpload` / `removeUpload` / `cancelJob` 四键（参数取最小合法值），其余不改。
   - **T-A22a**：
     - 新建 `frontend/src/jobs/stores/jobs.ts`、`tests/unit/jobs/jobs-store.spec.ts`。
     - `frontend/src/main.ts` 只加 jobsStore 的应用级订阅与解除。
   - **一律不改**：
-    - fixture 文件；v1 三份契约测试；`scripts/**`；`package.json` / 锁文件。
+    - fixture 文件；v1 三份契约测试（`tests/unit/{mock,contracts,contract-doc}.spec.ts`；`real-stubs.spec.ts` 属本 feature jobs 测试，按上列 r6.6.1 只追加键）；`scripts/**`；`package.json` / 锁文件。
     - `app/**`、`workbench/**`、`shared/**`、`agent/{store.ts,AgentDock.vue,AgentDrawer.vue,CotTimeline.vue}`。
     - `backend/`、`docs/`、spec / checklist / 审核原件；不写 v2 任何树。
 - **r6.6 口径摘要**（原文见 plan §2.3 / §2.4 / §3【r6.6】与 tasks 四个任务的【r6.6 精度】）：
@@ -307,8 +320,13 @@
      - 只有带 `jobContext` 的三种终态触发 refresh；`main.ts` 应用级订阅，卸载 / HMR 时解除。
      - 测试用真实 mock AgentClient 回放，不加生产注入。
 - **验证命令**：逐任务按 tasks 原文执行，共 19 条（T-A11 5 / T-A12 5 / T-A13 4 / T-A22a 5），均带 jobs 路径与 `WI` 标题。
-  - 另建议（非新增标准）：每任务提交前跑 `git diff --check`；改契约的任务跑 `contract --check`；批末跑全量 `pnpm -C frontend test:unit` 与 `pnpm -C frontend check` 防回归。
+  - 另建议（非新增标准）：每任务提交前跑 `git diff --check`；改契约的任务跑 `contract --check`；A11 / A12 / A13 加跑 `pnpm -C frontend test:unit tests/unit/jobs/real-stubs.spec.ts`（即 T-A10 命令 4，r6.6.1）；批末跑全量 `pnpm -C frontend test:unit` 与 `pnpm -C frontend check` 防回归。
   - A11 起 normal 会话会持久化，新 spec 每例前清 localStorage。
 - **回报要求**：同 §4（固定 commit、逐命令输出摘要、失败原文脱敏摘要）。任一任务实际超过 2 h（T-A11 / T-A12 已到上限），或发现与 tasks / plan 精度不符，先停并回报，不在实施中偷换。
-- **H-x**：本批完成后，H-2·列表的提供任务（T-A01 / A02 / A10 / A12 / A22a）齐备，可形成生产方 ①③；H-6 仍缺 T-A21。② = 当时已提交的有效 Checklist（现为 R8.1 `34d339e`）；④ 只能由 `integration/frontend-workbench-v2` 所有者登记。
+- **H-x**：本批完成后，H-2·列表的提供任务（T-A01 / A02 / A10 / A12 / A22a）齐备，可形成生产方 ①③；H-6 仍缺 T-A21。② = 当时已提交的有效 Checklist（现为 R9 `ab742f5`；r6.6 撰写时为 R8.1 `34d339e`）；④ 只能由 `integration/frontend-workbench-v2` 所有者登记。
+- **r6.6.1 范围精度（2026-10-29，以本条为准）**：
+  - **起因**：Astra 在 T-A11 开码前按范围纪律停下（实施树 @ `ab742f5`，clean，未改代码、未提交、未运行本轮验证命令）。`real-stubs.spec.ts` 的 `requests` 表以 `satisfies { [Method in keyof DataClient]: … }` 强制全键，并断言 `requests` / `dataMethods` / `dataClient` 键严格相等，所以 A11 / A12 / A13 新增的 9 个方法都必须加键，而 r6.6 写入清单漏列了该文件。
+  - **定性**：这是 r6.6 的范围遗漏，不是模型调用失败（Astra 调用正常、不回退），也不是产品测试红。R9 已注明“real 桩须加键（在 T-A11 范围）”，但这不构成实施者的写权限，因此须在 tasks 显式写明。
+  - **修订**：上列三任务所有权各加一条，tasks 三任务修改范围加【r6.6.1 范围精度】。不改需求、方法、标准、命令、任务数、估时或 AC；plan §1 的“jobs 测试归本 feature”不变。
+  - **后续**：集成人提交并同步实施树后，Astra 从 T-A11 继续。
 - **复核建议**：见 analyze.md「Analyze R12」§8。不自动触发新的 A 轮次；持久化白名单补列与 `mappingHistory` 提请第三批独立代码 Review 明确核对；开码前是否另做限定范围的 A 定向复核，由 Walter / 集成人裁量。

@@ -444,7 +444,12 @@
   - **既有 jobs 回归（属语义变更处，允许改）**：`job-state-read.spec.ts` 增加 `beforeEach(() => localStorage.clear())`。`WI scenarios read` 中两例按新语义改写：
     - “real commit…”一例：末句的新 normal client 改为读回已持久化的提交；“重建即丢弃”改用非持久场景验证。
     - “this batch stays entirely in memory…”一例：改为“非 normal 与有覆盖时零访问；normal 无覆盖时只 getItem 一次 `fai.jobs.v1`，不写、不删”。
-    - 不改 v1 三份契约测试、生成器、工具链、壳 UI。
+    - 不改 v1 三份契约测试（`tests/unit/{mock,contracts,contract-doc}.spec.ts`；不含本 feature 自有的 `tests/unit/jobs/real-stubs.spec.ts`）、生成器、工具链、壳 UI。
+  - **【r6.6.1 范围精度】`tests/unit/jobs/real-stubs.spec.ts` 只追加一键**（T-A10 交付，属 §1-5 jobs 测试所有权）：
+    - 依据：该文件 `requests` 表以 `satisfies { [Method in keyof DataClient]: () => ReturnType<DataClient[Method]> }` 约束，并断言 `requests` / `dataMethods` / `dataClient` 的键严格相等；新增 `DataClient` 方法时必须同步加键，否则 typecheck 与该测试必然失败。
+    - 允许改动：只在 `requests` 表追加 `resetMockData: () => dataClient.resetMockData()` 一行。
+    - 不改：既有 13 键、`satisfies` 约束、两条断言与 describe / test 行为；不改成动态枚举，不弱化校验。
+    - 性质：T-A10 “real 桩覆盖全部 DataClient 键”的自然维护，不新增标准 / 命令。回归由标准 5 的 typecheck（`satisfies` 全键）与批末全量 `test:unit` 覆盖，也可加跑 T-A10 命令 4。见 analyze.md「Analyze R12.1」。
   - **测试提示**（对应既有标准，不新增）：
     - 本任务尚无写方法，持久化测试经真实 `commit(mutator)` 制造写入（同 T-A17 标准 2 口径）。
     - 超限：用 mutator 写入超长 `goal`。配额异常：在系统边界 `vi.spyOn(Storage.prototype, 'setItem')` 抛错。
@@ -496,6 +501,11 @@
     - 标准 3：normal 下 submit 文本后，`fai.jobs.v1` 不含正文字符串；ingest payload 的 sourceNote 五字段原样。
     - 标准 4：slow / error 下的读方法本身也延迟或报错，因此“未提交 / 读回不变”经 job-state 的同步读函数观察。
     - 每例前清 `localStorage`。
+  - **【r6.6.1 范围精度】`tests/unit/jobs/real-stubs.spec.ts`**：规则同 T-A11 该条，只在 `requests` 表追加本任务四键的真实 stub 调用，参数按实际输入类型给最小合法值。示例（非强制）：
+    - `createJob({ title: '样例作业', type: 'daily', subject: null, goal: '样例目标' })`
+    - `submitIntake({ jobId: null, inputKind: 'url', url: 'https://example.invalid/sample', sourceNote: { purpose: '样例', reliability: 'unknown', publishedAt: null, validUntil: null, scopeNote: null } })`
+    - `getIntakePreview('u-unassigned-file')`、`confirmIntake('u-unassigned-file', [])`
+    - 既有键、`satisfies` 约束、断言与 describe / test 不改，不新增标准 / 命令。
   - **不做**：真实解析 / 抓取 / 模型 / 启发式隔离；T-A13 的池、归入、删除与取消；不宣称 T-A17 的只读门已完成。
 - **完成标准**：
   1. createJob 校验必填（标题非空、类型合法），回执和读回均为 collecting / collect，交付物 draft（AC-001-3 部分前置）。
@@ -525,6 +535,7 @@
     - 标准 2：本批没有 listInterventions（T-A15）。“介入历史和原锚仍可查”经以下真实输出验证：回执中的 remove_source 事件；normal 快照中的事件与 removed 记录；`getStageWorkspace` collect 旧修订中的 uploadId；`getIntakePreview`。T-A15 / T-B06 再经读 API 覆盖。
     - 标准 3：cancel 后 `getJob` 的 currentStage / stages 与取消前一致，各阶段工作区内容不变。本批没有 run 关联，“不 abort”只作实现约束（晚到事件隔离见 T-A18 标准 5）。
     - 每例前清 `localStorage`。
+  - **【r6.6.1 范围精度】`tests/unit/jobs/real-stubs.spec.ts`**：规则同 T-A11 该条，只在 `requests` 表追加本任务四键的真实 stub 调用，参数按实际类型给最小合法值。示例（非强制）：`listUnassignedUploads()`、`assignUpload('u-unassigned-file', 'j-collect')`、`removeUpload('u-unassigned-file', '样例删除')`、`cancelJob('j-collect', '样例取消')`。既有键、`satisfies` 约束、断言与 describe / test 不改，不新增标准 / 命令。
 - **完成标准**：
   1. 待归属的投放出现在池中；assign 之后从池中消失、出现在该作业的采集列表，并追加一条作业内 ingest 事件；assign 到未知作业返回 not_found（AC-003-5 部分前置）。
   2. removeUpload 之后当前视图不再显示该投放，但介入历史和原锚仍可查（AC-007-3 部分前置）。

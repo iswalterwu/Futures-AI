@@ -3,6 +3,7 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
+> **当前结论补记（2026-10-29 r6.6.1 范围精度）：见文末「Analyze R12.1」**——只补 T-A11 / A12 / A13 对本 feature 自有 `tests/unit/jobs/real-stubs.spec.ts` 的“`requests` 表追加本任务新增方法键”写入许可；需求 / 方法 / 标准 / 命令 / 结构不变，R12 其余结论有效。
 > **当前结论（2026-10-29 第三批开工前精度澄清 r6.6）：见文末「Analyze R12」**
 > - **本轮**：只为第三批 T-A11 → T-A12 → T-A13 → T-A22a（4 项，约 7 h）补既有 what / AC 的机制与类型精度（plan §2.3 / §2.4 / §3【r6.6】，四个任务的修改范围【r6.6 精度】）。冻结 spec / 46 AC / 方法集 / 动作矩阵不变，不回 Clarify；67 个任务 / 约 102 h / 224 ↔ 224 / 依赖不变。
 > - **硬约束文字**：唯一触及处 = 持久化白名单补列既有可选字段 `quarantineReason`，另新增内部 `mappingHistory`。隐私边界实质不变，提请第三批独立代码 Review 明确核对。
@@ -796,3 +797,63 @@
   - 建议由第三批独立代码 Review 明确核对这一点。是否在开码前另做限定范围的 A 定向复核，由 Walter / 集成人裁量；本报告不代定，也不声称 R8.1 自动覆盖 r6.6。
 - **第三批**：4 项（T-A11 → T-A12 → T-A13 → T-A22a，约 7 h）**全部待实施**。完成并通过本批 Review 后预计为 20 / 67，现在不预写成功。
 - **feature**：16 / 67 已完成，51 未开始，**未收敛**；46 AC 最终验收 0；H-x 无一已交付。本报告不是 Review / Gate 2 / Handoff。
+
+---
+
+## Analyze R12.1（只读；第三批 r6.6.1 范围精度，2026-10-29；R12 的范围补记，不占后续 Converge 配套的 R13 编号；区别于 Checklist R9，**不是**审核结论）
+
+> **阶段记录（脱敏）**：
+> - **角色与模型**：Tasks 范围小补 + 本分析；实际模型 = **claude-opus-5-5 via anthropic**（PI_SESSION_ID `01a186d0-43c8-7219-9857-eadff71941bb`）。
+> - **通道**：`claude-bridge` 本窗口已明确 quota / rate / spend_limit，按 AGENTS §6 规则 5 不重试；官方通道正常。未改 provider / key / 路由 / 全局配置。
+> - **派工**：集成人协调会话 `01a18388`。Walter 的“允许”授权与集成人指定在既有 tasks 范围内持续有效，本轮不新增人工授权。
+> - **性质**：只读报告，不勾选 checklist。当前有效审核 = **Checklist R9**（集成人提交 `ab742f5801628b15324fc998f03959482fd31d9d`，`checklist.md` blob `74084c1337491a042c944096e1f290fe07aab324`，26 / 26，本轮未改）。
+>
+> **写入与执行边界**：
+> - **可写范围**：唯一可写 worktree `D:/2030/Futures-AI-interaction-plan-batch3`（`docs/workbench-interaction-batch3-plan`，起点 `ab742f5`，起始 clean）。本轮只写 tasks.md（T-A11 / A12 / A13 修改范围）、本报告（页首补记一行 + 本节）、implementation-log.md（页首补记、§7 四行、§10）。
+> - **未改动**：代码 / fixture / 测试 / spec / plan / checklist / interface-handoff / README / 审核原件 / 权威 docs / 其他 worktree。
+> - **未执行**：未 commit / push / merge；未安装；未启动服务或子 agent；**未运行任何产品测试**。
+> - **只读脚本**（不清理）：沿用 `C:/Users/iswal/AppData/Local/Temp/wi-batch3-01a18388-0yit2j1a/analyze-r12-struct.py`，本轮输出 `analyze-r121-structure.log`（本轮 tasks）/ `analyze-r121-structure-HEAD.log`（`ab742f5`）。
+
+### 1. 起因与输入
+
+- **起因**：Implement（Astra，`openai/gpt-6-astra`，实施树 `feat/workbench-interaction-astra` @ `ab742f5`，clean）在 T-A11 开码前按范围纪律停下，回报了一个**确定的**范围遗漏，未改代码、未提交、未运行本轮验证命令。这不是模型调用失败（不触发 §6 回退），也不是产品测试红。
+- **重新读取**：AGENTS.md（§2 / §5 / §6）、`docs/plan.md`；本 feature plan §1（文件边界）/ §2.4【r6.6】签名；tasks §1-5、T-A10（修改范围 / 标准 4 / 命令 4）、T-A11 / T-A12 / T-A13 全文；implementation-log §10；本报告 R12（尤其 F-6 / F-8）；checklist §R9 的代码事实段与 C-02 / 第 107 行。
+- **真实代码**（本树 = 第二批受审代码 `27e59e6` 起未变）：
+  - `frontend/tests/unit/jobs/real-stubs.spec.ts`：`requests` 是 13 个显式条目，用 `satisfies { [Method in keyof DataClient]: () => ReturnType<DataClient[Method]> }` 约束。第一条测试断言 `Object.keys(dataClient)` 等于 `Object.keys(dataMethods)`，且 `Object.keys(requests)` 等于 `Object.keys(dataClient)`；第二条 `test.each(Object.entries(requests))` 逐键断言 `NotImplementedError`。
+  - `frontend/src/contracts/client.ts`：`DataClient` 恰 13 个方法。
+
+### 2. 差距判定
+
+| # | 事实 | 判定 |
+|---|---|---|
+| G-1 | `satisfies` 映射类型要求 `requests` 的键与 `keyof DataClient` 完全一致（缺键或多键都是类型错误）。键集相等断言要求运行时也一致 | A11 加 `resetMockData`、A12 加四个方法、A13 加四个方法之后，若不同步加键，**typecheck（各任务工程门）与该测试都必然失败**。这是确定缺口，不是猜测 |
+| G-2 | r6.6 的 T-A11 修改范围与 implementation-log §10 写权限只列了 `job-state-read.spec.ts` 两例改写。A12 / A13 也没有提这个文件 | **Tasks 层范围遗漏**。R9 代码事实段已写“real 桩须加键（在 T-A11 范围）”，但审核意见不构成实施者的写权限，Astra 停下是正确的 |
+| G-3 | R12 F-8 把 `real-stubs.spec` 写成“按 `dataMethods` 动态比较”，与“新增方法不破 v1 三份契约测试”并列 | **R12 表述不精确（本节更正）**：键集比较是动态的，但 `requests` 表是显式清单且受 `satisfies` 约束，需要逐任务维护。F-8 对 v1 三份契约测试（`tests/unit/{mock,contracts,contract-doc}.spec.ts`）的结论不变 |
+| G-4 | checklist §R9 第 107 行把 `real-stubs.spec` 列进“v1 三份契约测试”的括号里 | 只是措辞归类：该文件由 T-A10 新建在 `tests/unit/jobs/`，属本 feature jobs 测试，不是 v1 契约测试（tasks T-A09 的非 jobs 路径只有那三份）。不影响 R9 结论；checklist 不改，tasks T-A11 的“不改 v1 三份”句补列文件名以消歧 |
+
+### 3. r6.6.1 落点与是否属于自然维护
+
+- **tasks**：T-A11 / A12 / A13 的修改范围各加一条【r6.6.1 范围精度】，只允许在 `requests` 表追加本任务新增的 `DataClient` 方法的真实 stub 调用：A11 只加 `resetMockData`；A12 加 `createJob` / `submitIntake` / `getIntakePreview` / `confirmIntake`；A13 加 `listUnassignedUploads` / `assignUpload` / `removeUpload` / `cancelJob`。参数按实际输入类型给最小合法值，示例非强制。明文保留既有 13 键、`satisfies` 约束、两条断言与 describe / test 行为；**不改成动态枚举、不弱化校验**；v1 三份契约测试仍不改。
+- **implementation-log §10**：三任务写权限各加一条；“一律不改”的 v1 三份契约测试补列文件名；补记 Astra 的停止原因与定性；建议（非新增标准）A11～A13 加跑 T-A10 命令 4。
+- **自然维护的依据**：
+  - T-A10 标准 4 / 命令 4 已经要求“real 桩覆盖全部 DataClient 键”，并由 `real-stubs.spec.ts` 验证；新方法加键就是维护这一条既有约束。
+  - 加的是新方法的 real 桩调用，不是新行为、新 guard、新机制或新流程。
+  - 所有权早已覆盖该文件：tasks §1-5“上述 jobs 测试”与 plan §1“相应 jobs 测试”一直归本 feature。**plan 设计不变、不改 plan**。
+
+### 4. 不变项核对（脚本 + diff，只读）
+
+- **需求**：冻结 spec、46 AC、方法集（plan §2.4【r6.6】签名）、动作矩阵均不变。不回 Clarify / Gate 1。
+- **结构**（`analyze-r12-struct.py` 对本轮与 `ab742f5` 两版 tasks 复算）：67 个任务、编号唯一、排序正确；102.0 h；状态 16 × 已完成 / 51 × 未开始；完成标准 / 命令 **224 / 224**，problems = []；依赖无环；AC 矩阵 46 行，部分前置均为祖先、双向一致；第三批命令 5 + 5 + 4 + 5 = 19、7.0 h。两版日志**只在集合的打印顺序上不同**。
+- **diff**：`git diff ab742f5 -- tasks.md` 共 3 个 hunk，全部落在 T-A11 / A12 / A13 的修改范围内（+12 / −1，那一处 −1 是“不改 v1 三份契约测试”句补列文件名）。状态行、完成标准、验证命令、预计、依赖、§5 矩阵、§6 DAG、§7 均无 hunk。
+- **工程门与回归**：新键由各任务既有工程门的 typecheck（`satisfies` 全键）把关，运行时由 `real-stubs.spec.ts` 覆盖（T-A10 命令 4、批末全量 `test:unit`）。不新增标准 / 命令。
+
+### 5. 是否需要 A 复核
+
+- **不需要另开 A 设计复核**。本轮只把一条既有约束（T-A10 全键覆盖）的维护写进写权限：不改需求、设计、方法、标准、命令或结构，也没有触及 R9 判定过的任何设计点。R9 自己在代码事实中已把这件事判为“在 T-A11 范围”。
+- 第三批独立代码 Review 仍会核真实 diff：`real-stubs.spec.ts` 应只增不改，既有键 / `satisfies` / 断言原样。
+
+### 6. 结论（Analyze R12.1）
+
+- 第三批范围内 spec ↔ plan ↔ tasks ↔ implementation-log ↔ 真实代码**无冲突**，G-1 / G-2 已由 r6.6.1 关闭，G-3 / G-4 是表述更正（不改 R9 结论，不改 checklist）。R12 其余结论有效。
+- **状态**：第三批 4 项（T-A11 → T-A12 → T-A13 → T-A22a）**仍全部待实施**。集成人提交本修订并同步实施树后，再派 Astra 从 T-A11 继续；现在不预写成功。
+- **feature**：16 / 67 已完成、51 未开始，**未收敛**；46 AC 最终验收 0；H-x 无一已交付。本报告不是 Review / Gate 2 / Handoff。
