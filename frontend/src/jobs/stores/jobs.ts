@@ -40,8 +40,6 @@ export const useJobsStore = defineStore('jobs', () => {
     }
     try {
       filteredJobs.value = await dataClient.listJobs(value)
-      listStatus.value = 'ready'
-      listError.value = null
     } catch (cause) {
       listError.value = (cause as ErrorResponse).error
       listStatus.value = 'error'

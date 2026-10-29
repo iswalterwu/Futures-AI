@@ -147,6 +147,69 @@ describe('WI H-2 cache — AC-001-1 / AC-008-3 partial', () => {
   })
 })
 
+describe('WI H-2 list status — AC-001-1 / AC-001-2 / AC-001-4 partial', () => {
+  test('filtering before ensure keeps idle so ensure still loads the unscreened cache and preserves the filtered view', async () => {
+    const { client, reads, store } = connect()
+    const filter: ListJobsFilter = { type: 'daily' }
+    const expectedBase = await client.listJobs()
+    const expectedFiltered = await client.listJobs(filter)
+    expect(expectedFiltered.length).toBeGreaterThan(0)
+    expect(expectedFiltered.length).toBeLessThan(expectedBase.length)
+
+    await store.applyFilter(filter)
+    expect(reads.mock.calls).toEqual([[filter]])
+    expect(store.filter).toEqual(filter)
+    expect(store.filteredJobs).toEqual(expectedFiltered)
+    expect(store.jobs).toEqual([])
+    expect(store.listStatus).toBe('idle')
+    expect(store.listError).toBeNull()
+
+    await store.ensureJobs()
+    expect(reads.mock.calls).toEqual([[filter], [], [filter]])
+    expect(store.jobs).toEqual(expectedBase)
+    expect(store.filter).toEqual(filter)
+    expect(store.filteredJobs).toEqual(expectedFiltered)
+    expect(store.listStatus).toBe('ready')
+    expect(store.listError).toBeNull()
+  })
+
+  test('successful filtering preserves a base read error until explicit refresh recovers both views', async () => {
+    const { reads, store } = connect('error')
+    await expect(store.ensureJobs()).resolves.toBeUndefined()
+    expect(store.listStatus).toBe('error')
+    expect(store.listError?.code).toBe('adapter_error')
+    const base = store.jobs
+    const error = store.listError
+    const client = changeScenario('normal')
+    const filter: ListJobsFilter = { type: 'daily' }
+    const expectedBase = await client.listJobs()
+    const expectedFiltered = await client.listJobs(filter)
+    expect(expectedFiltered.length).toBeGreaterThan(0)
+    reads.mockClear()
+
+    await store.applyFilter(filter)
+    expect(reads.mock.calls).toEqual([[filter]])
+    expect(store.filter).toEqual(filter)
+    expect(store.filteredJobs).toEqual(expectedFiltered)
+    expect(store.jobs).toBe(base)
+    expect(store.listStatus).toBe('error')
+    expect(store.listError).toBe(error)
+    expect(store.listError?.code).toBe('adapter_error')
+    await store.ensureJobs()
+    expect(reads.mock.calls).toEqual([[filter]])
+    expect(store.jobs).toBe(base)
+    expect(store.listStatus).toBe('error')
+    expect(store.listError).toBe(error)
+
+    await expect(store.refresh()).resolves.toBeUndefined()
+    expect(reads.mock.calls).toEqual([[filter], [], [filter]])
+    expect(store.jobs).toEqual(expectedBase)
+    expect(store.filteredJobs).toEqual(expectedFiltered)
+    expect(store.listStatus).toBe('ready')
+    expect(store.listError).toBeNull()
+  })
+})
+
 describe('WI H-2 filter — AC-001-2 partial', () => {
   test('delegates combined filters to listJobs without replacing base; clear restores base without a read', async () => {
     const { client, reads, store } = connect()
@@ -212,7 +275,7 @@ describe('WI H-2 filter — AC-001-2 partial', () => {
     expect(store.listError?.code).toBe('adapter_error')
   })
 
-  test('filter read errors resolve and retain both caches; the next filter read clears the error', async () => {
+  test('filter read errors resolve and retain both caches; only an explicit refresh clears the error', async () => {
     const { store } = connect()
     await store.ensureJobs()
     await store.applyFilter({ status: 'collecting' })
@@ -229,6 +292,9 @@ describe('WI H-2 filter — AC-001-2 partial', () => {
     await store.applyFilter({ type: 'daily' })
     expect(store.filteredJobs).toEqual(await client.listJobs({ type: 'daily' }))
     expect(store.jobs).toBe(base)
+    expect(store.listStatus).toBe('error')
+    expect(store.listError?.code).toBe('adapter_error')
+    await expect(store.refresh()).resolves.toBeUndefined()
     expect(store.listError).toBeNull()
     expect(store.listStatus).toBe('ready')
   })
