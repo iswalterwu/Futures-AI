@@ -66,41 +66,48 @@ describe('WI jobs fixtures — AC-008-2 / AC-002-3 / AC-002-5 / AC-005-6', () =>
       }
     }
     const { collect, process, analyze } = detail
-    expect(collect.uploads).toHaveLength(2)
-    for (const upload of collect.uploads) {
-      expect(upload.jobId).toBe(id)
-      expect(detail.previews[upload.id].fields).toEqual(upload.mapping)
-      expect(collect.revisions[0].uploads.find(item => item.uploadId === upload.id)).toMatchObject({ mapping: upload.mapping, status: upload.status })
+    const states = expected.find(row => row[1] === id)![4]
+    if (states[0] !== 'not_started') {
+      expect(collect.uploads).toHaveLength(2)
+      for (const upload of collect.uploads) {
+        expect(upload.jobId).toBe(id)
+        expect(detail.previews[upload.id].fields).toEqual(upload.mapping)
+        expect(collect.revisions[0].uploads.find(item => item.uploadId === upload.id)).toMatchObject({ mapping: upload.mapping, status: upload.status })
+      }
     }
-    expect(process.sources).toHaveLength(2)
-    expect(process.series).toHaveLength(2)
-    for (const series of process.series) {
-      expect(process.sources.some(source => source.id === series.sourceId)).toBe(true)
-      expect(collect.uploads.some(upload => upload.id === series.sourceId)).toBe(true)
+    if (states[1] !== 'not_started') {
+      expect(process.sources).toHaveLength(2)
+      expect(process.series).toHaveLength(2)
+      for (const series of process.series) {
+        expect(process.sources.some(source => source.id === series.sourceId)).toBe(true)
+        expect(collect.uploads.some(upload => upload.id === series.sourceId)).toBe(true)
+      }
+      const steps = process.revisions[0].steps
+      expect(steps.length).toBeGreaterThanOrEqual(3)
+      expect(process.series.some(series => series.seriesId === steps[0].input)).toBe(true)
+      steps.slice(1).forEach((step, index) => expect(step.input).toBe(steps[index].output))
+      expect(detail.reconciliations).toHaveLength(2)
+      expect(detail.reconciliations[0].rows[0]).toMatchObject({ leftValue: 100, rightValue: 104, difference: 4, differs: true })
+      expect(detail.reconciliations[1].rows).toEqual([])
+      for (const diff of detail.reconciliations) {
+        expect(process.series.some(series => series.seriesId === diff.seriesId)).toBe(true)
+        expect(diff.sources).toEqual(process.sources)
+      }
+      for (const value of process.derivedValues) for (const anchor of value.lineage) {
+        expect(anchor.kind).toBe('observation')
+        expect(detail.reconciliations.some(diff => diff.rows.some(row => `${diff.seriesId}@${row.ts}` === anchor.ref))).toBe(true)
+      }
     }
-    const steps = process.revisions[0].steps
-    expect(steps.length).toBeGreaterThanOrEqual(3)
-    expect(process.series.some(series => series.seriesId === steps[0].input)).toBe(true)
-    steps.slice(1).forEach((step, index) => expect(step.input).toBe(steps[index].output))
-    expect(detail.reconciliations).toHaveLength(2)
-    expect(detail.reconciliations[0].rows[0]).toMatchObject({ leftValue: 100, rightValue: 104, difference: 4, differs: true })
-    expect(detail.reconciliations[1].rows).toEqual([])
-    for (const diff of detail.reconciliations) {
-      expect(process.series.some(series => series.seriesId === diff.seriesId)).toBe(true)
-      expect(diff.sources).toEqual(process.sources)
-    }
-    for (const value of process.derivedValues) for (const anchor of value.lineage) {
-      expect(anchor.kind).toBe('observation')
-      expect(detail.reconciliations.some(diff => diff.rows.some(row => `${diff.seriesId}@${row.ts}` === anchor.ref))).toBe(true)
-    }
-    const conclusions = analyze.revisions.flatMap(rev => rev.conclusions)
-    expect(analyze.revisions[0].conclusions.length).toBeGreaterThanOrEqual(3)
-    expect(new Set(conclusions.flatMap(conclusion => conclusion.evidence.map(anchor => anchor.kind)))).toEqual(new Set(['assertion', 'series', 'source']))
-    for (const conclusion of conclusions) for (const anchor of conclusion.evidence) {
-      const targets = anchor.kind === 'assertion' ? conclusions.map(item => item.id)
-        : anchor.kind === 'series' ? process.series.map(item => item.seriesId) : collect.uploads.map(item => item.id)
-      expect(targets).toContain(anchor.ref)
-      expect(anchor.ref).not.toBe(conclusion.id)
+    if (states[2] !== 'not_started') {
+      const conclusions = analyze.revisions.flatMap(rev => rev.conclusions)
+      expect(analyze.revisions[0].conclusions.length).toBeGreaterThanOrEqual(3)
+      expect(new Set(conclusions.flatMap(conclusion => conclusion.evidence.map(anchor => anchor.kind)))).toEqual(new Set(['assertion', 'series', 'source']))
+      for (const conclusion of conclusions) for (const anchor of conclusion.evidence) {
+        const targets = anchor.kind === 'assertion' ? conclusions.map(item => item.id)
+          : anchor.kind === 'series' ? process.series.map(item => item.seriesId) : collect.uploads.map(item => item.id)
+        expect(targets).toContain(anchor.ref)
+        expect(anchor.ref).not.toBe(conclusion.id)
+      }
     }
   })
   test('conflict preserves distinct human/agent proposals and a usable provisional merged snapshot', () => {
@@ -138,6 +145,7 @@ describe('WI deliverable fixtures — AC-006-7 / AC-008-1 S-18', () => {
     expect(thread.blockId).toBe(workspace.deliverable!.blocks[0].id)
     expect(thread.comments[0]).toMatchObject({ threadId: thread.threadId, parentId: null })
     for (const [id, delivery] of Object.entries(deliveries)) {
+      if (expected.find(row => row[1] === id)![4][3] === 'not_started') continue
       expect(delivery.deliverable!.jobId).toBe(id)
       const artifact = delivery.artifacts[0]
       expect(artifact.id).toBe(delivery.deliverable!.id)
@@ -199,6 +207,11 @@ describe('WI final only delivered — AC-006-7', () => {
   test('only j-delivered is final and its snapshot freezes the actual revision', () => {
     expect(Object.keys(deliveries).sort()).toEqual(allJobs.map(job => job.id).sort())
     for (const [id, workspace] of Object.entries(deliveries)) {
+      if (expected.find(row => row[1] === id)![4][3] === 'not_started') {
+        expect(workspace.deliverable).toBeNull()
+        expect(workspace.finalSnapshot).toBeNull()
+        continue
+      }
       if (id !== 'j-delivered') {
         expect(workspace.deliverable).toMatchObject({ deliverableStatus: 'draft', finalSnapshotId: null, finalRevisionNumber: null, finalizedAt: null })
         expect(workspace.finalSnapshot).toBeNull()
@@ -235,6 +248,27 @@ describe('WI interventions fixtures — AC-007-1', () => {
       expect(c.InterventionSchema.safeParse({ ...event, payload: { action: 'unknown' } }).success).toBe(false)
     }
   })
+})
+
+test('WI not-started seeds — twelve empty workspaces and no orphan previews/reconciliations', () => {
+  const empty = {
+    collect: { stage: 'collect', uploads: [], artifacts: [], revisions: [] },
+    process: { stage: 'process', sources: [], series: [], artifacts: [], revisions: [], derivedValues: [] },
+    analyze: { stage: 'analyze', artifacts: [], revisions: [] },
+    deliver: { stage: 'deliver', artifacts: [], revisions: [], deliverable: null, finalSnapshot: null },
+  }
+  let count = 0
+  for (const [, id, , , states] of expected) {
+    for (const [index, stage] of (['collect', 'process', 'analyze', 'deliver'] as const).entries()) {
+      if (states[index] !== 'not_started') continue
+      const workspace = stage === 'deliver' ? deliveries[id] : details[id][stage]
+      expect(workspace).toEqual(empty[stage])
+      if (stage === 'collect') expect(details[id].previews).toEqual({})
+      if (stage === 'process') expect(details[id].reconciliations).toEqual([])
+      count++
+    }
+  }
+  expect(count).toBe(12)
 })
 
 describe('WI list coverage — AC-001-1 / AC-001-2', () => {

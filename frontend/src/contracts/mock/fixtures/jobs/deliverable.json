@@ -1,83 +1,17 @@
 {
   "j-collect": {
     "stage": "deliver",
-    "deliverable": {
-      "id": "j-collect-deliverable",
-      "jobId": "j-collect",
-      "blocks": [],
-      "deliverableStatus": "draft",
-      "finalSnapshotId": null,
-      "finalRevisionNumber": null,
-      "finalizedAt": null
-    },
+    "deliverable": null,
     "finalSnapshot": null,
-    "artifacts": [
-      {
-        "id": "j-collect-deliverable",
-        "kind": "deliverable",
-        "status": "draft",
-        "source": "agent",
-        "origin": "derived",
-        "latestMergedRev": "j-collect-deliverable-r1",
-        "overlayRev": null,
-        "pendingMerge": false,
-        "pendingRunId": null
-      }
-    ],
-    "revisions": [
-      {
-        "id": "j-collect-deliverable-r1",
-        "artifactId": "j-collect-deliverable",
-        "artifactKind": "deliverable",
-        "number": 1,
-        "baseRev": null,
-        "author": "agent",
-        "createdAt": "2026-10-28T08:01:00Z",
-        "summary": "合成交付 v1",
-        "changeSummary": "初稿",
-        "blocks": []
-      }
-    ]
+    "artifacts": [],
+    "revisions": []
   },
   "j-process": {
     "stage": "deliver",
-    "deliverable": {
-      "id": "j-process-deliverable",
-      "jobId": "j-process",
-      "blocks": [],
-      "deliverableStatus": "draft",
-      "finalSnapshotId": null,
-      "finalRevisionNumber": null,
-      "finalizedAt": null
-    },
+    "deliverable": null,
     "finalSnapshot": null,
-    "artifacts": [
-      {
-        "id": "j-process-deliverable",
-        "kind": "deliverable",
-        "status": "draft",
-        "source": "agent",
-        "origin": "derived",
-        "latestMergedRev": "j-process-deliverable-r1",
-        "overlayRev": null,
-        "pendingMerge": false,
-        "pendingRunId": null
-      }
-    ],
-    "revisions": [
-      {
-        "id": "j-process-deliverable-r1",
-        "artifactId": "j-process-deliverable",
-        "artifactKind": "deliverable",
-        "number": 1,
-        "baseRev": null,
-        "author": "agent",
-        "createdAt": "2026-10-28T08:01:00Z",
-        "summary": "合成交付 v1",
-        "changeSummary": "初稿",
-        "blocks": []
-      }
-    ]
+    "artifacts": [],
+    "revisions": []
   },
   "j-deliver": {
     "stage": "deliver",
@@ -567,163 +501,31 @@
   },
   "j-failed": {
     "stage": "deliver",
-    "deliverable": {
-      "id": "j-failed-deliverable",
-      "jobId": "j-failed",
-      "blocks": [],
-      "deliverableStatus": "draft",
-      "finalSnapshotId": null,
-      "finalRevisionNumber": null,
-      "finalizedAt": null
-    },
+    "deliverable": null,
     "finalSnapshot": null,
-    "artifacts": [
-      {
-        "id": "j-failed-deliverable",
-        "kind": "deliverable",
-        "status": "draft",
-        "source": "agent",
-        "origin": "derived",
-        "latestMergedRev": "j-failed-deliverable-r1",
-        "overlayRev": null,
-        "pendingMerge": false,
-        "pendingRunId": null
-      }
-    ],
-    "revisions": [
-      {
-        "id": "j-failed-deliverable-r1",
-        "artifactId": "j-failed-deliverable",
-        "artifactKind": "deliverable",
-        "number": 1,
-        "baseRev": null,
-        "author": "agent",
-        "createdAt": "2026-10-28T08:01:00Z",
-        "summary": "合成交付 v1",
-        "changeSummary": "初稿",
-        "blocks": []
-      }
-    ]
+    "artifacts": [],
+    "revisions": []
   },
   "j-cancelled": {
     "stage": "deliver",
-    "deliverable": {
-      "id": "j-cancelled-deliverable",
-      "jobId": "j-cancelled",
-      "blocks": [],
-      "deliverableStatus": "draft",
-      "finalSnapshotId": null,
-      "finalRevisionNumber": null,
-      "finalizedAt": null
-    },
+    "deliverable": null,
     "finalSnapshot": null,
-    "artifacts": [
-      {
-        "id": "j-cancelled-deliverable",
-        "kind": "deliverable",
-        "status": "draft",
-        "source": "agent",
-        "origin": "derived",
-        "latestMergedRev": "j-cancelled-deliverable-r1",
-        "overlayRev": null,
-        "pendingMerge": false,
-        "pendingRunId": null
-      }
-    ],
-    "revisions": [
-      {
-        "id": "j-cancelled-deliverable-r1",
-        "artifactId": "j-cancelled-deliverable",
-        "artifactKind": "deliverable",
-        "number": 1,
-        "baseRev": null,
-        "author": "agent",
-        "createdAt": "2026-10-28T08:01:00Z",
-        "summary": "合成交付 v1",
-        "changeSummary": "初稿",
-        "blocks": []
-      }
-    ]
+    "artifacts": [],
+    "revisions": []
   },
   "j-running": {
     "stage": "deliver",
-    "deliverable": {
-      "id": "j-running-deliverable",
-      "jobId": "j-running",
-      "blocks": [],
-      "deliverableStatus": "draft",
-      "finalSnapshotId": null,
-      "finalRevisionNumber": null,
-      "finalizedAt": null
-    },
+    "deliverable": null,
     "finalSnapshot": null,
-    "artifacts": [
-      {
-        "id": "j-running-deliverable",
-        "kind": "deliverable",
-        "status": "draft",
-        "source": "agent",
-        "origin": "derived",
-        "latestMergedRev": "j-running-deliverable-r1",
-        "overlayRev": null,
-        "pendingMerge": false,
-        "pendingRunId": null
-      }
-    ],
-    "revisions": [
-      {
-        "id": "j-running-deliverable-r1",
-        "artifactId": "j-running-deliverable",
-        "artifactKind": "deliverable",
-        "number": 1,
-        "baseRev": null,
-        "author": "agent",
-        "createdAt": "2026-10-28T08:01:00Z",
-        "summary": "合成交付 v1",
-        "changeSummary": "初稿",
-        "blocks": []
-      }
-    ]
+    "artifacts": [],
+    "revisions": []
   },
   "j-human": {
     "stage": "deliver",
-    "deliverable": {
-      "id": "j-human-deliverable",
-      "jobId": "j-human",
-      "blocks": [],
-      "deliverableStatus": "draft",
-      "finalSnapshotId": null,
-      "finalRevisionNumber": null,
-      "finalizedAt": null
-    },
+    "deliverable": null,
     "finalSnapshot": null,
-    "artifacts": [
-      {
-        "id": "j-human-deliverable",
-        "kind": "deliverable",
-        "status": "draft",
-        "source": "agent",
-        "origin": "derived",
-        "latestMergedRev": "j-human-deliverable-r1",
-        "overlayRev": null,
-        "pendingMerge": false,
-        "pendingRunId": null
-      }
-    ],
-    "revisions": [
-      {
-        "id": "j-human-deliverable-r1",
-        "artifactId": "j-human-deliverable",
-        "artifactKind": "deliverable",
-        "number": 1,
-        "baseRev": null,
-        "author": "agent",
-        "createdAt": "2026-10-28T08:01:00Z",
-        "summary": "合成交付 v1",
-        "changeSummary": "初稿",
-        "blocks": []
-      }
-    ]
+    "artifacts": [],
+    "revisions": []
   },
   "j-merge": {
     "stage": "deliver",
