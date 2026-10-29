@@ -1,0 +1,21 @@
+The 5th-round record has been written. Summary:
+
+## A 第 5 轮（Plan 修订 6）复查结论
+
+**身份/通道**：A = `anthropic/claude-fable-5-1` via anthropic（探活 `ACTIVITY_REVIEW_OK`；bridge 同窗口已知耗尽不重试；未换模型、无其他 agent、未改配置）。审核树 HEAD `a59fb98` 未移动；只写 `specs/desktop-shell/checklist.md`，无 Bash/测试/源码改动。
+
+**真实 diff 核对**：仅 4 个文档 +179/−22，22 行删除全为同条目替换；spec/源码/证据零差异。§0 修订 6 的 5 处阻塞事实全部在审核树源码中核实属实（`check.js:113–164/153–156/160–161`，`main.js:32–34/303–313`，`test-hooks.js:20/56/89/100`）。
+
+**结论：Checklist 通过，仍 41/41；无 P1/P2；新增 5 项 P3（R6-01～R6-05）；R5-01、R5-03 关闭。**
+
+- **§5.1 独立判定**：不需 Walter 额外工程批准、不需 ADR、不需回 Gate 1——提前退出约定是单值/固定码/固定行首标记、其余一律 FAIL，比默认路径更窄；`FAI_CHECK_PRODUCER` 与已批准 `FAI_CHECK_E2E_DIR` 同一接缝（仅运行器读、仅夹具模式、路径限 `producers/`、子进程环境剔除 `FAI_*`），替换点在 spawn 边界，被测仍是真实 `check.js`；钩子接线只落在 §8.3 已列命令与快照键。A 不代 Walter 批准任何事。
+- **受影响项**：C-02/C-03、C-07/C-26、C-17/C-24、C-13/C-21、C-20/C-28/C-29/C-30 及三条模板项均保持勾选，依据写在各条目"修订 6 复查："之后。计数：41 任务 / 62h、T-07a 2h、4 条标准↔4 条验证按序对位且含 AC、cwd `shell`、T-08e 加 T-06d 无前向依赖。
+
+**P3 发现**：
+- R6-01 AN9-03 的"control 出现"分支其实无需伪造控制服务即可单测（替身发一行 `SMOKE control` 后退出）；可选第 6 用例，作者决定。
+- R6-02 替身门控正确；残余仅为蓄意误用（对真实 `test/e2e` 同时设两变量）。Handoff 须记录 `events-invalid` 的原始命令；可选一行加固（输出 `PRODUCER` 行或拒绝真实 e2e 目录）。
+- R6-03 T-07b/c/e 修改范围裸写 `shell/check.js`，按页首约定应为登记；Converge 以 plan §8.4 第 5 段为准（`check.js` 仅 T-07a）。
+- R6-04 `app.exit(4)` 在 ready 前的行为：A 静态理解支持 AN9-04 定级，但不替代真实运行；停止规则维持。
+- R6-05 实施提示：`close` 时判定顺序须为 异常/隔离错误 → 缺 `paths` → control → 退出码 → 标记。
+
+**边界**：T-07a 首次实施只有静态预检 STOP（无 npm/测试/源码）；历史 42 unit / 19 场景 310/310 仅前序证据，20 场景未跑；真实 Electron 退出码 4 正例与托盘/通知/退出守卫均未取得。本结论仅为 T-07a 恢复与 T-07b/c/e 钩子所有权的 Implement 文档前置条件，不是 Converge/Review/Gate 2，不是用户风险接受。
