@@ -1,6 +1,28 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
-> **第四批派工准备（r6.9，2026-10-29；以本块为准。下一块“T-A22c 增量代码 Review 后状态登记”中的“68 个任务、约 102.5 h”“227 / 227”“47 项未开始”“下一可起步”为当时原文；其 21 项已完成、Review / P3 / H-x 记录仍有效）**：
+> **当前实施进度（第四批实施后 Converge batch4 + r6.10 精度登记，2026-10-29；以本块为准。下一块 r6.9 派工准备中的“21 / 69 已完成、48 未开始”“当前未审核，不得开码”“有效 Checklist 仍为 R9”为当时原文）**：
+>
+> **进度**：**69 个任务、约 104 h**；**26 / 69 已实施** = **21 项已完成**（四次批次 / 增量代码 Review 通过：`af95b66` 10、`f72a1a1` 6、`49edb7e` 4、`69faacc` 1）+ **5 项已实施、待第四批独立代码 Review**（T-B01 / T-B02 / T-A22d / T-B04 / T-B03）；**43 项未开始**（A 组 T-A14～T-A21 共 8、B 组 T-B05～T-B07 共 3、C 5、D 3、E 3、F 7、G 10、H 4）。完成标准 / 验证命令 **232 / 232**（本轮不改任何预计 / 标准 / 命令 / 依赖）。46 AC 最终验收 **0**；feature **未收敛**（43 项未实施 + H 组外部阻塞）。
+>
+> **前置与固定提交**：开码前置 Checklist **R10 通过**（独立 A = claude-fable-5-1 via anthropic，PI_SESSION_ID `01a187cd-624c-71de-96e0-1767b222d743`；26 / 26，0 P1 / P2，P3 S-41～S-43；原件提交 `37e2f71aae5a625de7e39a3f4b2d9c0b1a9c7b38`，`checklist.md` blob `4537c55f226f0bdc4f39b19e7c369731cf23abba`，本轮未改）。代码 diff `37e2f71..6c082fd -- frontend`：5 个前端提交、17 个文件、+1870 / −11；`frontend` 外零差异。T-B01 `5c00cf695235155c4cfa9efb9df1fee06a161189` → T-B02 `0221a94bbd9aefe4b7d482f61e3e9017d0a25710` → T-A22d `ca7dca175150652b1026a831f1447fb6830028e4` → T-B04 `cc6559d7bb0b5afb0e233b8295dbd55f1de41d9d` → T-B03 `6c082fd60570a329771727be16b494f81775f957`。实施者 = openai/gpt-6-astra（三个新会话 `01a187e0…`（B01 / B02）、`01a187ee…`（A22d）、`01a187fa…`（B04 / B03），均首选、调用正常、未回退）。集成人已 ff-only 并入 `integration/workbench-interaction` @ `6c082fd`（旁证，不是 ④）；peer / v2 / main 未写。
+>
+> **17 条任务命令**（实施者执行，Converge 未重跑；前缀 `pnpm -C frontend`）：B01 = `WI AC-001-1` 2 / `WI AC-001-4 list` 4 / `WI badge tone` 21 + colors + glass / badges 整文件 48 + typecheck + lint；B02 = `WI AC-001-2` 6 / typecheck + lint（job-list 整文件 12）；A22d = `WI detail cache open` 4 / `states` 6 / `refresh` 6 / 整文件 43 + typecheck + lint；B04 = `WI AC-002-1` 6 / e2e `WI AC-002-2` 4 / 两文件 `WI AC-001-4` 9 / typecheck + lint；B03 = `WI AC-001-3 validation` 4 / e2e `WI AC-001-3` 1 / `WI non-modal` 1 + typecheck + lint。**回归**：B02 后全量 unit 32 文件 986、A22d 后 32 / 1002、末轮 **34 文件 1018 pass / 0 fail**；末轮 `check` 六守卫、`contract --check` 24 methods / 10 events / 2 artifacts、typecheck / lint、routes + session 17、`jobs-store -t "WI H-2"` 27（原集合不变）、store 43、badges 48、job-list 12、**四份 E2E 29**（shell + agent 24 + detail-stage 4 + list-create 1）。**未跑**：其余 7 份 E2E、全量 `pnpm test`、人工截图；无最终 AC 验收、无 Gate 2。
+>
+> **失败留痕**（新测试 / 新模板问题，原测试未改；不是模型调用失败，不回退）：B01 缺省 stage 断言 `''` vs undefined、happy-dom `border` 简写序列化；B02 单空格标题误判（5 个 fixture 标题都含空格）、2 条 lint 换行；A22d 对未开始阶段空 `artifacts[0]` 误断只读（改在有产物的 process）；B04 离开详情后“不再 getJob”的新断言与设计的锚重读不符（改期望、未加 guard）、2 条 lint 换行；B03 新测试 TS18046 ×2 / TS2339。详见 `converge-batch4.md` §2。
+>
+> **Converge 判定**（`converge-batch4.md`，analyze.md「Analyze R17」）：本批 **已收口、待第四批独立代码 Review**；无对冻结 AC 的明确违反，**不新增任务**，结构不变。实施定形只是类型 / 读法精度，记为【r6.10 精度（Converge batch4 登记）】（T-B01 / B02 / A22d / B04 / B03 修改范围末、plan §2.1 / §2.3）。静读观察 O-B4-1～6 交 A：O-B4-1 应用内导航不带 `route.query`（`agentScript` 每次 send 重读 URL，非 normal 场景点击后 reload 回落 normal），判为下游 e2e 观察、非 AC-002-2 / AC-008-2 明确违反，T-G01 / T-G05 状态行加阅读提示，若须修按 converge §5 的 ≤ 0.5 h 最小方案登记；O-B4-2 离开后迟到的 canonical replace（修需 guard，先报 Walter）。
+>
+> **P3 / 风险**：**R2-C** 代码已于 B01 修正，**待独立 A 代码 Review 确认关闭**。R10 **S-41**（spec §2 / R-001 含创建者、B04 按已审 r6.9 不显示）**明确归本 feature**：T-B05 开工前先做最小展示精度轮（Tasks / Plan + Analyze + A 定向复核），不改 spec、不移交、不扩已实施的 B04、不代 Walter 风险接受（T-B05 状态行已加提示）；**S-42** 已在测试中经真实 RouterView 落实；**S-43** 在 plan §2.3【r6.10】登记“真实 api 乱序归 api feature 决定、本 feature 不加 guard”。R3-B / R3-C 与前两批未关项不变（implementation-log §8），均未经 Walter 风险接受。
+>
+> **H-x**：H-2·标签 ① 候选 `5c00cf6`（待 Review；已审历史 `ebce4c8` 并存）、② R10、③ 实施者 18 / 9 + tone 21、④ 缺；H-2·列表公开成员不变、① 仍 `af24c82`（详情缓存是内部成员，`ca7dca1` 只在 interface-handoff §3 登记）；页面切片 B01 / B02 / B04 已实施，C 组未做、④ 缺 → **未交付**。上游 main `072bb12` 不导入（R2-D 流程不变）。
+>
+> **页面现状**：`/jobs` 列表（三态 / 筛选 / 新建）与详情（三态 / 详情头 / 阶段轨道 / URL 阶段）已是功能页，但四阶段工作区仍为 C–F 占位；业务处理、投放、取消、重跑、角标 / 收件箱、创建者展示均未做，**不得计为完成**。
+>
+> **下一步**：集成人提交本文档 → 独立 A 第四批代码 Review（只读输入与重点见 `converge-batch4.md` §9）。以 26 项已实施计入，依赖已满足、未开始的任务：T-A14 / T-A15 / T-A16 / T-C01。
+>
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；`claude-bridge` 本协调窗口已确认 quota / rate / spend_limit，不重试；官方通道真实调用成功；未改配置）。本块是 Converge 批次记账，不是 Review / Gate 2 / Handoff。
+
+> 【历史原文，进度 / 开码前置 / 有效 Checklist 已由上方 Converge batch4 块取代】**第四批派工准备（r6.9，2026-10-29；以本块为准。下一块“T-A22c 增量代码 Review 后状态登记”中的“68 个任务、约 102.5 h”“227 / 227”“47 项未开始”“下一可起步”为当时原文；其 21 项已完成、Review / P3 / H-x 记录仍有效）**：
 >
 > **范围与顺序**：第四批 = **T-B01 → T-B02 → T-A22d → T-B04 → T-B03**（5 项，约 7.5 h = 2 + 1 + 1 + 2 + 1.5），同一实施树串行。四阶段工作区内容仍是 C–F 的占位。**不在本批**：T-B05（横幅 / 失败取消 / 取消作业）、角标（T-G02）、投放（C 组）、API 14+、v2 集成、D-020～D-024；不同步 main `072bb12`（继续 pin `90187f7`）；不写壳文件或 peer 树。
 >
@@ -952,7 +974,7 @@
 
 ### T-A22d jobsStore 详情视图缓存与统一刷新（r6.9 自 T-B04 拆出；第四批）
 
-- **状态**：未开始（r6.9 新增；第四批，Checklist R10 定向复核通过并提交前不得开码）｜原 blocked_by: IMPL-GATE-R6（已满足）
+- **状态**：**已实施（第四批；待批次独立代码 Review）**｜commit `ca7dca175150652b1026a831f1447fb6830028e4`（父 `0221a94`；只改 `jobs/stores/jobs.ts` +43 / −1 与 `jobs-store.spec.ts` +363 / −0）。验证（实施者 openai/gpt-6-astra 会话 `01a187ee…` 执行，Converge 未重跑）：命令 1 `WI detail cache open` 4；命令 2 `states` 6；命令 3 `refresh` 6；命令 4 整文件 43（原 27 + 新 16）+ typecheck / lint 通过。原 447 行、27 例、`connect` / `changeScenario` 与原列表块 / 四个既有 action 经 hash 核对不变。**失败留痕**：命令 1 首跑 3 pass / 1 fail（新测试对未开始 analyze 阶段的空 `artifacts[0]` 断言只读），改在有产物的 process 后通过。末轮回归见页首 Converge batch4 块｜原状态行“未开始（r6.9 新增；…R10 前不得开码）”为派工准备时原文｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1 h｜**依赖**：T-A10、T-A22a、T-A22c
 - **上下文**：plan §2.3【r6.9】（详情视图缓存）、§2.3 写后统一刷新、§1-9；原 T-B04 修改范围中的“`stores/jobs.ts` 增加当前作业 / 阶段工作区视图缓存（`openJob(id, stage)`）并纳入 `refresh()`”。原 T-B04 已到 2 h 上限，再加上 store 的确定字段与单测，已知超额，按 Checklist R8 B-12 先例在 Tasks 阶段拆出本任务。T-B04 改为只消费，不再改 store。本任务不属 H-2·列表交接切片，新成员不进 interface-handoff 交接接口。
 - **修改范围**：
@@ -971,6 +993,7 @@
   - **不做**：`closeJob`、离开页面清锚、请求序号、锁、去重 guard、轮询、事件总线、测试 setter、fallback。离开详情后，`refresh()` 仍重读最近打开的详情，这是可接受的额外读取。
   - `frontend/tests/unit/jobs/jobs-store.spec.ts`：**只新增** describe `WI detail cache open` / `WI detail cache states` / `WI detail cache refresh`。可在新组内基于既有 `connect()` 追加 `getJob` / `getStageWorkspace` 的透传 spy（系统边界，同 §0 B-6 做法）。不改既有 `connect` / `changeScenario` 与原 27 例；标题不含 `WI H-2`，§2a 的 H-2 定向集合不变。
   - **一律不改**：`main.ts`、契约 / 生成物、页面、fixture、其他测试。
+  - **【r6.10 精度（Converge batch4 登记；只记实际类型，不改标准 / 命令）】** 对外 `currentJob` / `currentStageWorkspace` 在类型层为 `DeepReadonly<Job> | null` / `DeepReadonly<StageWorkspace> | null`（与既有 `jobs` 的 `computed(readonly)` 写法一致，元素层只读）；`openJob(jobId: string, stage: Stage | null): Promise<Stage | null>` 与 r6.9 相同；锚与共用读函数为闭包私有（测试断言 store 上无 `anchor` / `readDetail` / `closeJob`）。不属 H-2·列表交接接口。
 - **完成标准**：
   1. **打开**（normal）：`openJob('j-process', 'analyze')`：状态 idle → loading → ready；`currentJob` 等于 `getJob` 结果；`currentStageWorkspace.stage='analyze'`，且等于 `getStageWorkspace` 结果；返回 `'analyze'`；成员只读；读期间不调用 localStorage。`openJob('j-process', null)`：返回 `'process'`（= currentStage），工作区为 process。同作业再开另一阶段：不经过 loading（AC-002-1、AC-002-2 部分前置）。
   2. **三态与错误语义**：slow：首次打开可观测 loading，推进假时钟后 ready。empty：`openJob('j-collect', 'collect')` → ready、`currentJob=null`、`currentStageWorkspace=null`、返回 null。error：error + `detailError.code='adapter_error'`、retryable。未知 id `j-missing`：error + `not_found`、`retryable=false`。以上均 resolve、无 unhandled rejection；列表读状态保持原值（AC-001-4 部分前置）。
@@ -1018,7 +1041,7 @@
 
 ### T-B01 作业列表渲染与三态
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准）：消费徽标前用既有 `--fai-status-*` 令牌核对状态边框映射，不新增色值｜r6.8：依赖增 T-A22c（R3-A 补修须先于列表读状态的首个页面消费者）｜T-A22c 已完成、R3-A 已关闭（`69faacc`），依赖已满足｜**r6.9：R2-C 归本任务**（首个页面消费前修正，新增标准 / 命令 3，预计 1.5 → 2 h；上句“非新增标准”为当时原文）；第四批首项，Checklist R10 定向复核通过并提交前不得开码
+- **状态**：**已实施（第四批首项；待批次独立代码 Review；R2-C 代码已修、待 A 确认关闭）**｜commit `5c00cf695235155c4cfa9efb9df1fee06a161189`（父 `37e2f71`；7 个授权文件）。验证（实施者 openai/gpt-6-astra 会话 `01a187e0…` 执行，Converge 未重跑）：命令 1 `WI AC-001-1` 2；命令 2 `WI AC-001-4 list` 4；命令 3 `WI badge tone` 21 + `check --only colors` / `glass` 通过；命令 4 badges 整文件 48（原 `WI status badges` 18 / `WI source badge` 9 不变）+ typecheck / lint 通过。**失败留痕**：命令 1 首跑 1 fail（新测试把缺省 `params.stage` 断言为 `''`，实为 undefined）；命令 3 首跑 1 fail（happy-dom 把 `border` 简写序列化为 `thin solid`，改为断言解析后的 `border-color` 与真实 SFC 基础声明原文）；均只修新测试后通过｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准）：消费徽标前用既有 `--fai-status-*` 令牌核对状态边框映射，不新增色值｜r6.8：依赖增 T-A22c（R3-A 补修须先于列表读状态的首个页面消费者）｜T-A22c 已完成、R3-A 已关闭（`69faacc`），依赖已满足｜**r6.9：R2-C 归本任务**（首个页面消费前修正，新增标准 / 命令 3，预计 1.5 → 2 h；上句“非新增标准”为当时原文）；第四批首项，Checklist R10 定向复核通过并提交前不得开码
 - **预计**：2 h｜**依赖**：T-A10、T-A22、T-A22a、T-A22c、T-A23
 - **上下文**：spec R-001；plan §2.2；plan §1【r6.9】（R2-C 令牌表）；`review-batch2.md` R2-C；implementation-log §8。
 - **修改范围**：`jobs/pages/JobListPage.vue`（数据取自 `useJobsStore()` 的未筛选缓存，挂载时 `ensureJobs()`，错误重试 `refresh()`——r6，T-A22a）、新建 `jobs/components/JobCard.vue`（标题、类型、状态徽、当前阶段、更新时间；角标位预留给 T-G02）；三态复用 `Loading` / `EmptyState` / `ErrorState`（错误态含可复制诊断）；新建 `tests/component/jobs/job-list.spec.ts`。
@@ -1032,6 +1055,7 @@
   - `tests/component/jobs/badges.spec.ts`：只新增 describe `WI badge tone`，原 `WI status badges` 18 例与 `WI source badge` 9 例不改不删。
   - **测试 harness**（job-list.spec）：真实 Pinia；真实 memory-history router（`appRouter.options.routes` + `registerJobRoutes(router, pinia)`，`push('/jobs')`）；真实 mock client，按 jobs-store.spec 的 `connect` 做法在系统边界用透传 spy 切场景；slow 用假时钟；复制诊断按 `focus-band.spec.ts` 先例读 clipboard。不 `vi.mock` 内部模块。
   - **一律不改**：`shared/**`、`app/**`、`stores/jobs.ts`、`main.ts`、契约 / 生成物、`routes.spec.ts`。
+  - **【r6.10 精度（Converge batch4 登记；只记实际类型，不改标准 / 命令）】** `JobCard` 的 props 实际为 `job: DeepReadonly<JobListItem>`（store 对外元素层只读的直接结果，上文“`job: JobListItem`”按此读）；标题链接不带 stage，也不带当前 `route.query`（见 `converge-batch4.md` §5 O-B4-1，交 Review）。
 - **完成标准**：
   1. 渲染 mock 作业的标题、类型、状态徽、当前阶段、更新时间，并按 updatedAt 倒序（AC-001-1 **最终**）。【r6.9】normal 5 张卡片顺序等于 `listJobs()` 结果；类型 / 状态 / 阶段文案与图标取自契约常量；`time[datetime]` 等于 `updatedAt`；标题链接 href 为 `/jobs/<id>`。
   2. 列表的加载 / 空（empty 场景）/ 错误（error 场景，含可复制诊断）三态可以触发（AC-001-4 部分：列表侧）。【r6.9】slow 首读显示 `Loading`；empty 显示“暂无作业。”；error 显示 `ErrorState`，诊断 JSON 为 `{moduleId:'jobs-list', code:'adapter_error', message, ts}` 且可复制。切回 normal 后点“重试”经 `refresh()` 显示列表。
@@ -1045,7 +1069,7 @@
 
 ### T-B02 筛选、搜索与清空
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜r6.8：依赖增 T-A22c（`review-batch3.md` R3-A 要求在本任务 / H-2 ④ 之前关闭）｜R3-A 已于 `69faacc` 关闭；本任务仍须待 T-B01｜r6.9：第四批第 2 项（R10 前不得开码）
+- **状态**：**已实施（第四批第 2 项；待批次独立代码 Review）**｜commit `0221a94bbd9aefe4b7d482f61e3e9017d0a25710`（父 `5c00cf6`；只改 `JobListPage.vue` 与追加 `WI AC-001-2` 组）。验证（实施者会话 `01a187e0…` 执行，Converge 未重跑）：命令 1 `WI AC-001-2` 6；命令 2 typecheck / lint 通过；job-list 整文件 12。**失败留痕**：命令 1 首跑 1 fail（新测试误以为单空格标题无匹配，实际 5 个 fixture 标题都含空格）；lint 首跑 2 条 `vue/multiline-html-element-content-newline` 警告；均只修新代码 / 新测试后通过｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6｜r6.8：依赖增 T-A22c（`review-batch3.md` R3-A 要求在本任务 / H-2 ④ 之前关闭）｜R3-A 已于 `69faacc` 关闭；本任务仍须待 T-B01｜r6.9：第四批第 2 项（R10 前不得开码）
 - **预计**：1 h｜**依赖**：T-B01、T-A22c
 - **上下文**：spec R-001（状态 / 类型筛选、标题搜索）。
 - **修改范围**：`JobListPage.vue` 的筛选条（选项文案来自 `JobStatusLabel` / `JobTypeLabel`）、经 T-A22a 的 `applyFilter(filter)`（调用 listJobs(filter)，结果单独存为 `filteredJobs`、不覆盖未筛选缓存，不在前端重新筛选）；扩充 `job-list.spec.ts`。
@@ -1055,6 +1079,7 @@
   - **清空**：复位三控件并 `applyFilter(null)`（不发请求）。
   - **展示**：列表展示 `filteredJobs ?? jobs`。筛选结果为空时显示 `EmptyState`（“暂无符合筛选的作业。”，与“暂无作业。”区分）。三态仍按 `listStatus`；筛选失败按 r6.8 共享读状态呈现 error，筛选成功不清除该错误，“重试”经 `refresh()` 恢复。
   - **不做**：前端重筛 / 排序、防抖、请求序号；不改 `stores/jobs.ts`；不改 `badges.spec.ts` 与 B01 已有用例。
+  - **【r6.10 精度（Converge batch4 登记）】** 三个控件的初值取 store 只读 `filter`（回到列表页时保持上次筛选，不额外请求）；这是既有成员的消费，不新增状态或机制。
 - **完成标准**：
   1. 状态、类型、标题子串三者组合生效；清空后恢复全量（AC-001-2 **最终**）。【r6.9】透传 spy 记录的 `listJobs` 参数等于组装的 filter；卡片集合等于真实 `listJobs(filter)` 结果；清空不发请求、恢复未筛选全集；空结果显示“暂无符合筛选的作业。”。
   2. 工程门通过（AC-009-1 部分前置）。
@@ -1064,7 +1089,7 @@
 
 ### T-B03 新建作业面板与跳转
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜**r6.9：依赖增 T-B04**（端到端须核对详情页回显；第四批末项，排在 T-B04 之后执行；这是 §6 编号前向规则的唯一有意回边，拓扑无环）；R10 前不得开码
+- **状态**：**已实施（第四批末项；待批次独立代码 Review）**｜commit `6c082fd60570a329771727be16b494f81775f957`（父 `cc6559d`；4 个授权文件）。验证（实施者会话 `01a187fa…` 执行，Converge 未重跑）：命令 1 `WI AC-001-3 validation` 4；命令 2 e2e `WI AC-001-3` 1；命令 3 `WI non-modal` 1 + typecheck / lint 通过。**失败留痕**：命令 3 的 typecheck 首跑新测试 TS18046 ×2（`catch` 变量为 unknown）与 TS2339（`getComponent(...).exists()`），只修新测试类型 / 改用 `findComponent` 后通过。诊断 `moduleId` 按 R10 已审原文为 `job-create`（协调提示中的 `jobs-create` 是笔误，实施者开码前已声明，不改）｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6｜**r6.9：依赖增 T-B04**（端到端须核对详情页回显；第四批末项，排在 T-B04 之后执行；这是 §6 编号前向规则的唯一有意回边，拓扑无环）；R10 前不得开码
 - **预计**：1.5 h｜**依赖**：T-B01、T-A12、T-B04
 - **上下文**：spec R-001“新建作业”；非模态的内联面板。
 - **修改范围**：新建 `jobs/pages/JobCreatePanel.vue`（标题必填、类型必选、品种 / 主题可选、目标说明多行；表单提示复用契约 schema；提交调用 T-A22a 的 `useJobsStore().createJob(input)`，成功后跳转）；新建 `tests/component/jobs/job-create.spec.ts`、`e2e/jobs/list-create.spec.ts`（normal 场景：读取 mock 契约的持久记录 `localStorage["fai.jobs.v1"]` 中新作业的参数，并核对详情页回显；不新增窗口钩子或测试专用记录器）。
@@ -1081,6 +1106,7 @@
   - **不做**：取消作业（T-B05）、草稿保存、重复提交锁。
   - **测试 harness**：组件测试同 T-B01；端到端 normal 场景，Playwright 自管 4173，不改 `playwright.config.ts`。
   - **一律不改**：`stores/jobs.ts`、契约、`shared/**`、`app/**`、B01 / B02 / B04 已有用例。
+  - **【r6.10 精度（Converge batch4 登记）】** 面板为 `<section aria-label="新建作业">` + `<form novalidate>`；两条校验提示（`role="alert"`）在面板展开时即按当前值渲染（见 `converge-batch4.md` §5 O-B4-3）；失败诊断 `moduleId='job-create'`；成功跳转的路由对象不带当前 `route.query`（O-B4-1）。
 - **完成标准**：
   1. 标题为空或未选类型时给出提示且不提交（AC-001-3 部分前置）。【r6.9】仅空白的标题、未选类型各自给出提示，且 `createJob` 透传 spy 为 0 次；subject 仅空白时提交 `null`、goal 为空时提交 `''`；error 场景下契约拒绝 `adapter_error` 时，面板内显示可复制诊断（`moduleId='job-create'`），表单值保留、路由不变。
   2. 端到端：创建后进入 `/jobs/:id/collect`，阶段=提取、状态=collecting，createJob 参数被记录（AC-001-3 **最终**）。【r6.9】先空提交，断言出现提示、URL 仍为 `/jobs`；再填写标题 / 类型“专题” / 空主题 / 多行目标并提交，URL 变为 `/jobs/<id>/collect`；`localStorage["fai.jobs.v1"]` 中该 id 的记录为 `{title, type:'research', subject:null, goal, status:'collecting', currentStage:'collect', createdBy:'human'}`；详情页回显标题、“专题”、状态徽“提取中”，阶段轨道“提取”为 `aria-current="step"`。
@@ -1092,7 +1118,7 @@
 
 ### T-B04 作业详情、阶段轨道与 URL 阶段参数
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜**r6.9：store 部分拆至 T-A22d，依赖增 T-A22d；本任务不改 `stores/jobs.ts`**；第四批第 4 项（R10 前不得开码）
+- **状态**：**已实施（第四批第 4 项；待批次独立代码 Review）**｜commit `cc6559d7bb0b5afb0e233b8295dbd55f1de41d9d`（父 `ca7dca1`；5 个授权文件，未改 store / routes / session）。验证（实施者会话 `01a187fa…` 执行，Converge 未重跑）：命令 1 `WI AC-002-1` 6；命令 2 e2e `WI AC-002-2` 4；命令 3 两文件 `WI AC-001-4` 9；命令 4 typecheck / lint 通过；详情组件整文件 11。**失败留痕**：命令 1 首跑 2 fail（新测试期待离开详情后不再 `getJob`，实际列表 `ensureJobs → refresh` 按 plan §2.3【r6.9】重读保留锚；只改新测试期望，未加页面 / store guard，经 RouterView 无 `undefined` 读 = R10 S-42 落实）；lint 首跑 2 条模板换行警告，修模板后通过｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6｜**r6.9：store 部分拆至 T-A22d，依赖增 T-A22d；本任务不改 `stores/jobs.ts`**；第四批第 4 项（R10 前不得开码）
 - **预计**：2 h｜**依赖**：T-B01、T-A22d
 - **上下文**：spec R-002；plan §2.1（`router.replace`，未知 stage 回落到当前阶段）、§4.3（阶段状态只读契约，不推导）。
 - **修改范围**：`jobs/pages/JobDetailPage.vue`、新建 `jobs/components/{StageRail,StageWorkspace}.vue`（各阶段工作区占位，由 C–F 填充）；`stores/jobs.ts` 增加当前作业 / 阶段工作区视图缓存（`openJob(id, stage)`）并纳入 `refresh()`（§1-9）；`/jobs/:id` 缺省或未知 stage 时用 `router.replace` 补成作业 currentStage，T-A22b 的守卫随之设置会话上下文（r6）；详情三态（S-13：empty + 预置 id 时显示“暂无作业”）；新建 `tests/component/jobs/job-detail.spec.ts`、`e2e/jobs/detail-stage.spec.ts`。
@@ -1109,6 +1135,7 @@
   - **`StageWorkspace.vue`**：props `{stage: Stage}`，只渲染带 `aria-label="<阶段名>工作区"` 的占位与一句“由后续任务提供”的说明。不消费工作区数据、不虚构 C–F 功能，`currentStageWorkspace` 由 C–F 消费。
   - **测试 harness**：同 T-B01（真实 router + `registerJobRoutes`，以 RouterView 或在 push 后挂载页面）；端到端 normal 场景，不加窗口钩子，不改 playwright 配置。
   - **一律不改**：`stores/jobs.ts`、`routes.ts`、`session.ts`、`main.ts`、契约、`shared/**`、`app/**`、`routes.spec.ts`（预计无需维护；若真实失败，停下回报）。
+  - **【r6.10 精度（Converge batch4 登记；只记实际写法，不改标准 / 命令）】** `StageRail` props 实为 `{stages: readonly StageSummary[]; currentStage: Stage; viewedStage: Stage | null}`、emit `select`；`aria-pressed` 绑定布尔（未查看项为 `"false"`），查看项的视觉线索为阶段名下划线；当前阶段边线 = `border-inline-start-color: var(--fai-accent-red)`（同 `app/Rail.vue`）。`StageWorkspace` 占位文本为“工作区内容由后续任务提供。”，`currentStageWorkspace` 尚无页面消费者（C–F）。详情头不显示 createdBy（R10 S-41，归属见 T-B05 状态行）。canonical / 选阶段的 `router.replace` 不带当前 `route.query`（O-B4-1）；async watch 在离开后仍可能执行迟到的 replace（O-B4-2）——两者交第四批 Review，不在本任务内加 guard。
 - **完成标准**：
   1. 轨道按 提取 → 处理 → 分析 → 交付 的固定顺序渲染，五种阶段态取自契约文案，当前阶段高亮（AC-002-1 **最终**）。【r6.9】`/jobs/j-failed/analyze` 与 job-running 场景的 `/jobs/j-human/process` 合起来覆盖五种阶段态，文案与图标取自契约。`/jobs/j-process/collect`：`aria-current="step"` 在“处理”（业务 currentStage），`aria-pressed="true"` 在“提取”（查看）。点“分析”后路由 stage 变为 `analyze`（replace），并以该阶段 `openJob`。详情头显示 j-process 的标题、“专题”、状态徽“处理中”与品种主题（AC-001-3 部分前置：供 T-B03 端到端核对回显）。
   2. 端到端：点击阶段时 URL 更新；直接打开带阶段的地址并刷新后仍停在该阶段；`/jobs/:id` 缺省 stage 时取作业 currentStage；未知 stage 回落到当前阶段（AC-002-2 **最终**）。【r6.9】样例用 normal 的 j-process：`/jobs/j-process` 与 `/jobs/j-process/bogus` 都被 replace 为 `/jobs/j-process/process`；`/jobs/j-process/analyze` reload 后 `aria-pressed` 仍在“分析”；点“交付”后 URL 为 `/jobs/j-process/deliver`。
@@ -1122,7 +1149,7 @@
 
 ### T-B05 待人工确认横幅、失败 / 取消展示与取消作业确认
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜**开工前先承接 Checklist R10 S-41（P3，未关、未经 Walter 风险接受）**：冻结 spec §2 目标与 R-001 what 均含“创建者（人 / 计划）”，已实施的 T-B04 按已审 r6.9 未显示（`JobListItem` 契约也不含创建者）。本任务开工前须先做一次最小展示精度轮（Tasks / Plan 写明展示位置与文案来源，候选为 S-11 同机制的契约展示映射；重跑 Analyze 并经 A 定向复核），若因此超 2 h 按 B-12 先例拆小任务；不改 spec / AC、不写成“v1 不展示”、不移交其他 feature、不回头扩已实施的 B04（Converge batch4 登记，本行不改本任务标准 / 命令）
 - **预计**：1.5 h｜**依赖**：T-B04、T-A13、T-A17、T-A20
 - **上下文**：plan §4.3（横幅目标取固定顺序中的第一个 H；冲突样例取第一个 C）；spec R-002 作业级状态展示；S-14。
 - **修改范围**：`JobDetailPage.vue` 的横幅与作业级状态区（failed / cancelled 显示原因；“重试”入口只是占位，说明归属后续 feature；取消作业要经二次确认面板，默认理由可修改）；扩充 `job-detail.spec.ts` 和 `e2e/jobs/detail-stage.spec.ts`。
@@ -1453,7 +1480,7 @@
 
 ### T-G01 运行中待合并端到端（job-pending-merge）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜阅读提示（Converge batch4 观察 O-B4-1，待第四批 Review 判定，非新增标准）：JobCard / 详情 canonical 与选阶段的路由对象不带当前 query，而 mock `agentScript` 在每次 send 时重读 URL；e2e 宜直开带 stage 的深链或用 `window.__FAI_MOCK__.agentScript`，避免先应用内导航再 send 时脚本静默回落
 - **预计**：1.5 h｜**依赖**：T-F02、T-F06、T-D02、T-A18、T-A20
 - **上下文**：plan §2.4 j-merge 驱动方式和 AC-007-2 的落点；不依赖全局输入栏自动绑定上下文。
 - **修改范围**：新建 `e2e/jobs/pending-merge.spec.ts`（`?scenario=job-pending-merge&agentScript=long`；用 `page.clock` 推进）；交付块上接入 PendingMergeChip。
@@ -1513,7 +1540,7 @@
 
 ### T-G05 场景切换端到端遍历
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜阅读提示（Converge batch4 观察 O-B4-1，待第四批 Review 判定，非新增标准）：应用内导航不透传 `?scenario=`，会话内场景不变，但点击后 reload 会回落 normal；遍历用例以直开 + 断言为主，若 Review 判为须修则以其登记的补修任务为准
 - **预计**：1.5 h｜**依赖**：T-G01、T-G02、T-G04、T-B05、T-E01、T-F07
 - **上下文**：AC-008-2 要求场景切换可用，并被端到端测试使用。
 - **修改范围**：新建 `e2e/jobs/scenarios.spec.ts`。

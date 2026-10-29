@@ -3,7 +3,12 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
-> **当前结论（2026-10-29 第四批开工前机制精度 r6.9）：见文末「Analyze R16」**（当前索引；下方 T-A22c 状态补记与 R15 及更早轮次为当时原文，正文不改）
+> **当前结论（2026-10-29 第四批实施后 Converge batch4 + r6.10）：见文末「Analyze R17」**（当前索引；下方 R16 页首块及更早轮次为当时原文，正文不改）
+> - **本轮**：第四批 T-B01 / B02 / A22d / B04 / B03 已实施（代码 `37e2f71..6c082fd -- frontend`，5 提交 17 文件），Converge（`converge-batch4.md`）判**已收口、待第四批独立代码 Review**；无对冻结 AC 的明确违反，不新增任务；实施定形只是类型 / 读法精度（r6.10）。静读观察 O-B4-1～6 交 A。
+> - **结构**：69 个任务 / 104 h；232 / 232；**21 已完成 + 5 已实施（待 Review）+ 43 未开始**；真实依赖图无环，唯一编号回边 T-B03 → T-B04（R10 已认可）；AC 矩阵 46 行祖先与双向一致；46 AC 最终验收 0；feature **未收敛**。
+> - **有效 Checklist**：R10 `37e2f71`（blob `4537c55…`，未改）。R2-C 代码已修、待 A 确认关闭；R10 S-41 归 T-B05 开工前精度轮；S-42 已落实；S-43 已在 plan 登记。**不是** Review / Gate 2 / Handoff。
+>
+> 【历史原文（R16 撰写时）】**当前结论（2026-10-29 第四批开工前机制精度 r6.9）：见文末「Analyze R16」**（当前索引；下方 T-A22c 状态补记与 R15 及更早轮次为当时原文，正文不改）
 > - **本轮**：只为第四批 T-B01 → T-B02 → T-A22d → T-B04 → T-B03（约 7.5 h）补既有 what / AC 内的机制精度：R2-C 令牌映射归 B01；B03 挂载点与依赖 B04（唯一有意编号回边，拓扑无环）；详情视图缓存接口自原 B04 拆为 T-A22d（1 h，B-12 先例）；harness 与写权限。spec / 46 AC 不变，不回 Clarify。
 > - **结构**：69 个任务 / 104 h；232 / 232；21 / 69 已完成、48 未开始；AC 矩阵 46 行祖先与双向一致；46 AC 最终验收 0；feature **未收敛**。
 > - **门槛**：r6.9 未审核，须独立 A 新会话 **Checklist R10** 定向复核通过并提交后才可开码；R9 `ab742f5` 未改。**不是** Review / Gate 2 / Handoff。
@@ -1356,3 +1361,53 @@
 - **门槛**：r6.9 **未审核**。须独立 A 新会话 Checklist R10 定向复核通过并由集成人提交后，才可派 Astra 开码；当前不得开码。R9 未改、未勾。
 - **进度**：21 / 69 已完成、48 未开始；第四批 5 项全部待实施；46 AC 最终验收 0；feature **未收敛**（48 项未实施 + H 组外部阻塞）。
 - **不是** Review、Gate 2 或 Handoff；H-x 无一“已交付”。本报告不宣称本批任何内容已测或已完成。
+
+## Analyze R17（只读；第四批实施后 Converge batch4 配套分析，2026-10-29；当前索引，R16 及更早轮次历史保留；区别于 Checklist R10，**不是**审核结论）
+
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；`claude-bridge` 本协调窗口已确认 quota / rate / spend_limit，不重试；官方通道真实调用成功；未改配置）。本轮**没有运行任何产品测试**；测试数字全部来自实施者日志。只读脚本 `converge-struct.py`（由 Checklist R10 审核员自写脚本改为读取工作树并区分“已实施”状态）、`prepare-stdcmd.py` 及其日志 `converge-structure*.log`、`converge-std-cmd-diff.log` 在协调器 Temp，非项目产物。
+
+### 1. 重新读取与输入
+
+- AGENTS.md、`docs/plan.md`；冻结 spec.md（LF SHA256 `ed0f6c6c…942d9`，与历次一致，46 AC）；plan.md r6.9；tasks.md r6.9（五个任务完整修改范围 / 标准 / 命令、§1 / §2a / §3 / §5～§7）；checklist.md §R10（commit `37e2f71`，blob `4537c55f226f0bdc4f39b19e7c369731cf23abba`，LF SHA256 `53285183…a115b`；只读）；analyze R16；implementation-log §8 / §14；interface-handoff §1 / §3；Review 风险台账（R-A～R-F、R2-A～R2-E、R3-A～R3-C）。
+- 代码：`37e2f71..6c082fd -- frontend` 17 个文件逐一读过；fixture `jobs.json` 只读核对阶段态覆盖；`mock/index.ts` 只读核对 `readScenario` / `readAgentScript` 的读取时机。
+
+### 2. spec ↔ plan ↔ tasks ↔ 代码 一致性
+
+| 检查 | 结果 |
+|---|---|
+| 五任务完成标准是否都有代码证据 | 是（`converge-batch4.md` §2 逐条） |
+| 17 条命令标题是否存在、展开数是否与回报一致 | 是：2 / 4 / 21 / 48；6 / 工程门；4 / 6 / 6 / 43；6 / 4 / 9 / 工程门；4 / 1 / 1 |
+| 写权限 / 文件所有权 | 与 implementation-log §14 表一致；禁止路径零差异；`git diff --check` 通过 |
+| 冻结 spec / checklist 是否被改 | 否（spec LF hash 不变、`git log` 末次仍为种子 `8753fa9`；checklist blob = R10 原件） |
+| 是否越出 r6.9 机制（guard / 序号 / 锁 / closeJob / 轮询 / setter / fallback / 新契约） | 否 |
+| 实施定形 | 6 处类型 / 读法精度（JobCard `DeepReadonly` props、详情缓存类型层只读、StageRail props 与查看线索、StageWorkspace 占位文本、`moduleId='job-create'`、筛选控件初值取 store `filter`），写入 tasks / plan【r6.10】，不是需求变更 |
+| 冲突 | 无 |
+
+### 3. 差距与歧义（不新增任务的理由）
+
+- **O-B4-1（导航不透传 query）**：AC-002-2 两项字面要求与 AC-008-2（`?scenario=` 直开可用、e2e 使用）在静读下都满足；plan / tasks / checklist 从未要求透传 query；v1 壳 Rail 同样不带 query。但 `agentScript` 每次 send 重读 URL，使该行为对下游 e2e（T-G01 等）有具体影响。判为**下游观察，非明确违反**，不新增任务，T-G01 / T-G05 状态行加阅读提示；交 A 实测定严重度，若须修按 `converge-batch4.md` §5 的 ≤ 0.5 h 最小方案经 §2 第 9 步登记（只改四处路由对象 + 一例回归，不改导航壳、不加 fallback）。
+- **O-B4-2（迟到 canonical replace）**：修复需新增 guard，按 AGENTS §5.1 与 plan r6.9 须先报 Walter；只登记、与 S-43 一并交 A。
+- **S-41（创建者展示）**：冻结 spec 目标含创建者，46 AC 不要求；本轮只登记归属（本 feature、T-B05 开工前精度轮），不改 spec / AC / 已实施任务。
+- O-B4-3～6 为 UX / 证据 / 关闭确认类观察，不构成差距。
+
+### 4. 结构复算（脚本，只读，作用于本轮最终工作树文本；HEAD = `6c082fd` 对照）
+
+- 69 个任务，编号唯一、排序正确；104 h（A 30 / 44.5、B 7 / 11、C 5 / 7.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4）；每任务 0.5～2 h。
+- 状态：**21 已完成 + 5 已实施（T-A22d / B01 / B02 / B03 / B04）+ 43 未开始**；`OTHER` 0。HEAD 对照为 21 / 0 / 48。
+- 完成标准 / 命令 **232 / 232**，逐任务 1:1，`MISSING_AC` = []，`PROBLEMS` = []。
+- 依赖：`UNKNOWN_DEP` = []；真实依赖图 DFS `CYCLE None`；编号前向检查 `BACKEDGES` = [(T-B03, T-B04)]（唯一有意回边，R10 已认可）。
+- AC：spec 46 = 矩阵 46；`PARTIAL_NOT_ANCESTOR` = []；`BIDIR_BAD` = []。
+- 第四批：5 项 7.5 h、17 条命令，依赖与 HEAD 相同。
+- 逐任务预计 / 标准 / 命令与 §5～§7：相对 HEAD `6c082fd` **NO DIFF**；§5 起全文相同。逐任务导出只在五个任务的 status 一列不同（todo → impl）。
+- 依赖已满足、未开始（已完成或已实施均计入）：T-A14 / T-A15 / T-A16 / T-C01；只计已完成时结果相同。
+
+### 5. 状态与门槛
+
+- 46 AC 最终验收 **0**（本批 6 个最终 AC 的命令已绿，但须 Review → 全 feature Review / Gate 2）。
+- H-x：H-2·标签 ① 候选 `5c00cf6` 待 Review；H-2·列表 ① 仍 `af24c82`；页面切片缺 C 组；④ 全缺。
+- 外部阻塞：AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项未解除 → feature 只能报“未收敛（外部阻塞）”。
+- 上游 main `072bb12` 不导入（R2-D）。
+
+### 6. 结论（Analyze R17，当前索引）
+
+spec / plan / tasks / 代码之间**无冲突**；第四批 5 项**已收口、待第四批独立代码 Review**；无须新增任务，结构不变（69 / 104 h / 232 / 232）。实施定形登记为 r6.10 精度。R2-C 关闭、O-B4-1～6 严重度、H-2·标签 ① 是否转生产已核，均由独立 A 判定。feature **未收敛**。本报告不是审核结论，不勾选 checklist。

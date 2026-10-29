@@ -35,6 +35,7 @@
 > - §2.3：jobsStore 详情视图缓存的只读成员 / `openJob` 签名与返回 / `refresh` 重读锚 / 离开后保留口径 / 与列表读状态隔离；落地拆为 tasks **T-A22d**（1 h，原 T-B04 已知超出 2 h，按 Checklist R8 B-12 先例在 Tasks 阶段拆分）。
 >
 > 冻结 spec v1.1、46 AC、方法集、契约 / 生成物、动作矩阵、九场景、样例表、迁移表、定稿语义均不变；不新增公开交接接口、请求序号 / 锁 / 去重 guard / 轮询 / 事件总线 / 测试 setter；不是需求变更，不回 Clarify（analyze.md「Analyze R16」）。本补正**未经审核**：须独立 A 新会话做 Checklist R10 定向复核通过并提交后才可开码。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a187b5-a3e7-75a6-a499-74d51c9f9bbd`；`claude-bridge` 本协调窗口已确认 quota / rate / spend_limit 耗尽，不重试；本批官方通道最小真实调用 exit 0（协调器登记）；只换通道不换模型，未改配置）。
+> **2026-10-29 r6.10（Converge batch4 精度登记，实施后）**：第四批 T-B01 / T-B02 / T-A22d / T-B04 / T-B03 已实施（代码 diff `37e2f71..6c082fd -- frontend`，待第四批独立代码 Review）。按实际代码只补类型 / 读法精度（标【r6.10】）：§2.1 `JobCard` / `StageRail` / `StageWorkspace` / 创建面板的实际 props 与写法；§2.3 详情缓存成员的类型层只读形态，以及 Checklist R10 S-43 的跨 feature 登记（真实 `api` 乱序归 `api` feature 决定）。不改行为、方法集、契约、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC 与任务结构；不是需求变更（analyze.md「Analyze R17」、`converge-batch4.md` §3）。R10 S-41（创建者展示）不在本轮改设计，只登记归属 = 本 feature、T-B05 开工前精度轮（tasks T-B05 状态行）。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；bridge 本协调窗口已确认 quota / rate / spend_limit，不重试；官方通道成功；未改配置）。
 > **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
@@ -84,6 +85,12 @@
 - 【r6.9 精度（详情页入口与阶段轨道；落地 tasks T-B04，store 见 §2.3【r6.9】）】
   - **URL 是“当前查看阶段”的唯一来源**。`JobDetailPage` 以 `watch([route.params.id, route.params.stage], …, {immediate: true})` 处理入口与参数变化：stage 合法 → `openJob(id, stage)`；缺省或未知 → `const s = await openJob(id, null)`，`s` 非 null 时 `router.replace({name:'job-detail', params:{id, stage:s}})` 一次。replace 后 stage 合法，监听再触发一次 `openJob(id, s)`；这条缺省路径会多读一次 `getJob` + 工作区，是可接受代价，不加比较 / 去重 guard。`s` 为 null（empty 预置 id 或读失败）时不 replace。
   - **StageRail 两种标记分开**：业务当前阶段 = `job.currentStage`（AC-002-1 的“当前阶段高亮”，`aria-current="step"` + 既有令牌边线，参照 `app/Rail.vue` 当前项写法）；当前查看 = 路由 stage（`aria-pressed="true"`）。阶段顺序与五种状态直接取 `job.stages`（契约已固定顺序）及 `StageLabel` / `StageStateLabel`，不重排、不推导业务状态。点击阶段只 `router.replace` 到该 stage，不 push 历史。
+- 【r6.10 精度（Converge batch4 登记；只记实际写法，不改设计）】
+  - `JobCard` props = `job: DeepReadonly<JobListItem>`（store 对外元素层只读）；标题链接只带 `{name, params:{id}}`。
+  - `StageRail` props = `{stages: readonly StageSummary[]; currentStage: Stage; viewedStage: Stage | null}`，emit `select(stage)`；`aria-pressed` 为布尔绑定，查看项的视觉线索为阶段名下划线；当前阶段边线 = `--fai-accent-red`（同 `app/Rail.vue` 当前项）。
+  - `StageWorkspace` 只渲染 `aria-label="<阶段>工作区"` 的占位与“工作区内容由后续任务提供。”；C–F 实现前不消费 `currentStageWorkspace`。
+  - 创建面板（`JobCreatePanel`）失败诊断 `moduleId='job-create'`，成功后 `router.push({name:'job-detail', params:{id, stage:'collect'}})`。
+  - 以上路由对象都不携带当前 `route.query`；其对 `?scenario=` / `?agentScript=` 的影响登记为 Converge 观察 O-B4-1（`converge-batch4.md` §5），由第四批 Review 判定，本条不预设处置。
 - 全局投放入口、工作台作业轨道、导航项均属 v2 前置变更（§7），v1 先保证路由可直达与页面内入口
 
 ### 2.2 组件与职责
@@ -126,6 +133,9 @@
   - **`refresh()`**：既有列表 / 筛选部分不变；锚非 null 时**再**按锚重读详情（同一读取逻辑，`openJob` 与 `refresh` 共用一个私有读函数）。详情读不把状态置 loading；成功 ready + 清错，失败只写 `detailStatus` / `detailError`。列表与详情各自 try，互不跳过、互不改写对方的读状态（不污染【r6.8】未筛选列表的 `listStatus` / `listError`）。写后 / agent 终态刷新经同一 `refresh()` 自动带上详情；`receiveAgentEvent` 的触发条件（带 `jobContext` 的三种终态）不变。
   - **离开详情**：不清锚、不清缓存（视图缓存）。之后的 `refresh()` 仍重读最近打开的详情，属可接受的额外读取；再次进入不同作业时 `openJob` 换锚并置 loading，进入同一作业时先显示缓存再刷新。
   - 不加请求序号、锁、轮询、事件总线或 fallback；并发 open / refresh 按 mock 同延迟、按序完成口径处理（AGENTS §5.1）。
+- 【r6.10 精度（Converge batch4 登记；Checklist R10 S-43 与实际类型）】
+  - 类型层：对外 `currentJob` / `currentStageWorkspace` 为 `DeepReadonly<Job> | null` / `DeepReadonly<StageWorkspace> | null`（同既有 `jobs` 的 `computed(readonly)`）；锚与共用读函数为闭包私有，不出现在 store 实例上。
+  - 跨 feature 登记（S-43）：上一条“按序完成”只是 mock 口径。真实 `api` 实现可能乱序完成，届时若出现后发先至覆盖（含详情页 async 入口在用户离开后迟到的 canonical replace，Converge 观察 O-B4-2），由 `api` feature 按需求流程决定是否加请求序号或其他防护；本 feature 不预做，任何新增 guard 按 AGENTS §5.1 先报 Walter。
 
 - **契约 mock 层持有唯一可变状态**（`contracts/mock/job-state.ts`），读写均经契约方法；UI store 只做视图缓存。这样 `api` feature 落地时只需替换实现，不动组件
 - 本地持久化 key：`fai.jobs.v1`（作业、产物/版本、投放的允许子集、介入事件、交付物/定稿快照、收件箱条目）；`fai.inbox.v1`（已读 id）。非 normal 场景使用 fixture + 会话内可变副本，**不读、不写、不清**这两个 key；切场景不会清空正常模式数据
