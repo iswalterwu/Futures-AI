@@ -1,7 +1,7 @@
 # 暂停交接 — workbench-interaction
 
 > ⚠️ **恢复更新见 §9（2026-10-28 22:20 +04:00）；下方 §1～§8 的旧暂停状态已被 §9 新记录替代，仅作历史保留。**
-> 🔖 **最新：§11 首批实施与独立批次 Review（2026-10-29）**——T-A01～T-A09、T-A09a 已完成（10/66），独立 A 本批通过（0 P1/P2、6 P3）；全量单元／组件 722 passed，Agent E2E 8 passed。代码与集成树当前 `0920004`（受审代码 `13a3373`）；本规格树只同步文档、不含实现。授权持续有效，下一批按既有 DAG 推进；其余 56 项未开始，feature 未收敛，H-1 仍缺 v2 消费方集成 SHA。§10 及以前是相应时点历史。
+> 🔖 **最新：§12 第二批实施与独立 Review（2026-10-29）**——两批合计 **16/67 已完成、51 未开始**；第二批 A Review 通过（0 P1/P2、5 P3），A 亲跑单元／组件 **833 passed**、壳层+Agent E2E **24 passed**。有效 Checklist 为 **R8.1 `34d339e`（26/26）**；代码与生产集成树当前 `f1b7c06`（受审代码 `27e59e6`）。授权持续有效，下一入口 T-A11；feature 未收敛，H-1 / H-2·标签 / H-3 / H-4 均缺消费方集成④。main `072bb12`（v2 S0）尚未导入，同步前须重核及协调壳断言迁移。§11 及以前只作对应时点历史。
 > 【§9 时点原文】当前要点：v1 基线已合入 main（`43b6d79`）并登记；r6 设计经独立 A Checklist R7 通过（`9acf3de`）；**仍 BLOCKED 于 Walter 代码实施授权 + 集成人 / 集成验证分支 / 实施 worktree 登记**；H 组仍待外部 v2。本文件仍不是正式 feature Handoff，不表示实现完成或 Gate 2 通过。
 
 > 用户暂停指令下的会话存档，不是 AGENTS.md 工作流里的正式 feature Handoff，不表示实现完成或 Gate 2 通过。
@@ -358,3 +358,76 @@ fi
 ### 11.6 下次开场（取代 §10.8）
 
 > workbench-interaction 首批 10 项已实施并通过独立 A 批次 Review，下一批按既有授权从 T-A10 / T-A22 / T-A23 / T-A24 推进；H-1 仍待 v2 所有者集成，整体尚未收敛。
+
+## 12. 第二批实施 + 独立代码 Review（2026-10-29；替代 §11 的后续任务状态）
+
+> 依据 Opus 第二批记账摘要，由协调器按实际提交与工作树状态追加。本节**不是正式 feature Handoff、不是 Gate 2**；本轮在批次安全点汇报，不是用户暂停。Plan / Converge / 记账 = claude-opus-5-5 via anthropic；Implement = openai/gpt-6-astra；独立 A = claude-fable-5-1 via anthropic。本轮 Claude bridge 最小真实调用均失败，类别为 **provider / invocation error（未确认 quota）**，同模型官方通道成功；只换通道、未改用户配置，未因审核结果换模型。
+
+### 12.1 授权与当前进度
+
+- Walter 原话“允许”代码实施及指定协调会话 `01a18388-a371-7746-8158-9fb15d55d819`（openai/gpt-6.1-sol）为集成人，连同本轮“继续”，在既有 tasks 范围内持续有效；**后续批次不重复请求代码授权**。不扩范围、不改冻结 spec / AC，不代其他 feature Gate 或 v2 签收。
+- 两批合计 **16/67 已完成**：首批 10 项 + 第二批 6 项。**51 项未开始；46 AC 最终验收仍为 0；feature 未收敛（尚未实施 + H 组外部阻塞）**。“已完成”指本批完成标准与独立批次代码 Review 通过，不是整体产品验收。
+- 下一已满足依赖的入口为 **T-A11**（本地持久化），之后按 tasks §6 DAG 推进；T-A11 / T-A18 派工须携带 R2-B 的正常初始化顺序约束，不擅加防御 guard。
+
+### 12.2 Checklist 与任务拆分
+
+- Checklist **R8 未通过**：原件 `7b91a2c3b5bdfd1147aeee7fbeb23d043c439b98`，25/26，唯一 P2 = **B-12**（T-A10 已顶格 2 h，不能再并入 fixture 校正）。未通过历史保留。
+- 由 Opus 拆出 **T-A09b fixture-only（0.5 h，依赖 T-A08）**，T-A10 依赖它并恢复核心 2 h；重跑 Analyze R10。任务数 66 → **67**，预估 101.5 → **102 h**，完成标准 / 验证命令 **224 / 224**，46 AC 不变。
+- A 新开独立会话做 **R8.1 增量复核通过**：原件提交 `34d339eb1705310927f06d95aaf64bfc9bf4a5c3`，当前有效 26/26，B-12 关闭，Checklist Git blob `99e096ad9f82bffe2e61d13ea5a8512d5075ce71`。实施与状态记账均未改 A 的清单原件；旧 R7 / R8 复选框由 A 改为历史文字符号。
+
+### 12.3 第二批代码与固定引用
+
+| 任务 / 产物 | 固定提交 |
+|---|---|
+| T-A09b：12 个未开始阶段种子校正 | `75a115975b50d8078f159f2e41ce5c401318f0b7` |
+| T-A10：共享状态、真实 commit、三读取 API / real 桩 | `1841029f5a948b53ef21cbc54967556dc04e0815` |
+| T-A22：路由切片与明确无数据骨架 | `cc59e946df2d08178b03e3b37928ab34517067d7` |
+| T-A22b：只读会话上下文与 bindRouter | `b38cf43f602390d7645cc84514d0da9860a7e0b7` |
+| T-A23：契约驱动状态／来源徽标 | `ebce4c85b1422a62b883117f75459a1fdee81b80` |
+| T-A24：有界行级 LCS diff / 摘要退化 | `27e59e610e2ab8c14e7c3db554609e52e40f5f76` |
+| 第二批 Converge / Analyze R11 | `858025d0b75f529e160b973ba5bda10848889228`；`converge-batch2.md` 判本批范围收口、整体未收敛 |
+| 第二批独立代码 Review 原件 | `f72a1a187405e9f9dcba5bb22f47ad840141702d`，`review-batch2.md`；A 固定审 `858025d` + 代码 `27e59e6` |
+| 第二批最终记账 | `f1b7c06bc7202685fdd3786d74c294cac6ae406e`；代码仍与受审 `27e59e6` 相同 |
+| 当前规格树同步提交 | 不硬编码自身；用 `git log -1 --format="%H %s" -- HANDOFF.md` 查询 |
+
+### 12.4 独立审核与验证证据
+
+- **独立 A 本批代码 Review 通过：0 P1/P2，5 项 P3（R2-A～R2-E）**。审核员新会话、独立工作树，与实施异模型；原件已原样提交，不由实施者改写。
+- A **亲跑**：全量 `test:unit` **27 files / 833 passed / 0 failed**；v1 三份契约测试 **88 passed**；本批 **21 条任务命令全部通过**；H-2 `WI labels` 10 passed；`e2e/shell.spec.ts` + `e2e/agent.spec.ts` **24 passed**（Playwright 自管 4173，结束后无 LISTEN）；`contract --check` **15 methods / 10 events / 2 artifacts**；六守卫、typecheck、lint 全过。
+- **未跑**：全量 `pnpm test` 的其余 7 份 E2E；无人工截图，无 Gate 2。不能把本批固定基线上的绿当作最新 main 的测试证据。
+- 本批新增测试首跑失败（A10 的嵌套匹配器、A23 的 DOM 选择器）已只修新测试后重跑，未削弱既有测试或生产校验，失败留痕见实施日志；未因此换模型。
+
+### 12.5 工作树与同步范围
+
+- 实施：`D:/2030/Futures-AI-interaction-implement` / `feat/workbench-interaction-astra`，已 ff-only 到 **`f1b7c06`**。
+- 生产方集成：`D:/2030/Futures-AI-interaction-integration` / `integration/workbench-interaction`，已 ff-only 到 **`f1b7c06`**，仅本协调 session 串行写。
+- Converge / 记账：`D:/2030/Futures-AI-interaction-converge-batch2` / `docs/workbench-interaction-batch2-converge`，`f1b7c06`。
+- 独立代码审核树：`D:/2030/Futures-AI-interaction-review-batch2` / `review/workbench-interaction-batch2-code`，`f72a1a1`，已结束。
+- 当前规格树 `D:/2030/Futures-AI-interaction` / `spec/workbench-interaction` 只同步本 feature 文档、自己 README 状态及此 HANDOFF，不铺实现、不覆盖实施树中 main 的根 HANDOFF、权威 docs 或其他 feature 文件。
+
+### 12.6 H-x 与上游风险
+
+- **H-1、H-2·标签、H-3·路由切片、H-4** 均具备生产方 **① 固定实现 commit + ② 已提交有效 Checklist + ③ 定向测试摘要（含独立 A 亲跑）**；**④ 消费方集成 SHA 全部未取得 → 未交付**。当前有效清单为 R8.1 `34d339e`；H-1 保留当时 R7 `9acf3de` 的历史追溯。
+- 只读核：消费分支 `integration/frontend-workbench-v2` = `3f63273`，四个实现提交 `13a3373` / `ebce4c8` / `cc59e94` / `b38cf43` 均不是其祖先。本 session 不写、不重建、不代 merge 外部 v2 可写树；④ 由其所有者真正集成后登记。H-2·列表、H-6、H-5、页面切片提供任务未齐，仍未交付；路由页是骨架，不是作业页面功能交付。
+- 正式 `implementation_base_sha` 仍为 v1 Handoff **`43b6d79`**；本批 `upstream_start_sha` 继续 pin **`90187f7`**。main 已到 **`072bb12de3425e1b76357b5771e47f0609b32979`（PR #11，v2 S0）**，但不在本批祖先中，**本批不自动同步**。
+- 同步新 main 前按 tasks §7 重核 §0.0 → Analyze → A 定向复核 → 指定范围修订 `routes.spec` 的“真实路由表原无 jobs / +2 条”断言；同时与 v2 所有者协调 **T-V2-09#4** 对 shell E2E `/jobs` owner 占位断言的迁移。不要代改壳测试，不把生产集成树 SHA 冒充消费方④。这是同步前置，不是当前 T-A11 的新增人工门。
+
+### 12.7 P3 与下一步
+
+- R2-A：契约 describe 混入 mock 实现语义，归 T-G06，与首批 R-C 收口。
+- R2-B：内部状态未初始化时为非契约错误，T-A11 / T-A18 按正常工厂顺序接入并以测试固定，不在此加 guard。
+- R2-C：徽标统一 ok 边框令牌，首个消费页面或 T-G10 前用既有令牌核对；本批未修。
+- R2-D：新 main 同步后的路由测试耦合，按上节同步流程处理。
+- R2-E：新读方法的延迟 / error 行为随当前共享状态的 scenario，v1 十方法仍随各自工厂捕获值；按 A 建议已在 plan §2.4 补一句精度，不改代码。
+- 上述 P3 只作后续定位，**未修复、未经 Walter 风险接受**（R2-E 仅文档精度已登记）。首批 R-B 已校正未开始种子但 done 上游 draft 不自动审批，仍部分落实；S-37 正向 workspace 断言已落实；R-A 仍须 T-A16 / T-A19 前定案；其余见 `implementation-log.md` §8。
+- **下一步：T-A11**，随后按现有 DAG 推进；新会话先读当前任务、Review 与初始化顺序提示，不再追问代码授权。
+
+### 12.8 进程与保存
+
+- 全部模型调用同步返回；E2E webServer 自行结束，无本 session 需续跑的服务或子会话。临时目录 `C:/Users/iswal/AppData/Local/Temp/wi-batch2-01a18388-i8ukv6xl/` 保留提示、探针、日志和摘要；核心结论均在本 feature 的任务、实施日志、Converge、Review、接口登记中，不依赖临时目录，原始 session / 凭证不入库、不清理共享 `/tmp`。
+- 最终文档结构复核：**67 项 / 102 h，16 完成 + 51 未开始，224 标准 ↔ 224 命令，46 AC 集合一致，DAG 无环；当前有效清单 26 勾 / 0 未勾**。旧轮次复选框不参与开工判定。
+- 未 push、未开 PR、未 merge main；正式全 feature Review / Gate 2 / Handoff 仍在后续。
+
+### 12.9 下次开场（取代 §11.6）
+
+> 第二批六项已实施并通过独立 A 代码 Review，当前 16/67 完成；按既有授权从 T-A11 继续。H-1 / H-2·标签 / H-3 / H-4 仍待消费方集成，新 main 的路由断言同步前置已登记，整体未收敛。
