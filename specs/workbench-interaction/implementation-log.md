@@ -1265,3 +1265,39 @@
 - **H-x**：H-5 / 页面切片 ① 旧候选 `e609c2e` 已经 A 核对；新候选 `f63ef7c` 待 A 增量 Review；② R11；③ 实施者新测试（原 `WI H-5` 仍 8）；④ 仍缺 → 未交付。H-6 缺 T-A21；D–F 仍占位。
 - **进度**：74 / 107.5 h / 248 / 248；**37 已实施 = 36 已完成 + T-C04a 1 项待 A**；**37 未开始**；46 AC 最终验收 0；feature 未收敛。
 - **下一步**：独立 A 新会话增量代码 Review（审核员按 §6；固定 `a2a2cdd..f63ef7c -- frontend` + 本轮文档提交）。合并策略不变：Draft PR #12 保持 Draft；main `072bb12` 不导入；不写 v2 树。
+
+## 26. R5-A 关闭：A 增量 Review 通过，T-C04a 已完成（2026-10-30；状态登记，不是全 feature Review / Gate 2 / Handoff）
+
+- **记账者 / 通道**：claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18a00-abb5-7251-8666-e60a664bb4f7`）。bridge 本窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改 provider / key / 全局配置，未因 Review 结果换模型。工作树 `D:/2030/Futures-AI-interaction-converge-batch4`，起点 HEAD `2c0d09d` clean；未新建目录。只写 tasks（页首 + T-C04a 状态行）/ analyze 页首状态链接 / 本节 / interface-handoff / `specs/README.md` 本 feature 两行；plan、spec、checklist、原 Review / Converge、代码、测试均不动。未运行产品测试；测试数字全部归 A 与实施者。未 commit / push / merge，未派 agent。
+
+### 26.1 链路（固定提交）
+
+| 项 | 提交 |
+|---|---|
+| 第五批原 Review（通过，0 P1 / P2 / 5 P3；R3-B 技术关闭；原样保留） | `fe9c2c92ac4d6778b0c7117a23b94919b2b71232` |
+| R5-A 派工准备 / plan r6.13 / Analyze R26 | `a2a2cdd379fd84e7744538b253450c00d59695c7` |
+| T-C04a 代码（当前源码固定点） | `f63ef7c62f273626e4ee72f94d16bfa53b52f148` |
+| 增量 Converge / Analyze R27（当时收口待 A，原文保留） | `64d20e4a593395ad8544f64a9cd9141a0e11e43d` |
+| 新独立 A 原件 `review-batch5-r5a.md` | `2c0d09dd99e057c593fef49fb9db53f1bf63f562` |
+| 有效 Checklist | R11 `1f99f80`，blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`，26 / 26，未改 |
+
+### 26.2 A 结论（只引用，数字归 A）
+
+- A = claude-fable-5-1 via anthropic，新会话 `01a189f3-8f06-71bf-8b3d-256cf0be4ba0`，只读审核树 `-review-batch4` @ `64d20e4`，对象 `a2a2cdd..f63ef7c -- frontend`（3 文件 +82 / −2）。**本增量通过：0 P1 / 0 P2 / 0 新 P3；R5-A 技术关闭**；另有观察 O-A-1～3，不计判定、不预设任务。
+- A 亲跑：命令 1 = 2 → 32；命令 2 = 1 → 全部 E2E **79 / 0（12 files）**；命令 3 = **39 files / 1130 / 0** + typecheck / lint / 六守卫 / contract 25 / 10 / 2 + 三文件 diff；回归 `WI H-5` 8 / `WI H-2` 27 / labels 10 / 六文件 129（88 + 24 + 17）/ contract-version 30 / badges 48。均与实施者同数。
+- 测试演进：旧组件例只改 tasks 预登记的 3 行（无第二处、无删例）；E2E 原 205 行逐字节前缀，只追加 1 例。生产只多一行普通赋值，无 guard、无 UI / query / store 其他改动。
+- 真实 Chrome 独立探针 6 / 6（不计入 79）：原 R5-A 链不再复现；另覆盖归入另一池项、同 id 删除、确认后删除、对照路径、列表页 jobId null 目标。探针首轮失败是探针定位假设错误，修正探针后通过，不是产品失败；A 首轮回归路径写错也属输入错误。A 未重判原 `fe9c2c9`。
+- 未跑：`pnpm test` 总命令、build、后端、截图、46 AC 最终验收。
+
+### 26.3 风险台账与 H-x
+
+- **关闭**：R5-A（`2c0d09d`）；R3-B（`fe9c2c9`）、R4-A / R2-C（`46e8fbe`）维持关闭。
+- **R5-B / R5-C**：任何修法属 AGENTS §5.1，须 Walter 本人批准才可开码；**当前未批准、未修、未风险接受**。Walter 的“先修P2等全部工作完成后，再合入main”只覆盖 R4-A，不借到这两项。
+- **其余未经风险接受**：R5-D / R5-E、S-43，旧 P3 R4-B～R4-E、S-41、R3-C、R-A、R-B 残留、R-C / R2-A、R-D ①③④、R-E、R-F、R2-B、R2-D（见 §8、§24.1）。本次无新 P3，不等于全部风险已清。
+- **H-5 / 页面切片**：① 由 `e609c2e` 更新为**生产已核 `f63ef7c`**（`e609c2e` 保留为历史）；② R11 `1f99f80`；③ A 亲跑 `WI H-5` 8、intake E2E 原 4 + 补修 1、全部 E2E 79；**④ 仍缺 → 未交付**，不得以生产方集成树 SHA 代填。H-6 缺 T-A21；D–F 仍为占位。其他切片登记不变。
+
+### 26.4 进度与下一步
+
+- 74 个任务 / 约 107.5 h / 248 / 248：**37 已完成 / 37 未开始**；46 AC 最终验收 **0**；feature **未收敛**（37 项未开始 + D–F 占位 + H 组外部阻塞）。标准 / 命令 / 工时 / 依赖 / AC 矩阵不变，唯一有意回边 T-B03 → T-B04，无环。
+- 下一步按 §6 DAG：依赖已满足的未开始任务为 T-A14 / T-A15 / T-A16（开工前先定案 R-A）/ T-G04（开工前先定义 R3-C 承接），批次由集成人定，不重问通用授权。
+- 合并策略不变：全部任务完成、全 feature Converge / Review / Gate 2 后才合 main；Draft PR #12 保持 Draft；main `072bb12` 不导入，继续 pin `90187f7`（R2-D）；不写 v2 树。
