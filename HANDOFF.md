@@ -431,3 +431,75 @@ fi
 ### 12.9 下次开场（取代 §11.6）
 
 > 第二批六项已实施并通过独立 A 代码 Review，当前 16/67 完成；按既有授权从 T-A11 继续。H-1 / H-2·标签 / H-3 / H-4 仍待消费方集成，新 main 的路由断言同步前置已登记，整体未收敛。
+
+## 13. 第三批实施 + 独立代码 Review + R3-A 补修（2026-10-29；第三批安全点恢复记录，非正式 Handoff；替代 §12 的后续任务状态）
+
+> 本节为**第三批安全点恢复记录**：由 Opus 状态登记会话起草（claude-opus-5-5 via anthropic，PI_SESSION_ID `01a1876b-2420-709d-b58f-04d6eed0d36f`），协调器按实际提交与工作树状态核对后追加。**不是正式 feature Handoff，不是 Gate 2；本轮在批次安全点汇报，不是用户暂停。** Plan / Converge / 记账 = claude-opus-5-5 via anthropic；Implement = openai/gpt-6-astra；独立 A（Checklist R9、第三批代码 Review、T-A22c 增量 Review）= claude-fable-5-1 via anthropic；集成人 = 协调会话（openai/gpt-6.1-sol）。本窗口 Claude bridge 最小真实调用为 **quota / rate / spend_limit 类**失败，同通道不重试；同模型官方通道成功；只换通道、未改 provider / key / 路由 / 全局配置，未因测试或审核结果换模型。
+
+### 13.1 授权与当前进度
+
+- Walter 原话“允许”代码实施并指定协调会话 `01a18388-a371-7746-8158-9fb15d55d819` 为集成人，在既有 tasks 范围内持续有效；**后续批次不重复请求代码授权**。不扩范围、不改冻结 spec / AC，不代其他 feature Gate 或 v2 签收。
+- 当前 **68 个任务 / 约 102.5 h**，**21/68 已完成**（首批 10 + 第二批 6 + 第三批 4 + R3-A 补修 1），**47 项未开始**；完成标准 / 验证命令 **227 / 227**；**46 AC 最终验收仍为 0；feature 未收敛（尚未实施 + H 组外部阻塞）**。“已完成”= 所在批次独立代码 Review 通过，不是产品验收。
+- 本轮五个代码任务：**T-A11**（本地持久化与样例重置）、**T-A12**（createJob 与投放主流程）、**T-A13**（待归属池、归入、删除来源、取消作业）、**T-A22a**（jobsStore 共享未筛选缓存、写后与 agent 终态刷新）、**T-A22c**（R3-A 补修：筛选成功不改写未筛选列表读状态）。
+
+### 13.2 Checklist、范围停止与失败留痕
+
+- 开码前精度 r6.6（`ef64c1853f79ea1e18e99a7b0ff22de2152de40c`）经 A **Checklist R9 通过**：原件 `ab742f5801628b15324fc998f03959482fd31d9d`，26/26，0 P1/P2，P3 S-38～S-40（已在实施中落实）；`checklist.md` blob `74084c1337491a042c944096e1f290fe07aab324`。**R9 仍是当前有效 Checklist**，本轮未改、未重勾；T-A22c 是已审 Review 点名的 Converge 补修，不另开 Checklist 轮次。本规格树只转存 A 的 R9 原件，不由实施者勾选。
+- **两次范围停止（真实留痕，不是调用失败、不回退）**：① T-A11 开码前，`real-stubs.spec.ts` 的 `requests` 表须为新方法加键但不在写入清单 → Astra 停下 → r6.6.1（`e4031fae9ca31d090f2bec4ed4b09793ff3dea56`）只许追加键；② A13 实现后全量 `test:unit` **925 pass / 1 fail**（T-A11 旧 error 分支仍期待 commit 成功，与已批准的 A12 拒绝时机冲突）→ Astra 停下 → r6.6.2（规划树原件 `8c4660fe9121610b2bd85a13cfd7ea97d7f7c75e`，定向导入实施树 `198846383e23910e17e0a48a24d9d80c4cb213fe`，A13 WIP 无损）→ 独立 test-fix `0a2d1a5`，之后 clean 全量 926 / 0。
+- **T-A22c 先红后绿**：修复前新两例 2 fail（`ready`≠`idle`、`ready`≠`error`），删两行后通过。各失败原文摘要已入 `implementation-log.md` §6 / §7 / §12，恢复时不需要粘贴原日志。
+
+### 13.3 固定引用
+
+| 项 | 固定提交 |
+|---|---|
+| T-A11 | `c7ebccb8f9e29350d5a815959be3b532191bdb95` |
+| T-A12 / 语义回归 test-fix（r6.6.2） | `742d6aa3d671cee91c6cce856f657a103d510615` / `0a2d1a5e756b4a469996d2069996a256f16722b9` |
+| T-A13 | `a5ad11c79cf08ca50ebb55ef0984beae952a7dad` |
+| T-A22a（第三批受审代码头） | `0032fc6b3e47ee6de27a03c2c229ef57ca9115cc` |
+| 第三批 Converge / Analyze R13 | `e14ad25d525d319fee85e2fc34e4ebb972e42150`（`converge-batch3.md`：本批收口、整体未收敛） |
+| 第三批独立代码 Review 原件 | `49edb7ebf7bd0fdb0ab9ea0767c33945b39e13cf`（`review-batch3.md`：**通过，0 P1/P2，3 P3 R3-A～R3-C**） |
+| R3-A 补修登记 r6.8 / Analyze R14 | `e7716a88297ed9f3fe3a642215bd970c3a326a37`（方案 b；commit body 记集成人接受 T-B01 也依赖 T-A22c 以保 AC 矩阵祖先，属任务排期） |
+| T-A22c（**当前代码固定点**） | `af24c826f41580d27f90ce611fb2f55fec44acbf` |
+| T-A22c 增量 Converge / Analyze R15 | `eb91340096a22f845c8511a370d6100262e939d4`（`converge-batch3-cache-fix.md`：T-A22c 收口、整体未收敛；不判 R3-A 关闭） |
+| T-A22c 增量代码 Review 原件 | `69faacccabd8b089a9f240b28e6449a8fea90619`（`review-batch3-cache-fix.md`：**通过，0 P1/P2，0 新 P3，R3-A 关闭**） |
+| 第三批安全点状态登记 | `6ba2a155d85d7495014eb5c2faff36cd542d3288`（tasks / implementation-log §13 / interface-handoff / analyze 页首 / README 本 feature 两行） |
+| 当前规格树同步提交 | 不硬编码自身；用 `git log -1 --format="%H %s" -- HANDOFF.md` 查询 |
+
+### 13.4 独立审核与验证证据
+
+- **第三批代码 Review**（A 新会话、独立工作树，固定审 `e14ad25` + 代码 `0032fc6`）亲跑：全量 `test:unit` **31 files / 951 / 0**；本批 **19 条任务命令**用例数与实施者逐条相同；v1 三份契约测试 **88**；real-stubs **23**；六守卫、`contract --check` 24 / 10 / 2、typecheck、lint；`e2e/shell.spec.ts` + `e2e/agent.spec.ts` **24 / 0**；只读探针 8 例。R9 交代的隐私核对项（快照六键业务子集、Upload strict 白名单含既有 `quarantineReason`、无原文持久化、`mappingHistory` 每条投放至多一条）经 A 认可。
+- **T-A22c 增量 Review**（A 新会话、独立工作树，固定审 `eb91340` + diff `e7716a8..af24c82`）亲跑：`WI H-2 list status` **2**；整文件 **27**（原四组 5 / 4 / 7 / 9 保持）；typecheck / lint / `contract --check` 24 / 10 / 2；全量 `test:unit` **31 files / 953 / 0**；六守卫；v1 契约 **88**；real-stubs **23**；shell + agent E2E **24 passed**。只读探针 6 例：P1 / P2 不再复现，同 tick 并发与 slow 加载中筛选终态正确。生产 diff 仅删 `applyFilter` 成功分支两行，测试新增 2 例、旧例精度改（未删覆盖），无新状态机 / 请求序号 / 锁。
+- **未跑**：其余 7 份 E2E、全量 `pnpm test`；无人工截图；无最终 AC 验收、无 Gate 2。所有产品测试由实施者与 A 真实执行；Converge / 记账会话未跑产品测试。
+- 状态登记后脚本复算：68 项 / 102.5 h，**21 完成 + 47 未开始**，227 ↔ 227，46 AC 矩阵一致、部分前置均为最终任务祖先，DAG 无环；逐任务预计 / 标准 / 命令与 §5～§7 相对 `69faacc` 无差异。
+
+### 13.5 工作树分工与同步范围
+
+- **代码固定 `af24c82`**：其后只有文档提交，代码不变。
+- 实施：`D:/2030/Futures-AI-interaction-implement` / `feat/workbench-interaction-astra`，已由集成人 ff-only 至 **`6ba2a155d85d7495014eb5c2faff36cd542d3288`**。
+- 生产方集成：`D:/2030/Futures-AI-interaction-integration` / `integration/workbench-interaction`，也已 ff-only 至 `6ba2a15`；**集成人是唯一串行写入者**，它不是 v2 接收方集成树。
+- Converge / 记账：`D:/2030/Futures-AI-interaction-converge-batch3` / `docs/workbench-interaction-batch3-converge`（`6ba2a15`）。
+- 只读审核树（已结束）：`-checklist-batch3`（`ab742f5`）、`-review-batch3`（`49edb7e`）、`-review-batch3-cache-fix`（`69faacc`）；规格准备树 `-plan-batch3`（`8c4660f`）。
+- 当前规格树 `D:/2030/Futures-AI-interaction` / `spec/workbench-interaction` 只定向同步本 feature 文档、README 本 feature 行与本 HANDOFF 新恢复节，**不铺实现代码**，不覆盖 main 的根 HANDOFF、权威 docs 或其他 feature 文件。**规格树只同步文档；生产方代码已由集成人串行 ff-only。未 push、未开 PR、未 merge main、未做全 feature Review / Gate 2。**
+
+### 13.6 H-x 与上游边界
+
+- **H-2·列表**：① `af24c82`（生产已核；已审历史 `0032fc6` 保留追溯）、② R9 `ab742f5`、③ 实施者与 A 亲跑同数（含全量 953、E2E 24）。本方“T-A22c 复核前不放行 ④”条件已解除；**④ 仍缺 → 待消费方集成（未交付）**。
+- **H-1 / H-2·标签 / H-3·路由切片 / H-4**：历史生产方 ①②③ 保留（② 当时 R7 / R8.1，当前有效 R9），④ 缺 → 待消费方集成（未交付）。**H-6** 仍缺 T-A21；**H-5 / 页面切片**未做。`/jobs` 两页仍为骨架，jobsStore 未被页面消费，写 API 大部分未挂 UI，**不能称作业页面已完成**。
+- 只读观察消费分支 `integration/frontend-workbench-v2` 仍 `3f63273`，不含上述 ①；本 session **不写、不重建、不 merge** 该树，④ 只由其所有者真正集成后登记，不凭推测填写。
+- 正式 `implementation_base_sha` 仍 `43b6d79`；本批继续 pin `upstream_start_sha = 90187f7`。main `072bb12`（PR #11，v2 S0）**不在祖先、不自动同步**；同步前按 tasks §7 重核 → Analyze → A 定向复核 → 指定范围修订 `routes.spec`，并与 v2 所有者协调 T-V2-09#4（R2-D）。不代改壳测试、不写 v2 / main。
+
+### 13.7 P3 与下一步
+
+- **R3-A 已关闭**（`69faacc`）。**R3-B**（重复 `removeUpload` 冗余修订 / 事件 → T-C03 / T-A17）、**R3-C**（storage `removeItem` 抛错时 reset 以原始错误拒绝 → T-G04）**仍未修、未经 Walter 风险接受**。
+- 前两批未关：R-A（冲突态当前视图，T-A16 / T-A19 前定案）、R-B 残留、R-C / R2-A（T-G06）、R-D ①③④、R-E、R-F、**R2-B**（仅 DataClient 初始化顺序已固定，AgentClient 侧 T-A18）、**R2-C**（徽标统一 ok 边框令牌，首个消费页面或 T-G10 前核对）、**R2-D**（新 main 路由断言迁移）；R2-E 仅文档精度。细节见 `implementation-log.md` §8。上述 P3 均未被接受为已关闭。
+- **下一入口建议**：T-B01（→ T-B02 / T-B04）或 API 依赖已就绪的 T-A14 / T-A15 / T-A16、T-C01。**若先做 T-B01，派工前先按台账确认 R2-C 的处理归属**（在 T-B01 首次消费徽标时用既有令牌核对，或明确留到 T-G10），不新增色值。批次划分由集成人决定；Implement 仍用独立新会话（首选 openai/gpt-6-astra），之后批次 Converge + 新会话异模型 A Review。
+
+### 13.8 进程与保存
+
+- 全部模型调用同步返回；E2E webServer 由测试自管，结束后无 LISTEN；无本 session 待续跑服务或子会话。
+- 临时目录 `C:/Users/iswal/AppData/Local/Temp/wi-batch3-01a18388-0yit2j1a/` 保留派工提示、实施者 / A 会话、探针、日志与本节草稿，可辅助恢复；**关键结论均已入库**（tasks 页首、`implementation-log.md` §8 / §12 / §13、两份 Converge、两份 Review、interface-handoff、analyze），恢复不依赖临时目录。原始 session / 凭证不入库，不清理共享 `/tmp`。
+- 未 push、未开 PR、未 merge main；正式全 feature Review / Gate 2 / Handoff 仍在后续。
+
+### 13.9 下次开场（取代 §12.9）
+
+> 第三批四项与 R3-A 补修已通过独立 A 代码 Review，当前 21/68 完成、47 未开始，代码固定 `af24c82`；按既有授权从 T-B01（先确认 R2-C 归属）或 T-A14～A16 / T-C01 继续。H-2·列表等切片仍待消费方集成，R3-B / R3-C 未修，整体未收敛。

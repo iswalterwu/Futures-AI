@@ -1,5 +1,122 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
+> **当前实施进度（T-A22c 增量代码 Review 后状态登记，2026-10-29；以本块为准。下方“T-A22c 实施后增量 Converge”块中的“1 项已实施、待定向 Review”“R3-A = 代码已修、待 A 复核”“④ T-A22c 复核前不放行”“T-B01 是否等 A 复核”等都是当时原文）**：
+>
+> **进度**：**68 个任务、约 102.5 h**。**21 / 68 已完成**（四次批次 / 增量代码 Review 通过：首批 `af95b66` 10 项、第二批 `f72a1a1` 6 项、第三批 `49edb7e` 4 项 = T-A11 / T-A12 / T-A13 / T-A22a、增量 `69faacc` 1 项 = T-A22c）；**47 项未开始**。“已完成”= 所在批次代码 Review 通过，**不表示任何 AC 最终验收**：46 AC 最终验收仍 **0**；feature **未收敛**（47 项未实施 + H 组外部阻塞）。
+>
+> **T-A22c 增量代码 Review**（`review-batch3-cache-fix.md`，集成人原样提交于 `69faacccabd8b089a9f240b28e6449a8fea90619`，只引用、不改写）：审核员 A = claude-fable-5-1 via anthropic（新会话、独立 worktree，固定审文档 `eb91340` + 代码 diff `e7716a8..af24c82`）。判**本增量通过：0 P1 / P2、0 新 P3；R3-A 关闭**（探针 P1 / P2 在 `af24c826f41580d27f90ce611fb2f55fec44acbf` 上不再复现）。A 亲跑：`WI H-2 list status` **2**、整文件 **27**（原四组 5 / 4 / 7 / 9 保持）、typecheck / lint / `contract --check` 24 / 10 / 2；全量 `test:unit` 31 files / **953** / 0；六守卫；v1 三份契约测试 88；real-stubs 23；既有 shell + agent E2E **24** / 0；只读探针 6 例。**未跑**：其余 7 份 E2E、全量 `pnpm test`；无截图。第三批原 Review `49edb7e`（0 P1 / P2、3 P3）结论不变。
+>
+> **P3 状态**：**R3-A 已关闭**（`69faacc`）。**R3-B**（→ T-C03 / T-A17）、**R3-C**（→ T-G04）**仍未修、未经 Walter 风险接受**；前两批 P3（R-A～R-F、R2-A～R2-E）状态不变，见 implementation-log §8。
+>
+> **结构**（脚本复算，见 implementation-log §13）：68 个任务、约 102.5 h；完成标准 / 验证命令 **227 / 227**；依赖与 DAG 不变、无环；AC 矩阵 46 行、部分前置均为最终任务祖先。本轮只改 T-A22c / T-A22a / T-B01 / T-B02 状态行、§2a H-2·列表备注与本块；所有任务的预计 / 标准 / 命令不改字。有效 Checklist 仍为 **R9**（`ab742f5`，blob `74084c13…`，未改）。
+>
+> **H-x**：
+> - **H-2·列表**：① `af24c82`（经增量 Review 核对；已审历史 `0032fc6` 保留）；② R9 `ab742f5`；③ 实施者与 A 亲跑同数（2 / 27 + 工程门，全量 953、E2E 24）。本方“T-A22c 复核前不放行 ④”的条件已解除；**④ 仍缺 → 待消费方集成（未交付）**。消费分支 `integration/frontend-workbench-v2` 只读观察仍为 `3f63273`、不含 `af24c82`。
+> - **H-6** 仍缺 T-A21；**H-5 / 页面切片**未做；H-1 / H-2·标签 / H-3 / H-4 保留历史生产方证据，仍为待消费方集成（未交付）。
+> - **页面现状**：`/jobs` 与详情页仍是 T-A22 骨架，jobsStore 只被 `main.ts` 订阅、无页面消费；写 API 中只有 `createJob` 经 store 接入，且无 UI 调用方。不能称作业页面已完成。
+>
+> **下一可起步**（依赖已满足）：T-A14 / T-A15 / T-A16、**T-B01**（之后 T-B02 / T-B04）、T-C01。T-B01 是首个消费徽标的页面任务，开工前按 implementation-log §8 R2-C 核对状态边框令牌映射（不新增色值）。批次划分由集成人决定。
+>
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1876b-2420-709d-b58f-04d6eed0d36f`；`claude-bridge` 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。本块是批次记账，不是 Review / Gate 2 / Handoff。
+
+> 【历史原文，进度 / T-A22c 状态 / H-2 ④ 放行条件已由上方增量 Review 后块取代】**当前实施进度（T-A22c 实施后增量 Converge，2026-10-29；当时以本块为准。下方 r6.8 块中的“20 项已完成、48 项未开始”“T-A22c 待实施 / 代码未修”“下一可起步 T-A22c”等都是当时原文）**：
+>
+> **进度**：**68 个任务、约 102.5 h**。**21 / 68 已实施** = **20 项已完成**（三批代码 Review 通过：`af95b66` 10 项、`f72a1a1` 6 项、`49edb7e` 4 项）+ **1 项已实施、待定向 Review**（**T-A22c**，`af24c826f41580d27f90ce611fb2f55fec44acbf`）；**47 项未开始**。46 AC 最终验收仍 **0**；feature **未收敛**（47 项未实施 + H 组外部阻塞 + T-A22c 待复核）。
+>
+> **T-A22c**（R3-A 方案 b；实施者 openai/gpt-6-astra，未回退；基线 `e7716a8`）：代码 diff `e7716a8..af24c82` 只有 2 个文件。`jobs/stores/jobs.ts` 只删 `applyFilter` 成功分支的 `listStatus` / `listError` 两次赋值；`jobs-store.spec.ts` 新增 `WI H-2 list status` 两例，并把 filter 组的一例改为“只有显式 refresh 清错”，未删测试。结果由实施者执行，增量 Converge 未重跑：
+> - **先红后绿**：修复前新两例分别以 `idle → ready`、base `error → ready` 失败；删两行后通过。
+> - **三条任务命令**：命令 1 `2` pass；命令 2 整文件 `27` pass（原四组 25 + 新 2，`WI H-2 filter` 仍 4）；命令 3 typecheck / lint / `contract --check` 24 / 10 / 2 均通过。
+> - **回归**：末轮全量单测 31 files / **953** / 0；六守卫；既有 shell + agent E2E **24** pass；4173 前后空闲；clean commit。
+>
+> 增量 Converge（`converge-batch3-cache-fix.md`，analyze.md「Analyze R15」）判：实施与 r6.8 逐条一致，无规格差距，**本任务增量已收口、待独立 A 增量 Review**。**R3-A = 代码已修、待 A 复核**，不由 Converge 判定关闭。R3-B（→ T-C03 / T-A17）、R3-C（→ T-G04）未改，未经 Walter 风险接受。
+>
+> **结构**（脚本复算）：68 个任务、约 102.5 h；完成标准 / 验证命令 **227 / 227**；依赖与 DAG 不变、无环；AC 矩阵 46 行不变。本轮只改状态行与本块，所有任务的预计 / 标准 / 命令都不改字。有效 Checklist 仍为 **R9**（`ab742f5`，blob `74084c13…`，未改）。
+>
+> **H-x**：
+> - **H-2·列表**：① 候选 `af24c82`（待 A 增量复核）；② R9 `ab742f5`；③ 新组 2 / 整文件 27（原四组 25）pass + 工程门（实施者执行，待 A）。**④ 仍缺，T-A22c 复核前不放行**；生产方集成树 `af24c82` 只是旁证。
+> - **H-6** 仍缺 T-A21；**H-5 / 页面切片**未做；H-1 / H-2·标签 / H-3 / H-4 仍为待消费方集成（未交付）。
+>
+> **下一可起步**：按依赖链（以 21 项已实施计入，沿用 batch3 口径），可起步的是 T-A14 / T-A15 / T-A16、T-B01、T-C01。`review-batch3.md` §8 要求 R3-A 在 **T-B02 / H-2 ④** 之前关闭；T-B01 是否等 A 复核后再派，由集成人决定。
+>
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18755-53bb-72b4-87fa-bcc8b067eba0`；`claude-bridge` 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。本块不是 Review / Gate 2 / Handoff。
+
+> 【历史原文，进度 / T-A22c 状态 / 下一可起步已由上方 T-A22c 增量 Converge 块取代】**当前实施进度（第三批独立代码 Review 后 + R3-A Converge 补修登记 r6.8，2026-10-29；当时以本块为准。下方 batch3 块中的“4 项已实施、待第三批独立代码 Review”“20 / 67、47 未开始”“67 个任务 / 约 102 h / 224 / 224”“下一可起步 T-B01”等都是当时原文）**：
+>
+> **进度**：**68 个任务、约 102.5 h**。**20 项已完成**（批次代码 Review 通过：首批 `af95b66` 10 项、第二批 `f72a1a1` 6 项、第三批 `49edb7e` 4 项 = T-A11 / T-A12 / T-A13 / T-A22a）；**48 项未开始** = 原 47 项 + 本轮新增的 **T-A22c**（R3-A 补修，0.5 h，待实施）。“已完成”= 所在批次代码 Review 通过，**不表示任何 AC 最终验收**：46 AC 最终验收仍 **0**；feature **未收敛**（48 项未实施 + H 组外部阻塞）。
+>
+> **第三批代码 Review**（`review-batch3.md`，集成人原样提交于 `49edb7ebf7bd0fdb0ab9ea0767c33945b39e13cf`，只引用、不改写）：审核员 A = claude-fable-5-1 via anthropic（新会话、独立 worktree，固定审文档 `e14ad25` + 代码 `0032fc6`，diff `ab742f5..0032fc6 -- frontend`）。判**本批通过：0 P1 / P2，3 项 P3（R3-A～R3-C）**，另 3 项不计入判定的观察 O-R3-1～3。A 亲跑：全量 `test:unit` 31 files / **951 pass / 0 fail**；本批 19 条任务命令同数通过；v1 三份契约测试 88；real-stubs 23；六守卫、`contract --check` 24 / 10 / 2、typecheck、lint；既有 shell + agent E2E **24 pass / 0 fail**；只读探针 8 例。R9 交代的隐私核对项（`fai.jobs.v1` 六键业务子集、Upload strict 白名单含既有 `quarantineReason`、无原文持久化、`mappingHistory` 每条投放至多一条）经 A 按真实 diff 与探针核对认可。本记账不改 Review 结论，也不找模型重新判定。
+>
+> **P3 处置**（均**未经 Walter 风险接受**）：
+> - **R3-A**（jobsStore `applyFilter(f)` 成功分支改写未筛选列表的 `listStatus` / `listError`；A 探针 P1 / P2 复现）：集成人决定**现在修**，以免拖到 H-2·列表消费。按 AGENTS §2 第 9 步新增 **T-A22c**（≤ 0.5 h，依赖 T-A22a，排在 T-A22b 后、T-A23 前），采用 A 原件最小方案 **(b)**：`applyFilter(f)` 成功只写 `filter` / `filteredJobs`，即恢复 T-A22a【r6.6 精度】“只写两字段”的原意，不回 Clarify。plan §2.3 与 T-A22a 修改范围补【r6.8】精度。当前状态：**修复任务已登记、待实施；实施后由新会话 A 增量代码 Review 核 R3-A 关闭（其他 Review 结论保留）**。代码**未修**。
+> - **R3-B**（重复删除产生冗余修订 / 事件）→ 留原归属 T-C03 或 T-A17；**R3-C**（`removeItem` 异常时 reset 的错误形态）→ 留原归属 T-G04。二者均未修，只在对应任务状态行加阅读提示。
+> - 前两批 P3（R-A～R-F、R2-A～R2-E）状态不变，见 implementation-log §8。
+>
+> **结构**（脚本复算，见 analyze.md「Analyze R14」）：68 个任务、约 102.5 h；完成标准 / 验证命令 **227 / 227**（+3 = T-A22c），逐任务 1:1；依赖无环、全部前向；AC 矩阵 46 行，T-A22c 进入 AC-001-1 / AC-001-2 / AC-001-4 的部分前置。**依赖变化**：T-A22c ← T-A22a；T-B01、T-B02 各增依赖 T-A22c（T-B01 是 AC-001-1 的最终任务、也是 AC-001-4 最终任务 T-B04 的前置，又是 `listStatus` / `listError` 的第一个页面消费者；T-B02 是 R3-A 原件点名的筛选消费点）。46 AC、冻结 spec 不变；其他任务的标准 / 命令 / 预计不变。
+>
+> **前置**：有效 Checklist 仍为 **R9**（`ab742f5`，blob `74084c13…`，26 / 26，未改、不重勾）。T-A22c 是已审 Review 明确要求的 Converge 补修，不新增需求或机制，不需要重新设计 Checklist。Walter 的代码实施授权与集成人指定在既有 tasks 范围内持续有效。
+>
+> **H-x**：
+> - **H-2·列表**：提供任务改为 T-A01 / A02 / A10 / A12 / A22a / **A22c**。① `0032fc6` 已审通过但含 R3-A，**仍待修**；② R9 `ab742f5`；③ 5 / 4 / 7 / 9 现另有 A 亲跑同数。**④ 未取得；T-A22c 关闭前不放行 ④**，修复后以其提交更新 ①③。
+> - **H-6** 仍缺 T-A21；**H-5 / 页面切片**未做；H-1 / H-2·标签 / H-3 / H-4 仍为待消费方集成（未交付）。
+>
+> **下一可起步**（依赖已满足，脚本核）：**T-A22c**（建议先做）、T-A14 / T-A15 / T-A16、T-C01；T-B01 须待 T-A22c。批次划分由集成人决定。
+>
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1873f-2338-7718-8e99-6609b56b7a8a`；`claude-bridge` 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。本块不是 Review / Gate 2 / Handoff。
+
+> 【历史原文，进度 / 结构 / 下一可起步已由上方 r6.8 块取代】**当前实施进度（第三批实施后 Converge batch3，2026-10-29；当时以本块为准。下方 r6.6 块中的“16 / 67 已完成、51 未开始 / 本批全部待实施”和第二批 Review 后块中的“下一可起步 T-A11”都是当时原文）**：
+>
+> **进度**：**20 / 67 已实施**，其中前两批 **16 项已完成**（批次 Review 通过：首批 `af95b66`、第二批 `f72a1a1`），本批 **4 项已实施、待第三批独立代码 Review**；**47 项未开始**（A 组 T-A14～T-A21 共 8 项，以及 B 7 / C 5 / D 3 / E 3 / F 7 / G 10 / H 4）。46 AC 最终验收仍为 **0**。
+>
+> **第三批固定提交**（代码 diff `ab742f5..0032fc6 -- frontend`：5 个前端提交，17 个文件，+2318 / −26）：
+> - T-A11 `c7ebccb8f9e29350d5a815959be3b532191bdb95`
+> - T-A12 `742d6aa3d671cee91c6cce856f657a103d510615`，另有 A12 test-fix `0a2d1a5e756b4a469996d2069996a256f16722b9`（r6.6.2，只改 `persistence.spec.ts` 中 `WI non-normal` 的 error 分支）
+> - T-A13 `a5ad11c79cf08ca50ebb55ef0984beae952a7dad`
+> - T-A22a `0032fc6b3e47ee6de27a03c2c229ef57ca9115cc`
+>
+> 同一区间内另有两个纯文档补记：`e4031fa`（r6.6.1）、`1988463`（r6.6.2，自 `8c4660f` 定向导入三份文档，A13 WIP 无损）。它们不计入源码提交数。集成人已把五个前端提交 ff-only 并入生产方集成树 `integration/workbench-interaction` @ `0032fc6`（旁证）；v2 树与其他消费方树都没有写。
+>
+> **验证**（实施者执行，Converge 未重跑）：
+> - 19 条任务命令全部通过：A11 为 6 / 3 / 4 / 13 + 工程门（16 methods）；A12 为 11 / 5 / 10 / 5 + 工程门（20 methods）；A13 为 15 / 4 / 8 + 工程门（24 methods）；A22a 为 5 / 4 / 7 / 9 + 工程门。
+> - 末轮 clean 树：全量 `test:unit` **31 文件 951 pass / 0 fail**；`check` 六守卫通过；`contract --check` 24 methods / 10 events / 2 artifacts；typecheck / lint 通过；既有 shell + agent E2E 24 pass。
+> - **失败留痕**：A12 → A13 之间，在含 A13 WIP 的树上首次批量为 925 pass / 1 fail，原因是 T-A11 的旧 error 分支仍期待 commit 成功。Astra 按范围停下，经 r6.6.2 许可后单独提交 test-fix，之后 `a5ad11c` clean 树全量为 926 / 0。`742d6aa` 当时没有跑 clean 全量，不补造。
+>
+> **Converge 判定**（claude-opus-5-5 via anthropic）：本批范围**已收口、待第三批独立代码 Review**，未新增任务。feature 整体**未收敛**（47 项未实施 + H 组外部阻塞）。观察项 O-B3-1～6 交给 Review 判定，见 `converge-batch3.md` §5 与 analyze.md「Analyze R13」。
+>
+> **结构不变**：67 个任务 / 约 102 h，完成标准 / 命令 224 / 224，依赖 DAG、预估、标准与命令文字都不变。实施定形只按精度写入 T-A11 / A12 / A22a 修改范围【r6.7 精度】，不新增需求或机制。
+>
+> **前置与上游**：有效 Checklist 为 **R9**（`ab742f5`，blob `74084c13…`，26 / 26，未改）。main `072bb12` 不在祖先，继续 pin `90187f7`，R2-D 流程不变。
+>
+> **H-x**：
+> - **H-2·列表**：提供任务齐，生产方 ①②③ 具备（③ 待本批 Review），④ 缺 → 待消费方集成（未交付）。
+> - **H-6**：仍缺 T-A21，未交付。
+> - **H-5 / 页面切片**：未做。
+>
+> **下一可起步**（依赖已满足）：T-A14 / T-A15 / T-A16、T-B01、T-C01。批次划分由集成人决定。
+>
+> 本块不是 Review / Gate 2 / Handoff。
+
+> 【历史原文，已由上方 batch3 块取代进度部分】**第三批派工准备（r6.6，2026-10-29；以本块为准；开码前精度澄清，未实施、不预写结果）**：
+>
+> **范围**：**T-A11 → T-A12 → T-A13 → T-A22a**（4 项，约 7 h = 2 + 2 + 1.5 + 1.5），同一实施树串行。T-A22a 的依赖 T-A09a / T-A10 / T-A12 / T-A22 在本批内满足。**不在本批**：T-A14～T-A18、T-A21、B 组、投放 UI（T-C 组）、持久化横幅（T-G04）。进度仍以下一块为准（16 / 67 已完成、51 未开始）；本批完成后预计 20 / 67，不预写成功。
+>
+> **r6.6 只补既有 what / AC 的机制与类型精度**（plan §2.3 / §2.4 / §3【r6.6】；T-A11 / A12 / A13 / A22a 修改范围【r6.6 精度】）：
+> 1. 持久化：读写时机、降级、损坏、重置的确定语义，以及 `persistence.ts` 的 API。
+> 2. 写方法：签名与回执（`CreateJobInput`、`IntakeReceipt`，复用 `WriteReceipt`）；slow / error 下的写入时机；以作业为目标的写在入口查一次只读。
+> 3. 投放写入规则：合成预览；confirm 只从 pending 出发；未归属投放不写事件；assign 移动记录；内部 `mappingHistory`。
+> 4. 当前列表投影的唯一位置。
+> 5. jobsStore 的类型与刷新口径。
+> 6. 既有 jobs 回归：A11 起 normal 会话会持久化，`job-state-read.spec.ts` 中两例按新语义改写（属本任务语义变更处）。
+>
+> **结构**：完成标准 / 命令 **224 / 224 不变**（T-A11 标准 1 只补列一个既有字段）；67 个任务 / 约 102 h / 依赖不变。
+>
+> **硬约束文字**：唯一触及处 = 持久化白名单补列既有可选字段 `quarantineReason`，另登记内部 `mappingHistory`。隐私边界实质不变，提请第三批独立代码 Review 明确核对。是否在开码前另做 A 定向复核，由 Walter / 集成人裁量，本文件不代定；Analyze R12 认为不必。checklist R8.1（blob `99e096ad…`）未改、未勾。
+>
+> **上游与 H-x**：main `072bb12` 仍不在本树祖先，本批继续 pin `90187f7`，不自动同步（R2-D 流程不变，不是本批的人工门）。消费分支 `integration/frontend-workbench-v2` 仍为 `3f63273`，四项 ④ 仍缺；本 feature 不写、不重建 v2 树。
+>
+> **作者**：claude-opus-5-5 via anthropic（本轮协调器对 `claude-bridge/claude-opus-5-5` 的最小真实调用 exit 1，quota / rate / spend_limit 类；同模型官方通道 exit 0；本窗口不重试已明确限额的通道，未改配置）。详见 analyze.md「Analyze R12」。
+>
+> **r6.6.1 / r6.6.2 范围补记**（只扩测试文件写入许可，不改需求 / 标准 / 命令 / 结构）：r6.6.1 允许 T-A11 / A12 / A13 在 `real-stubs.spec.ts` 的 `requests` 表追加本任务新增方法键（Analyze R12.1）；r6.6.2 允许 T-A12 只改 `persistence.spec.ts` 中 `WI non-normal` 参数化用例的 error 分支，以符合已批准的 error 拒绝时机，T-A13 对该文件无许可（Analyze R12.2）。实施进度见 implementation-log §7 / §10；任务状态行由批次 Converge 回写，本补记不改状态。
+
 > **当前实施进度（第二批独立 Review 后记账，2026-10-29；本块为准，取代下方 Converge batch2 块中“6 项已实施、待本批独立代码 Review”等当时原文）**：
 >
 > **进度**：**16 / 67 已完成**，**51 未开始**。“已完成”= 所在批次代码 Review 通过，**不表示任何 AC 最终验收**：46 AC 最终验收仍 **0**（本批多为“部分前置”；T-A23 只完成 AC-001-5 的组件半项，人工 M-01 归 T-G10）。
@@ -167,7 +284,7 @@
 |---|---|---|---|
 | H-1 | T-A02（`JobContextSchema`）、T-A09（`CONTRACT_VERSION='2.0.0'`）、**T-A09a**（`SendMessage.jobContext?`、十类事件公共可选 `jobContext`、mock 透传） | `test:unit tests/unit/jobs/agent-context-contract.spec.ts`；`test:unit tests/unit/jobs/contract-version.spec.ts -t "WI scenarios"` | **T-A09 ≠ H-1**。r5 中 SendMessage / events / mock 透传都在 T-A18，H-1 须等 T-A18；r6 把这部分拆为 T-A09a（只依赖 T-A02 / T-A09），H-1 不再等待 mock 状态层。作业**运行关联**（activeRunId / overlay，S-15）仍在 T-A18，不属 H-1 交付，但 T-A18 命令 4 复跑 H-1 定向测试，保证不回归 |
 | H-2·标签 | T-A01（`JobStatusLabel / StageLabel / StageStateLabel / JobTypeLabel` 等九张映射）、T-A23（`JobStatusBadge`） | `test:unit tests/unit/jobs/contract-labels.spec.ts -t "WI labels"`；`test:unit tests/component/jobs/badges.spec.ts -t "WI status badges"` | 只要 `StageLabel` 的 S1-ctx 可只等 T-A01 |
-| H-2·列表 | T-A01（`ACTIVE_JOB_STATUSES`）、T-A02（`JobListItem` 字段）、T-A10（`listJobs`）、T-A12（`createJob`）、**T-A22a**（jobsStore 共享未筛选缓存 ①～⑤、`createJob` action、agent 终态刷新、`main.ts` 订阅） | `test:unit tests/unit/jobs/jobs-store.spec.ts -t "WI H-2"` | 可调用写 action = `useJobsStore().createJob(input)`；inbox / 投放 action 不算本切片 |
+| H-2·列表 | T-A01（`ACTIVE_JOB_STATUSES`）、T-A02（`JobListItem` 字段）、T-A10（`listJobs`）、T-A12（`createJob`）、**T-A22a**（jobsStore 共享未筛选缓存 ①～⑤、`createJob` action、agent 终态刷新、`main.ts` 订阅）、**T-A22c**（r6.8，R3-A 补修：`applyFilter` 成功不改写未筛选列表读状态） | `test:unit tests/unit/jobs/jobs-store.spec.ts -t "WI H-2"` | 可调用写 action = `useJobsStore().createJob(input)`；inbox / 投放 action 不算本切片。r6.8：T-A22c 关闭前不放行 ④（已于 `69faacc` 关闭；④ 仍待消费方） |
 | H-3·路由切片 | **T-A22**（`jobs/routes.ts` 两条路由 + `registerJobRoutes` + `main.ts` 挂载前注册；依赖改为 T-A01） | `test:unit tests/unit/jobs/routes.spec.ts` | 不含页面功能；页面为骨架 |
 | 页面切片 | T-B01、T-B02、T-B04（`/jobs` 列表与详情）、T-C01、T-C01a、T-C02、T-C03、T-C04（IntakeDrawer 投放提交 / 确认 / 待归属池归入） | `test:e2e e2e/jobs/intake.spec.ts`；`test:e2e e2e/jobs/detail-stage.spec.ts -g "WI AC-002-2"`；`test:unit tests/component/jobs/job-list.spec.ts` | 待归属池在 IntakeDrawer 内（T-C03），任何挂载点都能完成归属 |
 | H-4 | **T-A22b**（`sessionStore.context` 只读 + `registerJobRoutes` 中的 `afterEach` 守卫） | `test:unit tests/unit/jobs/session-context.spec.ts -t "WI H-4"` | **无公开 setter**：只经路由守卫设置；壳 S1-ctx 因而条件依赖 H-3·路由切片（v2 tasks §1.2 已预设此分支） |
@@ -400,12 +517,54 @@
 
 ### T-A11 本地持久化 persistence.ts 与 resetMockData
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-B（P3 后续观察，非新增标准）：状态由 DataClient 工厂建立，持久化入口按正常调用顺序接入并以测试固定，不加 guard
+- **状态**：**已完成（batch3；第三批代码 Review 通过 `49edb7e`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；P3 R3-C 归 T-G04，未修）**｜原状态行“已实施（batch3，待第三批独立代码 Review）”为 Converge 时原文｜commit `c7ebccb8f9e29350d5a815959be3b532191bdb95`；命令 4 的 error 分支后由 T-A12 test-fix `0a2d1a5e756b4a469996d2069996a256f16722b9` 按 r6.6.2 维护。
+  - **验证**（实施者执行，Converge 未重跑）：命令 1～4 依次为 `WI whitelist` 6 / `WI degrade` 3 / `WI corrupt` 4 / `WI non-normal` 13 pass；命令 5 为 `contract --check`（16 methods / 10 events / 2 artifacts）、typecheck、lint，均通过；另 real-stubs 15 pass，`check` 六守卫通过。
+  - **全量回归**：`c7ebccb` 提交时 clean 树 28 文件 860 pass / 0 fail。
+  - **失败留痕**：首轮新测试有 Storage spy 漏记、跨例残留和两处类型错误，只修了新测试。
+  - **R2-B**：初始化顺序是先建 state、再 hydrate，有测试固定，未加 guard。
+  - **S-40**：已落实。
+  - **待 Review 核对的落点**：`mappingHistory` 的 schema 与投影在本提交即已落地（`converge-batch3.md` §5 O-B3-1）。→ Review 判定（`review-batch3.md` §5）：O-B3-1 可接受、非缺口；隐私边界经 A 核对认可。
+  - 原 blocked_by: IMPL-GATE-R6（已满足）；开码前置 R9 已满足（`ab742f5`）。
 - **预计**：2 h｜**依赖**：T-A10
 - **上下文**：plan §2.3 / §3 的持久化规则。plan 没写横幅如何得知持久化状态，本任务由 `persistence.ts` 提供只读状态订阅（`getPersistenceStatus()` / `onPersistenceStatus(cb)`，取值 `ok|degraded|unreadable`），供 T-G04 的横幅使用；不经业务契约。
 - **修改范围**：新建 `frontend/src/jobs/persistence.ts`（`fai.jobs.v1` = `{version:1,data}`；`fai.inbox.v1` = 已读 id；UTF-8 字节数用 TextEncoder 计算，上限 512 KiB；配额异常时降级）；`job-state.ts` 接入：只有 normal 场景且没有 `jobFixtures` 覆盖时读写（r6，H-6：注入的样例不污染本机快照）；每次成功 commit 后保存；`resetMockData`（normal：删除两个 key 并重建 fixture；其他场景：只重建内存）；`DataClient` / `methods.ts` / real 桩加 `resetMockData`。生成物；新建 `tests/unit/jobs/persistence.spec.ts`。
+  【r6.6 精度（机制见 plan §2.3 / §3【r6.6】；不改标准编号与命令）】
+  - **`jobs/persistence.ts` 导出**：
+    - `JOBS_KEY='fai.jobs.v1'`、`INBOX_KEY='fai.inbox.v1'`；
+    - `PersistedJobDataSchema` / `PersistedJobData`：本任务 = `{jobs, details, deliverables, interventions, uploads}`，用既有契约 schema 组合，内部用、不进 `contractSchemas`；
+    - `loadJobsSnapshot(): PersistedJobData | null`、`saveJobsSnapshot(data): void`、`clearJobKeys(): void`；
+    - `resetPersistenceStatus(): void`（只置 ok，不碰 storage）、`getPersistenceStatus()`、`onPersistenceStatus(cb): () => void`。
+    - `fai.inbox.v1` 只定 key 与格式（`string[]`），在重置时删除；已读 id 的读写函数随 T-A21（有消费方时）引入。
+  - **`job-state.ts`**：
+    - `JobStateSchema` = `PersistedJobDataSchema` + `scenario` / `emptyJobIds`；模块另记当前会话 `{seeds, persistent}`。
+    - `initializeJobState(scenario, seeds, persistent)`：先建状态；persistent 时 `loadJobsSnapshot()` 非 null 则覆盖可持久化字段；非持久时 `resetPersistenceStatus()`。
+    - `commit`：替换状态后，若 persistent，则 `saveJobsSnapshot(可持久化字段)`。
+    - 新增 `resetJobState()`：用会话记录的 seeds / scenario 重建；persistent 时依次 `clearJobKeys()` → 重建 → `saveJobsSnapshot`。
+  - **`mock/index.ts`**：
+    - 工厂把 `window.__FAI_MOCK__?.jobFixtures` 只读一次到局部变量，交给私有解析 helper；`readJobFixtures()` 改为同一 helper 对 getter 的薄包装，返回形状不变。
+    - `persistent = scenario === 'normal' && override === undefined`。
+    - `resetMockData`：按当前共享状态的 scenario 延迟（slow）；error 下不拒绝；调用 `resetJobState()` 后返回 null。
+  - **契约**：`DataClient.resetMockData(): Promise<null>`；`methods.ts` 描述保持实现中立（R2-A：mock 场景句不写进方法描述）；real 桩；生成物。
+  - **既有 jobs 回归（属语义变更处，允许改）**：`job-state-read.spec.ts` 增加 `beforeEach(() => localStorage.clear())`。`WI scenarios read` 中两例按新语义改写：
+    - “real commit…”一例：末句的新 normal client 改为读回已持久化的提交；“重建即丢弃”改用非持久场景验证。
+    - “this batch stays entirely in memory…”一例：改为“非 normal 与有覆盖时零访问；normal 无覆盖时只 getItem 一次 `fai.jobs.v1`，不写、不删”。
+    - 不改 v1 三份契约测试（`tests/unit/{mock,contracts,contract-doc}.spec.ts`；不含本 feature 自有的 `tests/unit/jobs/real-stubs.spec.ts`）、生成器、工具链、壳 UI。
+  - **【r6.6.1 范围精度】`tests/unit/jobs/real-stubs.spec.ts` 只追加一键**（T-A10 交付，属 §1-5 jobs 测试所有权）：
+    - 依据：该文件 `requests` 表以 `satisfies { [Method in keyof DataClient]: () => ReturnType<DataClient[Method]> }` 约束，并断言 `requests` / `dataMethods` / `dataClient` 的键严格相等；新增 `DataClient` 方法时必须同步加键，否则 typecheck 与该测试必然失败。
+    - 允许改动：只在 `requests` 表追加 `resetMockData: () => dataClient.resetMockData()` 一行。
+    - 不改：既有 13 键、`satisfies` 约束、两条断言与 describe / test 行为；不改成动态枚举，不弱化校验。
+    - 性质：T-A10 “real 桩覆盖全部 DataClient 键”的自然维护，不新增标准 / 命令。回归由标准 5 的 typecheck（`satisfies` 全键）与批末全量 `test:unit` 覆盖，也可加跑 T-A10 命令 4。见 analyze.md「Analyze R12.1」。
+  - **测试提示**（对应既有标准，不新增）：
+    - 本任务尚无写方法，持久化测试经真实 `commit(mutator)` 制造写入（同 T-A17 标准 2 口径）。
+    - 超限：用 mutator 写入超长 `goal`。配额异常：在系统边界 `vi.spyOn(Storage.prototype, 'setItem')` 抛错。
+    - 每例前 `localStorage.clear()`、`delete window.__FAI_MOCK__`。
+    - R2-B：总是先建 client 再观察；不测未初始化路径，不加 guard。
+  - **【r6.7 精度（Converge batch3 登记；只记实际落点，不改标准 / 命令）】**
+    - `PersistedJobDataSchema` 在本任务提交 `c7ebccb` 中已含 `mappingHistory`（`.default([])`），快照即为六键；T-A12 因此没有改 `persistence.ts`。终态与 plan §2.3【r6.6】一致，批内落点顺序交第三批 Review 核对（`converge-batch3.md` §5 O-B3-1）。
+    - 状态类型 `'ok'|'degraded'|'unreadable'` 只作为函数签名出现，未单独导出类型名。
+    - `loadJobsSnapshot` 把 getItem 异常也归入 unreadable；`clearJobKeys` 的 removeItem 异常未捕获（plan 未规定，未加防御，O-B3-3）。
 - **完成标准**（正负向齐全）：
-  1. normal 下保存后新建 client 能读回；持久化子集为白名单：Upload 只含 id / jobId / inputKind / fileMeta / url / sourceNote / mapping / status / createdAt / removed，不含粘贴正文和 File 对象（spec §4 持久化；AC-003-3 部分前置）。
+  1. normal 下保存后新建 client 能读回；持久化子集为白名单：Upload 只含 id / jobId / inputKind / fileMeta / url / sourceNote / mapping / status / createdAt / removed（另含既有可选结构化字段 `quarantineReason`，即 fixture 合成的隔离判定说明、非投放原文；r6.6 补列，见 plan §3），不含粘贴正文和 File 对象（spec §4 持久化；AC-003-3 部分前置）。
   2. 超过 512 KiB 或 setItem 抛异常 → 状态 degraded，内存继续可用，**最后一次成功的快照仍在、未被删除**（spec §4 持久化约束，无独立 AC；随 AC-009-1 全量回归）。
   3. 内容损坏或版本不支持 → 本次用 fixture，状态 unreadable，**原 key 保留**，本会话不自动覆写；只有 resetMockData 才删除（spec §4 持久化约束，无独立 AC；随 AC-009-1 全量回归）。
   4. 八个非 normal 场景、以及 normal 下存在 `jobFixtures` 覆盖时（r6，H-6），对两个 key 一律不 getItem / setItem / removeItem（Storage spy 计数为 0）；切场景不清空；`fai.rail` / `fai.drawer` / `fai.layout` 不受影响（AC-008-2 部分前置）。
@@ -419,10 +578,60 @@
 
 ### T-A12 写方法：createJob 与投放主流程
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-D（P3 后续观察，非新增标准）；r6.3 口径：R-D ②（quarantined 附原因）与 ⑤（createJob 写 collecting / collect 与 R,N,N,N）由本任务写方法按构造保持、以既有读回断言覆盖，不加 schema refine / 入口跨字段校验（如认为必须加，按 AGENTS §5.1 先报 Walter）
+- **状态**：**已完成（batch3；第三批代码 Review 通过 `49edb7e`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收）**｜原状态行“已实施（batch3，待第三批独立代码 Review）”为 Converge 时原文｜commit `742d6aa3d671cee91c6cce856f657a103d510615`，另有语义回归 test-fix `0a2d1a5e756b4a469996d2069996a256f16722b9`（r6.6.2：只改 `persistence.spec.ts` `WI non-normal` 的 error 分支）。
+  - **验证**（实施者执行，Converge 未重跑）：命令 1～4 依次为 `WI createJob` 11 / `WI confirm` 5 / `WI intake validation` 10 / `WI scenario writes` 5 pass；命令 5 为 `contract` / `contract --check`（20 methods）、typecheck、lint，均通过；real-stubs 19 pass。
+  - **失败留痕**：
+    - ① 首次 typecheck 发现新建交付物漏填 `jobId`，已补齐。
+    - ② `742d6aa` 提交时**没有跑 clean 全量**。在含 A13 WIP 的树上首次批量 `test:unit` 为 925 pass / 1 fail，唯一失败是 T-A11 旧 error 分支仍期待 commit 成功。Astra 按范围停下；r6.6.2 许可后提交独立 test-fix。test-fix 后的验证在含 A13 WIP 的树上完成（三文件 96 pass），首个 clean 全量见 T-A13（926 / 0）。
+  - **R-D**：②⑤ 由写方法按构造保持，未加 refine。
+  - **S-39**：落在“ingest 总锚 dataset（含新建）”这一读法。
+  - 原 blocked_by: IMPL-GATE-R6（已满足）；开码前置 R9 已满足（`ab742f5`）。
 - **预计**：2 h｜**依赖**：T-A11
 - **上下文**：plan §4.1 / §4.2；矩阵中的 ingest / map_fix。
 - **修改范围**：`job-state.ts` + 接口 / 方法表 / real 桩 / mock 接线：`createJob(input)`（写入 collecting / collect，阶段为 R,N,N,N；初始空产物；交付物 draft，定稿锚为 null）、`submitIntake(input)`（jobId 在提交时确定，没有作业则进入待归属；返回 pending_validation 的预览；有作业时写 ingest 事件）、`getIntakePreview(uploadId)`、`confirmIntake(uploadId, mapping)`（默认 ingested；fixture 判定的样例为 quarantined 并附原因；写 map_fix 事件，保留修正前的 mapping）。error 场景不产生部分修改；slow 在提交前延迟。生成物；新建 `tests/unit/jobs/job-state-intake.spec.ts`。
+  【r6.6 精度（机制见 plan §2.4 / §3【r6.6】；不改标准与命令）】
+  - **`types.ts`**（本任务必要的契约精度，生成物随之更新）：
+    - 新增 `CreateJobInputSchema`、`IntakeReceiptSchema`（`WriteReceiptSchema` + `upload` / `preview`），注册进 `contractSchemas`；
+    - 每个字段带 describe（既有描述守卫，见首批失败留痕）；
+    - 方法签名按 plan §2.4【r6.6】。
+  - **`persistence.ts`**：`PersistedJobDataSchema` 增加 `mappingHistory: {uploadId, mapping, status, replacedAt}[]`，在快照入口默认 `[]`（version 仍为 1）；`JobState` 同步。
+  - **`mock/index.ts`**：
+    - 读方法 `getIntakePreview` 沿用 `readJobState`。
+    - 写方法共用一个写包装：入口 parse → 按当前共享 scenario 做 slow 延迟 → 调用 job-state 写函数 → 结果边界 parse。
+    - error 的拒绝放在 `commit` 内（mutator 与边界校验之后、替换状态之前），以保持未知锚 not_found（plan §2.4 场景表“查无 id 独立”）。
+  - **job-state 内只抽会复用的 helper**：
+    - `writableJob`：查作业，并拒绝 delivered / cancelled；
+    - `findUpload`：在池或各作业 collect 中查找；
+    - 追加 dataset 修订：本任务的 submit / confirm 使用，T-A13 的 assign / remove 复用；
+    - 回执收件箱计数：T-A21 前为 0，由 T-A21 接管。
+  - **生成规则**：
+    - id 用 `j-` / `u-` / `i-` + `crypto.randomUUID()`；修订 id 为 `<artifactId>-r<n>`，n = 该产物已有修订数 + 1。
+    - 时间戳 `new Date().toISOString()`；修订摘要文字自定，不作断言。
+  - **合成预览（固定值，不由文件名 / URL / 文本推断）**：
+    - `detectedType`：file = `合成文件预览（未解析正文）`；url = `合成链接预览（未抓取）`；text = `合成文本预览（正文不保存）`。
+    - `fields = [{sourceField:'合成列 1', targetField:'待映射', unit:'待确认'}]`，`unit = null`，`timeRange = null`。
+  - **测试提示**（对应既有标准）：
+    - 标准 2 “quarantined 样例可复现”：经 `jobFixtures.uploads`（或 `job-detail`）覆盖注入一条 pending_validation 且带 `quarantineReason` 的投放，再 confirm。这属系统边界注入，走真实实现；有覆盖的会话不持久化。
+    - 修正前 mapping：已归属投放看 `getStageWorkspace` collect 的旧修订；未归属投放看 normal 快照中的 `mappingHistory`。
+    - 标准 3：normal 下 submit 文本后，`fai.jobs.v1` 不含正文字符串；ingest payload 的 sourceNote 五字段原样。
+    - 标准 4：slow / error 下的读方法本身也延迟或报错，因此“未提交 / 读回不变”经 job-state 的同步读函数观察。
+    - 每例前清 `localStorage`。
+  - **【r6.6.1 范围精度】`tests/unit/jobs/real-stubs.spec.ts`**：规则同 T-A11 该条，只在 `requests` 表追加本任务四键的真实 stub 调用，参数按实际输入类型给最小合法值。示例（非强制）：
+    - `createJob({ title: '样例作业', type: 'daily', subject: null, goal: '样例目标' })`
+    - `submitIntake({ jobId: null, inputKind: 'url', url: 'https://example.invalid/sample', sourceNote: { purpose: '样例', reliability: 'unknown', publishedAt: null, validUntil: null, scopeNote: null } })`
+    - `getIntakePreview('u-unassigned-file')`、`confirmIntake('u-unassigned-file', [])`
+    - 既有键、`satisfies` 约束、断言与 describe / test 不改，不新增标准 / 命令。
+  - **【r6.6.2 语义回归许可】`tests/unit/jobs/persistence.spec.ts` 只改一处**（T-A11 交付，属 §1-5 jobs 测试所有权）：
+    - 依据：本任务【r6.6 精度】与 plan §2.4【r6.6】规定 error 拒绝放在 `commit` 内（mutator 与边界校验之后、替换状态之前）。因此 error 场景下真实 `commit` 必然抛 adapter_error。T-A11 的 `WI non-normal` 参数化用例（`test.each([...八个非 normal 场景])`）在切到当前场景后直接 `commit(...'memory edit')` 并期待成功，其 error 分支与已批准语义冲突（实施树 `742d6aa` 起该分支红；A13 末轮全量唯一失败即此例）。
+    - 允许改动：**只改该参数化用例的 error 分支**——error 时断言真实 `commit` 抛 `{ error: { code: 'adapter_error' } }`，且目标作业经真实 job-state 同步读函数（如 `getJob`）读回与调用前相同；其余 7 个场景照旧直接 commit、不抛。
+    - 不改：该用例其余全部断言（error 下业务读 `listJobs` 仍为 adapter_error；旧 client 的 `resetMockData` 在 error 下也照常 resolve null；`getJobScenario()` / `getPersistenceStatus()`；两个 key 的 getItem / setItem / removeItem 零调用、无 `clear`；normal 快照哨兵与 inbox 哨兵不变）；文件内其他 describe / test（含 `normal override`）、spy 方式与场景列表。
+    - 禁止：放宽生产规则（error 拒绝时机、写包装）、`skip` / 注释掉用例、把 error 移出场景列表、改成断言白名单或宽松匹配。
+    - 性质：A12 已批准 error 语义的旧测试维护（T-A11 标准 4 / 命令 4 随之恢复），可作为 A12 的独立 test-fix commit；不新增标准 / 命令 / guard，不改估时、依赖与总数。原全量红（925 pass / 1 fail）作为失败留痕，见 analyze.md「Analyze R12.2」。
+  - **不做**：真实解析 / 抓取 / 模型 / 启发式隔离；T-A13 的池、归入、删除与取消；不宣称 T-A17 的只读门已完成。
+  - **【r6.7 精度（Converge batch3 登记；只记实际落点，不改标准 / 命令）】**
+    - `CreateJobInputSchema` 的 title / subject 用 zod `.trim().min(1)`，写入的是去掉两端空白后的值。
+    - 首次投放到无 dataset 的作业时，同一次写内建立 `<jobId>-dataset`；ingest 的 `artifactId` 指向它，`baseRev` 为 null（Checklist R9 S-39 的建议读法，plan §2.4【r6.7】）。
+    - 本任务未改 `persistence.ts`（`mappingHistory` 已随 T-A11 落地）。
 - **完成标准**：
   1. createJob 校验必填（标题非空、类型合法），回执和读回均为 collecting / collect，交付物 draft（AC-001-3 部分前置）。
   2. submit 后状态为 pending_validation，**confirm 之后才是 ingested**；quarantined 样例可复现；map_fix payload 带修正后的 mapping，原记录保留（AC-003-4、AC-003-6 部分前置）。
@@ -438,10 +647,28 @@
 
 ### T-A13 写方法：待归属池、归入、删除来源与取消作业
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜r6.3 R-D 口径：⑤（cancelJob 后 status 与阶段一致）由本任务写方法按构造保持，不加 refine（implementation-log §8）
+- **状态**：**已完成（batch3；第三批代码 Review 通过 `49edb7e`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；P3 R3-B 归 T-C03 / T-A17，未修）**｜原状态行“已实施（batch3，待第三批独立代码 Review）”为 Converge 时原文｜commit `a5ad11c79cf08ca50ebb55ef0984beae952a7dad`。
+  - **验证**（实施者执行，Converge 未重跑）：命令 1～3 依次为 `WI assign` 15 / `WI removeUpload` 4 / `WI cancelJob` 8 pass；命令 4 为 `contract --check`（24 methods / 10 events / 2 artifacts）、typecheck、lint，均通过；real-stubs 23 pass。
+  - **全量回归**：提交后 clean 树 30 文件 926 pass / 0 fail，`check` 六守卫通过。
+  - **WIP 保全**：A13 WIP 在 scope 停止前后的 tracked diff 与 pool spec 的 SHA256 相同，Converge 已独立复算。
+  - **范围**：对 `persistence.spec.ts` 无改动。
+  - **R-D ⑤**：cancel 按 plan 保留阶段快照，未加 refine。
+  - **待 Review 核对**：重复删除语义（`converge-batch3.md` §5 O-B3-2）。→ Review 判定：R3-B（P3），归 T-C03 或 T-A17，未修、未经风险接受。
+  - 原 blocked_by: IMPL-GATE-R6（已满足）。
 - **预计**：1.5 h｜**依赖**：T-A12
 - **上下文**：plan §4.2（assign 时补作业内的 ingest 事件；removeUpload 只移除当前关联）；矩阵中的 remove_source / cancel_job。
 - **修改范围**：`listUnassignedUploads()`、`assignUpload(uploadId, jobId)`、`removeUpload(uploadId, reason)`（kind=delete，action=remove_source；从当前视图移除，历史锚保留）、`cancelJob(jobId, reason)`（cancelled + reason，kind=delete，action=cancel_job）；接口 / 方法表 / real 桩 / 接线；生成物；新建 `tests/unit/jobs/job-state-pool.spec.ts`。
+  【r6.6 精度（规则见 plan §2.4【r6.6】；不改标准与命令）】
+  - **规则**：assign 把池中记录（连同预览）移入目标作业；remove 只置 `removed=true`；cancel 保留阶段 / 产物快照；未归属投放的 remove 不写事件。
+  - **前置**：assign 的投放须在池中且未删除，否则 validation_error；未知投放 / 作业返回 not_found。
+  - **复用**：T-A12 的 `writableJob` / `findUpload` / dataset 修订 helper。
+  - **投影**：本任务在 job-state 的两个读函数中落地“当前列表”——`listUnassignedUploads` 过滤；`getStageWorkspace` 的 collect.uploads 去掉 removed。同时把 `getStageWorkspace` 方法描述补一句（实现中立）。commit 与快照不过滤。
+  - **测试提示**（对应既有标准）：
+    - 标准 2：本批没有 listInterventions（T-A15）。“介入历史和原锚仍可查”经以下真实输出验证：回执中的 remove_source 事件；normal 快照中的事件与 removed 记录；`getStageWorkspace` collect 旧修订中的 uploadId；`getIntakePreview`。T-A15 / T-B06 再经读 API 覆盖。
+    - 标准 3：cancel 后 `getJob` 的 currentStage / stages 与取消前一致，各阶段工作区内容不变。本批没有 run 关联，“不 abort”只作实现约束（晚到事件隔离见 T-A18 标准 5）。
+    - 每例前清 `localStorage`。
+  - **【r6.6.1 范围精度】`tests/unit/jobs/real-stubs.spec.ts`**：规则同 T-A11 该条，只在 `requests` 表追加本任务四键的真实 stub 调用，参数按实际类型给最小合法值。示例（非强制）：`listUnassignedUploads()`、`assignUpload('u-unassigned-file', 'j-collect')`、`removeUpload('u-unassigned-file', '样例删除')`、`cancelJob('j-collect', '样例取消')`。既有键、`satisfies` 约束、断言与 describe / test 不改，不新增标准 / 命令。
+  - **【r6.6.2】`tests/unit/jobs/persistence.spec.ts`**：本任务对该文件**无写入许可**。唯一许可的改动（`WI non-normal` 参数化用例的 error 分支）归 T-A12 语义回归（见 T-A12【r6.6.2】），不得扩到其他用例或文件。
 - **完成标准**：
   1. 待归属的投放出现在池中；assign 之后从池中消失、出现在该作业的采集列表，并追加一条作业内 ingest 事件；assign 到未知作业返回 not_found（AC-003-5 部分前置）。
   2. removeUpload 之后当前视图不再显示该投放，但介入历史和原锚仍可查（AC-007-3 部分前置）。
@@ -508,7 +735,7 @@
 
 ### T-A17 写方法：定稿（原子、未决项拒绝）与领域只读门
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-D、R-E（P3 后续观察，非新增标准）；r6.3 口径：R-D ③（final 快照与交付物 jobId / blocks 一致）与 ⑤（delivered）由本任务的同一次 commit 按构造保持、以既有读回断言覆盖，不加 refine（如认为必须加，按 AGENTS §5.1 先报 Walter）；R-E 仍在本任务处理
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch-a09a.md` R-D、R-E（P3 后续观察，非新增标准）；r6.3 口径：R-D ③（final 快照与交付物 jobId / blocks 一致）与 ⑤（delivered）由本任务的同一次 commit 按构造保持、以既有读回断言覆盖，不加 refine（如认为必须加，按 AGENTS §5.1 先报 Walter）；R-E 仍在本任务处理｜另读 `review-batch3.md` R3-B（P3，与 T-C03 二选一落点；未修、未经风险接受）
 - **预计**：1.5 h｜**依赖**：T-A12、T-A13、T-A14、T-A15、T-A16
 - **上下文**：plan §4.6；D-018 §1（显式、不可撤销、v1 只做①）。
 - **修改范围**：`finalizeDeliverable(jobId)`（先检查当前的 conflict / pendingMerge / 未接受的 agent 候选；有未决项则返回 validation_error 并列出目标块；成功时在**同一次 commit** 内完成：从 latestMergedRev 深拷贝出 FinalSnapshot → deliverableStatus 从 draft 变为 final 并写入三锚 → job.status=delivered → 写入唯一一条 finalize 事件）；`job-state.ts` 的领域写入口统一检查 delivered / cancelled → validation_error（覆盖目前已有的全部领域写方法；后续 T-A18～T-A20 新增的方法也须接入并各自测试）；读 / 历史 / diff / markInboxRead 不受影响；接口 / 方法表 / real 桩；生成物；新建 `tests/unit/jobs/job-state-finalize.spec.ts`。
@@ -620,10 +847,34 @@
 
 ### T-A22a jobsStore：共享未筛选列表缓存、刷新、createJob action 与 agent 终态刷新（H-2·列表；r6 新增）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：**已完成（batch3；第三批代码 Review 通过 `49edb7e`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；P3 R3-A 的修复已登记为 T-A22c（r6.8），待实施 / 增量复核，H-2·列表 ④ 前须关闭）**｜T-A22c 增量 Converge 后：修复已实施 `af24c82`，待 A 增量复核（以 T-A22c 状态行为准）｜增量 Review 后：R3-A 已关闭（`69faacc`；以 T-A22c 状态行为准）｜原状态行“已实施（batch3，待第三批独立代码 Review）”为 Converge 时原文｜commit `0032fc6b3e47ee6de27a03c2c229ef57ca9115cc`。
+  - **验证**（实施者执行，Converge 未重跑）：命令 1～4 依次为 `WI H-2 cache` 5 / `WI H-2 filter` 4 / `WI H-2 createJob refresh` 7 / `WI H-2 agent refresh` 9 pass；命令 5 为 typecheck、lint，均通过；本轮无失败。
+  - **末轮 clean 树**：全量 `test:unit` 31 文件 951 pass / 0 fail；`check` 六守卫通过；`contract --check` 24 / 10 / 2；既有 `e2e/{shell,agent}.spec.ts` 24 pass（4173 自管，结束后无监听）。
+  - **S-38**：已落实（`refresh` 自身 resolve，真实 error 场景下无 unhandled rejection）。
+  - **范围**：本批只有 createJob 一条已接入 UI 层的写路径，写后恰一次 refresh；其他写路径由各自任务接入。H-2·列表生产方 ①②③ 已具备，④ 缺。
+  - **待 Review 核对**：`applyFilter` 的成功口径（`converge-batch3.md` §5 O-B3-4）。→ Review 判定：R3-A（P3，探针 P1 / P2 复现）；集成人决定现在修，修复任务 T-A22c（方案 b）。本任务的完成标准与命令不改。
+  - 原 blocked_by: IMPL-GATE-R6（已满足）。
 - **预计**：1.5 h｜**依赖**：T-A09a、T-A10、T-A12、T-A22
 - **上下文**：plan §2.3 “写回执 / agent 通知后重新读取，不做轮询”的机制落地（本 feature 的详情页、重跑、改稿、待合并 e2e 同样依赖它）；v2 plan §7.3 H-2 ①～⑤ 与 v2 tasks §1.2 H-2·列表；§1-9。
 - **修改范围**：新建 `frontend/src/jobs/stores/jobs.ts`（`useJobsStore`）：只读 `jobs: JobListItem[]`（`listJobs()` 未筛选结果）、`listStatus: 'idle'|'loading'|'ready'|'error'`、`listError: ContractError | null`；`ensureJobs()`（仅 idle 时加载）；`refresh()`（重读未筛选列表；有筛选时重读 `filteredJobs`；T-B04 起同时重读已打开的作业详情；已有数据时保持 ready、不回到 loading；失败置 error 并保留 `listError`）；`applyFilter(filter | null)`（`listJobs(filter)` 的结果存为 `filteredJobs`，不写 `jobs`）；`createJob(input)`（`dataClient.createJob` 成功后 `refresh()`，返回新作业）；`receiveAgentEvent(event)`（仅对带 `jobContext` 的终态事件调用 `refresh()`）；`frontend/src/main.ts` 增一行 `agentClient.subscribe(useJobsStore(pinia).receiveAgentEvent)`，与既有 agent store 订阅一样在卸载 / HMR 时解除（§0 B-10 先例）。store 不直接访问 localStorage、不推导业务状态，“进行中”只用契约常量 `ACTIVE_JOB_STATUSES`、不另建判定或 selector；不加请求序号等竞态防护（AGENTS §5.1）。新建 `tests/unit/jobs/jobs-store.spec.ts`（真实 Pinia + 真实 mock client；按 §0 B-6 的既有做法在系统边界新建 client 并用透传 spy 计数，不 `vi.mock` 内部模块）。
+  【r6.6 精度（不改标准与命令；导出名与方法名保持 plan / interface-handoff 已审名称）】
+  - **类型**：`filter: ListJobsFilter | null`（`ListJobsFilter = NonNullable<Parameters<DataClient['listJobs']>[0]>`，不另建 schema）；`filteredJobs: JobListItem[] | null`；`createJob(input: CreateJobInput): Promise<Job>`，返回回执的 `jobs[0]`。
+  - **`refresh()`**：先 `listJobs()` 写 `jobs`；`filter` 非 null 时再 `listJobs(filter)` 写 `filteredJobs`。成功 → ready、`listError=null`；任一失败 → error + `listError`，已有 `jobs` / `filteredJobs` 保留。本批不读详情（`openJob` 与详情重读归 T-B04）。
+  - **`applyFilter`**：`applyFilter(null)` 不发请求，置空 `filter` / `filteredJobs`；`applyFilter(f)` 只写 `filter` / `filteredJobs`，失败口径同上。
+  - **`createJob`**：契约失败时以原 ErrorResponse 拒绝，不 refresh、不改缓存；成功后恰好一次 `refresh()`，再返回新作业。
+  - **`receiveAgentEvent`**：仅当事件为 `run.completed` / `run.failed` / `run.aborted` 且带 `jobContext` 时，调用一次 `refresh()`。
+  - **标准 4 的验证方式**：T-A18 尚未接线，状态层不随事件改变，因此只验证“真实 mock AgentClient 回放的终态触发一次重读”。测试新建 `createMockAgentClient()` 并订阅 `store.receiveAgentEvent`，执行 `send({message, jobContext})`，用假时钟推进到终态，对 `dataClient.listJobs` 的透传 spy 计数。不加生产故障开关或注入 setter，不在测试里复写业务逻辑。
+  - **`main.ts`**：在 agent store 订阅之后增加 `agentClient.subscribe(useJobsStore(pinia).receiveAgentEvent)`，返回值同样交给 `app.onUnmount` 与 `import.meta.hot?.dispose` 解除。
+  - **范围**：本批只有 createJob 一条写路径接入“写后恰一次 refresh”。其余写路径由各自任务接入（§1-9；§7 S-31 核对表），本任务不宣称覆盖全部写管线。
+  - **测试卫生**：每例前清 `localStorage`（normal 会话自 T-A11 起会持久化）。标准 1 的“store 不调用 localStorage”只在读 action（ensure / refresh / applyFilter）期间以 Storage spy 断言；createJob 成功后由 mock 契约层写快照属契约实现层，不计为 store 访问。
+  - **【r6.7 精度（Converge batch3 登记；只记实际导出，不改标准 / 命令）】**
+    - `useJobsStore()` 对外为只读 `jobs` / `listStatus` / `listError` / `filter` / `filteredJobs`（`computed` + `readonly`，元素层也只读），以及 `ensureJobs` / `refresh` / `applyFilter` / `createJob` / `receiveAgentEvent`；另导出类型 `ListJobsFilter`。
+    - `refresh` / `applyFilter` 捕获读失败、自身 resolve（R9 S-38）。`applyFilter(f)` 成功时置 ready 并清 `listError`，沿用 refresh 的成功口径（O-B3-4，交 Review）。
+    - 本批没有 `openJob`（归 T-B04）。
+  - **【r6.8 精度（第三批 Review R3-A 后的 Converge 补修登记；不改本任务标准 / 命令，不抹上方 r6.7 实施事实）】**
+    - 上一条 r6.7 记的是 `0032fc6` 的实际行为。第三批 Review 判其为 P3 R3-A：成功分支改写 `listStatus` / `listError` 越出了本任务 r6.6 的“`applyFilter(f)` 只写 `filter` / `filteredJobs`”。
+    - 修复不在本任务内改写，另立 **T-A22c**（方案 b）：删去成功分支的这两次赋值，以恢复 r6.6 原意。归属口径见 plan §2.3【r6.8】：`listStatus` / `listError` 是未筛选列表缓存的读状态，只有 `refresh()` 能置 ready 并清错；`applyFilter(f)` 失败时仍把共享读状态置 error 并保留旧 `filteredJobs`（O-R3-2）。
+    - 本任务原标准 2 中的“`jobs` 保持未筛选全集”在 filter-before-ensure 顺序下也由 T-A22c 的回归测试固定。
 - **完成标准**：
   1. `ensureJobs()` 后 `jobs` 等于 `listJobs()` 的未筛选结果（updatedAt 倒序），状态 idle → loading → ready；重复 `ensureJobs()` 不重读；error 场景状态为 error、`listError.code='adapter_error'`，`refresh()` 可重试成功；已有数据时 `refresh()` 期间不回到 loading；store 不调用 localStorage（AC-001-1、AC-008-3 部分前置；H-2 ①②）。
   2. `applyFilter` 后 `filteredJobs` 为筛选结果，而 `jobs` 保持未筛选全集；清除筛选后 `filteredJobs` 为 null（AC-001-2 部分前置；H-2 ④）。
@@ -651,6 +902,36 @@
   1. `pnpm -C frontend test:unit tests/unit/jobs/session-context.spec.ts -t "WI H-4 enter"`
   2. `pnpm -C frontend test:unit tests/unit/jobs/session-context.spec.ts -t "WI H-4 leave same navigation"`
   3. `pnpm -C frontend test:unit tests/unit/jobs/session-context.spec.ts -t "WI H-4 readonly" && pnpm -C frontend typecheck && pnpm -C frontend lint`
+
+### T-A22c R3-A 补修：applyFilter 成功不改写未筛选列表读状态（H-2·列表；r6.8 Converge 补修新增）
+
+- **状态**：**已完成（增量代码 Review 通过 `69faacccabd8b089a9f240b28e6449a8fea90619`：0 P1 / P2、0 新 P3，R3-A 关闭；A 亲跑本任务命令同数通过；不表示 AC 最终验收）**｜原状态行“已实施（待定向 Review …；R3-A 代码已修、未判关闭）”为增量 Converge 时原文｜原状态行“未开始”为 r6.8 登记时原文｜commit `af24c826f41580d27f90ce611fb2f55fec44acbf`（父 `e7716a8`；只改 `jobs/stores/jobs.ts` −2 与 `jobs-store.spec.ts` +67 / −1）。
+  - **增量 Review**（`review-batch3-cache-fix.md`，A = claude-fable-5-1 via anthropic，固定审 `eb91340` + diff `e7716a8..af24c82`）：A 亲跑命令 1 = 2、命令 2 = 27（原四组 5 / 4 / 7 / 9）、命令 3 通过（24 / 10 / 2）；全量 31 files / 953 / 0、六守卫、v1 契约 88、real-stubs 23、shell + agent E2E 24；只读探针 P1 / P2 不再复现。未跑其余 7 份 E2E，无截图。R3-B / R3-C 不在范围、仍未修。
+  - 以下“验证 / 失败留痕 / 末轮回归 / 增量 Converge”四条为增量 Converge 时登记原文：
+  - **验证**（实施者执行，增量 Converge 未重跑）：命令 1 `WI H-2 list status` 2 pass；命令 2 整文件 27 pass（原四组 25 + 新 2；`-t "WI H-2 filter"` 仍 4）；命令 3 typecheck、lint、`contract --check`（24 / 10 / 2）均通过。
+  - **失败留痕**：修复前命令 1 为 2 fail（`expected 'ready' to be 'idle'`、`expected 'ready' to be 'error'`），复现 R3-A P1 / P2；删两行后通过。
+  - **末轮回归**：全量 `test:unit` 31 文件 953 pass / 0 fail；`check` 六守卫通过；既有 `e2e/{shell,agent}.spec.ts` 24 pass（4173 前后空闲）；提交前 diff / 暂存范围检查通过，clean。
+  - **增量 Converge**：`converge-batch3-cache-fix.md`，判与 r6.8 逐条一致、无规格差距、待独立 A 增量 Review；R3-A 是否关闭由 A 判定。
+  - Converge 补修（AGENTS §2 第 9 步），对应第三批代码 Review `49edb7e` 的 P3 R3-A；第三批其他 Review 结论保留｜原 blocked_by: IMPL-GATE-R6（已满足）
+- **预计**：0.5 h｜**依赖**：T-A22a
+- **上下文**：`review-batch3.md` §5 R3-A、§4 探针 P1 / P2、§8 第 2 条。`0032fc6` 中 `jobs/stores/jobs.ts` 的 `applyFilter(f)` 成功分支（第 43–44 行）写 `listStatus='ready'` / `listError=null`；`ensureJobs()` 只在 `listStatus==='idle'` 时加载（第 17–19 行）。后果有二：全新 store 若先 `applyFilter` 再 `ensureJobs()`，`jobs` 从未加载却显示 ready，且之后 ensure 不再加载（P1）；未筛选列表读失败后，一次筛选成功会把错误“洗白”（P2）。集成人采用 A 原件最小方案 **(b)**，即恢复 T-A22a【r6.6 精度】“`applyFilter(f)` 只写 `filter` / `filteredJobs`”的原意：不是需求变更，不回 Clarify，spec / 46 AC 不变。口径见 plan §2.3【r6.8】；O-R3-2 的精度一并登记。
+- **修改范围**：
+  - `frontend/src/jobs/stores/jobs.ts`：只删 `applyFilter(f)` 成功分支中给 `listStatus` / `listError` 赋值的两行。成功后只更新 `filter` / `filteredJobs`：store 初始 idle 不会被筛选洗成 ready，既有的未筛选读错误也不会被筛选成功清除；只有 `refresh()`（含 `ensureJobs()` 首次加载）成功才回 ready 并清错。
+  - 以下保持不变：失败分支（保留旧 `filteredJobs`、把共享读状态置 error、写 `listError`；此时 `filter` 与 `filteredJobs` 可能暂不对应，UI 按 error 呈现，O-R3-2）；`applyFilter(null)`；`ensureJobs` / `refresh` / `createJob` / `receiveAgentEvent`；读失败的捕获与自身 resolve（S-38）；类型签名与对外成员。
+  - 不新增筛选专属状态字段、回滚、锁、请求序号或公开成员（AGENTS §5.1）。
+  - `frontend/tests/unit/jobs/jobs-store.spec.ts`：
+    - 新增 describe `WI H-2 list status`，两例，对应标准 1 的两条路径。沿用真实 Pinia、真实 mock client 与既有的系统边界透传 spy，不在测试里抄算法。
+    - 只改 `WI H-2 filter` 组中“filter read errors resolve and retain both caches; the next filter read clears the error”一例：标题末段改为“… only an explicit refresh clears the error”。前半段（失败时保留两份缓存、写入 `filter`、置 error）原样；切回 normal 后，`applyFilter` 成功改为断言 `filteredJobs` 已更新、`jobs` 引用不变、`listStatus` 仍为 error、`listError.code` 仍为 `adapter_error`，再显式 `refresh()` 才回 ready 并清错。不删除该例。
+    - 其余用例不改、不删。
+  - 不改 `main.ts`、契约 / 生成物、其他 jobs 文件、spec / checklist；不提前实现 T-B02 的筛选条 UI。
+- **完成标准**：
+  1. 全新 normal store 上 `applyFilter(f)` 成功后：`filter` / `filteredJobs` 为该筛选及其结果，`listStatus` 仍为 `idle`，`listError` 为 null，`jobs` 仍为空。随后 `ensureJobs()` 仍会加载：读调用依次为 `[f]`、`[]`、`[f]`，`jobs` 等于 `listJobs()` 的未筛选结果，`filteredJobs` 等于 `listJobs(f)`，状态为 ready。另一条路径：error 场景 `ensureJobs()` 置 error 后切回 normal，`applyFilter(f)` 成功只更新 `filteredJobs`，`listStatus` 仍为 error、`listError.code='adapter_error'`、`jobs` 引用不变；`ensureJobs()` 不重读；只有显式 `refresh()` 才回 ready 并清错（AC-001-1、AC-001-2、AC-001-4 部分前置；H-2 ①②④；R3-A 探针 P1 / P2 路径）。
+  2. `jobs-store.spec.ts` 整个文件通过：`WI H-2 filter` 组原有的“筛选成功清错”断言已改为“筛选成功保留错误、显式 refresh 清错”，该组用例数不变；`WI H-2 cache` / `WI H-2 filter` / `WI H-2 createJob refresh` / `WI H-2 agent refresh` 四组的其余用例原样通过，包括 S-38 终态回放无 unhandled rejection、清空筛选不发请求、筛选失败保留旧 `filteredJobs`（AC-001-1、AC-001-2、AC-001-4 部分前置；H-2 ①～⑤ 不回归）。
+  3. 工程门通过，契约生成物零漂移（AC-009-1 部分前置）。
+- **验证命令**：
+  1. `pnpm -C frontend test:unit tests/unit/jobs/jobs-store.spec.ts -t "WI H-2 list status"`
+  2. `pnpm -C frontend test:unit tests/unit/jobs/jobs-store.spec.ts`
+  3. `pnpm -C frontend typecheck && pnpm -C frontend lint && pnpm -C frontend contract --check`
 
 ### T-A23 徽标组件（S-11 / S-17）
 
@@ -688,8 +969,8 @@
 
 ### T-B01 作业列表渲染与三态
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准）：消费徽标前用既有 `--fai-status-*` 令牌核对状态边框映射，不新增色值
-- **预计**：1.5 h｜**依赖**：T-A10、T-A22、T-A22a、T-A23
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准）：消费徽标前用既有 `--fai-status-*` 令牌核对状态边框映射，不新增色值｜r6.8：依赖增 T-A22c（R3-A 补修须先于列表读状态的首个页面消费者）｜T-A22c 已完成、R3-A 已关闭（`69faacc`），依赖已满足
+- **预计**：1.5 h｜**依赖**：T-A10、T-A22、T-A22a、T-A22c、T-A23
 - **上下文**：spec R-001；plan §2.2。
 - **修改范围**：`jobs/pages/JobListPage.vue`（数据取自 `useJobsStore()` 的未筛选缓存，挂载时 `ensureJobs()`，错误重试 `refresh()`——r6，T-A22a）、新建 `jobs/components/JobCard.vue`（标题、类型、状态徽、当前阶段、更新时间；角标位预留给 T-G02）；三态复用 `Loading` / `EmptyState` / `ErrorState`（错误态含可复制诊断）；新建 `tests/component/jobs/job-list.spec.ts`。
 - **完成标准**：
@@ -703,8 +984,8 @@
 
 ### T-B02 筛选、搜索与清空
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
-- **预计**：1 h｜**依赖**：T-B01
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜r6.8：依赖增 T-A22c（`review-batch3.md` R3-A 要求在本任务 / H-2 ④ 之前关闭）｜R3-A 已于 `69faacc` 关闭；本任务仍须待 T-B01
+- **预计**：1 h｜**依赖**：T-B01、T-A22c
 - **上下文**：spec R-001（状态 / 类型筛选、标题搜索）。
 - **修改范围**：`JobListPage.vue` 的筛选条（选项文案来自 `JobStatusLabel` / `JobTypeLabel`）、经 T-A22a 的 `applyFilter(filter)`（调用 listJobs(filter)，结果单独存为 `filteredJobs`、不覆盖未筛选缓存，不在前端重新筛选）；扩充 `job-list.spec.ts`。
 - **完成标准**：
@@ -846,7 +1127,7 @@
 
 ### T-C03 待归属池、归入作业与删除来源确认
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch3.md` R3-B（P3 后续观察，非新增标准；未修、未经风险接受）：对已删除投放再次 `removeUpload` 会重复追加 dataset 修订与 `remove_source` 事件，与 confirm / assign 对已删除者拒绝不一致；A 建议的最小修复与本任务或 T-A17 二选一落点，由实施时按 AGENTS §2 处理
 - **预计**：1.5 h｜**依赖**：T-C02、T-A13、T-C01a
 - **上下文**：spec R-003 待归属池；plan §4.2 removeUpload 需要二次确认。
 - **修改范围**：新建 `jobs/stages/UnassignedPool.vue`（列表、选择作业后归入；r6：挂在 IntakeDrawer 内、IntakePanel 下方，使任何挂载点（含 v2 AppShell）都能完成归属；可选作业取 `useJobsStore().jobs` 中状态属于 `ACTIVE_JOB_STATUSES` 者；归入 / 删除来源经 `intakeStore` action，成功后 `refresh()`）；采集列表中的删除来源入口和二次确认面板；新建 `tests/component/jobs/unassigned-pool.spec.ts`。
@@ -1122,7 +1403,7 @@
 
 ### T-G04 持久化横幅与重置样例
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch3.md` R3-C（P3 后续观察，非新增标准；未修、未经风险接受）：`removeItem` 抛错时 `resetMockData` 以非契约形态拒绝，横幅“重置样例”按 `ErrorResponse` 处理前须先定口径（A 建议按 degraded 或转 `adapter_error`，plan §3 补一句）
 - **预计**：1.5 h｜**依赖**：T-A11、T-B01、T-B04、T-C01a
 - **上下文**：plan §3（共享的非模态横幅；只有显式重置才会清空）；spec §4 持久化。
 - **修改范围**：新建 `jobs/components/PersistenceBanner.vue`（订阅 `persistence.ts` 的状态；挂在列表、详情、投放抽屉的顶部）；“重置样例数据”入口和二次确认；新建 `tests/component/jobs/persistence-banner.spec.ts`、`e2e/jobs/persistence.spec.ts`。
@@ -1267,10 +1548,10 @@
 
 | AC | 部分前置任务 | 最终验收任务 | 最终验证命令 | 外部阻塞子项 |
 |---|---|---|---|---|
-| AC-001-1 | A02、A07、A22、A22a、A23 | T-B01 | `test:unit tests/component/jobs/job-list.spec.ts -t "WI AC-001-1"` | — |
-| AC-001-2 | A07、A10、A22a | T-B02 | `test:unit tests/component/jobs/job-list.spec.ts -t "WI AC-001-2"` | — |
+| AC-001-1 | A02、A07、A22、A22a、A22c、A23 | T-B01 | `test:unit tests/component/jobs/job-list.spec.ts -t "WI AC-001-1"` | — |
+| AC-001-2 | A07、A10、A22a、A22c | T-B02 | `test:unit tests/component/jobs/job-list.spec.ts -t "WI AC-001-2"` | — |
 | AC-001-3 | A12、A22a | T-B03 | `test:e2e e2e/jobs/list-create.spec.ts -g "WI AC-001-3"` | — |
-| AC-001-4 | A05、A10、B01 | T-B04 | `test:unit tests/component/jobs/job-list.spec.ts tests/component/jobs/job-detail.spec.ts -t "WI AC-001-4"` | — |
+| AC-001-4 | A05、A10、A22c、B01 | T-B04 | `test:unit tests/component/jobs/job-list.spec.ts tests/component/jobs/job-detail.spec.ts -t "WI AC-001-4"` | — |
 | AC-001-5 | A01 | T-A23（组件）+ T-G10（M-01 人工） | `test:unit tests/component/jobs/badges.spec.ts -t "WI status badges"`；M-01 | — |
 | AC-002-1 | A02 | T-B04 | `test:unit tests/component/jobs/job-detail.spec.ts -t "WI AC-002-1"` | — |
 | AC-002-2 | A22 | T-B04（v2 后由 T-H04 回归） | `test:e2e e2e/jobs/detail-stage.spec.ts -g "WI AC-002-2"` | — |
@@ -1318,12 +1599,13 @@
 
 ## 6. 依赖 DAG 与预估
 
-- 组序：A（T-A01→T-A24）→ B → C → D → E → F → G → H；r6 新增任务用字母后缀插在其依赖之后（T-A09a 在 T-A09 后、T-A22a / T-A22b 在 T-A22 后、T-C01a 在 T-C01 后；r6.4 的 T-A09b 在 T-A09a 后、T-A10 前），排序规则为“T-Xnn < T-Xnna < T-Xnnb < T-X(nn+1)”；每个任务只依赖排序在它之前的任务，无环（Analyze R6 用脚本复核）。
-- 主干：A01 → A02/A03 → A04 → A05 → A06 → A07 → A08 → A09 → {A09a, A10} → A11 → {A12→A13, A14, A15, A16} → A17 → A18（另依赖 A09a）→ {A19, A20} → A21；A22 依赖 A01（r6，原依赖 A10）；A22a 依赖 A09a / A10 / A12 / A22；A22b 依赖 A02 / A22；A23 依赖 A01；A24 无依赖。r6.4：A09b 依赖 A08（fixture-only，与状态层无耦合），A10 依赖 A09 / A09b（即主干为 A08 → {A09, A09b}、A09 → A09a、{A09, A09b} → A10）。
-- UI：B01 依赖 A10 / A22 / A22a / A23；C01 依赖 A22 / A12 / A22a，C01a 依赖 C01，C03 另依赖 C01a；E03 另依赖 A22b；G04 依赖 C01a；C、D、E、F 都以 B04 为入口；G03 / G05 / G06 收口；H 只依赖 C04 / E03 / G02 / G09，外加 v2 外部闸门；H 组只清理本 feature 页面级抽屉挂载（T-H01）并做集成验证，不改壳方。
-- H-x 切片最早可交接点（仅指依赖链，仍须 IMPL-GATE-R6 与四项交接登记）：H-2·标签 = A01 + A23；H-3·路由切片 = A22（只依赖 A01）；H-1 = A09a；H-4 = A22b；H-2·列表 = A22a；H-5 = C01 + C01a；H-6 场景 / 覆盖部分 = A11 之后、角标样例 = A21 之后；页面切片 = C04 之后。r6.4：T-A10 新增祖先 T-A09b，凡依赖链经过 A10 的切片（H-2·列表、H-6、页面切片）随之多一个祖先；A09b 不是任何切片的提供任务、不形成 ①～④ 任何一项，各切片交付状态不变（仍全部未交付，H-1 维持“待消费方集成”）。
+- 组序：A（T-A01→T-A24）→ B → C → D → E → F → G → H；r6 新增任务用字母后缀插在其依赖之后（T-A09a 在 T-A09 后、T-A22a / T-A22b 在 T-A22 后、T-C01a 在 T-C01 后；r6.4 的 T-A09b 在 T-A09a 后、T-A10 前），排序规则为“T-Xnn < T-Xnna < T-Xnnb < T-Xnnc < T-X(nn+1)”（r6.8：T-A22c 在 T-A22b 后、T-A23 前）；每个任务只依赖排序在它之前的任务，无环（Analyze R6 用脚本复核）。
+- 主干：A01 → A02/A03 → A04 → A05 → A06 → A07 → A08 → A09 → {A09a, A10} → A11 → {A12→A13, A14, A15, A16} → A17 → A18（另依赖 A09a）→ {A19, A20} → A21；A22 依赖 A01（r6，原依赖 A10）；A22a 依赖 A09a / A10 / A12 / A22；A22b 依赖 A02 / A22；A22c 依赖 A22a（r6.8）；A23 依赖 A01；A24 无依赖。r6.4：A09b 依赖 A08（fixture-only，与状态层无耦合），A10 依赖 A09 / A09b（即主干为 A08 → {A09, A09b}、A09 → A09a、{A09, A09b} → A10）。
+- UI：B01 依赖 A10 / A22 / A22a / A22c / A23；B02 依赖 B01 / A22c（r6.8）；C01 依赖 A22 / A12 / A22a，C01a 依赖 C01，C03 另依赖 C01a；E03 另依赖 A22b；G04 依赖 C01a；C、D、E、F 都以 B04 为入口；G03 / G05 / G06 收口；H 只依赖 C04 / E03 / G02 / G09，外加 v2 外部闸门；H 组只清理本 feature 页面级抽屉挂载（T-H01）并做集成验证，不改壳方。
+- H-x 切片最早可交接点（仅指依赖链，仍须 IMPL-GATE-R6 与四项交接登记）：H-2·标签 = A01 + A23；H-3·路由切片 = A22（只依赖 A01）；H-1 = A09a；H-4 = A22b；H-2·列表 = A22a + A22c（r6.8）；H-5 = C01 + C01a；H-6 场景 / 覆盖部分 = A11 之后、角标样例 = A21 之后；页面切片 = C04 之后。r6.4：T-A10 新增祖先 T-A09b，凡依赖链经过 A10 的切片（H-2·列表、H-6、页面切片）随之多一个祖先；A09b 不是任何切片的提供任务、不形成 ①～④ 任何一项，各切片交付状态不变（仍全部未交付，H-1 维持“待消费方集成”）。
 - r6.3：T-A10 增标准 / 命令 5（R-B），原工程门顺延为 6；合计完成标准 / 验证命令 **221 / 221**（r6.2 为 220 / 220）；任务数、工时、依赖不变。第二批 = T-A10 → {T-A22 → T-A22b}、T-A23、T-A24（同一实施树串行）。
 - r6.4（Checklist R8 B-12）：新增 T-A09b（0.5 h，3 条标准 / 命令）；T-A10 仍 6 / 6、2 h，只改依赖（+T-A09b）与标准 / 命令 5 的内容；合计完成标准 / 验证命令 **224 / 224**（脚本复算，见 analyze.md「Analyze R10」）。第二批 = T-A09b → T-A10；T-A22 → T-A22b；T-A23、T-A24（6 项，约 7 h；同一实施树串行）。
+- r6.8（第三批 Review R3-A 的 Converge 补修，AGENTS §2 第 9 步）：新增 T-A22c（0.5 h，3 条标准 / 命令，依赖 T-A22a），B01 / B02 各增依赖 T-A22c；T-A22c 进入 AC-001-1 / AC-001-2 / AC-001-4 部分前置，是三者最终任务（B01 / B02 / B04）的祖先。合计 **68 个任务、约 102.5 h**（A 29 个 43.5 h，其余组不变）；完成标准 / 验证命令 **227 / 227**（脚本复算，见 analyze.md「Analyze R14」）。下行 r6.4 合计为当时原文。
 - 合计 **67 个任务、约 102 h**（r6.4；A 28 个 43 h / B 7 个 10.5 h / C 5 个 7.5 h / D 3 个 5 h / E 3 个 5.5 h / F 7 个 12 h / G 10 个 14.5 h / H 4 个 4 h）。r5 为 62 个 / 96.5 h；r6 增量：新增 T-A09a 1 h、T-A22a 1.5 h、T-A22b 1 h、T-C01a 1 h；T-A09 1.5→2 h、T-A21 1.5→2 h、T-A18 2→1.5 h；T-A22、T-C01 预估不变（拆出部分与新增部分相当）。r6.4 增量：新增 T-A09b 0.5 h（r6～r6.3 为 66 个 / 101.5 h）。所有任务 `blocked_by: IMPL-GATE-R6`；H 组（4 个任务、4 h）另 `blocked_by: frontend-workbench-v2`。
 
 ## 7. Converge 口径

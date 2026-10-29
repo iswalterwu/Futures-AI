@@ -17,6 +17,53 @@
 >
 > 本行不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（本轮协调器最小真实调用 `claude-bridge/claude-opus-5-5` exit 1，provider / invocation error 类、未确认 quota；同模型官方通道 exit 0；只换通道、未改配置）。
 > **当前状态（2026-10-29 第二批独立 Review 后记账；以本行为准，上七块为当时原文，其中“待本批独立代码 Review / 待审核证据”已过时）**：第二批 T-A09b / T-A10 / T-A22 / T-A22b / T-A23 / T-A24 经独立审核员 A（claude-fable-5-1 via anthropic，新会话、独立 worktree，固定审文档 `858025d` + 代码 `27e59e6`）判**本批通过（0 P1 / P2，5 项 P3 R2-A～R2-E）**；审核原件 `review-batch2.md` 由集成人原样提交于 `f72a1a187405e9f9dcba5bb22f47ad840141702d`。**H-2·标签 / H-3·路由切片 / H-4** 生产方 ①②③ 齐：② = 当前有效 Checklist R8.1 `34d339e`；③ 除实施者执行外另有 **A 亲跑**同数通过（`WI labels` 10 / `WI status badges` 18；`WI routes` 7 / `WI register` 2、整文件 9；`WI H-4 enter` 4 / `leave same navigation` 3 / `readonly` 1；见 `review-batch2.md` §1 / §5）。**④ 均未取得**：只读核对 `integration/frontend-workbench-v2` = `3f63273`，`13a3373` / `ebce4c8` / `cc59e94` / `b38cf43` 均非其祖先 → 仍为“**待消费方集成（未交付）**”；生产方集成树 `f72a1a1` / `27e59e6` 只是旁证，不能填作 ④。H-1 保留首批登记（① `13a3373`、② 当时 R7 `9acf3de`、③ 含首批 A 亲跑），当前有效清单为 R8.1 `34d339e`，④ 仍缺。H-2·列表 / H-6 / H-5 / 页面切片仍未交付（提供任务未齐）。本行不宣称任何切片已交付或已被 v2 签收；④ 只能由 v2 集成树所有者登记，本 feature 不代填、不代 merge。上游 main `072bb12` 不在本批祖先，同步协调见 §5-9（R2-D）。记账者 = claude-opus-5-5 via anthropic（协调器对 `claude-bridge/claude-opus-5-5` 最小调用 exit 1 = provider / invocation error、未确认 quota；同模型官方通道成功；只换通道、未改配置）。
+> **当前状态（2026-10-29 第三批派工准备 r6.6；以本行为准，上一块为第二批 Review 后原文、仍有效）**：
+> - **本批**：T-A11 → T-A12 → T-A13 → T-A22a 的开码前精度已补，**全部待实施**；没有新代码，也没有新测试输出。
+> - **完成后的生产方证据**：H-2·列表的提供任务（T-A01 / A02 / A10 / A12 / A22a）将齐备，可形成 ①③；H-6 仍缺 T-A21。八个切片的交付状态不变：H-2·标签 / H-3 / H-4 / H-1 为“待消费方集成（未交付）”，其余未交付。
+> - **接口精度**（r6.6，见 §3 注）：`useJobsStore().createJob(input: CreateJobInput): Promise<Job>`；`DataClient` 新增写方法的签名与回执见 plan §2.4【r6.6】。
+> - **④**：消费分支 `integration/frontend-workbench-v2` 仍 `3f63273`，四项 ④ 仍缺。本 feature 不写、不重建 v2 树。
+> - **上游**：main `072bb12` 未同步（§5-9 流程不变）。
+>
+> 记账者 = claude-opus-5-5 via anthropic（协调器对 `claude-bridge/claude-opus-5-5` 最小调用 exit 1 = quota / rate / spend_limit 类；同模型官方通道 exit 0；本窗口不重试；未改配置）。
+> **当前状态（2026-10-29 第三批实施后 Converge batch3；以本块为准，上一块 r6.6 中的“全部待实施 / 没有新代码”为当时原文）**：
+> - **本批**：T-A11 `c7ebccb`、T-A12 `742d6aa`（+ test-fix `0a2d1a5`）、T-A13 `a5ad11c`、T-A22a `0032fc6` 已实施（openai/gpt-6-astra；代码 diff `ab742f5..0032fc6 -- frontend`）。集成人已 ff-only 并入生产方集成树 `integration/workbench-interaction` @ `0032fc6`。本批**待第三批独立代码 Review**。
+> - **H-2·列表**：提供任务（T-A01 / A02 / A10 / A12 / A22a）已齐。生产方具备：① `0032fc6`；② 当前有效 Checklist R9 `ab742f5`；③ `jobs-store.spec.ts -t "WI H-2 …"` 5 / 4 / 7 / 9 pass（实施者执行，**待审核证据**，不是 reviewed / passed）。**④ 未取得** → “**待消费方集成（未交付）**”。
+> - **H-6**：T-A11 已提供“有覆盖时只在内存 / normal 持久化”部分，仍缺 T-A21（收件箱种子 / 角标样例）→ 未交付。H-5 / 页面切片未做。
+> - **H-1 / H-2·标签 / H-3 / H-4**：保留前两批登记（①②③，③ 含 A 亲跑）。② 当时为 R7 / R8.1，当前有效 Checklist 可并记 R9 `ab742f5`。④ 仍缺 → 待消费方集成（未交付）。
+> - **消费分支**：`integration/frontend-workbench-v2` 仍为 `3f63273`（只读）；本批及前两批切片 ① 都不是其祖先。本 feature 不写、不重建、不代登记 v2 树。
+> - **公开接口**：实际名称与 §3 一致，另按精度补记 jobsStore 实际导出与 `DataClient` 新方法，见 §3 batch3 落地核对。
+> - **上游**：main `072bb12` 未同步（§5-9 流程不变）。
+>
+> 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（协调器对 `claude-bridge/claude-opus-5-5` 最小调用 exit 1 = quota / rate / spend_limit 类；同模型官方通道成功；本窗口不重试；未改配置）。
+> **当前状态（2026-10-29 第三批独立代码 Review 后 + R3-A Converge 补修登记 r6.8；以本块为准，上一块 batch3 中的“待第三批独立代码 Review / ③ 待审核证据”为当时原文）**：
+> - **第三批 Review**：`review-batch3.md`（审核员 A = claude-fable-5-1 via anthropic，固定审文档 `e14ad25` + 代码 `0032fc6`；原件由集成人提交于 `49edb7e`）判本批通过（0 P1 / P2，3 项 P3）。T-A11 / A12 / A13 / A22a 记为已完成；不表示 AC 最终验收。
+> - **H-2·列表**：③ 现有 A 亲跑同数（`WI H-2 cache` 5 / `filter` 4 / `createJob refresh` 7 / `agent refresh` 9）。但 Review P3 **R3-A** 指出 ① `0032fc6` 的 `applyFilter(f)` 成功分支改写了 `listStatus` / `listError`：全新 store 先筛选后 `ensureJobs()` 不再加载，base 读错误被筛选成功清除。集成人决定现在修，新增 **T-A22c**（tasks r6.8，方案 b）并加入本切片提供任务。**① `0032fc6` 仍待修；T-A22c 关闭（含 A 增量代码 Review）前不放行 ④**，关闭后以其提交更新 ①③。
+> - **接口**：对外成员 / 签名不变。只把 `listStatus` / `listError` 的归属写成精度：二者是未筛选列表 `jobs` 的读状态，只由 `refresh()`（含 `ensureJobs()` 首次加载）置 ready / 清错；筛选成功不改它们（plan §2.3【r6.8】）。
+> - **其余切片**：H-6 仍缺 T-A21；H-5 / 页面切片未做；H-1 / H-2·标签 / H-3 / H-4 仍为待消费方集成（未交付）。消费分支 `integration/frontend-workbench-v2` 本轮未读未写；④ 只能由其所有者登记。
+>
+> 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（bridge 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。
+> **当前状态（2026-10-29 T-A22c 实施后增量 Converge；以本块为准，上一块 r6.8 中的“T-A22c 未实施 / ① `0032fc6` 仍待修”为当时原文）**：
+> - **T-A22c**：已实施 `af24c826f41580d27f90ce611fb2f55fec44acbf`（实施者 openai/gpt-6-astra，基线 `e7716a8`；只删 `applyFilter` 成功分支两次读状态赋值，并补测试）。增量 Converge（`converge-batch3-cache-fix.md`）判与 r6.8 一致，**待新会话 A 增量代码 Review**；R3-A = 代码已修、待复核。
+> - **H-2·列表**：
+>   - ① 候选 `af24c82`（待 A 增量复核）；
+>   - ② R9 `ab742f5`；
+>   - ③ `WI H-2 list status` 2 / 整文件 27（原四组 25）pass + 工程门，实施者执行、待 A；
+>   - **④ 仍缺，T-A22c 复核前不放行**。生产方集成树 `integration/workbench-interaction` @ `af24c82` 只是旁证，不能填作 ④；`integration/frontend-workbench-v2` = `3f63273`，不含 `af24c82`（只读核）。
+> - **接口**：对外成员 / 签名不变；`af24c82` 已按 §3【r6.8】口径实现（`listStatus` / `listError` 只由 `refresh()` 置 ready / 清错）。
+> - **其余切片**：保留原登记。H-6 仍缺 T-A21；H-5 / 页面切片未做；H-1 / H-2·标签 / H-3 / H-4 仍为待消费方集成（未交付）。
+>
+> 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（bridge 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。
+> **当前状态（2026-10-29 T-A22c 增量代码 Review 后状态登记 = 第三批安全点；以本块为准，上一块“T-A22c 实施后增量 Converge”中的“① 候选 / 待 A 增量复核 / ③ 待 A / T-A22c 复核前不放行 ④”为当时原文）**：
+> - **T-A22c 增量 Review**：`review-batch3-cache-fix.md`（审核员 A = claude-fable-5-1 via anthropic，新会话、独立 worktree，固定审文档 `eb91340` + 代码 diff `e7716a8..af24c82`；原件由集成人提交于 `69faacccabd8b089a9f240b28e6449a8fea90619`）判**通过：0 P1 / P2、0 新 P3，R3-A 关闭**。T-A22c 记为已完成；不表示 AC 最终验收。
+> - **H-2·列表**：
+>   - ① `af24c826f41580d27f90ce611fb2f55fec44acbf`：由候选转为**生产已核**（A 增量 Review 读真实 diff 与全文核对；祖先含已审 `0032fc6`，`0032fc6` 作为含 R3-A 的已审历史证据保留，不作集成对象）；
+>   - ② R9 `ab742f5`（`checklist.md` blob `74084c1337491a042c944096e1f290fe07aab324`，未改）；
+>   - ③ 实施者执行 + **独立 A 亲跑同数**：`WI H-2 list status` 2、整文件 27（原四组 `cache` 5 / `filter` 4 / `createJob refresh` 7 / `agent refresh` 9）、`-t "WI H-2"` 27、typecheck / lint / `contract --check` 24 / 10 / 2；A 另跑全量 `test:unit` 31 files / 953 / 0 与 `e2e/shell.spec.ts` + `e2e/agent.spec.ts` 24 passed；
+>   - 本方“T-A22c 复核前不放行 ④”的条件**已解除**；**④ 仍缺 → 待消费方集成（未交付）**。只读观察 `integration/frontend-workbench-v2` 仍为 `3f63273`、不含 `af24c82`；本 feature 不写、不重建、不 merge 该树，也不凭推测填 ④。生产方集成树 `integration/workbench-interaction` @ `69faacc` 只是旁证。
+> - **接口**：对外成员 / 签名不变；§3【r6.8】口径已由代码与测试固定。
+> - **其余切片**：H-6 仍缺 T-A21；H-5 / 页面切片未做（`/jobs` 两页仍为骨架、jobsStore 未被页面消费）；H-1 / H-2·标签 / H-3 / H-4 历史生产方证据保留，④ 仍缺 → 待消费方集成（未交付）。
+>
+> 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1876b-2420-709d-b58f-04d6eed0d36f`；bridge 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。
 > **阶段记录（脱敏）**：作者 = claude-opus-5-5 via anthropic（Plan / Tasks / Analyze 角色；本窗口 `claude-bridge/claude-opus-5-5` 经协调器探活 exit 1，quota / rate / spend_limit 类，未重试；未改 provider / key / 全局配置）。
 
 ## 0. 固定参照
@@ -43,12 +90,12 @@
 |---|---|---|---|---|---|---|---|
 | H-1 | T-A02、T-A09、T-A09a | `agent-context-contract.spec.ts`；`contract-version.spec.ts -t "WI scenarios"` | `13a3373f7ebd2075fb8bcfe32033127a916fa6b9`（含 T-A02 `ad4a830`、T-A09 `82c36e7`、T-A09a） | `9acf3de`（R7，H-1 交接时有效；当前有效清单 = R8.1 `34d339e`） | 实施者执行（Converge 未重跑）：`agent-context-contract.spec.ts` `WI H-1 schema` 3 / `WI H-1 legacy` 5 / `WI H-1 passthrough` 7 pass；`contract-version.spec.ts -t "WI scenarios"` 15 pass；同提交全量单测 21 文件 722 pass / 0 fail。【独立 A 亲跑】同上 3 / 5 / 7、15 pass，全量单测 21 文件 722 / 0 fail（`review-batch-a09a.md` §1 / §5，`af95b66`） | **未取得**（生产方集成树 `13a3373` 只是旁证，不能填作 ④） | **待消费方集成（未交付）** |
 | H-2·标签 | T-A01、T-A23 | `contract-labels.spec.ts -t "WI labels"`；`badges.spec.ts -t "WI status badges"` | `ebce4c85b1422a62b883117f75459a1fdee81b80`（T-A23；祖先含 T-A01 `07ef7ccc3c889400dfb2354ceec22c94317c8813`） | `34d339e`（R8.1，当前有效） | 实施者执行：`WI labels` 10 pass（首批 A 亲跑同数）；`badges.spec.ts -t "WI status badges"` 18 pass；同批末轮全量单测 27 文件 833 pass / 0 fail。【独立 A 亲跑】`WI labels` 10、`WI status badges` 18 pass，全量单测 27 files / 833 / 0 fail（`review-batch2.md` §1 / §5，`f72a1a1`） | 未取得（生产方集成树 `27e59e6` 只是旁证） | **待消费方集成（未交付）**：生产方 3 / 4 |
-| H-2·列表 | T-A01、T-A02、T-A10、T-A12、T-A22a | `jobs-store.spec.ts -t "WI H-2"` | 部分：T-A01 / T-A02（首批）、T-A10 `1841029f5a948b53ef21cbc54967556dc04e0815`（`listJobs`）；T-A12（`createJob`）与 T-A22a（jobsStore）未实施 | `34d339e`（R8.1，当前有效） | 未取得（`jobs-store.spec.ts` 尚不存在） | 未取得 | 未交付 |
+| H-2·列表 | T-A01、T-A02、T-A10、T-A12、T-A22a、**T-A22c**（r6.8，R3-A 补修；已完成 `af24c82`，增量 Review 通过 `69faacc`，R3-A 关闭） | `jobs-store.spec.ts -t "WI H-2"` | **生产已核** `af24c826f41580d27f90ce611fb2f55fec44acbf`（T-A22c；增量 Review `69faacc` 核对；祖先含已审 `0032fc6b3e47ee6de27a03c2c229ef57ca9115cc` T-A22a、T-A12 `742d6aa3d671cee91c6cce856f657a103d510615`、T-A01 / T-A02 / T-A10 `1841029`）。已审历史证据 `0032fc6` 含 R3-A，保留追溯、不作集成对象 | `ab742f5`（R9，当前有效；blob `74084c13…`） | 【T-A22c，实施者执行 + 独立 A 亲跑同数（`review-batch3-cache-fix.md` §1，`69faacc`）】`WI H-2 list status` 2 pass；`jobs-store.spec.ts` 整文件 27 pass（原四组 `cache` 5 / `filter` 4 / `createJob refresh` 7 / `agent refresh` 9 = 25 + 新 2）；`-t "WI H-2"` 27；typecheck / lint / `contract --check` 24 / 10 / 2 通过；全量单测 31 files / 953 / 0；`e2e/shell.spec.ts` + `e2e/agent.spec.ts` 24 passed（A 另跑 v1 契约 88、real-stubs 23）。【历史：`0032fc6` 已审】实施者与独立 A 亲跑 5 / 4 / 7 / 9，全量 31 / 951 / 0（`review-batch3.md` §1 / §6，`49edb7e`） | **未取得**（生产方集成树 `69faacc` 只是旁证，不能填作 ④；只读观察 v2 消费分支仍 `3f63273`、不含 `af24c82`） | **待消费方集成（未交付）**：生产方 ①②③ 齐（3 / 4），R3-A 已关闭、本方放行条件已满足，④ 待 `integration/frontend-workbench-v2` 所有者登记；可调用写 action = `useJobsStore().createJob(input)` |
 | H-3·路由切片 | T-A22 | `routes.spec.ts` | `cc59e946df2d08178b03e3b37928ab34517067d7`（T-A22；`b38cf43` 后路由整文件回归仍通过） | `34d339e`（R8.1，当前有效） | 实施者执行：`routes.spec.ts` `WI routes` 7 / `WI register` 2 pass；T-A22b 后整文件 9 pass。【独立 A 亲跑】同数通过、整文件 9（`review-batch2.md` §1 / §5，`f72a1a1`）；pin `90187f7` 基线，同步 `072bb12` 需按 R2-D 重核 | 未取得（生产方集成树 `27e59e6` 只是旁证） | **待消费方集成（未交付）**：生产方 3 / 4；只是路由切片，两页为骨架，不含页面功能 |
 | 页面切片 | T-B01、T-B02、T-B04、T-C01、T-C01a、T-C02、T-C03、T-C04 | `e2e/jobs/intake.spec.ts`；`detail-stage.spec.ts -g "WI AC-002-2"`；`job-list.spec.ts` | 未取得 | `34d339e`（R8.1，当前有效） | 未取得 | 未取得 | 未交付 |
 | H-4 | T-A22b | `session-context.spec.ts -t "WI H-4"` | `b38cf43f602390d7645cc84514d0da9860a7e0b7`（T-A22b） | `34d339e`（R8.1，当前有效） | 实施者执行：`WI H-4 enter` 4 / `WI H-4 leave same navigation` 3 / `WI H-4 readonly` 1 pass。【独立 A 亲跑】同数通过（`review-batch2.md` §1 / §5，`f72a1a1`） | 未取得（生产方集成树 `27e59e6` 只是旁证） | **待消费方集成（未交付）**：生产方 3 / 4；公开设置方式 = 无（§5-8） |
 | H-5 | T-C01、T-C01a | `intake.spec.ts -t "WI H-5"` | 未取得 | `34d339e`（R8.1，当前有效） | 未取得 | 未取得 | 未交付 |
-| H-6 | T-A07、T-A09、T-A10、T-A11、T-A21 | `contract-version.spec.ts -t "WI jobFixtures"`；`job-state-read.spec.ts -t "WI scenarios read"`；`job-state-inbox.spec.ts -t "WI inbox seed"` | 部分：T-A07 `0f604480816c6372e847d29cf05bdc63e88371a3`、T-A09 `82c36e7b05ce286ebc0f9650e466695e394612ee`（fixture 形状、`MockOverrides.jobFixtures` 与 `readJobFixtures()` 边界解析）、**T-A10 `1841029f5a948b53ef21cbc54967556dc04e0815`**（共享状态在 client 创建时据 `jobFixtures` 建立一次；`listJobs` / `getJob` / `getStageWorkspace` 的 empty / error / slow 与缺样例返回空工作区）；T-A11（有覆盖时只在内存 / 持久化）与 T-A21（收件箱种子）未实施 | `34d339e`（R8.1，当前有效） | 部分：`WI jobFixtures` 14 pass（首批，实施者执行，A 亲跑同数）；`WI scenarios read` 33 pass（本批，实施者执行，**待审核**）；`job-state-inbox.spec.ts` 尚不存在 | 未取得 | 未交付（读 API 完成 ≠ H-6 交付） |
+| H-6 | T-A07、T-A09、T-A10、T-A11、T-A21 | `contract-version.spec.ts -t "WI jobFixtures"`；`job-state-read.spec.ts -t "WI scenarios read"`；`job-state-inbox.spec.ts -t "WI inbox seed"` | 部分：T-A07 `0f604480816c6372e847d29cf05bdc63e88371a3`、T-A09 `82c36e7b05ce286ebc0f9650e466695e394612ee`、T-A10 `1841029f5a948b53ef21cbc54967556dc04e0815`、**T-A11 `c7ebccb8f9e29350d5a815959be3b532191bdb95`**（有 `jobFixtures` 覆盖时会话只在内存、两 key 零访问；normal 无覆盖时持久化）；T-A21（收件箱种子）未实施 | `ab742f5`（R9，当前有效） | 部分：`WI jobFixtures` 14 pass（首批，A 亲跑同数）；`WI scenarios read` 33 pass（第二批，A 亲跑同数）；T-A11 `WI non-normal` 13 pass（实施者执行；登记时待第三批 Review，后经 A 亲跑同数，`49edb7e`）；`job-state-inbox.spec.ts` 尚不存在 | 未取得 | 未交付（缺 T-A21；读 API + 持久化完成 ≠ H-6 交付） |
 
 （测试文件均在 `frontend/tests/{unit,component}/jobs/` 或 `frontend/e2e/jobs/`；命令前缀 `pnpm -C frontend test:unit|test:e2e`。）
 
@@ -57,6 +104,14 @@
 【batch2 口径（Converge batch2，2026-10-29）】② 列已改为当前有效轮次 **R8.1 `34d339e`**（R7 `9acf3de` 是首批 / H-1 当时的有效轮次，H-1 行保留原登记以便追溯；R8 `7b91a2c` 未通过，不作 ②）。H-2·标签 / H-3 / H-4 的 ③ 是**待审核证据**：实施者执行，Converge 未重跑，本批独立代码 Review 尚未进行；不得写成“reviewed / passed”。Review 若有发现，按其结论回修后再更新本表。④ 只能由 `integration/frontend-workbench-v2` 的所有者登记；生产方集成树 `27e59e6` 只是旁证。
 
 【batch2 Review 后口径（2026-10-29，`f72a1a1`；以本段为准，上段“待审核证据”为当时原文）】H-2·标签 / H-3 / H-4 的 ③ 已有独立 A 亲跑证据，A 判本批通过；④ 仍须 `integration/frontend-workbench-v2` 所有者真正集成后登记（只读核对 `3f63273` 不含四个切片的 ①），状态不变：待消费方集成（未交付）。H-1 行 ② 保留 R7 `9acf3de` 作历史追溯，当前有效清单为 R8.1 `34d339e`。其余切片不变。
+
+【batch3 口径（Converge batch3，2026-10-29）】H-2·列表的 ① / ③ 已按本批固定提交登记，③ 为**待审核证据**（实施者执行，Converge 未重跑，第三批独立代码 Review 尚未进行）。② 列：H-2·列表 / H-6 改为当前有效 R9 `ab742f5`；H-2·标签 / H-3 / H-4 / H-5 / 页面切片行的“R8.1 `34d339e`（当前有效）”是第二批时的原文，当前有效 Checklist 为 R9 `ab742f5`，可并记；H-1 保留 R7 追溯。④ 只能由 `integration/frontend-workbench-v2` 的所有者登记；生产方集成树 `0032fc6` 只是旁证。
+
+【batch3 Review 后 + r6.8 口径（2026-10-29，`49edb7e`；以本段为准，上段“③ 为待审核证据”为当时原文）】H-2·列表的 ③ 已有独立 A 亲跑；A 的 P3 R3-A 由新增提供任务 T-A22c 修复（方案 b，tasks r6.8）。T-A22c 实施并经新会话 A 增量代码 Review 核 R3-A 关闭后，① 改登记为 T-A22c 提交、③ 补 `WI H-2`（含 `WI H-2 list status`）输出；此前 ① `0032fc6` 只作已审历史证据，不作 ④ 的集成对象。其他切片不变。
+
+【T-A22c 实施后增量 Converge 口径（2026-10-29，`af24c82`；以本段为准，上段“T-A22c 实施并经 A 复核后 ① 改登记”的前半已发生、后半待 A）】H-2·列表 ① 先登记为**候选** `af24c82`，③ 补实施者执行的 `WI H-2`（含 `WI H-2 list status`）输出。二者在新会话 A 增量代码 Review 核 R3-A 关闭前都是待审核证据，不是 reviewed / passed；④ 仍缺、复核前不放行。其他切片保留原登记。
+
+【T-A22c 增量 Review 后口径（2026-10-29，`69faacc`；以本段为准，上段“候选 / 待审核证据 / 复核前不放行”为当时原文）】H-2·列表 ① `af24c82` 由候选转为生产已核，③ 已有独立 A 亲跑同数（含新组 `WI H-2 list status` 与全量 953、E2E 24）；原“待 A22c 复核”的本方条件解除。④ 仍只能由 `integration/frontend-workbench-v2` 所有者真正集成后登记，当前**仍缺 → 待消费方集成（未交付）**。H-6（缺 T-A21）、H-5 / 页面切片（未做）、H-1 / H-2·标签 / H-3 / H-4（历史生产方证据保留、④ 缺）不变。
 
 ## 2. 逐项对拍（v2 要求 → r5 状态 → r6 落点）
 
@@ -116,6 +171,39 @@
 - `DataClient`：增加 `listJobs(filter?: {status?, type?, title?})`、`getJob(jobId)`、`getStageWorkspace(jobId, stage)`。
 
 以下仍**未实施**：`useJobsStore`、`useIntakeStore`、`IntakeDrawer`、`main.ts` 的 jobsStore 订阅（T-A22a）。上表两行只按精度补了导出名和字段级只读，机制与语义不变。
+
+【2026-10-29 r6.6 接口精度（第三批派工准备，未实施）】
+- `useJobsStore()`：
+  - `createJob(input: CreateJobInput): Promise<Job>`，返回写回执中的 `jobs[0]`；失败以原 ErrorResponse 拒绝，不刷新缓存。
+  - 本 feature 内部的 `filter: ListJobsFilter | null`、`filteredJobs: JobListItem[] | null` 只作精度登记，不属交接接口。
+- `CreateJobInput = {title, type, subject: string | null, goal}`（strict）进 `contractSchemas`；`DataClient.createJob` 返回 `WriteReceipt`。
+- 投放相关写方法（`IntakeReceipt` 等）属页面切片 / H-5 的下游，签名见 plan §2.4【r6.6】，不改 §1 的切片划分。
+- 名称在交付 commit 时以实际导出为准；若有出入，回到 Analyze 更新本表。
+
+【2026-10-29 batch3 落地核对（Converge 只读；代码 `ab742f5..0032fc6`，待第三批独立代码 Review）】以下名称已按本表与 plan §2.4【r6.6】落地：
+- **`useJobsStore()`**（`jobs/stores/jobs.ts`）：
+  - 对外只读视图 `jobs` / `listStatus` / `listError`（交接接口），以及本 feature 内部的 `filter` / `filteredJobs`；均为 `computed` + `readonly`，元素层也只读。
+  - action：`ensureJobs()` / `refresh()` / `createJob(input: CreateJobInput): Promise<Job>`（交接接口），以及内部的 `applyFilter(filter | null)` / `receiveAgentEvent(event)`。
+  - 另导出类型 `ListJobsFilter`。
+  - `refresh` 自身总是 resolve，失败落在 `listStatus='error'` + `listError`。
+  - `openJob()` 未实施（归 T-B04）。
+- **`main.ts`**：在 agent store 订阅之后加 `agentClient.subscribe(useJobsStore(pinia).receiveAgentEvent)`，并交 `app.onUnmount` / `import.meta.hot?.dispose` 解除（§5-1 所述新增订阅已落地）。
+- **`DataClient` 新方法**：
+  - `resetMockData(): Promise<null>`；
+  - `createJob(input: CreateJobInput): Promise<WriteReceipt>`；
+  - `submitIntake(input: IntakeInput): Promise<IntakeReceipt>`、`getIntakePreview(uploadId): Promise<ExtractionPreview>`、`confirmIntake(uploadId, mapping: FieldMapping): Promise<IntakeReceipt>`；
+  - `listUnassignedUploads(): Promise<Upload[]>`；
+  - `assignUpload(uploadId, jobId)` / `removeUpload(uploadId, reason)` / `cancelJob(jobId, reason)`，均返回 `Promise<WriteReceipt>`。
+  - `CreateJobInput = {title, type, subject: string | null, goal}`（strict，title / subject trim 后保存）；`IntakeReceipt = WriteReceipt + {upload, preview}`；两者进 `contractSchemas`。
+  - 投放写方法属 H-5 / 页面切片下游，不改 §1 的切片划分。
+- **本地持久化**（`jobs/persistence.ts`，私有，不属交接接口、不进产品契约，只登记）：
+  - key：`fai.jobs.v1` = `{version:1, data:{jobs, details, deliverables, interventions, uploads, mappingHistory}}`；`fai.inbox.v1` 本批只在 reset 时删除。
+  - 状态 API：`getPersistenceStatus()` / `onPersistenceStatus(cb)`，取值 `ok | degraded | unreadable`（供 T-G04 横幅）。
+  - 初始化顺序：`createMockDataClient()` 先建 state，再在 normal 且无覆盖时 hydrate。
+
+名称无出入；本表上方各行无需改。
+
+【2026-10-29 r6.8 接口精度（第三批 Review R3-A；落地任务 T-A22c，未实施）】`useJobsStore()` 的对外成员与签名不变。只登记一条归属口径：`listStatus` / `listError` 是未筛选列表 `jobs` 的读状态，只由 `refresh()`（含 `ensureJobs()` 首次加载、写后 / agent 终态刷新）置 ready 并清错。本 feature 内部的 `applyFilter(f)` 成功只写 `filter` / `filteredJobs`，失败才把共享读状态置 error。因此壳按 `ensureJobs()` + `jobs` / `listStatus` 消费时，不会因列表页先应用筛选而得到“ready 且为空”的视图。`0032fc6` 尚不满足这一点，由 T-A22c 修复（plan §2.3【r6.8】）。【T-A22c 实施后补记】`af24c82` 已按本口径实现，对外成员与签名不变；是否关闭 R3-A 待新会话 A 增量代码 Review。【增量 Review 后补记】A 判 R3-A 关闭（`review-batch3-cache-fix.md`，`69faacc`），本口径由代码与 `WI H-2 list status` 两例固定。
 
 ## 4. 不做的事（生产方边界）
 
