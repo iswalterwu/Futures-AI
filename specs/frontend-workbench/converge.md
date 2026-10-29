@@ -123,3 +123,96 @@ A 亲跑 generated 对拍（exit 0）、103 项定向单元 / 组件（exit 0）
 - **新发现**：H-01（图注断行）与 H-02（窄窗顶部导航中专题研究子项纵向堆叠、挤占模块区）。两项都没有违反 45 条 AC 中的自动判据，也不改变“v1 实现与自动化验证范围已收敛”的结论；已登记为后续候选，未经 Walter 处置。
 
 **结论：合并后仍收敛（v1 实现与自动化验证范围）。** 尚未完成的是 Walter 对 M-01 ~ M-08 的人工复核，以及对 H-01 / H-02 的处置。
+
+## 9. H-01 修复（T-18）的 Converge（2026-10-28，追加）
+
+> §1 ~ §8 为历史记录，不改写。本节只核 H-01 / T-18，不扩修 H-02 或 11 项已接受 P3。
+> **执行者**：Converge = **claude-opus-5-5 via anthropic**（环境 `PI_PROVIDER` / `PI_MODEL` 核实）。与本轮 Plan 同模型；`claude-bridge` 在本限额窗口已实测额度耗尽（seven_day / monthly spend limit），按 AGENTS §6 规则 5 不重复试；官方通道最小探活 READY。本会话是本工作树唯一写入者，实施会话已退出。**本阶段未重跑测试**（测试验证由 Implement 路由完成），以真实代码、git 元数据、文件边界与 Implement 的日志 / exit 静态对拍。
+
+### 9.1 输入
+
+- 重新读取：AGENTS.md、docs/plan.md、docs/designUI.md、冻结 spec（45 条 AC）、plan §7、tasks T-18 与后续台账、checklist 状态、review §10、analyze 末两节、本文件 §1 ~ §8、manual-acceptance M-08、`assets/h01-fix-20261028/README.md`。
+- 分支 `fix/frontend-workbench-visual`；基线 `43b6d79681a49562f41751368b2ae00c24062f56`；开始时 HEAD `f4ff7bed499907d8603e217033a6d49015013b9e`，工作区干净。本轮提交：`ef11610`（规划文档）→ `771f2af`（T-18 修复 + 回归 + tasks 实施记录）→ `f4ff7be`（截图 + README）。
+- **目标代码**：`771f2af9d3254c3b2596554f53216e4be9732320`。`frontend/` 树 `03fda1deaef016793033c29f79ffce5b901f83a4` 在 `771f2af` 与 `f4ff7be` 相同；blob：`SampleChart.vue` = `424ae6c3dcda51b6118216e45d5f867bef15e007`，`e2e/theme.spec.ts` = `f7493b118d509ccd1f2e90d5cf5fb5c5b47e210f`。
+- 真实 diff：`git diff 43b6d79..f4ff7be -- frontend` 仅两文件——`SampleChart.vue` +4（scoped `figcaption .num { display: inline; }`），`e2e/theme.spec.ts` +78（两档 H-01 测试）。
+- Implement 证据（本机临时目录 `C:/Users/iswal/AppData/Local/Temp/fw-h01-resume.fw1YK3/`，不入库）：`implement-output.txt`（exit 0）、`h01-{red,green,related,tests,build,diff-check}.{log,exit}`、`h01-red-results/`（红跑 trace / error-context / 截图）。
+- **日志时序（如实记录）**：red 21:37:20、green 21:37:50、related 21:38:26、全量 tests 21:40:48、build 21:40:59、diff-check 21:42:58；`771f2af` 提交于 21:42:02，`f4ff7be` 于 21:42:59。即测试 / 构建日志跑在提交前的工作树上。对拍：日志中的 `theme.spec.ts:62:3`（H-01 测试）、`:100`（同行断言）、`:139:1`（AC-006-4）与提交内容的行号逐一一致；`f4ff7be` 未改 `frontend/`。据此认定日志对应目标代码，但 Converge 未在提交后重跑，这一点不以重跑结论冒充。
+
+### 9.2 按 T-18 五条完成标准的证据
+
+| 标准 | 真实证据 | 判定 |
+|---|---|---|
+| 1 回归先红（AC-001-4、AC-006-3） | `h01-red.exit` = 1；`h01-red.log`：`Running 2 tests`，**2 failed**，两档都失败在 `theme.spec.ts:100` 的 “caption text and number share one line”——1440：`max(top)=531.75` 不小于 `min(bottom)=513.75`；960：`738.5` vs `720.5`（三段竖向区间相差约一行半，即分居多行）。失败前同测试中的 watchlist / focus `data-state=ready` 等待已通过、web server 正常启动，失败点是生产版式几何，**不是 fixture / 环境失败**。`before-1440x900.png` / `before-960x900.png` 的 sha256 与 `h01-red-results/**/sample-chart-*.png` 逐字节相同（`125977fa…` / `c4c722da…`），确为红跑产物 | 满足 |
+| 2 最小修复后转绿 | `h01-green.exit` = 0，**2 passed**（1440、960 各一）；`h01-related.exit` = 0，`-g "AC-006-3\|AC-006-4\|AC-001-4"` **6 passed**（AC-006-3 主题 / resize 两条、tokens AC-001-1 AC-001-4 字族、H-01 两档、AC-006-4 透明）。静态核对测试源码覆盖标准 2 全部条目：三段文本各 1 个 Range 矩形、竖向公共交集、近 < 数字 < 日收盘；数字 `display: inline`、字体首项 = `T.font.mono` 首项、`tabular-nums`、计算 `text-align: right`；单位文本 = fixture `series.unit`、宽高 > 0、在 figcaption 内、与标签同行且 `rects[2].right ≤ unit.left`；`captionOverflow` / `pageOverflow` 为 false；图注外全部 `span.num` 为 `block` + mono + tabular + right，scope 集合含 `market-board` / `watchlist` / `focus`。视口取 `T.window.width` / `T.window.min_width` × `T.window.height`，无新魔数 | 满足 |
+| 3 全量与构建（AC-009-1） | `h01-tests.exit` = 0：check（156 令牌 / 5 生成物、契约 12 方法 10 事件、colors 24/24、glass / updown / grid / network）、`vue-tsc`、`eslint --max-warnings 0` 通过；Vitest **14 文件 / 559 passed**；Playwright **68 passed**（1.3m）。`h01-build.exit` = 0（828 模块，JS 780.57 kB / gzip 263.31 kB，仅 >500 kB 提示，未拆包）；`h01-diff-check.exit` = 0 | 满足 |
+| 4 改动边界 | 本会话实跑：`git diff --name-only 43b6d79 -- frontend` 只列两文件；`git diff --exit-code 43b6d79 -- frontend/src/shared frontend/src/design frontend/contracts design docs AGENTS.md backend specs/frontend-workbench/{spec,checklist,manual-acceptance,converge}.md specs/frontend-workbench/assets/handoff` → exit 0（converge 为本节写入前） | 满足 |
+| 5 截图证据（M-08、AC-009-2） | `git ls-files assets/h01-fix-20261028` = 4 PNG + README；尺寸：before 1440 764×51 / 960 882×50，after 1440 764×19 / 960 882×18（元素截图，非视口尺寸）；README 记基线 / 修复提交、`T.window` 视口、Chrome 156.0.8078.49（日志可证）/ Playwright 1.64.1（`package.json` 与安装包版本可证）、mock normal、执行者模型、“AI 采集非人工验收”。`assets/handoff/`（63 个跟踪文件）与 manual-acceptance（0 勾选 / 8 未勾）零差异 | 满足（口径见下） |
+
+**截图口径**：实际是 `figcaption` 特写，不是 plan §7.3 步骤 2 规划的 `figure` 截图；plan 已追加 §7.6 校准、analyze 末节复查确认与 T-18 标准 5 一致，不改 AC / 判据 / 范围。
+
+**AI 看图（Converge 本会话原生视觉 read 4 张图，不是 Walter 人工验收）**：修复前两档都是三行——“近” / 右推的 “60” / “日收盘 · 样例”，单位“元/桶”在首行右端；修复后两档都是单行“近 60 日收盘 · 样例”，单位“元/桶”在同行右端、不重叠。与协调会话的视觉观察一致。**这些是图注特写：只证明图注一行，不证明整张样例图在 960 下一屏完整**（H-02 未修）；也未重采整图 M-08 截图，`assets/handoff/m08-chart-1440.png` 仍是修复前原件。
+
+### 9.3 测试计数对拍
+
+- Vitest 559 = 基线 559（本轮无单元 / 组件文件改动）。
+- Playwright 68 = 基线 66（§8 合并后实跑）+ H-01 两档 2；`theme.spec.ts` 的 `test(` 由 3 处变为 4 处（新增一处在两档循环内生成 2 个用例）。
+- 定向 2 / 6 与全量中 H-01 两条（序号 19、26）逐条对应；未把 skipped 计为通过（全量无 skipped）。
+
+### 9.4 结论
+
+**已收敛（H-01 修复的实现与自动化验证范围）。** T-18 五条完成标准均有真实证据，测试红在真实版式缺陷、绿覆盖两档与全部判据，计数对齐，边界零越界；未发现需要追加 Implement 的缺口，tasks 不新增任务。45 条 AC 文字与判据、Checklist 70/70 均未改动。
+
+此结论**不表示**：独立 A Review 已通过（未开始）、本次修复 Gate 2 已批准（未批）、M-01 ~ M-08 人工验收通过（8 项仍未勾，含 M-08）、整图在 960 下完整显示（H-02 留待 v2、未修复、未写入 v2 规格）。11 项已接受 P3 未修复、未扩改。
+
+下一步：独立 A（claude-fable-5-1，先 bridge 后 anthropic，新会话、与实施模型不同）定向 Review `43b6d79..771f2af` 的 frontend diff 与本轮文档；之后 Walter Gate 2；再按流程 PR / merge。本会话未 push / PR / merge，未启动其他 agent。
+
+### 9.5 独立 Review 结果（集成人追加，2026-10-28）
+
+> §9.1 ~ §9.4 为 Converge 时点记录，不改写。
+
+独立 A（claude-fable-5-1 via anthropic，新会话）对固定目标 `869cb71` 定向 Review **通过**：无 P1 / P2，1 项 P3-1（1440 M-08 整图仍为修复前原件，建议补采或在 Gate 2 材料指明图注特写路径），待 Walter 裁定。A 亲跑 H-01 2 passed、相关 22 E2E passed、generated exit 0；全量 559 + 68 与 build 为查阅 Implement 日志。原件 [review-h01.md](review-h01.md)，记录 [review.md §12](review.md)。**本次修复 Gate 2 未批准，待 Walter。**
+
+### 9.6 Gate 2 与 Handoff 更新（2026-10-28，追加）
+
+Walter 2026-10-28 对本轮 Gate 2 回复“好的”：本次 H-01 修复与 A Review 结论获批，A-H01-P3-1（1440 整图补采）接受为后续、未补采。Handoff 未重跑测试（生产代码自 `869cb71` 未变），记录见 [review.md §13 ~ §14](review.md)。§9.4 的收敛限定不变：不代表 M-01 ~ M-08 人工验收通过，H-02 未修复。
+
+## 10. T-19 M-08 修复后 1440 整图证据补采的 Converge（2026-10-28，追加）
+
+> §1 ~ §9 为历史，不改写。**执行者**：Converge = claude-opus-5-5 via anthropic（bridge 本窗口 account 额度耗尽，不重试）；唯一写入者。**本阶段未跑测试 / 未采集**，以真实 git 元数据、生成物、Implement 日志与 exit 静态对拍。
+
+### 10.1 输入
+
+- 分支 `docs/frontend-workbench-m08-evidence`；代码基线 `44845c8922becfdb26bf4d0c5572f12a79ce748f`；HEAD `bf04f69`（`3c9d714` 规划 → `bf04f69` T-19 采集与记录），开始时工作区干净。
+- 重读：AGENTS.md、docs/plan.md、docs/designUI.md、冻结 spec、plan §8、tasks T-19 与台账、checklist、analyze 末节、review §15、manual M-08、证据 README 与 `capture-full-1440.json`、`git diff 44845c8..HEAD`。
+- Implement（openai/gpt-6-astra via openai，首选无回退）日志：本机 `%TEMP%/fw-m08-evidence.nY5thg/` 的 `capture-attempt-1`、`capture`、`e2e`、`unit`、`boundary` 各 `.log/.exit`，`implement-output.txt`（exit 0）。
+
+### 10.2 按 T-19 四条完成标准对拍
+
+| 标准 | 真实证据 | 判定 |
+|---|---|---|
+| 1 整图采集与元数据（AC-009-2、M-08） | `capture.exit` = 0，日志 “Capture successful”。脚本源码核对：截图在全部断言之后执行（就绪、`fullVisibility` 四项、图注 Range 一行、单位同行、无横滚、轴文字、`backgroundColor = transparent`、`darkMode`、序列 id / 60 点 / x 轴与 fixture 一致、色序与 `T.chart` 一致、存在真实序列 path、无 pageerror），对整个 `[data-chart-id="market-board"]` 调 `locator.screenshot()`，不改 DOM / CSS。JSON：sourceHead = 基线 `44845c8`，`frontend` 树 `03fda1de…` 与基线一致，`frontendDiffExit` 0，工作树状态原样记录（当时 5 份规划文档未提交）；Chrome 156.0.8078.49 / Playwright 1.64.1；`127.0.0.1:4191/workbench?scenario=normal`；1440×900、DSF 1；figure `(237, 498.75)–(1000.33, 708.25)` ⊂ `.modules-container` 可视矩形 `(224, 416.75)–(1414, 829.75)` ⊂ viewport；`aiCaptured: true`、`humanAccepted: false`、`visualReviewPerformed: false`。PNG 实测 sha256 `15c08282…a678` = JSON；`scriptSha256` `68de7f0f…` = 临时脚本当前 sha256（脚本采集后未改）。首次运行 `capture-attempt-1.exit` = 1，失败于截图前的 `isDisposed() === false` 断言（ECharts 实际返回 undefined），未出图；改为与既有 e2e 一致的“不为 true”，未放宽可见性判据 | 满足 |
+| 2 既有定向回归（AC-006-3、AC-006-4、AC-001-4、AC-009-2） | `e2e.exit` = 0：`-g "AC-006-3\|AC-006-4\|AC-001-4"` **6 passed**；`unit.exit` = 0：`-t "AC-009-2"` **9 passed / 550 skipped**（1 文件，14 文件中 13 skipped） | 满足 |
+| 3 边界 | 本会话实跑 `git diff --exit-code 44845c8 -- frontend design backend docs AGENTS.md spec.md checklist.md review-h01.md converge.md assets/handoff` 与 4 张图注特写 → exit 0；`specs/` 下无其他 feature 改动；Checklist 70 / 0；manual 0 checked / 8 unchecked；`boundary.exit` = 0 | 满足 |
+| 4 文档 | 证据 README 末尾追加 T-19 入口 / 命令 / 来源 / 版本 / 几何 / hash / 首次失败说明与“AI 采集非人工验收”；manual 仅 M-08 内新增两行（截图证据补充、采集补充记录），删除行 0，勾选框未动；A-H01-P3-1 记“已补采，待 Walter 人工复核 M-08”、未关闭 | 满足 |
+
+- **原生视觉（Converge 本会话 read，AI 观察，不是 Walter 人工验收）**：`after-1440x900-full.png`（764×211）是整个 figure，不是图注特写——顶部单行“近 60 日收盘 · 样例”、右上“元/桶”；下方完整亮色折线（约 480 → 513），y 轴 480 ~ 515、x 轴 08-06 ~ 10-23 刻度完整；四边未见裁切；背景为暗色连续底，无白块。
+- **时序（如实）**：e2e / unit / boundary 日志 22:22，`bf04f69` 提交 22:23:45，即在提交前工作树上运行；该提交只含文档与生成物，`frontend/` 与基线一致，manual 的两行在日志前已写入（boundary 日志已报 0 / 8）。本阶段未在提交后重跑。
+- **不是本轮证据**：H-01 的全量 559 + 68 与 build 是旧证据；本轮未跑全量 / build，无红跑（无生产改动）。
+
+### 10.3 结论
+
+**已收敛（T-19 证据补采范围）。** 四条完成标准均有真实证据，截图与元数据为程序生成、可复核，未发现需返工的实现或元数据缺口，不新增任务。
+
+不表示：独立 A Review 通过（未开始）、本轮 Gate 2 已批准（未发生）、M-08 或其他 M 项人工验收通过（8 项仍未勾）、A-H01-P3-1 已关闭。H-02 未修复（v2 另有负责会话）；旧 11 项 P3 未扩改；H-01 PR #8 与其 Gate 2 保持历史已交付。
+
+### 10.4 独立 Review 结果（集成人追加，2026-10-28）
+
+> §10.1 ~ §10.3 为 Converge 时点记录，不改写。
+
+独立 A（claude-fable-5-1 via anthropic）对 `167b337` 定向 Review **通过**（0 P1 / 0 P2 / 1 P3：A-M08-P3-1 证据链可读性，待 Walter 裁定）。A 亲跑定向 e2e 6 passed、AC-009-2 单元 9 passed / 550 skipped，独立复采 PNG 与入库逐字节相同。原件 [review-m08.md](review-m08.md)，记录 [review.md §17](review.md)。**本轮 Gate 2 待 Walter**；§10.3 的限定不变。
+
+### 10.5 Gate 2 / 合并主线 / Handoff 更新（2026-10-28，追加）
+
+- Walter 2026-10-28 对本轮 Gate 2 回复“确认”（review §18）：T-19 证据与 A 通过结论获批，A-M08-P3-1 接受为非阻断备注、本轮不返工。
+- 合并 `origin/main@90187f7`（`1a625e7`，纯文档、无冲突）后复查：`git diff --quiet 167b337..HEAD -- frontend design backend specs/frontend-workbench/{spec,checklist,manual-acceptance,review-h01}.md specs/frontend-workbench/assets/handoff` 及新 PNG / JSON 与 4 张图注特写 → exit 0；`git diff origin/main..HEAD -- AGENTS.md HANDOFF.md docs frontend design backend` 为空；`specs/README.md` 相对 main 仅本 feature 一行不同，D-020 ~ D-024 跨 feature 待办 4 行与说明行完整。§10.3 收敛结论不变（T-19 证据补采范围），未重跑测试。
+- Handoff 见 [review.md §19](review.md)。仍不表示 M-01 ~ M-08 人工验收通过；H-02 未修复。

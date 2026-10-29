@@ -114,6 +114,10 @@ figcaption {
   font-size: var(--fai-type-card-sub);
 }
 
+figcaption .num {
+  display: inline;
+}
+
 .unit {
   font-family: var(--fai-font-mono);
   font-size: var(--fai-type-unit);

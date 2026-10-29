@@ -1,0 +1,468 @@
+{
+  "task": "T-19 / A-H01-P3-1",
+  "aiCaptured": true,
+  "humanAccepted": false,
+  "visualReviewPerformed": false,
+  "executor": {
+    "provider": "openai",
+    "model": "gpt-6-astra"
+  },
+  "provenance": {
+    "baseline": "44845c8922becfdb26bf4d0c5572f12a79ce748f",
+    "branch": "docs/frontend-workbench-m08-evidence",
+    "sourceHead": "44845c8922becfdb26bf4d0c5572f12a79ce748f",
+    "frontendTree": "03fda1deaef016793033c29f79ffce5b901f83a4",
+    "baselineFrontendTree": "03fda1deaef016793033c29f79ffce5b901f83a4",
+    "frontendDiffCommand": "git diff --exit-code 44845c8922becfdb26bf4d0c5572f12a79ce748f -- frontend",
+    "frontendDiffExit": 0,
+    "frontendUntrackedFiles": [],
+    "workingTreeStatus": "M specs/README.md\n M specs/frontend-workbench/analyze.md\n M specs/frontend-workbench/plan.md\n M specs/frontend-workbench/review.md\n M specs/frontend-workbench/tasks.md",
+    "workingTreeNote": "Planning documents were uncommitted at capture; frontend tracked tree and working files match baseline. No page DOM/CSS modifications or image postprocessing."
+  },
+  "command": "node C:/Users/iswal/AppData/Local/Temp/fw-m08-evidence.nY5thg/capture-full.mjs",
+  "scriptSha256": "68de7f0fba66d3d25852c92b3a2b98bacb5ee57e385f71771349c74e884921f8",
+  "capturedAt": "2026-10-28T18:20:23.216Z",
+  "browser": {
+    "channel": "chrome",
+    "version": "156.0.8078.49",
+    "playwrightVersion": "1.64.1"
+  },
+  "url": "http://127.0.0.1:4191/workbench?scenario=normal",
+  "scenario": "normal",
+  "dataMode": "mock",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "viewportSource": "T.window.width / T.window.height",
+  "deviceScaleFactor": 1,
+  "target": "[data-chart-id=\"market-board\"]",
+  "geometry": {
+    "figure": {
+      "x": 237,
+      "y": 498.75,
+      "width": 763.328125,
+      "height": 209.5,
+      "top": 498.75,
+      "right": 1000.328125,
+      "bottom": 708.25,
+      "left": 237
+    },
+    "caption": {
+      "x": 237,
+      "y": 498.75,
+      "width": 763.328125,
+      "height": 17.5,
+      "top": 498.75,
+      "right": 1000.328125,
+      "bottom": 516.25,
+      "left": 237
+    },
+    "svg": {
+      "x": 237,
+      "y": 516.25,
+      "width": 763,
+      "height": 192,
+      "top": 516.25,
+      "right": 1000,
+      "bottom": 708.25,
+      "left": 237
+    },
+    "moduleBounds": {
+      "x": 224,
+      "y": 416.75,
+      "width": 1190,
+      "height": 412.75,
+      "top": 416.75,
+      "right": 1414,
+      "bottom": 829.5,
+      "left": 224
+    },
+    "moduleViewport": {
+      "left": 224,
+      "top": 416.75,
+      "right": 1414,
+      "bottom": 829.75,
+      "width": 1190,
+      "height": 413
+    },
+    "moduleScroll": {
+      "top": 0,
+      "left": 0
+    },
+    "viewport": {
+      "left": 0,
+      "top": 0,
+      "right": 1440,
+      "bottom": 900,
+      "width": 1440,
+      "height": 900
+    },
+    "deviceScaleFactor": 1,
+    "segments": [
+      {
+        "text": "近",
+        "rects": [
+          {
+            "x": 237,
+            "y": 498.75,
+            "width": 14.015625,
+            "height": 15,
+            "top": 498.75,
+            "right": 251.015625,
+            "bottom": 513.75,
+            "left": 237
+          }
+        ]
+      },
+      {
+        "text": "60",
+        "rects": [
+          {
+            "x": 251.015625,
+            "y": 500.75,
+            "width": 12.109375,
+            "height": 13,
+            "top": 500.75,
+            "right": 263.125,
+            "bottom": 513.75,
+            "left": 251.015625
+          }
+        ]
+      },
+      {
+        "text": "日收盘 · 样例",
+        "rects": [
+          {
+            "x": 263.125,
+            "y": 498.75,
+            "width": 66.4375,
+            "height": 15,
+            "top": 498.75,
+            "right": 329.5625,
+            "bottom": 513.75,
+            "left": 263.125
+          }
+        ]
+      }
+    ],
+    "number": {
+      "display": "inline",
+      "fontFamily": "Consolas, \"SF Mono\", Menlo, \"Courier New\", monospace",
+      "fontVariantNumeric": "tabular-nums"
+    },
+    "unit": {
+      "text": "元/桶",
+      "bounds": {
+        "x": 973.546875,
+        "y": 499.75,
+        "width": 26.78125,
+        "height": 15.75,
+        "top": 499.75,
+        "right": 1000.328125,
+        "bottom": 515.5,
+        "left": 973.546875
+      }
+    },
+    "svgPaths": [
+      {
+        "d": "M41.1436 161.5L751 161.5",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.1436 140.5L751 140.5",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.1436 120.5L751 120.5",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.1436 99.5L751 99.5",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.1436 79.5L751 79.5",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.1436 58.5L751 58.5",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.1436 38.5L751 38.5",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.1436 17.5L751 17.5",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.1436 161.5L751 161.5",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.5 161L41.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M89.5 161L89.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M137.5 161L137.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M185.5 161L185.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M233.5 161L233.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M282.5 161L282.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M330.5 161L330.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M378.5 161L378.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M426.5 161L426.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M474.5 161L474.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M522.5 161L522.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M570.5 161L570.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M618.5 161L618.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M667.5 161L667.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M715.5 161L715.5 166",
+        "stroke": "rgb(255,255,255)"
+      },
+      {
+        "d": "M41.1436 160.18L53.175 151.16L65.2065 154.44L77.238 143.78L89.2694 137.22L101.3009 147.06L113.3323 135.58L125.3638 129.84L137.3953 138.86L149.4267 127.38L161.4582 117.54L173.4897 123.28L185.5211 130.66L197.5526 116.72L209.5841 106.88L221.6155 113.44L233.647 110.16L245.6785 100.32L257.7099 98.68L269.7414 105.24L281.7729 112.62L293.8043 118.36L305.8358 109.34L317.8672 102.78L329.8987 89.66L341.9302 84.74L353.9616 92.12L365.9931 98.68L378.0246 88.84L390.056 77.36L402.0875 69.98L414.119 72.44L426.1505 79.82L438.1819 85.56L450.2134 76.54L462.2448 65.88L474.2763 56.86L486.3078 60.14L498.3392 67.52L510.3707 74.08L522.4022 65.06L534.4337 55.22L546.4651 49.48L558.4966 52.76L570.528 60.14L582.5595 67.52L594.5909 78.18L606.6224 84.74L618.6539 93.76L630.6854 88.02L642.7168 82.28L654.7483 72.44L666.7797 77.36L678.8112 83.92L690.8427 92.94L702.8741 86.38L714.9056 73.26L726.9371 63.42L738.9685 58.5L751 27.34",
+        "stroke": "#E8E6E0"
+      },
+      {
+        "d": "M40 16.5l713 0l0 145.5l-713 0Z",
+        "stroke": null
+      }
+    ],
+    "axisTexts": [
+      "480",
+      "485",
+      "490",
+      "495",
+      "500",
+      "505",
+      "510",
+      "515",
+      "08-06",
+      "08-12",
+      "08-18",
+      "08-24",
+      "08-28",
+      "09-03",
+      "09-09",
+      "09-15",
+      "09-21",
+      "09-25",
+      "10-01",
+      "10-07",
+      "10-13",
+      "10-19",
+      "10-23"
+    ],
+    "pageOverflow": false
+  },
+  "fullVisibility": {
+    "inViewport": true,
+    "inModuleViewport": true,
+    "captionInFigure": true,
+    "svgInFigure": true
+  },
+  "lineIntersection": {
+    "top": 500.75,
+    "bottom": 513.75
+  },
+  "checks": {
+    "ready": true,
+    "completeContent": true,
+    "captionSingleLine": true,
+    "unitAlongside": true,
+    "themeMatchesTokens": true,
+    "dataMatchesFixture": true,
+    "pageErrors": []
+  },
+  "chart": {
+    "backgroundColor": "transparent",
+    "darkMode": true,
+    "color": [
+      "#E8E6E0",
+      "#C98A8F",
+      "#BFA670",
+      "#97826C",
+      "#6CA7C7",
+      "#8FB8A4",
+      "#B0D0EB"
+    ],
+    "lineColor": "#E8E6E0",
+    "seriesId": "mock.sc2612.close",
+    "seriesType": "line",
+    "data": [
+      480.2,
+      482.4,
+      481.6,
+      484.2,
+      485.8,
+      483.4,
+      486.2,
+      487.6,
+      485.4,
+      488.2,
+      490.6,
+      489.2,
+      487.4,
+      490.8,
+      493.2,
+      491.6,
+      492.4,
+      494.8,
+      495.2,
+      493.6,
+      491.8,
+      490.4,
+      492.6,
+      494.2,
+      497.4,
+      498.6,
+      496.8,
+      495.2,
+      497.6,
+      500.4,
+      502.2,
+      501.6,
+      499.8,
+      498.4,
+      500.6,
+      503.2,
+      505.4,
+      504.6,
+      502.8,
+      501.2,
+      503.4,
+      505.8,
+      507.2,
+      506.4,
+      504.6,
+      502.8,
+      500.2,
+      498.6,
+      496.4,
+      497.8,
+      499.2,
+      501.6,
+      500.4,
+      498.8,
+      496.6,
+      498.2,
+      501.4,
+      503.8,
+      505,
+      512.6
+    ],
+    "xAxisData": [
+      "2026-08-06",
+      "2026-08-07",
+      "2026-08-10",
+      "2026-08-11",
+      "2026-08-12",
+      "2026-08-13",
+      "2026-08-14",
+      "2026-08-17",
+      "2026-08-18",
+      "2026-08-19",
+      "2026-08-20",
+      "2026-08-21",
+      "2026-08-24",
+      "2026-08-25",
+      "2026-08-26",
+      "2026-08-27",
+      "2026-08-28",
+      "2026-08-31",
+      "2026-09-01",
+      "2026-09-02",
+      "2026-09-03",
+      "2026-09-04",
+      "2026-09-07",
+      "2026-09-08",
+      "2026-09-09",
+      "2026-09-10",
+      "2026-09-11",
+      "2026-09-14",
+      "2026-09-15",
+      "2026-09-16",
+      "2026-09-17",
+      "2026-09-18",
+      "2026-09-21",
+      "2026-09-22",
+      "2026-09-23",
+      "2026-09-24",
+      "2026-09-25",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01",
+      "2026-10-02",
+      "2026-10-05",
+      "2026-10-06",
+      "2026-10-07",
+      "2026-10-08",
+      "2026-10-09",
+      "2026-10-12",
+      "2026-10-13",
+      "2026-10-14",
+      "2026-10-15",
+      "2026-10-16",
+      "2026-10-19",
+      "2026-10-20",
+      "2026-10-21",
+      "2026-10-22",
+      "2026-10-23",
+      "2026-10-26",
+      "2026-10-27",
+      "2026-10-28"
+    ],
+    "pointCount": 60,
+    "renderedLinePathCount": 1
+  },
+  "png": {
+    "file": "after-1440x900-full.png",
+    "bytes": 17540,
+    "width": 764,
+    "height": 211,
+    "sha256": "15c08282a5f7b65f6df162ab5818dbaf513f7bc891571e757d956beb3c79a678"
+  }
+}

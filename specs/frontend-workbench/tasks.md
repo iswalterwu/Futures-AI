@@ -3,14 +3,17 @@
 > Tasks 阶段产物；每项 0.5–2 小时。**状态：已生效（Checklist 第四轮基线 `2c2fbc8`，70/70）；T-01 ~ T-17 已实施，独立 A 第二轮 Review 通过；Gate 2 已批准（Walter 2026-10-28 回复“确认”：接受 11 项 P3 为后续任务，未修复）；进入 Handoff。**
 > 依据：`spec.md`（Gate 1 批准冻结，45 条 AC）+ `plan.md`（精简版）。
 > 按 AGENTS.md §5 去掉了守卫样例自检（AC-001-2 明文要求的 `colors` 最小样例除外）、逐锚盘点、跨字段校验与单次使用的抽象层；15 个任务，约 25.5 小时。
+> **2026-10-28 恢复（H-01）**：Tasks = claude-opus-5-5 via anthropic（claude-bridge 探活额度耗尽）。追加 T-18（H-01 图注内联数字最小样式修复，1 h），状态**已授权待修复、未实施**；H-02 留待 v2、未修复；11 项已接受 P3 不扩改；以上头部历史计数保留不改（R2-01 仍为已接受的后续项）。
+> **2026-10-28 Converge（H-01）**：上行“未实施”为规划时点记录。T-18 已实施（代码 `771f2af`，截图 `f4ff7be`），Converge = claude-opus-5-5 via anthropic 判定 H-01 修复的实现与自动化验证范围已收敛（converge §9）；待独立 A Review，本次修复 Gate 2 未批准；H-02 留待 v2、未修复；M-01 ~ M-08 仍待 Walter 人工复核。
 
-> **v2 Tasks 追加（2026-10-28，草案）**：本文件末尾新增「## v2 任务（spec v2.1 / plan §7）」。**本声明优先于上方旧页首**：旧页首写的「45 条 AC / Checklist 通过后生效 / 15 个任务约 25.5 h」，连同 T-01～T-15 的正文、勾选状态和「AC 覆盖」表，都原样保留为 v1 历史基线，不再修改。与 v2 冲突的地方，按 v2 任务第 2 节的覆盖声明以 v2 为准。需求依据是冻结的 spec v2.1（52 条 AC，Gate 1 已通过，AC 集合与 `fec3556` 一致）加 plan §7。
+> **主线合并（2026-10-29）**：plan 的 v2 设计由旧 §7 机械迁为 §9（§7.x→§9.x 一一对应），下方 v2 页首行已同步；上方 v1 页首与 v1 正文整段取 main `cf8e11b`。当前登记见 v2 段首“主线合并登记”。
+> **v2 Tasks 追加（2026-10-28，草案）**：本文件末尾新增「## v2 任务（spec v2.1 / plan §9）」。**本声明优先于上方旧页首**：旧页首写的「45 条 AC / Checklist 通过后生效 / 15 个任务约 25.5 h」，连同 T-01～T-15 的正文、勾选状态和「AC 覆盖」表，都原样保留为 v1 历史基线，不再修改。与 v2 冲突的地方，按 v2 任务第 2 节的覆盖声明以 v2 为准。需求依据是冻结的 spec v2.1（52 条 AC，Gate 1 已通过，AC 集合与 `fec3556` 一致）加 plan §9。
 > **模型记录**：Tasks = `claude-opus-5-5` via `anthropic`。`claude-bridge` 在本限额窗口已明确额度不可用，按 AGENTS §6 第 5 条不重复探活；只换了通道，没有换模型。协调 = `openai/gpt-6.1-sol`（只读，不是审核员 A，也不是实施者）；串行落盘 = 本 Tasks 会话（`claude-opus-5-5` via `anthropic`），按协调器限定的范围落盘，不是新设计。任务 = frontend-workbench v2 Tasks 起草。固定基线 = `a8ab444a28e8e6a9fd056401b55f63a1b25a2c4a`（工作树干净）。失败类别 = 通道额度；本记录已脱敏。
-> **审核依据**：当前有效的 v2 清单是 `specs/frontend-workbench/checklist-v2.md`。审核员 A = `claude-fable-5-1` via `anthropic`，独立会话，审查对象 `d2bf5a7`，结论为通过：0 阻断、9 条建议，允许进入 Tasks，不授权 Implement。这个通过**只覆盖 `d2bf5a7` 的 plan §7**；本次 Tasks 以及随附的 plan §7 小改**都未经审核**。旧 `checklist.md` 只证明 v1，不修改，也不授权 v2。
+> **审核依据**：当前有效的 v2 清单是 `specs/frontend-workbench/checklist-v2.md`。审核员 A = `claude-fable-5-1` via `anthropic`，独立会话，审查对象 `d2bf5a7`，结论为通过：0 阻断、9 条建议，允许进入 Tasks，不授权 Implement。这个通过**只覆盖 `d2bf5a7` 的 plan §9**；本次 Tasks 以及随附的 plan §9 小改**都未经审核**。旧 `checklist.md` 只证明 v1，不修改，也不授权 v2。
 > **状态**：v2 任务是草案。下一步先做 Analyze，再由 A 新开独立会话定向复核，并补勾 checklist-v2「阶段说明」里的 I-01b 和 V-02。**全部 v2 实施任务 blocked**，原因有两个：v1 完成 Review / Gate 2 / Handoff 并合入 main 的准确 SHA 未取得；H-1～H-6 没有任何已交付的实现 SHA。本清单不启动 Implement；在等外部前置的任务，不能视为已完成。
 > **当前阶段补记—暂停交接（2026-10-28）**：Analyze R2 审 `6bda6c9`，F-01～F-07 全部关闭、无新增 F；随后 A = `claude-fable-5-1` via `anthropic` 新开独立会话审 `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`，Checklist R2 通过（0 阻断，I-01b / V-02 由 A 正式勾选），产物提交 `f1f755bad8e4bab7577c415f4aea3d297c9d37a8`。下方 Tasks 草案 / 待审 / R1 修正记录是当时历史；当前内部设计与任务质量已过审。新增非阻断建议 V2-S10～S12 尚未处理，见 `checklist-v2.md` R2 与根 `HANDOFF.md`；用户已要求暂停，不展开新工作。v1 Handoff 与对应 H-x 交接仍未登记，12 个实施任务全部 blocked，不授权 Implement。
-> **R5 修正与更正（2026-10-28）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`，由协调器 `openai/gpt-6.1-sol` 新开会话派出（不是 Implement，也不是审核员 A）。协调器已对 Opus bridge 做最小真实探活，返回额度 / 限流类失败，同模型 anthropic 正常；只换通道，未重试 bridge，未改 provider / 路由 / 配置。基线 `d4b1853`，分支 `docs/frontend-workbench-v2-resume-fixes`。按只读 Analyze R5（`analyze-v2-r5.md`，2 P2 / 3 P3）修 F-01～F-05：只改 plan / tasks，并在 R3 / R4 报告页首加更正注记；不改 spec、两份 Checklist、代码或 `design/`（`design/ui` 的修改由 T-V2-01 实施时写入）。**通道更正（F-05）**：下方 v2 段 R3 / R4 行中“会话由用户以该通道启动；本会话未探 bridge”是作者当时的措辞；实际情况是协调器派出的会话，bridge 探活因额度 / 限流失败后才走 anthropic。**审核范围更正（F-04）**：页首“本次 Tasks 以及随附的 plan §7 小改都未经审核”“v2 任务是草案”是 A R2 之前的历史状态。A R2（产物 `f1f755b`）已审到 `949a232`，包括 Tasks 和这些 §7 小改；还没经 A 审的增量从 `d1c2133` 起，A 的固定复核对象见 v2 第 1.1 节。
-> **R6 修正（2026-10-28）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`，由协调器新开会话派出（不是 Implement，也不是审核员 A）；协调器已对 bridge 最小真实探活，返回额度 / 限流类失败，anthropic 正常；只换通道，未重试 bridge，未改配置。基线 `43b97dd`，分支 `docs/frontend-workbench-v2-resume-fixes`。按只读 Analyze R6（`analyze-v2-r6.md`，0 P1/P2、2 P3）修：**F-01** 1.1「A 定向复核」行写明审查路径与范围外断言，闸门 2(a)、§9 第 3 步引用同一口径；**F-02** T-V2-01 标准 6 只引 AC-008-1（依据 spec R-008 / §4），矩阵 AC-002-2 行去掉 #6 及其命令，plan §7.2 备注同步。只改 plan / tasks，不改 spec、两份 Checklist、代码、`design/` 或任务结构（仍 12 项 / 22 h）。R6 O-1（T-V2-01 工时）留给 A 做 V-02 粒度复核时确认，本轮不拆任务。
+> **R5 修正与更正（2026-10-28）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`，由协调器 `openai/gpt-6.1-sol` 新开会话派出（不是 Implement，也不是审核员 A）。协调器已对 Opus bridge 做最小真实探活，返回额度 / 限流类失败，同模型 anthropic 正常；只换通道，未重试 bridge，未改 provider / 路由 / 配置。基线 `d4b1853`，分支 `docs/frontend-workbench-v2-resume-fixes`。按只读 Analyze R5（`analyze-v2-r5.md`，2 P2 / 3 P3）修 F-01～F-05：只改 plan / tasks，并在 R3 / R4 报告页首加更正注记；不改 spec、两份 Checklist、代码或 `design/`（`design/ui` 的修改由 T-V2-01 实施时写入）。**通道更正（F-05）**：下方 v2 段 R3 / R4 行中“会话由用户以该通道启动；本会话未探 bridge”是作者当时的措辞；实际情况是协调器派出的会话，bridge 探活因额度 / 限流失败后才走 anthropic。**审核范围更正（F-04）**：页首“本次 Tasks 以及随附的 plan §9 小改都未经审核”“v2 任务是草案”是 A R2 之前的历史状态。A R2（产物 `f1f755b`）已审到 `949a232`，包括 Tasks 和这些 §9 小改；还没经 A 审的增量从 `d1c2133` 起，A 的固定复核对象见 v2 第 1.1 节。
+> **R6 修正（2026-10-28）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`，由协调器新开会话派出（不是 Implement，也不是审核员 A）；协调器已对 bridge 最小真实探活，返回额度 / 限流类失败，anthropic 正常；只换通道，未重试 bridge，未改配置。基线 `43b97dd`，分支 `docs/frontend-workbench-v2-resume-fixes`。按只读 Analyze R6（`analyze-v2-r6.md`，0 P1/P2、2 P3）修：**F-01** 1.1「A 定向复核」行写明审查路径与范围外断言，闸门 2(a)、§9 第 3 步引用同一口径；**F-02** T-V2-01 标准 6 只引 AC-008-1（依据 spec R-008 / §4），矩阵 AC-002-2 行去掉 #6 及其命令，plan §9.2 备注同步。只改 plan / tasks，不改 spec、两份 Checklist、代码、`design/` 或任务结构（仍 12 项 / 22 h）。R6 O-1（T-V2-01 工时）留给 A 做 V-02 粒度复核时确认，本轮不拆任务。
 > **Analyze R1 后修正（2026-10-28，历史记录）**：修正 = `claude-opus-5-5` via `anthropic`（bridge 本窗口额度不可用，未重试、未换模型）；基线 `b364971a1a76fde96be6f924a7b7263ecb9cd447`，分支 `docs/frontend-workbench-v2-analyze-fixes`。按只读 Analyze R1（3 P2 / 4 P3，原文存同目录 `analyze-v2.md`）修 v2 段：F-01 `PlaceholderPage.vue` 入第 4 节与 T-V2-02（加 typecheck 标准）；F-02 T-V2-01 明确迁移 `shell.spec` 旧八项 / research 深链用例，并用 `AC-002-2` 全前缀验证；F-03 `shell.spec` 写入链改为 01→02→09，由 T-V2-09 把 `/jobs` 占位子断言迁移为集成态；F-04 H-2·列表随交接登记一个写 action，T-V2-05#2 只调用它；F-05 T-V2-03 条件依赖 H-3·路由切片；F-06 H-6 `jobFixtures` 可替换整个作业样例集合；F-07 闸门 2 改为 A 定向复核 SHA 与明确通过记录。仍为 12 个任务、22 h；v1 正文、spec 和两份 checklist 未改。**本修正未经 A 定向复核，也未重跑 Analyze。**
 
 ## 约定
@@ -321,8 +324,76 @@
 | R1-11 | 已接受为后续（用户 2026-10-28 确认），未修复、未改卡片分配 | 日报 / 焦点带后续 spec 明确按段分配，再按 Gate 1 变更规则实施 | AC-002-6、AC-003-5；单一语义排序与紧凑断点测试 |
 | R2-01 | 第二轮 P3；已接受为后续（用户 2026-10-28 确认），未修复 | 后续编辑性修订：限定头部“15 项 / 25.5 h”为原实施计数，或只保留末尾合计，避免与当前 17 项 / 28 h 混淆 | AC-009-1 的任务证据；核对 tasks 头尾计数 |
 | R2-02 | 第二轮 P3；已接受为后续（用户 2026-10-28 确认），未修复、未加强 | 后续 e2e 强度改进：精度回归注入六个数字，明确宽窗六卡 / 窄窗四卡，或收窄标题承诺；现有精度断言有效 | AC-003-1、AC-002-6；`pnpm -C frontend test:e2e -g "AC-003-1"` |
-| H-01 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置** | 样例图图注“近 60 日收盘 · 样例”断成三行：图注内数字用了 `span.num`，被全局 `span.num { display: block }` 渲染为独立块；后续由 Implement 修正图注内联数字的样式，不改令牌与 spec | AC-001-4、AC-006-3、M-08；证据 `assets/handoff/m08-chart-1440.png`；修复后重采 M-08 截图 + `pnpm -C frontend test` |
-| H-02 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置** | 小于 980 的顶部横向导航中，专题研究子项纵向堆叠，导航区约 205 px；960 ~ 979×900 下模块区可视高度约 215 px，样例图不能一屏完整显示（可滚动、无重叠、无横向溢出）。与 UI_LAYOUT `#rail` 已采用的“塌成顶栏横向滚动”不一致；后续按该规定收紧窄窗导航（是否保留子项及其形态先请 Walter 裁定；v2 规格同样涉及导航，需协调） | AC-002-6、R-002、M-06；证据 `assets/handoff/m06-979.png`、`m06-960.png`；修复后补断点 e2e 对导航高度的断言并重采 M-06 |
+| H-01 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置**。→ 2026-10-28 恢复：用户回复“继续”，协调会话按其“H-01 做最小样式修复”的建议执行；**已授权待修复**，见 T-18（未实施；不属 11 项 P3，修复的 Gate 2 未批准）。→ 2026-10-28 实施后：**T-18 已实施**（`771f2af`），红→绿两档回归与全量 559 + 68 / build 通过，Converge 已收敛（实现与自动化验证范围，converge §9）；修复前后图注特写见 `assets/h01-fix-20261028/`（M-08 整图未重采，`m08-chart-1440.png` 仍为修复前原件）；**待独立 A Review、本次修复 Gate 2 未批准、M-08 人工未勾**。→ 2026-10-28 独立 A（claude-fable-5-1 via anthropic）对 `869cb71` 定向 Review **通过**（无 P1/P2；新增 P3-1 见下方 A-H01-P3-1），原件 [review-h01.md](review-h01.md)、review §12；**待 Walter Gate 2**。→ **Gate 2 已批准**（Walter 2026-10-28“好的”）；H-01 已修复并 Handoff（review §14）；A-H01-P3-1 接受为后续、未补采；M-08 人工仍未勾 | 样例图图注“近 60 日收盘 · 样例”断成三行：图注内数字用了 `span.num`，被全局 `span.num { display: block }` 渲染为独立块；后续由 Implement 修正图注内联数字的样式，不改令牌与 spec | AC-001-4、AC-006-3、M-08；证据 `assets/handoff/m08-chart-1440.png`；修复后重采 M-08 截图 + `pnpm -C frontend test` |
+| H-02 | Handoff 新发现（AI 视觉检查，2026-10-28，执行者初判 P3）；登记、未修复、**未经 Walter 处置**。→ 2026-10-28 恢复：按同一建议“随 v2 导航统一处理”，**留待 v2、v1 未修复**；尚未写入 v2 规格，未转交、未完成，v2 仍需在其自身流程（Clarify / Gate 1）中承接 | 小于 980 的顶部横向导航中，专题研究子项纵向堆叠，导航区约 205 px；960 ~ 979×900 下模块区可视高度约 215 px，样例图不能一屏完整显示（可滚动、无重叠、无横向溢出）。与 UI_LAYOUT `#rail` 已采用的“塌成顶栏横向滚动”不一致；后续按该规定收紧窄窗导航（是否保留子项及其形态先请 Walter 裁定；v2 规格同样涉及导航，需协调） | AC-002-6、R-002、M-06；证据 `assets/handoff/m06-979.png`、`m06-960.png`；修复后补断点 e2e 对导航高度的断言并重采 M-06 |
+
+## H-01 修复任务（2026-10-28 恢复，追加；不变更冻结 spec）
+
+### T-18 H-01 样例图图注内联数字
+
+- **上下文**：review.md §10、plan §7。用户回复“继续”，协调会话按其建议仅授权 H-01 最小样式修复。根因：`SampleChart.vue` 图注“近 <span class="num">60</span> 日收盘 · 样例”的数字命中全局 `span.num { display: block }`，标签被切成三行。只为既有 AC-001-4、AC-006-3 与 M-08 做实现样式纠偏；不改 spec / 令牌 / 契约 / 主题 / 全局数值样式 / 其他组件，不需要新 ADR 或 Gate 1。旧 e2e 只断言文字（文字本来正确），新回归必须测浏览器计算样式与 Range 几何。
+- **修改范围**：生产代码只改 `frontend/src/modules/market-board/SampleChart.vue`（`<style scoped>` 增 `figcaption .num { display: inline; }` 或等价的单条局部规则）；浏览器回归只改 `frontend/e2e/theme.spec.ts`；新建 `specs/frontend-workbench/assets/h01-fix-20261028/`（4 张 PNG + `README.md`）；`tasks.md` 只更新本任务的状态与实施证据。不改 `frontend/src/shared/`、`frontend/src/design/`、`frontend/contracts/`、spec / checklist / manual-acceptance、`assets/handoff/` 的 60 张旧图。
+- **依赖**：T-04（`num.css`）、T-12（`SampleChart.vue`、`e2e/theme.spec.ts`）　**预计**：1 h　**状态**：已实施、自动化通过（2026-10-28）；尚未 Converge / 独立 Review / 本次修复 Gate 2。→ Converge 已收敛（H-01 实现与自动化验证范围，converge §9；Converge = claude-opus-5-5 via anthropic）；尚未独立 Review / 本次修复 Gate 2。→ 独立 A Review 通过（`869cb71`，[review-h01.md](review-h01.md)；P3-1 待 Walter 裁定）；本次修复 Gate 2 未批准。→ **Gate 2 已批准**（Walter 2026-10-28“好的”，review §13）；进入 Handoff（review §14）。
+- **执行**：Implement 按 AGENTS §6（首选 `openai/gpt-6-astra`，回退 `deepseek/deepseek-flash`），在本分支 `fix/frontend-workbench-visual` 上做，基线 `43b6d79`；提交信息以 `T-18` 开头。
+- **完成标准**：
+  1. 回归先红：只加 plan §7.3 的 e2e（`T.window.width` / `T.window.min_width` × `T.window.height` 两档，各一个测试，标题以 `AC-001-4 AC-006-3 H-01` 开头，先截图后断言），在基线 `SampleChart.vue` 上两档都在“图注文字与数字同一行”的 Range 几何断言失败；记录失败摘要，复制两张修复前截图（AC-001-4、AC-006-3）。
+  2. 最小修复后转绿：两档视口下图注“近 / 数字 / 日收盘 · 样例”各一个矩形、竖向区间有交集、水平顺序正确；数字计算字体首项为 `T.font.mono` 首项且含 `tabular-nums`；单位文本正确、宽高 > 0、在图注内且与标签同行不重叠（AC-001-4、AC-006-3）；页面与图注无横向溢出（AC-002-6 的无横向溢出条款，不涉及 H-02 导航高度）；图注以外的 `span.num`（至少含盘面、关注列表、焦点带）计算 `display` 仍为 `block`、等宽与 tabular 不变（AC-001-4）；既有 AC-006-3 / AC-006-4 / AC-001-4 浏览器用例仍通过。
+  3. 全量自动化与构建全绿，无空白错误；不为 780 kB chunk 提示做拆包（AC-009-1）。
+  4. 改动边界：`frontend/` 相对基线只改上述两个文件；全局数值样式、令牌、生成物、契约、冻结 spec、Checklist 与人工清单零改动（AC-001-4 全局部分；AC-009-2 人工证据不被覆盖）。
+  5. 截图证据：`assets/h01-fix-20261028/` 含 `before-1440x900.png`、`before-960x900.png`、`after-1440x900.png`、`after-960x900.png`（宽窄均已滚动到位，仅内置 mock normal）与 `README.md`（基线与修复提交、视口来自 `T.window`、Chrome / Playwright 版本、数据、执行者模型；视觉判断由 AI 完成，不是 Walter 人工验收）；`assets/handoff/` 60 张旧图与 manual-acceptance.md 8 个未勾选框不变（M-08、AC-009-2）。
+- **验证命令**：
+  1. 修复前（基线 `SampleChart.vue` + 新测试）：`pnpm -C frontend test:e2e -g "H-01"` → 预期 exit 1，两档失败于同一行断言；随后把 `frontend/test-results/**/sample-chart-*.png` 复制为 `before-*`
+  2. 修复后：`pnpm -C frontend test:e2e -g "H-01" && pnpm -C frontend test:e2e -g "AC-006-3|AC-006-4|AC-001-4"` → exit 0；随后复制 `after-*`
+  3. `pnpm -C frontend test && pnpm -C frontend build && git diff --check`
+  4. `git diff --name-only 43b6d79 -- frontend`（只列两文件）`&& git diff --exit-code 43b6d79 -- frontend/src/shared frontend/src/design frontend/contracts specs/frontend-workbench/spec.md specs/frontend-workbench/checklist.md`
+  5. `git ls-files specs/frontend-workbench/assets/h01-fix-20261028`（4 张 PNG + README）`&& git diff --exit-code 43b6d79 -- specs/frontend-workbench/assets/handoff specs/frontend-workbench/manual-acceptance.md`
+- **实施证据（2026-10-28）**：Implement = **openai/gpt-6-astra via openai**（环境 `PI_PROVIDER` / `PI_MODEL` 核实，首选，无回退）；基线 `43b6d79681a49562f41751368b2ae00c24062f56`，分支 `fix/frontend-workbench-visual`。前置 Checklist 实核 70 checked / 0 unchecked，Analyze 允许 T-18 实施。
+  - 生产改动仅 `SampleChart.vue` scoped `figcaption .num { display: inline; }`；回归仅 `e2e/theme.spec.ts`。新增两档真实浏览器测试：文本节点 Range 每段单矩形、竖向共同交集与水平顺序，计算 display / mono / tabular / 右对齐，单位同行且不重叠、页面与图注无横滚；图注以外全部 `span.num` 仍 block，集合含盘面、关注列表与焦点带。
+  - `pnpm -C frontend test:e2e -g "H-01"`：旧生产代码 **2 failed / exit 1**，两档均失败于“caption text and number share one line”；仅加局部规则后 **2 passed / exit 0**。
+  - `pnpm -C frontend test:e2e -g "AC-006-3|AC-006-4|AC-001-4"`：**6 passed / exit 0**；`pnpm -C frontend test`：六项守卫 / typecheck / lint 通过，**14 文件 559 单元与组件 + 68 E2E passed / exit 0**（本轮实跑，新增 2 E2E）；`pnpm -C frontend build`：**exit 0**，828 模块，JS 780.57 kB，仅 chunk 大小提示；`git diff --check`：**exit 0**。
+  - 日志与各自 exit：`C:/Users/iswal/AppData/Local/Temp/fw-h01-resume.fw1YK3/h01-{red,green,related,tests,build,diff-check}.{log,exit}`；红跑 Playwright 产物另存该目录 `h01-red-results/`，不入库。
+  - 截图：`assets/h01-fix-20261028/{before,after}-{1440,960}x900.png`，均为真实 Chrome 156.0.8078.49 / Playwright 1.64.1 的 mock normal **图注特写**；按本轮指示先滚动图注到可视区域，再截图（不截图被 H-02 裁切的整图）。这是 AI 执行采集，**本轮未做看图结论或人工验收**，协调会话后续原生视觉复核；元数据见同目录 README。
+  - 边界核对：`frontend/` 相对基线只改上述两个文件；shared / design / contracts、冻结 spec / Checklist、manual-acceptance 与旧 60 张截图均零差异。H-02、11 项旧 P3 未修复，M-01 ~ M-08 未勾选。测试服务由 Playwright 自启停，4173 已释放，未启动独立服务或其他 agent。
+- **实施后流程（不属本任务）**：Converge 追加记录 → 独立 A Review（新会话、与实施不同模型）→ Walter Gate 2。M-08 人工勾选仍由 Walter 复核。
+
+### 本次 H-01 Review 新增后续候选（2026-10-28；不属原 11 项已接受 P3，不是已批准的实施任务，不计工时）
+
+| 发现 | 当前处理 | 内容 / 建议 | 验收引用 |
+|---|---|---|---|
+| A-H01-P3-1（原件编号 P3-1） | ~~未补采，待 Walter 决定修 / 接受为后续~~（Review 时点）→ **已接受为后续（Walter 2026-10-28 Gate 2 回复“好的”），未补采**；与原 11 项已接受 P3 分开计。→ 2026-10-28 用户“继续”后执行 T-19：**已补采，待 Walter 人工复核 M-08**；新整图与程序生成元数据见 `assets/h01-fix-20261028/after-1440x900-full.png` / `capture-full-1440.json`（未关闭，尚待本轮 Converge / 独立 Review / Gate 2）。→ Converge：T-19 证据补采范围已收敛（converge §10）；**仍未关闭，待独立 A Review / 本轮 Gate 2 / Walter 复核 M-08**。→ 独立 A Review 通过（`167b337`，[review-m08.md](review-m08.md)）；仍为**已补采，待 Walter 复核 M-08**，待本轮 Gate 2，未关闭。→ 本轮 Gate 2 已批准（Walter 2026-10-28“确认”，review §18），T-19 Handoff（review §19）；仍**已补采，待 Walter 复核 M-08**，未关闭 | `assets/handoff/m08-chart-1440.png` 仍为修复前原件，1440 不受 H-02 影响；建议 Walter 复核 M-08 前补采修复后 1440×900 整图到新目录（不覆盖旧图），或在 Gate 2 材料中明确当前看图路径为 `assets/h01-fix-20261028/after-1440x900.png` / `after-960x900.png`（图注特写）。来源：[review-h01.md §3](review-h01.md) | AC-009-2、M-08 |
+
+## M-08 整图证据补采任务（2026-10-28，追加；不变更冻结 spec，不改功能）
+
+### T-19 修复后 1440×900 样例图整图补采
+
+- **上下文**：plan §8、review §15。A-H01-P3-1：`assets/handoff/m08-chart-1440.png` 仍为修复前整图，`assets/h01-fix-20261028/` 只有图注特写。本任务只补一张修复后 1440 整图与可复核元数据，为 Walter 复核 M-08 提供入口；不改功能、不改 AC、不代签。
+- **修改范围**：新增 `specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900-full.png` 与 `capture-full-1440.json`（均由采集脚本真实生成，不手改）；同目录 `README.md` 末尾追加入口与溯源；`manual-acceptance.md` 仅在 M-08 的“截图证据”行追加新链接、在 AI 观察后追加本轮 AI 采集补充记录（保留旧观察与旧链接，不改任何 `[ ]` / `[x]`）；`tasks.md` 只更新本任务状态与实施证据。采集脚本 `%TEMP%/fw-m08-evidence.nY5thg/capture-full.mjs` 不入库。不改 `frontend/`、`design/`、`docs/`、spec、Checklist、`review-h01.md`、其他 M 项、旧 60 张图与 4 张图注特写，不涉及 H-02 / v2。
+- **依赖**：T-18（已合并 `44845c8`）　**预计**：0.5 h　**状态**：已补采、定向验证通过；待 Walter 人工复核 M-08，尚未本轮 Converge / 独立 Review / Gate 2（2026-10-28）。→ Converge 已收敛（T-19 证据补采范围，converge §10；claude-opus-5-5 via anthropic）；尚未独立 Review / 本轮 Gate 2。→ 独立 A Review 通过（[review-m08.md](review-m08.md)，0 P1 / 0 P2 / 1 P3）；待 Walter 本轮 Gate 2。→ **Gate 2 已批准**（Walter 2026-10-28“确认”）；已合并主线 `90187f7` 并 Handoff（review §19）。
+- **执行**：Implement 按 AGENTS §6（首选 `openai/gpt-6-astra`，回退 `deepseek/deepseek-flash`），分支 `docs/frontend-workbench-m08-evidence`，基线 `44845c8`；提交信息以 `T-19` 开头。
+- **完成标准**：
+  1. 脚本在 1440×900、本机 Chrome、内置 mock normal 下对整个 `[data-chart-id="market-board"]` figure 截图；截图前脚本自身断言 plan §8.2 五项（就绪、figure 完全在 viewport 与 `.modules-container` 可视矩形内、图注与 SVG 折线 / 轴文字完整、图注一行、背景 transparent 且序列 id = fixture），任一失败不出图、exit ≠ 0；成功 exit 0 并生成 PNG 与 plan §8.3 全部字段的 JSON（JSON 中 SHA256 与文件实际一致）（AC-009-2、M-08）。
+  2. 主题 / 透明 / 字族既有运行时回归仍通过，manual 结构单测仍通过（AC-006-3、AC-006-4、AC-001-4、AC-009-2）。
+  3. 边界：相对 `44845c8` 无代码与冻结件差异，无空白错误；旧 60 张图（`assets/handoff/`）与 4 张图注特写不变；manual-acceptance 仍 0 checked / 8 unchecked（AC-009-2 人工证据不被覆盖）。
+  4. 文档：README 追加新图 / JSON 链接、采集命令、来源 HEAD / frontend 树、版本与“AI 采集非人工验收”；manual M-08 追加新链接与 AI 采集补充（AI 看图结论如有须标明为 AI 观察）；A-H01-P3-1 台账更新为“已补采，待 Walter 人工复核 M-08”，不写已关闭（AC-009-2、M-08）。
+- **验证命令**：
+  1. `node C:/Users/iswal/AppData/Local/Temp/fw-m08-evidence.nY5thg/capture-full.mjs` → exit 0；随后 `sha256sum specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900-full.png` 与 JSON 中 SHA256 一致
+  2. `pnpm -C frontend test:e2e -g "AC-006-3|AC-006-4|AC-001-4" && pnpm -C frontend test:unit -t "AC-009-2"` → exit 0（e2e 应为 6 条；单元计数以真实输出为准）
+  3. `git diff --check && git diff --exit-code 44845c8 -- frontend design backend docs AGENTS.md specs/frontend-workbench/spec.md specs/frontend-workbench/checklist.md specs/frontend-workbench/review-h01.md specs/frontend-workbench/assets/handoff specs/frontend-workbench/assets/h01-fix-20261028/before-1440x900.png specs/frontend-workbench/assets/h01-fix-20261028/before-960x900.png specs/frontend-workbench/assets/h01-fix-20261028/after-1440x900.png specs/frontend-workbench/assets/h01-fix-20261028/after-960x900.png`；`grep -c -- "- \[x\]" specs/frontend-workbench/manual-acceptance.md`（0）与 `grep -c -- "- \[ \]" specs/frontend-workbench/manual-acceptance.md`（8）
+  4. `git ls-files specs/frontend-workbench/assets/h01-fix-20261028`（含新 PNG 与 JSON）`&& git diff 44845c8 --stat -- specs/frontend-workbench/manual-acceptance.md specs/frontend-workbench/assets/h01-fix-20261028/README.md`（仅新增行；人工核对 M-08 之外无改动）
+- **实施证据（2026-10-28）**：Implement = **openai/gpt-6-astra via openai**（`PI_PROVIDER` / `PI_MODEL` 实核，首选，无回退）；唯一写入者，未另派 agent。分支 `docs/frontend-workbench-m08-evidence`；基线 / 采集时 HEAD `44845c8922becfdb26bf4d0c5572f12a79ce748f`，frontend 树 `03fda1deaef016793033c29f79ffce5b901f83a4`。Checklist 实核 70 / 0，Analyze 本轮允许实施。
+  - 采集程序 `%TEMP%/fw-m08-evidence.nY5thg/capture-full.mjs` 实际生成 `assets/h01-fix-20261028/after-1440x900-full.png`（764×211 像素，17,540 bytes）及 `capture-full-1440.json`；Chrome 156.0.8078.49 / Playwright 1.64.1，T.window 1440×900、deviceScaleFactor 1、新上下文、仅 mock normal。采集时未提交的仅五份规划文档；程序核实 frontend 与基线无差异、无未跟踪前端文件，状态与命令结果已写入 JSON。
+  - 实际 figure bounds `(237, 498.75)–(1000.328125, 708.25)` 完整落在 viewport `(0,0)–(1440,900)` 与模块可视区内（模块 bounds `(224,416.75)–(1414,829.5)`）；图注、SVG 均在 figure 内，`fullVisibility` 四项 true。图注 Range 共同竖向区间 `500.75–513.75`，单位同行在右；真实曲线路径 / 轴文字非空、60 点与 fixture 一致、主题与令牌一致、背景 transparent、pageErrors 空。未改 DOM / CSS 或后处理 PNG，本轮未作看图结论、不代人工验收。
+  - `node …/capture-full.mjs`：成功 **exit 0**。首次临时脚本断言将 ECharts 未销毁时的 `isDisposed()=undefined` 当作必须等于 false，**exit 1、未出图且进程已清理**；改为既有 e2e 的“不为 true”后成功，未改产品或完整可见判据。失败与成功日志均保留（不是旧代码红跑）。
+  - `pnpm -C frontend test:e2e -g "AC-006-3|AC-006-4|AC-001-4"`：**6 passed / exit 0**；`pnpm -C frontend test:unit -t "AC-009-2"`：**1 文件 / 9 passed，13 文件 / 550 skipped，exit 0**。没有重跑全量或 build；559 + 68 / build 为旧 H-01 证据，不作本轮亲跑结果。
+  - `git diff --check` 与 T-19 验证命令 3 的全部边界检查 **exit 0**；frontend / design / backend / docs / AGENTS / 冻结 spec / Checklist / A 原件 / 旧 60 图 / 4 张 caption PNG 零差异。manual **0 checked / 8 unchecked**，仅 M-08 新增两行（链接与采集补充）；资产 README 仅末尾新增。PNG SHA256 实际对拍通过：`15c08282a5f7b65f6df162ab5818dbaf513f7bc891571e757d956beb3c79a678`。
+  - 本机日志与 exit：`C:/Users/iswal/AppData/Local/Temp/fw-m08-evidence.nY5thg/{capture-attempt-1,capture,e2e,unit,boundary}.{log,exit}`；脚本 / 日志不入库。4191 由脚本自启停且仅清理自己的 PID 树，浏览器已关闭；4173 由既有 Playwright 自启停。H-02 / v2 / 旧 11 项 P3 未处理。
+- **实施后流程（不属本任务）**：Converge 追加记录 → 独立 A 定向 Review → Walter Gate 2。M-08 人工勾选仍由 Walter 复核。
+
+### 本次 T-19 Review 新增备注（2026-10-28；不属原 11 项已接受 P3，不属 A-H01-P3-1，不是实施任务，不计工时）
+
+| 发现 | 当前处理 | 内容 | 验收引用 |
+|---|---|---|---|
+| A-M08-P3-1（原件编号 P3-1） | ~~待 Walter 裁定 / 风险接受~~（Review 时点）→ **已接受为非阻断备注（Walter 2026-10-28 Gate 2“确认”）**；本轮不返工，不新增任务 | `capture-full-1440.json` 的 `frontendDiffExit`、`frontendUntrackedFiles`、`checks.*` 为断言守卫后的字面常量，数据真实且独立复采一致，仅证据链可读性；若临时脚本沉淀为通用工具再改为计算值。来源 [review-m08.md §5](review-m08.md) | AC-009-2、M-08 |
 
 ## AC 覆盖
 
@@ -331,11 +402,11 @@
 | AC-001-1 | T-02、T-14 |
 | AC-001-2、AC-001-6 | T-03 |
 | AC-001-3 | T-03；人工 M-01（T-15） |
-| AC-001-4 | T-04、T-14、T-16 |
+| AC-001-4 | T-04、T-14、T-16、T-18（H-01 图注，已实施 `771f2af`、自动化通过；待独立 Review） |
 | AC-001-5 | T-03、T-04、T-11、T-14 |
 | AC-002-1、AC-002-7 | T-08 |
 | AC-002-2 ~ AC-002-5 | T-08 |
-| AC-002-6 | T-14 |
+| AC-002-6 | T-14；T-18（仅无横向溢出回归，已实施 `771f2af`、自动化通过；不涉及 H-02） |
 | AC-003-1 ~ AC-003-4、AC-003-6 | T-10；T-16 补强 AC-003-1 / AC-003-4；AC-003-5 另有人工 M-03（T-15） |
 | AC-004-1、AC-004-2 | T-09 |
 | AC-004-3 | T-09、T-11 |
@@ -344,7 +415,7 @@
 | AC-004-6 | T-03 |
 | AC-005-1 ~ AC-005-5、AC-005-7 | T-13 |
 | AC-005-6 | T-06、T-07 |
-| AC-006-1 ~ AC-006-3 | T-12；AC-006-4 另有人工 M-08（T-15） |
+| AC-006-1 ~ AC-006-3 | T-12；AC-006-4 另有人工 M-08（T-15）；T-18 回归 AC-006-3 图注版式（已实施 `771f2af`、自动化通过；待独立 Review） |
 | AC-007-1 | T-03 |
 | AC-007-2 | T-07、T-14 |
 | AC-007-3 | T-06、T-07、T-16、T-17（验收证据） |
@@ -352,14 +423,29 @@
 | AC-008-1 | T-05、T-15 |
 | AC-008-2 | T-02、T-05 |
 | AC-008-3 | T-05 |
-| AC-009-1 | T-01、T-15、T-17 |
-| AC-009-2 | T-15、T-17 |
+| AC-009-1 | T-01、T-15、T-17；T-18（全量回归 559 + 68 / build 通过，`771f2af`） |
+| AC-009-2 | T-15、T-17；T-19（M-08 修复后 1440 整图证据：已补采 `bf04f69`、定向验证通过、Converge 已收敛；独立 A 通过 [review-m08.md](review-m08.md)，Gate 2 已批准、Handoff） |
 
 原始实施合计 15 个任务，预计约 25.5 小时。T-08 与 T-13 各承担 5–6 个 AC，若实施时超过 2 h，按 AGENTS §2 第 6 步拆成两项（各自更新矩阵与依赖），不改变本清单的覆盖。
 
 Review 后新增 T-16 / T-17 共 2.5 小时，合计 17 项 / 28 小时；不新增 AC。Handoff 新发现 H-01 / H-02 只登记为后续候选，不是已批准的实施任务，不计工时；本阶段不改生产代码。T-16 补强 AC-001-4 / AC-003-1 / AC-003-4 / AC-004-5 / AC-007-3 / AC-007-4，T-17 补齐 AC-009-1 / AC-009-2 的收敛证据；P3 台账不是已获批准的实施任务，不计入上述工时。
 
-## v2 任务（spec v2.1 / plan §7）
+2026-10-28 恢复追加 T-18（H-01，1 小时，已授权待修复、未实施），合计 18 项 / 29 小时；不新增 AC，不改冻结 spec。H-02 留待 v2、未修复，不计工时；11 项已接受 P3 不在 T-18 范围内。
+
+2026-10-28 Converge：上句“未实施”为规划时点记录；T-18 已实施（`771f2af` / `f4ff7be`），Converge 已收敛（H-01 实现与自动化验证范围，converge §9），未新增任务，合计仍 18 项 / 29 小时；待独立 A Review 与本次修复 Gate 2。
+
+2026-10-28 追加 T-19（M-08 整图证据补采，0.5 小时，已规划、未实施），合计 19 项 / 29.5 小时；不新增 AC，不改冻结 spec；H-02 / v2 / 旧 11 项 P3 不在范围内。
+
+2026-10-28 Converge：上句“未实施”为规划时点记录；T-19 已实施（`bf04f69`），Converge 已收敛（T-19 证据补采范围，converge §10），未新增任务，合计仍 19 项 / 29.5 小时；待独立 A Review 与本轮 Gate 2。
+
+## v2 任务（spec v2.1 / plan §9）
+
+> **主线合并登记（2026-10-29，当前摘要；本行优先于下方各行中的“当前”字样）**：`claude-opus-5-5 via anthropic`（协调器新派的集成 / 交接文档会话，不是 Implement，也不是 A；bridge 本窗口已有真实额度 / 限流失败，未重试、未改配置）。集成树把 `origin/main` `cf8e11b` 真实 merge 进 `76abe92`，依据是 Walter 对 **S0 现有内容的阶段性合入授权**（原话、范围与 Gate 边界见 `merge-main-cleanup.md`）。这不是 v2 最终 Review、Gate 2 或正式 Handoff，也不取消其余 Gate。
+> - **v1 段**：本文件页首 v1 各行与「## 约定」至「## v2 任务」之前的正文整段取 main `cf8e11b`（T-01～T-19、P3 台账含 H-01 / H-02 后续记录、H-01 / M-08 Review 备注、AC 覆盖表）。
+> - **plan 编号机械迁移**：v2 设计原 plan §7.0～§7.14 → 现 plan §9.0～§9.14，逐节一一对应（例：H-x 交接表原 §7.3 → §9.3，导航原 §7.4 → §9.4，验收对应原 §7.11 → §9.11，分阶段依赖原 §7.13 → §9.13）。本段与 v2 页首中写作 “plan §9.x”、或紧跟 plan 引用的 “§9.x”，都指该 v2 设计；本文件自己的第 9 节（工时、依赖与下一步，文中也写作 “§9 第 3 步”）与第 7 节（52 条 AC 矩阵）编号不变。plan 的 §7 / §8 现为 main 的 v1 H-01 / M-08 追加节，v1 段 T-18 / T-19 引用的 plan §7 / §8 指它们，不迁移。固定旧 SHA 的历史原件中的 “plan §7.x” 按本映射读作 “§9.x”。
+> - **状态不变**：仍为 12 项 / 22 h；T-V2-01 / 02 completed，T-V2-03～12 共 10 项 blocked；52 条 AC 矩阵、完成标准、验证命令、依赖与工时都没改；第 1.2 节 H 表八行仍全部“未交付”；第 1.3 节 P3-1 仍是后续候选，未修复、未获风险接受。
+> - **交接入口**：原根目录 `HANDOFF.md`（S0 状态归档）已迁至 `specs/frontend-workbench/handoff-v2-s0.md`；下方各行中的“根 `HANDOFF.md`”是迁移前的历史指向。根目录 `HANDOFF.md` 现为 main 上 agent 工作流重塑的交接，逐字保留。
+> - 本次合并只做文档与 Git 检查，没有运行 install / pnpm / test / build。合并后的复测、独立集成 Analyze / Converge、A 复核，以及 push / PR / merge main，都由协调器后续安排；本文件不预写其结果。
 
 > **S0 完成登记（2026-10-29，当前摘要；只做状态归档，不是正式 Handoff）**：由 `claude-opus-5-5 via anthropic` 记录，协调器新派的会话；bridge 在当前额度窗口已知失败，没有重试，也没有改配置。
 > - **S0 已完成**：T-V2-01 / T-V2-02 均为 completed。Implement = `openai/gpt-6-astra via openai`，开工基线 `6a1fda4`；T01 提交 `0aebf66`，T02 提交 `5d53f45`。
@@ -376,11 +462,11 @@ Review 后新增 T-16 / T-17 共 2.5 小时，合计 17 项 / 28 小时；不新
 
 > **恢复状态（2026-10-28，协调集成登记；G-02 裁定前的历史快照，当前状态见下方“G-02 裁定落实”行）**：v1 正式基线 `43b6d79681a49562f41751368b2ae00c24062f56` 已由 `eb6ebd8` 合入，并已串行快进到主规格分支。S10～S12 已落实；12 项均未开始。集成人、集成验证树与独立实施树已按下表登记，但建立工作树不等于授权 Implement。合并后的独立只读 Analyze R5（`analyze-v2-r5.md`）判定不通过（2 P2 / 3 P3），F-01～F-05 已按页首“R5 修正与更正”行修正；复跑 R6（`analyze-v2-r6.md`）确认 R5 各项关闭，新发现 0 P1/P2、2 P3，已按页首“R6 修正”行修正。R7 定向复跑审 `217960d` 已确认 R6 的 F-01 / F-02 全部关闭、无新增 P1/P2/P3（原文 `analyze-v2-r7.md`），闸门 4 的内部子项满足。A R3 已独立复核固定 `b375b27` 并通过（0 阻断，原样产物 `425c1fd6c639734b0c45ba7cf9259dbee4439074`，见第 1.1 节），当时仍待 Walter 裁定 G-02 窄窗导航（现已裁定，见下方）。S1/S2 另缺 H-x 实现交付。下方 R3/R4 与页首“暂停 / 未取得”均为当时记录。
 
-> **V2-S13 / S14 落实（2026-10-28，A R3 非阻断建议）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`，由协调器 `openai/gpt-6.1-sol` 新派独立会话（不是 Implement，也不是审核员 A）；同一限额窗口内 Opus bridge 已有最小真实调用的额度 / 限流类失败，本会话按 AGENTS §6 第 5 条未重试 bridge、未改配置。基线 `79b5212`，worktree `D:/2030/Futures-AI-workbench-v2-g02`，分支 `docs/frontend-workbench-v2-g02`。只改 tasks 文字（A R3 结论第 2 条：不触发 spec 或 plan §7 设计变更，不要求重新 A 复核）：S13 在 T-V2-01 与第 9 节预登记超时拆分规则；S14 把 T-V2-03 / 04 / 05 / 07 / 09 的 blocked_by 收窄为未解除项，第 3 节写明已满足前置不再逐任务列出，第 1.2 节登记规则 1 补 `8af343f` R6。任务数、工时、依赖、完成标准、验证命令与 52 AC 矩阵都不变；G-02 与 H-x 前置不变，12 项仍 blocked，不授权 Implement。
+> **V2-S13 / S14 落实（2026-10-28，A R3 非阻断建议）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`，由协调器 `openai/gpt-6.1-sol` 新派独立会话（不是 Implement，也不是审核员 A）；同一限额窗口内 Opus bridge 已有最小真实调用的额度 / 限流类失败，本会话按 AGENTS §6 第 5 条未重试 bridge、未改配置。基线 `79b5212`，worktree `D:/2030/Futures-AI-workbench-v2-g02`，分支 `docs/frontend-workbench-v2-g02`。只改 tasks 文字（A R3 结论第 2 条：不触发 spec 或 plan §9 设计变更，不要求重新 A 复核）：S13 在 T-V2-01 与第 9 节预登记超时拆分规则；S14 把 T-V2-03 / 04 / 05 / 07 / 09 的 blocked_by 收窄为未解除项，第 3 节写明已满足前置不再逐任务列出，第 1.2 节登记规则 1 补 `8af343f` R6。任务数、工时、依赖、完成标准、验证命令与 52 AC 矩阵都不变；G-02 与 H-x 前置不变，12 项仍 blocked，不授权 Implement。
 
-> **G-02 裁定落实（2026-10-28，当前状态）**：协调器问“是否按推荐，采用导航内部横向滚动？”，Walter 本轮回复“可以”。协调器转述的裁定内容：小于 980px 时九项顶部导航保持单行，导航容器内部横向滚动，页面本身不横滚。**G-02 人工裁定已满足。** Plan/Tasks = `claude-opus-5-5` via `anthropic`，由协调器 `openai/gpt-6.1-sol` 新派独立会话（不是 Implement，也不是 A）；同一限额窗口内 Opus bridge 的最小真实调用已返回额度 / 限流类失败，本会话未重试 bridge、未改配置。基线 `e84ee27de7baba055a92eb9d92d80ac76e5ab513`。本次改动是对已采用的 `UI_LAYOUT.md#narrow` 规则的实现细节，不改 spec / 52 AC / 产品形态，不触发 ADR 或 Gate 1。但它属于 plan §7.4 的实质设计修改，所以闸门 2 / 4 对这部分增量重新打开：先由独立只读 Analyze R8 复核，再由 A R4 定向复核（固定对象规则见第 1.1 节“A 定向复核”行的当前口径）。改动范围：plan 页首、§7.2 / §7.4 / §7.11 / §7.12 M-09 / §7.13 / §7.14；本节第 1.1、1.2、2、3、4、5 节，T-V2-01 / 02 及各任务状态行，第 7 节矩阵 AC-002-6 / AC-008-1，第 8、9 节。任务仍为 12 项 / 22 h，依赖不变。v1 正文、spec、两份 Checklist、代码、`design/`、`docs/` 都未改，历史报告原件未改。**当前阻塞**：T-V2-01 / 02 只等 Analyze R8 与 A R4；T-V2-03～12 另缺 H-x 四项交接（第 1.2 节全部未交付）。
+> **G-02 裁定落实（2026-10-28，当前状态）**：协调器问“是否按推荐，采用导航内部横向滚动？”，Walter 本轮回复“可以”。协调器转述的裁定内容：小于 980px 时九项顶部导航保持单行，导航容器内部横向滚动，页面本身不横滚。**G-02 人工裁定已满足。** Plan/Tasks = `claude-opus-5-5` via `anthropic`，由协调器 `openai/gpt-6.1-sol` 新派独立会话（不是 Implement，也不是 A）；同一限额窗口内 Opus bridge 的最小真实调用已返回额度 / 限流类失败，本会话未重试 bridge、未改配置。基线 `e84ee27de7baba055a92eb9d92d80ac76e5ab513`。本次改动是对已采用的 `UI_LAYOUT.md#narrow` 规则的实现细节，不改 spec / 52 AC / 产品形态，不触发 ADR 或 Gate 1。但它属于 plan §9.4 的实质设计修改，所以闸门 2 / 4 对这部分增量重新打开：先由独立只读 Analyze R8 复核，再由 A R4 定向复核（固定对象规则见第 1.1 节“A 定向复核”行的当前口径）。改动范围：plan 页首、§9.2 / §9.4 / §9.11 / §9.12 M-09 / §9.13 / §9.14；本节第 1.1、1.2、2、3、4、5 节，T-V2-01 / 02 及各任务状态行，第 7 节矩阵 AC-002-6 / AC-008-1，第 8、9 节。任务仍为 12 项 / 22 h，依赖不变。v1 正文、spec、两份 Checklist、代码、`design/`、`docs/` 都未改，历史报告原件未改。**当前阻塞**：T-V2-01 / 02 只等 Analyze R8 与 A R4；T-V2-03～12 另缺 H-x 四项交接（第 1.2 节全部未交付）。
 
-> **R8 修正（2026-10-28，当前状态）**：Plan/Tasks 修正作者 = `claude-opus-5-5` via `anthropic`，由协调器新派独立会话（不是 A，也不是 Implement）；同一限额窗口内 Opus bridge 已返回额度 / 限流类失败，未重试、未改配置。基线 `39b16e379befb04078a865daaee398e492271184`。独立只读 Analyze R8（`analyze-v2-r8.md`）判定 1 P2 / 1 P3，本次只做最小修正：**F-01（P2）** T-V2-01 修改范围与标准 4 增加计算样式断言（`.nav-list` 的 `flex-wrap` 为 `nowrap`，导航标签的 `white-space` 为 `nowrap`），写明同一行 / `overflow-x: auto` / 末项可达 / 文档无溢出只是行为证据，实际 `scrollLeft > 0` 只在 `scrollWidth > clientWidth` 时断言；`flex: none` 如需写，写在 `.nav-list > li`；新增 CSS 限定在窄窗选择器，纵向不滚若写用 `overflow-y: hidden`。**F-02（P3）** T-V2-02 的 M-09 与 T-V2-01 标准 6 / 修改范围的 `UI_NAV` 文案改为“960 / 979 九项单行、页面不横滚；仅空间不足时内部横滚，令牌宽度下放得下、不出现滚动条属正常”。plan 页首与 §7.2 / §7.4 / §7.11 / §7.12 / §7.13 / §7.14 同步。任务仍 12 项 / 22 h，完成标准 / 验证命令数、依赖、52 AC 矩阵都不变；不加测试工具，不改 T-V2-08 的 `breakpoints.spec`。**本节中凡把“Analyze R8”写作未解除前置的地方（含各任务状态行“Analyze R8 / A R4”），现指“R8 修正后的独立复跑 R9（报告落盘并确认无未解决项）与 A R4”**；A R4 的固定对象顺延为 R9 报告落盘的提交（第 1.1 节当前口径）。本行不是 Analyze 或 A 结论，不预写 R9 或 A R4 通过。
+> **R8 修正（2026-10-28，当前状态）**：Plan/Tasks 修正作者 = `claude-opus-5-5` via `anthropic`，由协调器新派独立会话（不是 A，也不是 Implement）；同一限额窗口内 Opus bridge 已返回额度 / 限流类失败，未重试、未改配置。基线 `39b16e379befb04078a865daaee398e492271184`。独立只读 Analyze R8（`analyze-v2-r8.md`）判定 1 P2 / 1 P3，本次只做最小修正：**F-01（P2）** T-V2-01 修改范围与标准 4 增加计算样式断言（`.nav-list` 的 `flex-wrap` 为 `nowrap`，导航标签的 `white-space` 为 `nowrap`），写明同一行 / `overflow-x: auto` / 末项可达 / 文档无溢出只是行为证据，实际 `scrollLeft > 0` 只在 `scrollWidth > clientWidth` 时断言；`flex: none` 如需写，写在 `.nav-list > li`；新增 CSS 限定在窄窗选择器，纵向不滚若写用 `overflow-y: hidden`。**F-02（P3）** T-V2-02 的 M-09 与 T-V2-01 标准 6 / 修改范围的 `UI_NAV` 文案改为“960 / 979 九项单行、页面不横滚；仅空间不足时内部横滚，令牌宽度下放得下、不出现滚动条属正常”。plan 页首与 §9.2 / §9.4 / §9.11 / §9.12 / §9.13 / §9.14 同步。任务仍 12 项 / 22 h，完成标准 / 验证命令数、依赖、52 AC 矩阵都不变；不加测试工具，不改 T-V2-08 的 `breakpoints.spec`。**本节中凡把“Analyze R8”写作未解除前置的地方（含各任务状态行“Analyze R8 / A R4”），现指“R8 修正后的独立复跑 R9（报告落盘并确认无未解决项）与 A R4”**；A R4 的固定对象顺延为 R9 报告落盘的提交（第 1.1 节当前口径）。本行不是 Analyze 或 A 结论，不预写 R9 或 A R4 通过。
 
 > **恢复修订 R3（2026-10-28，用户“按 HANDOFF.md 继续”后）**：Plan/Tasks = `claude-opus-5-5` via `anthropic`（会话由用户以该通道启动；本会话未探 bridge、未改 provider / 路由 / 配置）。基线 `ded7161`，分支 `docs/frontend-workbench-v2-resume`。内容：登记 v1 Handoff SHA `43b6d79` 并按其真实代码复核 v1 事实；落实 A R2 非阻断建议 V2-S10～S12；按 Handoff 代码消解 T-V2-01 对 `AppShell.vue` 的条件写入。无需求变化、不改 spec / 两份 Checklist / v1 任务正文。**R3 修订未经 A 定向复核**（闸门 2 须 A 对 R3 基线重新确认），定向 Analyze 见 `analyze-v2-r3.md`。
 > **集成记录 R4（2026-10-28，G-03 关闭）**：本次文档 merge 执行者 = `claude-opus-5-5` via `anthropic`（协调器 `openai/gpt-6.1-sol` 指定为唯一执行者，仅限本次串行文档集成；不是 Implement，也不是审核员 A）。合并提交 `eb6ebd8` 把 v1 Handoff `43b6d79` 合入本分支，4 处冲突按“v1 段取 Handoff 版本、v2 段原样保留”解决；本节（v2 段）合并时逐字未变，合并后只补本行和 1.1 / §9 / T-V2-01 状态行。冲突均非语义冲突，定向 Analyze 见 `analyze-v2-r4.md`。上方 v1 段现为 Handoff 版本（T-01～T-17、P3 台账），v2 页首所称“15 个任务 / 25.5 h”指 v1 原始基线，T-16 / T-17 与 v2 的关系见第 2 节 R3 补充。
@@ -394,18 +480,18 @@ Review 后新增 T-16 / T-17 共 2.5 小时，合计 17 项 / 28 小时；不新
 | 项 | 值 | 说明 |
 |---|---|---|
 | 冻结需求 | spec v2.1，共 52 条 AC。R-001～R-009 分别为 6 / 8 / 9 / 6 / 9 / 4 / 5 / 3 / 2 条；AC 集合与 `fec3556` 一致 | Q-023～Q-031 已在 spec 页首的批准记录里闭环。spec §5 裁定表里残留的“待 Walter 确认”字样，以页首批准记录为准（V2-S09）。spec 已冻结，不改 |
-| 设计依据 | plan §7（A R1 审 `d2bf5a7` 后通过）；Tasks 阶段的 §7 小改已由 A R2 审到 `949a232`（通过） | 还没经 A 审的增量从 `d1c2133` 起：R3 状态与事实更新、R4 合并带入的 plan §1～§6 Handoff 版本、R5 修正（plan §7.2 增加 `design/ui` 写入行、§7.4 / §7.11 / §7.13 / §7.14 同步）、R6 修正（§7.2 备注的 AC 归属）。这部分已由 A R3 复核 `b375b27` 通过（历史）。**当前未审增量（起点 `79b5212`）**：`e84ee27` 的 S13 / S14 tasks 文字，以及本次 G-02 落实（plan 页首、§7.2 / §7.4 / §7.11 / §7.12 M-09 / §7.13 / §7.14，tasks 对应各节）。由 Analyze R8 与 A R4 按下方“A 定向复核”行的当前口径复核。**S0 归档补记**：该增量已由 R9（`ee3e348`）和 A R4（审 `34ee795`，产物 `e596244`）复核通过，现在没有未审的设计增量 |
+| 设计依据 | plan §9（A R1 审 `d2bf5a7` 后通过）；Tasks 阶段的 §9 小改已由 A R2 审到 `949a232`（通过） | 还没经 A 审的增量从 `d1c2133` 起：R3 状态与事实更新、R4 合并带入的 plan §1～§6 Handoff 版本、R5 修正（plan §9.2 增加 `design/ui` 写入行、§9.4 / §9.11 / §9.13 / §9.14 同步）、R6 修正（§9.2 备注的 AC 归属）。这部分已由 A R3 复核 `b375b27` 通过（历史）。**当前未审增量（起点 `79b5212`）**：`e84ee27` 的 S13 / S14 tasks 文字，以及本次 G-02 落实（plan 页首、§9.2 / §9.4 / §9.11 / §9.12 M-09 / §9.13 / §9.14，tasks 对应各节）。由 Analyze R8 与 A R4 按下方“A 定向复核”行的当前口径复核。**S0 归档补记**：该增量已由 R9（`ee3e348`）和 A R4（审 `34ee795`，产物 `e596244`）复核通过，现在没有未审的设计增量 |
 | 当前有效清单 | `specs/frontend-workbench/checklist-v2.md` | 旧 `checklist.md` 不改，也不授权 v2 |
 | Tasks 起草基线 | `a8ab444a28e8e6a9fd056401b55f63a1b25a2c4a` | 只读 |
-| **v1 Review / Gate 2 / Handoff 合入 main 的 SHA** | **`43b6d79681a49562f41751368b2ae00c24062f56`**（R3 登记） | PR #7「Merge PR #7: frontend-workbench v1（Gate 2 已确认，Handoff）」的 merge commit；`gh pr view 7` = MERGED、`mergeCommit.oid` 同值；`git merge-base --is-ancestor 43b6d79 main` 与 `… origin/main` 均成立。双方实施起点都是它。不得改填 `fdaa7d8`、`0ffa15e`、`b19427a` 或 `8920b06`。**v1 事实复核**：`git diff 0ffa15e 43b6d79 -- frontend` 只有 12 个文件（R1-01 变化量精度：`contracts/{types.ts,CONTRACT.md,schema.json}`、`shared/{format.ts,components/Kpi.vue,components/BoardGrid.vue}` 及 6 个测试），`design/` 无差异；第 4 节壳文件中只有 `e2e/workbench.spec.ts` 变化（新增一条 `AC-003-1 R1-01` 用例，T-V2-06 在其上追加、不改它）。plan §7 以 `0ffa15e` 核对的壳文件事实（`AppShell` 三行、`AgentDrawer` 定位、`agent/store.ts` 建 run、`stores/app.ts` 4 步、`Rail.vue` / `PlaceholderPage.vue` 的 research 依赖）在 `43b6d79` 上逐字不变。契约仍为 `1.0.0`，新增可选 `Figure.deltaDecimals`（归契约拥有者，壳不涉）。窄窗顶部导航样式在 `Rail.vue`（`.rail[data-viewport-collapsed='true'] .nav-list { flex-wrap: wrap }`），不在 `AppShell.vue` |
+| **v1 Review / Gate 2 / Handoff 合入 main 的 SHA** | **`43b6d79681a49562f41751368b2ae00c24062f56`**（R3 登记） | PR #7「Merge PR #7: frontend-workbench v1（Gate 2 已确认，Handoff）」的 merge commit；`gh pr view 7` = MERGED、`mergeCommit.oid` 同值；`git merge-base --is-ancestor 43b6d79 main` 与 `… origin/main` 均成立。双方实施起点都是它。不得改填 `fdaa7d8`、`0ffa15e`、`b19427a` 或 `8920b06`。**v1 事实复核**：`git diff 0ffa15e 43b6d79 -- frontend` 只有 12 个文件（R1-01 变化量精度：`contracts/{types.ts,CONTRACT.md,schema.json}`、`shared/{format.ts,components/Kpi.vue,components/BoardGrid.vue}` 及 6 个测试），`design/` 无差异；第 4 节壳文件中只有 `e2e/workbench.spec.ts` 变化（新增一条 `AC-003-1 R1-01` 用例，T-V2-06 在其上追加、不改它）。plan §9 以 `0ffa15e` 核对的壳文件事实（`AppShell` 三行、`AgentDrawer` 定位、`agent/store.ts` 建 run、`stores/app.ts` 4 步、`Rail.vue` / `PlaceholderPage.vue` 的 research 依赖）在 `43b6d79` 上逐字不变。契约仍为 `1.0.0`，新增可选 `Figure.deltaDecimals`（归契约拥有者，壳不涉）。窄窗顶部导航样式在 `Rail.vue`（`.rail[data-viewport-collapsed='true'] .nav-list { flex-wrap: wrap }`），不在 `AppShell.vue` |
 | 壳 v2 实施 worktree / 分支 | `D:/2030/Futures-AI-workbench-v2-implement` / `feat/frontend-workbench-v2-s0` | 已从正式 v1 Handoff `43b6d79` 创建，并已由集成人串行快进到规格提交 `79b521207a93567c4da8651e5f6e53c665e3d098`（2026-10-28 只读核对 `git rev-parse`）。当前尚无 v2 实现提交；S0 开工前还要再快进到 A R4 复核过的规格提交；开工前只由指定壳实施会话（按 AGENTS §6 路由）同步通过复核的规格及集成基线，其他会话不并写。G-03 已由合并提交 `eb6ebd8` 解除；创建工作树不解除其他闸门。**S0 归档补记（只读核对）**：快进到 `6a1fda4` 后实施，现在 HEAD = T02 `5d53f451c1519ff5dbae66c91eef734f21335fe9`（T01 为 `0aebf660822663ea022fc059413c6ada5c95f78c`）；上文“尚无 v2 实现提交”是开工前的历史 |
 | 集成验证分支名 | `integration/frontend-workbench-v2`，worktree `D:/2030/Futures-AI-workbench-v2-integration` | 已从 `43b6d79` 创建，已快进到 `79b5212`；由下行集成人串行快进本轮规格/审核产物及已获交接的 H-x，其他会话只读。没有 H-x 实现已集成。**S0 归档补记**：现在 HEAD = `5d53f45`（只读核对），仍然没有任何 H-x 实现集成 |
 | 指定集成人 | 本协调会话 `openai/gpt-6.1-sol`（本次恢复串行协调 / 集成） | 负责真实提交的串行合并与证据登记，不代做产品决策、代码实施或 A 勾选。文档语义由 `claude-opus-5-5 via anthropic` 产出，本次 v1 合并执行者亦为 Opus；实施与 A 各用独立 worktree / 会话。`gpt-6.1-sol` 也是 A 的回退 2：如果 A 回退到 Sol，就和集成人同模型。这不违反 AGENTS §6 第 3 条（只要求与实施模型不同），但发生时要在 A 产物头部和 review.md 记录 |
 | 最近一轮 Analyze | **R9**，固定审 `ee3e348459124aead80d99c4f3b9438d24450a54`，原文 `analyze-v2-r9.md` | R8 F-01（P2）/ F-02（P3）全部关闭，无新增 P1/P2/P3。闸门 4 内部分析子项满足，其后 A R4 已通过（见下方 A 行）；R7 / R8 是各自固定历史基线，不再作为当前结论 |
 | Analyze 历史（以下结论限其当时固定提交） | **R6**（独立只读复跑 R5，HEAD `516b520`，`analyze-v2-r6.md`）：R5 的 F-01～F-05 全部关闭；新发现 0 P1/P2、2 P3（F-01 A 审查范围按字面会带入整套 v1；F-02 `design/ui` 登记误挂 AC-002-2），已按页首“R6 修正”行修正，**待定向复跑只读 Analyze 确认关闭**。此前：**R5**（独立只读，HEAD `5ba40ad`，`analyze-v2-r5.md`）：**不通过**，2 P2（F-01 A 复核对象不一致、F-02 `design/ui` 导航条目与 v2 冲突且无任务负责）/ 3 P3（F-03～F-05 状态记录），F-01～F-05 已按页首“R5 修正与更正”行修正，经 R6 确认关闭。R4（定向，`eb6ebd8` 合并，`analyze-v2-r4.md`）；R3（定向，`d1c2133`，`analyze-v2-r3.md`）；R2 固定 `6bda6c910343b887fad2ffede062fe241f034752`，索引 `analyze-v2.md`，作者原文 `analyze-v2-r2.md` | R2：R1 的 F-01～F-07 全部关闭，无新增 F。R3 / R4 是定向报告；R5 是合并后的独立报告，结论为不通过；R6 是其复跑，有 2 个 P3 未解决。定向复跑确认 R6 的 F-01 / F-02 关闭、且无新增未解决项前，第 5 节闸门 4 不满足 |
-| A 对 Tasks（及 plan §7 小改）定向复核产物的已提交 SHA | **当前 A R4：`e596244fba308875152b0ce1a9c1752d6e85b6ae`，固定审 `34ee7954d8aa26609c937dd6fcc7cc029baa2539`，通过 / 0 阻断，R4-C01～C11 正式勾选；仅放行 S0 内部设计闸门**。注意：这是设计 Checklist 阶段的产物，S0 代码审查是另一个阶段（产物 `6acfd30`），见本表末尾“S0 限定代码审查”行，两者不能互相替代。R2（历史）：`f1f755bad8e4bab7577c415f4aea3d297c9d37a8`（审 `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`）；**恢复后 A R3：`425c1fd6c639734b0c45ba7cf9259dbee4439074`，固定审查对象 `b375b270a47d210823ae62da16438eeac17096db`，通过 / 0 阻断** | 当前 A R4 证据见本格首句及清单 R4。以下 A R3 与其范围规则均为固定时点历史：A R3 = `claude-fable-5-1 via anthropic`，独立 worktree / 新会话，R3-C01～C08 正式勾选；以本格已登记的 `b375b27` 为本轮固定对象，`425c1fd` 为已提交原样审核产物。新增 V2-S13 / S14 非阻断建议已由 Tasks 作者按 A R3 结论第 2 条只改 tasks 文字落实（见 v2 段首“V2-S13 / S14 落实”行与第 8 节）；S15 的产物 SHA / 固定对象 / 状态同步已完成。R2（审 `949a232`）为历史通过记录。<br>**当前口径（G-02 落实 → Analyze R8 → A R4；闸门 2(a)、§9 引用本口径）**：<br>• 固定对象：先有本次 Plan/Tasks 提交（`docs(frontend-workbench): apply approved G-02 horizontal navigation plan`），再做独立只读 Analyze R8。R8 报告落盘的提交就是 A R4 的固定对象；该提交只放报告和索引 / 状态行。如果 R8 触发修正，就顺延到最后一次“修正 + 复跑报告”落盘的提交。**R8 已触发修正（v2 段首“R8 修正”行），固定对象现顺延为独立复跑 R9 报告落盘的提交**；若 R9 再触发修正，继续顺延。审核员仍为 A R4。该 SHA 由集成人在报告落盘后登记在本格，A R4 产物 SHA 也登记在本格。<br>• 审查范围：`git diff 79b5212 <固定对象>`（`79b5212` 是固定对象的直接祖先，中间没有合并，所以不带路径的 diff 不会带入 v1）。`git diff --name-only 79b5212 <固定对象>` 只能出现这些路径：`specs/frontend-workbench/plan.md`、`specs/frontend-workbench/tasks.md`、`specs/frontend-workbench/analyze-v2*.md`、`specs/README.md`、`HANDOFF.md`。范围包含 `e84ee27` 的 S13 / S14 文字落实。<br>• 范围外断言（均应无输出）：`git diff 43b6d79 <固定对象> -- frontend design docs backend AGENTS.md specs/frontend-workbench/assets specs/frontend-workbench/review.md specs/frontend-workbench/converge.md specs/frontend-workbench/manual-acceptance.md specs/frontend-workbench/checklist.md specs/frontend-workbench/analyze.md`；`git diff fec3556 <固定对象> -- specs/frontend-workbench/spec.md`；`git diff 425c1fd <固定对象> -- specs/frontend-workbench/checklist-v2.md`（当前有效清单以 A R3 原样产物 `425c1fd` 为准，不再用历史 `f1f755b`）。<br>**历史口径（A R3 已按此执行，审 `b375b27`；不再用于当前复核）**：<br>**恢复后 A 的固定复核对象（F-01，当时唯一口径）**：R5 / R6 修正落盘、并经复跑只读 Analyze 确认无未解决项的那个提交，以复跑报告落盘的提交为准；如果复跑又触发修正，就顺延到最后一次“修正 + 复跑报告”落盘的提交。审查的增量起点是 `ded7161`（A R2 审到 `949a232`，`949a232..ded7161` 只有暂停记账），包括：R3（`d1c2133`）；R4 合并 `eb6ebd8`（plan §1～§6 换成 Handoff 版本，含 `deltaDecimals`；v1 任务段换成 T-16 / T-17 和含 H-02 的 P3 台账）及其记账 `1642216`；集成人与工作树登记 `5ba40ad`；R5 报告 `d4b1853` 与 R5 修正 `71a21ad`；R6 报告 `43b97dd` 与 R6 修正。<br>**审查路径与范围外（R6 F-01；当时由闸门 2(a)、§9 第 3 步引用，现已由上方当前口径取代）**：(a) 审查路径只限 `specs/frontend-workbench/plan.md`、`specs/frontend-workbench/tasks.md`、`specs/frontend-workbench/analyze-v2*.md`、`specs/README.md`、`HANDOFF.md`，审查命令为 `git diff ded7161 <该提交> -- specs/frontend-workbench/plan.md specs/frontend-workbench/tasks.md 'specs/frontend-workbench/analyze-v2*.md' specs/README.md HANDOFF.md`；其中 R4 带入的 plan §1～§6 与 tasks v1 段 Handoff 版本只核对是否与 v2 段冲突（plan §7.1 覆盖声明），不重审 v1 设计。(b) 范围外：v1 代码与截图（`frontend/`、`specs/frontend-workbench/assets/`）及 v1 的 `review.md` / `converge.md` / `manual-acceptance.md` 已由 v1 Review / Gate 2 覆盖；`session-artifacts/` 是原样归档；`spec.md` 与两份 checklist 只作依据。范围外不变由三条断言证明，均应无输出：`git diff 43b6d79 <该提交> -- frontend design docs backend AGENTS.md specs/frontend-workbench/assets specs/frontend-workbench/review.md specs/frontend-workbench/converge.md specs/frontend-workbench/manual-acceptance.md specs/frontend-workbench/checklist.md`；`git diff fec3556 <该提交> -- specs/frontend-workbench/spec.md`；`git diff f1f755b <该提交> -- specs/frontend-workbench/checklist-v2.md`。`git log ded7161..<该提交>` 和不带路径的 `git diff ded7161 <该提交>` 会带入全部 v1 提交（合并基 `3bf6476` 早于 v1 完成），不作为审查清单。**不得以 `d1c2133` 或任何更早的提交代替。** 该提交号由集成人在复跑报告落盘后登记在本格，A 复核产物 SHA 也登记在本格；实施者不改清单 |
+| A 对 Tasks（及 plan §9 小改）定向复核产物的已提交 SHA | **当前 A R4：`e596244fba308875152b0ce1a9c1752d6e85b6ae`，固定审 `34ee7954d8aa26609c937dd6fcc7cc029baa2539`，通过 / 0 阻断，R4-C01～C11 正式勾选；仅放行 S0 内部设计闸门**。注意：这是设计 Checklist 阶段的产物，S0 代码审查是另一个阶段（产物 `6acfd30`），见本表末尾“S0 限定代码审查”行，两者不能互相替代。R2（历史）：`f1f755bad8e4bab7577c415f4aea3d297c9d37a8`（审 `949a2329be9874aeaf7c5a189d49d1ee11ad97e5`）；**恢复后 A R3：`425c1fd6c639734b0c45ba7cf9259dbee4439074`，固定审查对象 `b375b270a47d210823ae62da16438eeac17096db`，通过 / 0 阻断** | 当前 A R4 证据见本格首句及清单 R4。以下 A R3 与其范围规则均为固定时点历史：A R3 = `claude-fable-5-1 via anthropic`，独立 worktree / 新会话，R3-C01～C08 正式勾选；以本格已登记的 `b375b27` 为本轮固定对象，`425c1fd` 为已提交原样审核产物。新增 V2-S13 / S14 非阻断建议已由 Tasks 作者按 A R3 结论第 2 条只改 tasks 文字落实（见 v2 段首“V2-S13 / S14 落实”行与第 8 节）；S15 的产物 SHA / 固定对象 / 状态同步已完成。R2（审 `949a232`）为历史通过记录。<br>**当前口径（G-02 落实 → Analyze R8 → A R4；闸门 2(a)、§9 引用本口径）**：<br>• 固定对象：先有本次 Plan/Tasks 提交（`docs(frontend-workbench): apply approved G-02 horizontal navigation plan`），再做独立只读 Analyze R8。R8 报告落盘的提交就是 A R4 的固定对象；该提交只放报告和索引 / 状态行。如果 R8 触发修正，就顺延到最后一次“修正 + 复跑报告”落盘的提交。**R8 已触发修正（v2 段首“R8 修正”行），固定对象现顺延为独立复跑 R9 报告落盘的提交**；若 R9 再触发修正，继续顺延。审核员仍为 A R4。该 SHA 由集成人在报告落盘后登记在本格，A R4 产物 SHA 也登记在本格。<br>• 审查范围：`git diff 79b5212 <固定对象>`（`79b5212` 是固定对象的直接祖先，中间没有合并，所以不带路径的 diff 不会带入 v1）。`git diff --name-only 79b5212 <固定对象>` 只能出现这些路径：`specs/frontend-workbench/plan.md`、`specs/frontend-workbench/tasks.md`、`specs/frontend-workbench/analyze-v2*.md`、`specs/README.md`、`HANDOFF.md`。范围包含 `e84ee27` 的 S13 / S14 文字落实。<br>• 范围外断言（均应无输出）：`git diff 43b6d79 <固定对象> -- frontend design docs backend AGENTS.md specs/frontend-workbench/assets specs/frontend-workbench/review.md specs/frontend-workbench/converge.md specs/frontend-workbench/manual-acceptance.md specs/frontend-workbench/checklist.md specs/frontend-workbench/analyze.md`；`git diff fec3556 <固定对象> -- specs/frontend-workbench/spec.md`；`git diff 425c1fd <固定对象> -- specs/frontend-workbench/checklist-v2.md`（当前有效清单以 A R3 原样产物 `425c1fd` 为准，不再用历史 `f1f755b`）。<br>**历史口径（A R3 已按此执行，审 `b375b27`；不再用于当前复核）**：<br>**恢复后 A 的固定复核对象（F-01，当时唯一口径）**：R5 / R6 修正落盘、并经复跑只读 Analyze 确认无未解决项的那个提交，以复跑报告落盘的提交为准；如果复跑又触发修正，就顺延到最后一次“修正 + 复跑报告”落盘的提交。审查的增量起点是 `ded7161`（A R2 审到 `949a232`，`949a232..ded7161` 只有暂停记账），包括：R3（`d1c2133`）；R4 合并 `eb6ebd8`（plan §1～§6 换成 Handoff 版本，含 `deltaDecimals`；v1 任务段换成 T-16 / T-17 和含 H-02 的 P3 台账）及其记账 `1642216`；集成人与工作树登记 `5ba40ad`；R5 报告 `d4b1853` 与 R5 修正 `71a21ad`；R6 报告 `43b97dd` 与 R6 修正。<br>**审查路径与范围外（R6 F-01；当时由闸门 2(a)、§9 第 3 步引用，现已由上方当前口径取代）**：(a) 审查路径只限 `specs/frontend-workbench/plan.md`、`specs/frontend-workbench/tasks.md`、`specs/frontend-workbench/analyze-v2*.md`、`specs/README.md`、`HANDOFF.md`，审查命令为 `git diff ded7161 <该提交> -- specs/frontend-workbench/plan.md specs/frontend-workbench/tasks.md 'specs/frontend-workbench/analyze-v2*.md' specs/README.md HANDOFF.md`；其中 R4 带入的 plan §1～§6 与 tasks v1 段 Handoff 版本只核对是否与 v2 段冲突（plan §9.1 覆盖声明），不重审 v1 设计。(b) 范围外：v1 代码与截图（`frontend/`、`specs/frontend-workbench/assets/`）及 v1 的 `review.md` / `converge.md` / `manual-acceptance.md` 已由 v1 Review / Gate 2 覆盖；`session-artifacts/` 是原样归档；`spec.md` 与两份 checklist 只作依据。范围外不变由三条断言证明，均应无输出：`git diff 43b6d79 <该提交> -- frontend design docs backend AGENTS.md specs/frontend-workbench/assets specs/frontend-workbench/review.md specs/frontend-workbench/converge.md specs/frontend-workbench/manual-acceptance.md specs/frontend-workbench/checklist.md`；`git diff fec3556 <该提交> -- specs/frontend-workbench/spec.md`；`git diff f1f755b <该提交> -- specs/frontend-workbench/checklist-v2.md`。`git log ded7161..<该提交>` 和不带路径的 `git diff ded7161 <该提交>` 会带入全部 v1 提交（合并基 `3bf6476` 早于 v1 完成），不作为审查清单。**不得以 `d1c2133` 或任何更早的提交代替。** 该提交号由集成人在复跑报告落盘后登记在本格，A 复核产物 SHA 也登记在本格；实施者不改清单 |
 | 本 Tasks 落盘提交 SHA | `b364971`（初稿）；`6bda6c9`（按 F-01～F-07 修正）；R3 恢复修订见 `git log -1 --format=%H -- specs/frontend-workbench/analyze-v2-r3.md`（不在文件内写自身提交号） | Analyze R2 审查 `6bda6c9`；R5 审查 `5ba40ad`。A 恢复后的复核对象只按上方“A 定向复核”行确定，不固定到 R3 落盘提交 |
-| G-02 窄窗导航形态（R3 新发现，不改需求）——**已裁定** | **人工裁定已满足（2026-10-28，来源：本轮用户回复）**：协调器问“是否按推荐，采用导航内部横向滚动？”，Walter 回复“可以”。协调器转述的内容：小于 980px 时九项顶部导航单行，导航容器内部横向滚动，页面本身不横滚。这就是 `design/ui/UI_LAYOUT.md#narrow`“侧栏塌成顶栏横向滚动”的原有规则，`UI_LAYOUT.md` 原样采用、不写入。 | 两种做法原本都满足 spec R-002 / AC-002-6（文档级无横向溢出），本裁定不改 52 AC、不触发 ADR / Gate 1。按本行原登记的“改为横向滚动”路径执行：已改 plan §7.4 / §7.2（以及 §7.11 / §7.12 M-09 / §7.13 / §7.14），以及 T-V2-01 的修改范围、标准 4 和标准 6；`UI_NAV.md` 暗色适配段由 T-V2-01 写为单行加容器内横滚。下一步是 Analyze R8 与 A R4 定向复核（上方“A 定向复核”行当前口径），复核前 T-V2-01 不开工（R9 / A R4 均已通过，T-V2-01 已在 S0 完成）。原“保持换行”路径（写 `UI_LAYOUT.md` 的“不采用 + 原因”）已作废。v1 P3 台账 H-02 原文不改，这里不宣称 H-02 已关闭、v1 截图已补齐或视觉验收已完成；v2 删除专题子项、改为单行，只是去掉 H-02 所述成因的计划，要等 T-V2-01 实施并验证后才有证据 |
+| G-02 窄窗导航形态（R3 新发现，不改需求）——**已裁定** | **人工裁定已满足（2026-10-28，来源：本轮用户回复）**：协调器问“是否按推荐，采用导航内部横向滚动？”，Walter 回复“可以”。协调器转述的内容：小于 980px 时九项顶部导航单行，导航容器内部横向滚动，页面本身不横滚。这就是 `design/ui/UI_LAYOUT.md#narrow`“侧栏塌成顶栏横向滚动”的原有规则，`UI_LAYOUT.md` 原样采用、不写入。 | 两种做法原本都满足 spec R-002 / AC-002-6（文档级无横向溢出），本裁定不改 52 AC、不触发 ADR / Gate 1。按本行原登记的“改为横向滚动”路径执行：已改 plan §9.4 / §9.2（以及 §9.11 / §9.12 M-09 / §9.13 / §9.14），以及 T-V2-01 的修改范围、标准 4 和标准 6；`UI_NAV.md` 暗色适配段由 T-V2-01 写为单行加容器内横滚。下一步是 Analyze R8 与 A R4 定向复核（上方“A 定向复核”行当前口径），复核前 T-V2-01 不开工（R9 / A R4 均已通过，T-V2-01 已在 S0 完成）。原“保持换行”路径（写 `UI_LAYOUT.md` 的“不采用 + 原因”）已作废。v1 P3 台账 H-02 原文不改，这里不宣称 H-02 已关闭、v1 截图已补齐或视觉验收已完成；v2 删除专题子项、改为单行，只是去掉 H-02 所述成因的计划，要等 T-V2-01 实施并验证后才有证据 |
 | S0 实施提交 | T01 `0aebf660822663ea022fc059413c6ada5c95f78c`；T02 `5d53f451c1519ff5dbae66c91eef734f21335fe9`（Implement = `openai/gpt-6-astra via openai`，开工基线 `6a1fda426edb568cf1bd9bfbef7d402af6f0e988`） | 15 个文件都在许可范围内（+245 / −112），记录在 `implementation-v2-s0.md`；tasks 只改了两条状态行。证据范围见第 1.3 节 |
 | S0 Converge | `claude-opus-5-5 via anthropic`，固定审 `5d53f451c1519ff5dbae66c91eef734f21335fe9`；原文 `converge-v2-s0.md`（提交 `fab08a6a629e0c5acb47c5923efc2cfee53f3647`） | S0 的十条完成标准逐条对拍，没有内部差距；完整 v2 为“未收敛（外部阻塞）”。这不是 v2 最终 Converge |
 | S0 限定代码审查（与 A R4 设计 Checklist 分开） | A = `claude-fable-5-1 via anthropic`，review 树固定 `fab08a6a629e0c5acb47c5923efc2cfee53f3647`（代码与 `5d53f45` 一致）；原样产物 `6acfd308186131b034a3d5331685db60505009c7`，由主树 `c9ee14d772369b5ed934aa9e87856e565ededf22` 原样集成；原文 `review-v2-s0.md` | 通过，但只限 S0：0 P1 / 0 P2 / 1 P3；Converge 的 O-1 判为非发现。不是 v2 最终 Review，也不是 Gate 2。P3-1 的登记见第 1.3 节 |
@@ -418,19 +504,19 @@ Review 后新增 T-16 / T-17 共 2.5 小时，合计 17 项 / 28 小时；不新
 
 #### 1.2 生产方交接登记（按消费切片，不要求互动方全量 Handoff）
 
-| 交接单元（plan §7.3） | 内容 | 消费的壳任务 | 生产方固定 commit | 生产方已提交的有效 Checklist SHA / 轮次 | 定向测试命令与输出摘要 | 集成验证分支上的集成 SHA | 状态 |
+| 交接单元（plan §9.3） | 内容 | 消费的壳任务 | 生产方固定 commit | 生产方已提交的有效 Checklist SHA / 轮次 | 定向测试命令与输出摘要 | 集成验证分支上的集成 SHA | 状态 |
 |---|---|---|---|---|---|---|---|
 | H-1 | `CONTRACT_VERSION='2.0.0'`；`JobContext`；`SendMessage.jobContext?`；十类事件都带可选 `jobContext`；mock 把 payload 的上下文原样写入该 run 的全部事件；旧事件和旧 fixture 仍能解析 | T-V2-03、T-V2-04、T-V2-09；AC-007-5 的生产方证据（T-V2-11） | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
 | H-2·标签 | `JobStatusLabel / StageLabel / StageStateLabel / JobTypeLabel`，以及徽标组件 `JobStatusBadge`（V2-S07） | T-V2-04（只用 `StageLabel`）、T-V2-05、T-V2-06 | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
 | H-2·列表 | `listJobs`；`jobsStore` 共享未筛选缓存 ①～⑤（读状态和错误、ensure/load/refresh、筛选不覆盖缓存、写回执和 agent 通知刷新同一份缓存）；“进行中”口径，用契约常量或 selector 表达，并登记进 CONTRACT.md（V2-S02）；**随交接至少交付一个可调用、会改变作业摘要的生产方写 action**（如 `createJob` 在 store 层的 action），连同它的 store 归属、公开导出和“调用后刷新同一份缓存”的定向测试，名称以交接 SHA 登记在本行（F-04）；inbox 或 H-5 的 action 不算本单元交付 | T-V2-05、T-V2-06 | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
 | H-3·路由切片 | `jobs/routes.ts` 里的 `jobs` 和 `job-detail` 两条路由，以及 `main.ts` 在 mount 前调用 `addRoute`；**不含页面功能**（V2-S04） | T-V2-05、T-V2-06、T-V2-09；条件消费：T-V2-03（H-4 只经路由守卫设置 context 时，F-05） | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
-| 页面切片 | 互动方的 `/jobs` 列表页、作业详情页，以及 `IntakeDrawer` 的投放提交和归属流程（plan §7.13 S2） | T-V2-09、T-V2-10 | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
+| 页面切片 | 互动方的 `/jobs` 列表页、作业详情页，以及 `IntakeDrawer` 的投放提交和归属流程（plan §9.13 S2） | T-V2-09、T-V2-10 | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
 | H-4 | 只读的 `sessionStore.context`；离开 `job-detail` 时在同一次导航内同步清空；交接登记须写明是否含可在测试中使用的公开设置方式（只经路由守卫设置时，T-V2-03 条件依赖 H-3·路由切片；壳不加测试专用 setter 或抽象，也不写 sessionStore，F-05） | T-V2-03、T-V2-07、T-V2-09 | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
 | H-5 | `intakeStore.open(jobId?) / close / isOpen / jobId`，`jobId` 是打开时的快照；`IntakeDrawer` 根元素用 `.glass-drawer`，无 fixed 定位、遮罩、`aria-modal` 或焦点锁，关闭时不导航；它的写操作按 H-2 ⑤ 刷新缓存 | T-V2-07、T-V2-08、T-V2-10 | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
 | H-6 | `empty / error / slow` 三个场景覆盖 `listJobs`；`jobFixtures` 覆盖项可以替换整个作业样例集合（新增一项即以原集合加该项替换；只含非进行中作业的集合也用替换实现，F-06）；至少有一个进行中作业带未读待处理项 | T-V2-05、T-V2-06、T-V2-09 | 未取得 | 未取得 | 未取得 | 未取得 | 未交付 |
 
 **登记规则**：
-1. 外部 `8bd1b31` 里已提交的旧 R2（审查对象 `630e06f`）不覆盖 H-2、H-4、H-5、H-6 的新增要求；已提交的 `8af343f` 中的 Checklist R6 同样不含 plan §7.3 的新增要求（plan §7.3 末段），也不作为交接证据（V2-S14）。外部 worktree 里未提交的 R3 / R4 修改，以及只含设计文字、没有实现的后续提交，不能作为交接证据。互动方此后已提交的设计与审核记录，包括 `0e37fbf9f2810ad04f1c1b3fd856b0219f9c2f0d`（v1 基线与 H-x 生产方设计）、`9acf3de661187840ea5be6f6d6f78205872ac356`（其独立 A R7 Checklist 原样产物）、`5e9e1f4e99e7d5d7c4dfbf682a7fd92bd7dff796`（R7 通过与剩余实施闸门记录），**只作为生产方设计授权的参考**，不是任何 H-x 的四项交付。2026-10-28 只读核对：这三个提交都不含 `frontend/src/jobs`，也没有固定实现 commit、定向测试摘要或集成 SHA。所以下表各行仍为“未交付”。生产方的有效授权，以登记进来的“已提交的有效 Checklist SHA”为准。
+1. 外部 `8bd1b31` 里已提交的旧 R2（审查对象 `630e06f`）不覆盖 H-2、H-4、H-5、H-6 的新增要求；已提交的 `8af343f` 中的 Checklist R6 同样不含 plan §9.3 的新增要求（plan §9.3 末段），也不作为交接证据（V2-S14）。外部 worktree 里未提交的 R3 / R4 修改，以及只含设计文字、没有实现的后续提交，不能作为交接证据。互动方此后已提交的设计与审核记录，包括 `0e37fbf9f2810ad04f1c1b3fd856b0219f9c2f0d`（v1 基线与 H-x 生产方设计）、`9acf3de661187840ea5be6f6d6f78205872ac356`（其独立 A R7 Checklist 原样产物）、`5e9e1f4e99e7d5d7c4dfbf682a7fd92bd7dff796`（R7 通过与剩余实施闸门记录），**只作为生产方设计授权的参考**，不是任何 H-x 的四项交付。2026-10-28 只读核对：这三个提交都不含 `frontend/src/jobs`，也没有固定实现 commit、定向测试摘要或集成 SHA。所以下表各行仍为“未交付”。生产方的有效授权，以登记进来的“已提交的有效 Checklist SHA”为准。
 2. 每个交接单元都必须同时满足四项：有固定 commit、有已提交的有效 Checklist SHA、有定向测试命令和输出摘要、已由集成人集成。四项都满足后，消费它的任务才解除对应的 blocked_by。缺任何一项，任务就继续 blocked。
 3. 按消费切片解锁，不等互动方全量完成 Review / Gate 2 / Handoff 合入 main，所以没有循环依赖：
    - 互动方 A～G 组只依赖 v1；
@@ -539,19 +625,19 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 
 - [x] **状态**：completed（S0 实施与本任务六条验证完成；不是 v2 全量验收）。Implement = `openai/gpt-6-astra via openai`，开工基线 `6a1fda4`；四闸门已独立核对，S0 不消费 H-x。真实 red/green：新窄窗 2 failed（旧 wrap）→ 2 passed（nowrap）；六条命令依次 10 / 1 / 2 / 18 个 e2e 通过、typecheck + lint 通过、12 个 registry 测试通过且资产 grep / UI_LAYOUT diff 符合预期。详见 `implementation-v2-s0.md`（含完整命令、exit、范围与限制）。不得以此放行 S1/S2。归档引用：S0 Converge 固定审 `5d53f45` 已对齐（`converge-v2-s0.md`）；S0 限定代码审查通过，但只限 S0（A，产物 `6acfd30`，`review-v2-s0.md`）；见第 1.3 节
 - **上下文**：
-  - 依据：plan §7.4、§7.1；spec R-002、Q-023、Q-027。
+  - 依据：plan §9.4、§9.1；spec R-002、Q-023、Q-027。
   - 作业详情路由只由 H-3 提供，壳只生成名为 `jobs` 的占位路由。
   - 格物致知占位要能追溯归属（V2-S08），但不增加页面功能。
   - 导航的视觉 / 结构决定登记在 `design/ui/UI_NAV.md`（`docs/designUI.md` §3.1 / 第 198 行指定的导航登记处；spec R-008 / §4；AGENTS §4 先改文档再动实现）。移植时写入的暗色适配段仍是 v1 的“八项 + 研究子项”，由本任务同步（F-02）。
 - **修改范围**：
-  - `design/ui/UI_NAV.md` 暗色适配段：第一条“规定”改为九项（顺序与 plan §7.4 一致：工作台、作业、日报、价格、平衡表、物流、格物致知、知识库、设置），删除“专题研究子项来自 `getResearchList()`”，“为什么”改为“九项固定菜单由 spec R-002 v2 冻结（D-016 / D-018）”；第二条写明窄窗顶部导航为单行、页面不横滚，仅空间不足时在导航容器内部横向滚动；注明采用 `UI_LAYOUT.md#narrow` 原规则，并写明 Walter 2026-10-28 的 G-02 裁定；“不采用”的原因中“mock 研究列表”改为九项路由；“落点”补 plan §7.4。上方原文快照与 JSON 碎片不改。
+  - `design/ui/UI_NAV.md` 暗色适配段：第一条“规定”改为九项（顺序与 plan §9.4 一致：工作台、作业、日报、价格、平衡表、物流、格物致知、知识库、设置），删除“专题研究子项来自 `getResearchList()`”，“为什么”改为“九项固定菜单由 spec R-002 v2 冻结（D-016 / D-018）”；第二条写明窄窗顶部导航为单行、页面不横滚，仅空间不足时在导航容器内部横向滚动；注明采用 `UI_LAYOUT.md#narrow` 原规则，并写明 Walter 2026-10-28 的 G-02 裁定；“不采用”的原因中“mock 研究列表”改为九项路由；“落点”补 plan §9.4。上方原文快照与 JSON 碎片不改。
   - `design/ui/README.md`：UI_NAV 一行的采用范围改为“旧双台改九项路由（作业 / 格物致知，无专题子项）”。
   - `design/ui/UI_LAYOUT.md`：**不改**。G-02 已裁定为横向滚动，`#narrow`“侧栏塌成顶栏横向滚动”原样采用（原“保持换行时登记不采用”的条件已作废）。
-  - `nav.ts`：按 plan §7.4 写九项表；删除 `research`；`learning` 项加一行归属注释：“格物致知 = 学习循环产品区，docs/plan.md §8 Phase 2C；仓库暂无同名 feature；路由 `/learning` 不改”。
+  - `nav.ts`：按 plan §9.4 写九项表；删除 `research`；`learning` 项加一行归属注释：“格物致知 = 学习循环产品区，docs/plan.md §8 Phase 2C；仓库暂无同名 feature；路由 `/learning` 不改”。
   - `router.ts`：仍由 `navItems` 生成；保留 `/daily/:date?`；删除 `/research/:id?` 特例；不定义 `job-detail`。
-  - `Rail.vue`：删除专题子列表及其样式，连带删除因此失效的导入与局部变量（`43b6d79` 中 `useAppStore` 导入和 `app` 常量只服务子列表；V2-S10）。当前项判定为 `route.meta.navId === item.id`：同时 `route.name === item.id` 时设 `aria-current="page"`，否则设 `"location"`；全局同一时刻只有一个 `aria-current`。窄于 980 时（plan §7.4，G-02）：把现有 `.rail[data-viewport-collapsed='true'] .nav-list` 的 `flex-wrap: wrap` 改为 `nowrap`；标签 `white-space: nowrap`；如需写 `flex: none`，写在真正的 flex 子项 `.nav-list > li` 上（不是 `.fixed-link`）；`nav.rail-navigation` 基础样式已有 `overflow: auto`，新增的 `min-width: 0`、`overflow-x: auto` 只写在窄窗选择器 `.rail[data-viewport-collapsed='true']` 下，纵向不滚如要写则用 `overflow-y: hidden`，不影响宽屏纵向导航（R8 F-01）。断点、令牌、当前项底边红条和折叠钮隐藏都不变；不加状态、令牌、overlay、JS 监听或自动滚动。
+  - `Rail.vue`：删除专题子列表及其样式，连带删除因此失效的导入与局部变量（`43b6d79` 中 `useAppStore` 导入和 `app` 常量只服务子列表；V2-S10）。当前项判定为 `route.meta.navId === item.id`：同时 `route.name === item.id` 时设 `aria-current="page"`，否则设 `"location"`；全局同一时刻只有一个 `aria-current`。窄于 980 时（plan §9.4，G-02）：把现有 `.rail[data-viewport-collapsed='true'] .nav-list` 的 `flex-wrap: wrap` 改为 `nowrap`；标签 `white-space: nowrap`；如需写 `flex: none`，写在真正的 flex 子项 `.nav-list > li` 上（不是 `.fixed-link`）；`nav.rail-navigation` 基础样式已有 `overflow: auto`，新增的 `min-width: 0`、`overflow-x: auto` 只写在窄窗选择器 `.rail[data-viewport-collapsed='true']` 下，纵向不滚如要写则用 `overflow-y: hidden`，不影响宽屏纵向导航（R8 F-01）。断点、令牌、当前项底边红条和折叠钮隐藏都不变；不加状态、令牌、overlay、JS 监听或自动滚动。
   - `e2e/shell.spec.ts`：
-    - 物理八项菜单表（v1 的 `menu` 常量）改为九项：按 plan §7.4，含 `/jobs`（owner `workbench-interaction`）和 `/learning`（owner `learning`），删除 `/research`。
+    - 物理八项菜单表（v1 的 `menu` 常量）改为九项：按 plan §9.4，含 `/jobs`（owner `workbench-interaction`）和 `/learning`（owner `learning`），删除 `/research`。
     - 以该表为参数的旧 `AC-002-2` 菜单用例和直达 / 刷新用例**全部迁移**为九项口径（标题改为 `AC-002-2 v2-nav …`，计数 8 改 9）；不能只新增 v2-nav 用例而保留旧八项用例。
     - 旧「daily 与 research 详情深链」用例：删除 research 部分，保留 daily 深链部分（标题改为 `AC-002-2 v2-nav …`）。
     - 删除 v1 用研究列表注入验证的旧 `AC-002-3` 用例；随之不再使用的 `research.json` 导入一并删除（契约侧 fixture 本身保留，归互动方）。
@@ -583,7 +669,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 
 - [x] **状态**：completed（S0 实施与本任务四条验证完成；不含采集接线或人工验收）。Implement = `openai/gpt-6-astra via openai`，在 T01 提交 `0aebf660822663ea022fc059413c6ada5c95f78c` 后串行执行并重核闸门；S0 不消费 H-x。四条命令依次 3 个 e2e、6 个 topbar、13 个人工清单文本测试通过，typecheck + lint 通过；附加 S0 回归 `test` 为 564 unit/component + 68 e2e 全绿，build 成功（仅大 chunk 警告）。完整证据见 `implementation-v2-s0.md`。未接 AppShell/抽屉，不宣称 AC-002-8 或 v2 全量 52 AC 验收。归档引用：S0 Converge 固定审 `5d53f45` 已对齐（`converge-v2-s0.md`）；S0 限定代码审查通过，但只限 S0（A，产物 `6acfd30`，`review-v2-s0.md`）。审查发现的 P3-1（加载百分比长浮点）只作为后续候选登记在第 1.3 节，本任务定义不改
 - **上下文**：
-  - 依据：plan §7.2 中 `stores/app.ts` 的最小派生修改（checklist-v2 I-01 已确认），以及同源的 `PlaceholderPage.vue` 最小派生修改（Analyze R1 F-01 补入，待 A 定向复核确认）、§7.6 入口、§7.12 M-09～M-12。
+  - 依据：plan §9.2 中 `stores/app.ts` 的最小派生修改（checklist-v2 I-01 已确认），以及同源的 `PlaceholderPage.vue` 最小派生修改（Analyze R1 F-01 补入，待 A 定向复核确认）、§9.6 入口、§9.12 M-09～M-12。
   - 本任务只让按钮发出 `intake` 事件，**不宣称满足 AC-002-8**。
 - **修改范围**：
   - `stores/app.ts`，只做三处修改：
@@ -594,7 +680,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
   - `TopBar.vue`：新增文字按钮“投放”，点击时发出 `intake` 事件，组件仍只接收 props。
   - `tests/component/topbar.spec.ts`。
   - `e2e/shell.spec.ts`：AC-002-7 的进度和文案断言按 3 步更新。
-  - `manual-acceptance.md`：M-01～M-08 原样保留；追加 M-09～M-12。其中 M-09 写明“格物致知（learning，Phase 2C）占位注明归属”，以及“窄窗（960 / 979）九项单行，页面不横滚；仅空间不足时在导航容器内部横滚，令牌宽度下九项放得下、不出现滚动条属正常”（plan §7.12，G-02；R8 F-02）。
+  - `manual-acceptance.md`：M-01～M-08 原样保留；追加 M-09～M-12。其中 M-09 写明“格物致知（learning，Phase 2C）占位注明归属”，以及“窄窗（960 / 979）九项单行，页面不横滚；仅空间不足时在导航容器内部横滚，令牌宽度下九项放得下、不出现滚动条属正常”（plan §9.12，G-02；R8 F-02）。
   - `tests/unit/manual-acceptance.spec.ts`。
   - `pages/PlaceholderPage.vue`：只删除按 `route.meta.navId === 'research'` 读取 `app.research` 的标题分支，标题直接取 `route.meta.title`；连带删除因此失效的 `useAppStore` 导入和 `app` 常量（V2-S10）；占位文案、`data-placeholder-owner` 和 daily 日期展示不变。
 - **依赖**：T-V2-01　**预计**：2 h
@@ -612,7 +698,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 #### T-V2-03 对话上下文：store 捕获、绑定与按作业查看（S1-ctx）
 
 - [ ] **状态**：blocked。blocked_by：H-1、H-4；条件依赖 H-3·路由切片（H-4 交接登记写明 context 只能由路由守卫设置时）。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
-- **上下文**：plan §7.7、§7.10 第 3、4 条；V2-S06。
+- **上下文**：plan §9.7、§9.10 第 3、4 条；V2-S06。
 - **修改范围**：
   - `agent/store.ts`：
     - `send` 在第一个 `await` 之前，同步读取 `useSessionStore().context` 的快照。`useSessionStore()` **只在 `send` 函数体内调用**，不在模块顶层调用，以免与 `jobs/**` 互相导入时形成初始化循环；不为此加抽象。
@@ -639,7 +725,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 #### T-V2-04 对话上下文展示：chip 与“查看”选择器（S1-ctx）
 
 - [ ] **状态**：blocked。blocked_by：H-1、H-4、H-2·标签（只需 `StageLabel`）；经 T-V2-03 继承 H-3·路由切片的条件依赖（H-4 交接登记写明 context 只能由路由守卫设置时；V2-S12）。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
-- **上下文**：plan §7.7 的展示部分。两档高度和 `fai.drawer` 都不变。
+- **上下文**：plan §9.7 的展示部分。两档高度和 `fai.drawer` 都不变。
 - **修改范围**：
   - `AgentDock.vue`：输入栏 chip。有上下文时显示“作业 {jobId} · {StageLabel}”，没有时显示“全局”。
   - `CotTimeline.vue`：每个 run 头部显示 chip，全局 run 显示“全局”。
@@ -659,7 +745,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 
 - [ ] **状态**：blocked。blocked_by：H-2·标签（含 `JobTypeLabel`、`JobStatusBadge`）、H-2·列表（含随交接登记的写 action）、H-3·路由切片、H-6。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
 - **上下文**：
-  - 依据：plan §7.5；V2-S02、S04、S07。
+  - 依据：plan §9.5；V2-S02、S04、S07。
   - 具名路由 `job-detail` 要等 H-3 路由切片集成后才存在。在此之前本任务 blocked，不加 `hasRoute` 兜底，也不演示未集成的界面。
 - **修改范围**：
   - 新建 `workbench/JobTrack.vue`：
@@ -685,7 +771,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 #### T-V2-06 作业轨道：三态与固定件位置（S1-track）
 
 - [ ] **状态**：blocked。blocked_by：同 T-V2-05（其中 H-6 须含 `jobFixtures` 替换整个作业样例集合的能力）。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
-- **上下文**：plan §7.5 的三种状态；V2-S03。
+- **上下文**：plan §9.5 的三种状态；V2-S03。
 - **修改范围**：
   - `JobTrack.vue`：
     - 加载态沿用 v1 的 Loading。
@@ -712,7 +798,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 #### T-V2-07 全局投放挂载、几何令牌与对话抽屉避让（S1-intake）
 
 - [ ] **状态**：blocked。blocked_by：H-4、H-5；另外因为和 T-V2-04 同写 `AgentDrawer.vue` 而串行，继承 H-1 和 H-2·标签，并经 T-V2-04 → T-V2-03 继承 H-3·路由切片的条件依赖（V2-S12）。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
-- **上下文**：plan §7.6、§7.10 第 1 条。
+- **上下文**：plan §9.6、§9.10 第 1 条。
 - **修改范围**：
   - `tokens.json`：新增 `layout.intake_width`，值在实施时确定（建议 `24rem`），`source` 为 `design/ui/UI_DARK_ADDITIONS.md#drawer`。
   - `UI_DARK_ADDITIONS.md`：在 `#drawer` 段补一条记录。
@@ -740,7 +826,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 #### T-V2-08 断点回归：轨道与双抽屉（S1 汇合）
 
 - [ ] **状态**：blocked。blocked_by：T-V2-06 和 T-V2-07 的全部 blocked_by 合并。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
-- **上下文**：plan §7.11 AC-002-6；M-10、M-11。
+- **上下文**：plan §9.11 AC-002-6；M-10、M-11。
 - **修改范围**：`e2e/breakpoints.spec.ts`。
 - **依赖**：T-V2-06、T-V2-07　**预计**：1 h
 - **完成标准**：
@@ -753,7 +839,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 #### T-V2-09 集成 e2e（一）：作业路由、列表与对话上下文（S2）
 
 - [ ] **状态**：blocked。blocked_by：H-1、H-2·标签、H-2·列表、H-3·路由切片、页面切片、H-4、H-6（另经依赖继承 H-5）。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
-- **上下文**：plan §7.11 中 AC-002-2、AC-002-3、AC-005-8 的集成部分；V2-S05；Analyze R1 F-03。
+- **上下文**：plan §9.11 中 AC-002-2、AC-002-3、AC-005-8 的集成部分；V2-S05；Analyze R1 F-03。
   - `shell.spec` 中 `/jobs` 的壳占位子断言（T-V2-01#1）在 H-3 路由切片集成后失效，由本任务迁移。H-3 集成到本任务完成之间，不以 `-g "AC-002-2"` 全前缀或全量运行作为证据。
   - 这个窗口内，集成验证分支上的每次提交信息，以及 Converge 报告、review.md，都要写一句“已知红：`shell.spec` `/jobs` 占位子断言，待 T-V2-09 迁移”，不能把它当作回归或证据（V2-S11）。窗口由集成人在 H-3 集成时开启，在本任务的标准 4 通过后关闭。
 - **修改范围**：
@@ -780,7 +866,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 #### T-V2-10 集成 e2e（二）：全局投放与轨道一致性（S2）
 
 - [ ] **状态**：blocked。blocked_by：同 T-V2-09，另加 H-5 和页面切片中的 `IntakeDrawer` 流程。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
-- **上下文**：plan §7.11 中 AC-002-8、AC-003-7 的集成部分；§7.10 第 2 条。
+- **上下文**：plan §9.11 中 AC-002-8、AC-003-7 的集成部分；§9.10 第 2 条。
 - **修改范围**：`e2e/integration-v2.spec.ts`（追加）。
 - **依赖**：T-V2-09　**预计**：2 h
 - **完成标准**：
@@ -802,7 +888,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 
 - [ ] **状态**：blocked。blocked_by：全部交接单元，以及 T-V2-10。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
 - **上下文**：
-  - 依据：plan §7.11 中“不变 + v2 回归”的各条。
+  - 依据：plan §9.11 中“不变 + v2 回归”的各条。
   - 只在集成验证分支的 SHA 上运行。
   - 默认不改代码。回归失败时：如果在壳的文件里，只能在第 4 节已列的壳文件内修复，并在 review.md 记录；如果在生产方文件里，退回生产方，壳不代修。
 - **修改范围**：没有新增修改；修复限于第 4 节的壳文件。
@@ -832,7 +918,7 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 
 - [ ] **状态**：blocked。blocked_by：同 T-V2-11。已满足前置：v1 Handoff `43b6d79`（V2-S14）。全体共同前置：G-02 增量的 Analyze R8 / A R4（第 5 节闸门 2 / 4）
 - **上下文**：
-  - 依据：plan §7.12；spec R-009。
+  - 依据：plan §9.12；spec R-009。
   - 只有集成验证分支上的全量结果才算 v2 证据。
   - 证据摘要和截图交给 Handoff 时的 review.md；截图的存放路径沿用 v1 Handoff 时的约定。
 - **修改范围**：截图证据文件。不改 manual-acceptance.md 正文：如果发现文本与实现不符，回 Analyze 另行登记。
@@ -916,26 +1002,26 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
 | 建议 | 处理 | 落实位置 |
 |---|---|---|
 | V2-S01 | 接受 | 第 1.2 节登记表要求填固定 commit、已提交的有效 Checklist SHA 和定向测试摘要；不以 `8bd1b31` 的旧 R2 或移动工作树中的 R3/R4 作为证据。README 第 33 行已登记 H-2/H-4/H-5/H-6 的新增要求。本 Tasks 新细化了三点：`JobStatusBadge` 随 H-2 交付；H-2 标签可先供 S1-ctx；H-3 路由切片可先供 S1-track。这三点是交接范围的细化，已随本 Tasks 落盘补入 README 同一行 |
-| V2-S02 | 接受 | plan §7.3 H-2 ③ 小改；T-V2-05#1：“等待人工确认”和“存在冲突待介入”的作业在集合内，终结态不在；具体枚举由生产方的契约常量定义并登记进 CONTRACT.md |
-| V2-S03 | 接受 | plan §7.5 空态和 §7.11 AC-003-9 小改；T-V2-06：两种静态文案，不加 `reason` 字段 |
-| V2-S04 | 接受，采用“列依赖”方案，不改成按 path 跳转 | plan §7.5 点击行为、H-3 解锁列和 §7.13 S1-track 小改；T-V2-05/06 的 blocked_by 加 H-3 路由切片（不等页面功能）；不加 `hasRoute`；切片集成前卡片不可点、不演示 |
-| V2-S05 | 接受 | plan §7.11 AC-005-8 小改；T-V2-09#3：显式等待原 run 终态后再全局发送，并通过新 run 没有上下文推出 payload 没有旧上下文；T-V2-03#1 直接断言 payload 中没有该键 |
-| V2-S06 | 接受 | plan §7.7 小改；T-V2-03 修改范围和第 1 条完成标准：`useSessionStore()` 只在 `send` 函数体内调用，不加抽象 |
-| V2-S07 | 接受 | plan §7.5、H-2、§7.13 小改：“优先复用”改为“复用”；T-V2-05/06 的 blocked_by 加 H-2·标签（含 `JobStatusBadge`）；没交接就 blocked，不用文案直出替代 |
+| V2-S02 | 接受 | plan §9.3 H-2 ③ 小改；T-V2-05#1：“等待人工确认”和“存在冲突待介入”的作业在集合内，终结态不在；具体枚举由生产方的契约常量定义并登记进 CONTRACT.md |
+| V2-S03 | 接受 | plan §9.5 空态和 §9.11 AC-003-9 小改；T-V2-06：两种静态文案，不加 `reason` 字段 |
+| V2-S04 | 接受，采用“列依赖”方案，不改成按 path 跳转 | plan §9.5 点击行为、H-3 解锁列和 §9.13 S1-track 小改；T-V2-05/06 的 blocked_by 加 H-3 路由切片（不等页面功能）；不加 `hasRoute`；切片集成前卡片不可点、不演示 |
+| V2-S05 | 接受 | plan §9.11 AC-005-8 小改；T-V2-09#3：显式等待原 run 终态后再全局发送，并通过新 run 没有上下文推出 payload 没有旧上下文；T-V2-03#1 直接断言 payload 中没有该键 |
+| V2-S06 | 接受 | plan §9.7 小改；T-V2-03 修改范围和第 1 条完成标准：`useSessionStore()` 只在 `send` 函数体内调用，不加抽象 |
+| V2-S07 | 接受 | plan §9.5、H-2、§9.13 小改：“优先复用”改为“复用”；T-V2-05/06 的 blocked_by 加 H-2·标签（含 `JobStatusBadge`）；没交接就 blocked，不用文案直出替代 |
 | V2-S08 | 接受，不增加页面功能 | T-V2-01：在 `nav.ts` 加归属注释，`AC-002-2 v2-nav` 断言 owner 文案；T-V2-02：M-09 写“格物致知（learning，Phase 2C）” |
-| V2-S09 | 接受，spec 不改 | 页首声明和第 1.1 节：以 spec 页首批准记录为准；plan §7.1 小改，补“其余回归见 §7.11” |
+| V2-S09 | 接受，spec 不改 | 页首声明和第 1.1 节：以 spec 页首批准记录为准；plan §9.1 小改，补“其余回归见 §9.11” |
 | V2-S10（A R2） | 接受（R3） | T-V2-01 `Rail.vue` 与 T-V2-02 `stores/app.ts`、`PlaceholderPage.vue` 的修改范围写明连带删除失效导入和局部变量（已按 `43b6d79` 核实位置）；T-V2-01 新增标准 5 / 命令 5 `typecheck && lint`；T-V2-02 标准 4 / 命令 4 改为 `typecheck && lint`；矩阵 AC-002-7、AC-009-1 同步 |
 | V2-S11（A R2） | 接受（R3） | T-V2-09 上下文：H-3 集成到 T-V2-09#4 通过之间的窗口内，提交信息、Converge、review.md 都写明“已知红”，窗口的开启与关闭由集成人负责 |
 | V2-S12（A R2） | 接受（R3） | T-V2-04、T-V2-07 的 blocked_by 显式写出经 T-V2-03 继承 H-3·路由切片的条件依赖 |
 | R3 自查（不是 A 的建议） | 一并送 A 复核 | 按 `43b6d79` 真实代码消解 T-V2-01 对 `AppShell.vue` 的条件写入（窄窗导航样式在 `Rail.vue`），第 4 节改为 `AppShell.vue` 只由 T-V2-07 写；T-V2-02 的 blocked_by 改为继承 T-V2-01；新增“待 Walter 裁定”的窄窗导航形态 |
-| Analyze R5 F-01～F-05（不是 A 的建议） | 接受（R5 修正），一并送 A 复核 | F-01：1.1“A 定向复核”行、“本 Tasks 落盘提交”行、第 5 节闸门 2(a)、§9 第 3 步统一为同一个固定对象；F-02：plan §7.2 加 `design/ui` 写入行，第 4 节、T-V2-01 修改范围 / 标准 6 / 命令 6、1.1 G-02 两种裁定、矩阵 AC-002-2 / AC-008-1 同步；F-03：1.1“最近一轮 Analyze”与闸门 4 登记 R5；F-04 / F-05：页首“R5 修正与更正”行，以及 plan 页首和 §7.0 的更正 |
-| Analyze R6 F-01 / F-02（不是 A 的建议） | 接受（R6 修正），一并送 A 复核 | F-01：1.1“A 定向复核”行补“审查路径与范围外”口径（审查路径 + 三条范围外断言），闸门 2(a)、§9 第 3 步引用该口径；F-02：T-V2-01 标准 6 只引 AC-008-1（依据 R-008 / §4），矩阵 AC-002-2 行去掉 T-V2-01#6 及其命令（AC-008-1 行保留），plan §7.2 备注改为只落 AC-008-1 registry，与 plan §7.11 一致。O-1（T-V2-01 工时）不改任务结构，留 A 做 V-02 时确认；O-2（固定对象提交只放报告和索引 / 状态行）由集成人落盘时遵守 |
+| Analyze R5 F-01～F-05（不是 A 的建议） | 接受（R5 修正），一并送 A 复核 | F-01：1.1“A 定向复核”行、“本 Tasks 落盘提交”行、第 5 节闸门 2(a)、§9 第 3 步统一为同一个固定对象；F-02：plan §9.2 加 `design/ui` 写入行，第 4 节、T-V2-01 修改范围 / 标准 6 / 命令 6、1.1 G-02 两种裁定、矩阵 AC-002-2 / AC-008-1 同步；F-03：1.1“最近一轮 Analyze”与闸门 4 登记 R5；F-04 / F-05：页首“R5 修正与更正”行，以及 plan 页首和 §9.0 的更正 |
+| Analyze R6 F-01 / F-02（不是 A 的建议） | 接受（R6 修正），一并送 A 复核 | F-01：1.1“A 定向复核”行补“审查路径与范围外”口径（审查路径 + 三条范围外断言），闸门 2(a)、§9 第 3 步引用该口径；F-02：T-V2-01 标准 6 只引 AC-008-1（依据 R-008 / §4），矩阵 AC-002-2 行去掉 T-V2-01#6 及其命令（AC-008-1 行保留），plan §9.2 备注改为只落 AC-008-1 registry，与 plan §9.11 一致。O-1（T-V2-01 工时）不改任务结构，留 A 做 V-02 时确认；O-2（固定对象提交只放报告和索引 / 状态行）由集成人落盘时遵守 |
 | V2-S13（A R3） | 接受（只改 tasks 文字，按 A R3 结论第 2 条不要求重新 A 复核） | T-V2-01 新增“超时拆分规则”（预登记 T-V2-01b，0.5 h，依赖 T-V2-01，受 G-02 阻塞；第 4 / 7 / 9 节同步规则；触发时走定向 Analyze）；第 9 节工时段补一句。未触发，任务数与工时不变 |
-| V2-S14（A R3） | 接受（同上） | T-V2-03 / 04 / 05 / 07 / 09 的 blocked_by 删去已满足的“v1 Handoff SHA”；第 3 节新增约定：blocked_by 只列未解除前置，已满足的闸门 1 / 2 / 4 仍按第 5 节开工前人工核对；第 1.2 节登记规则 1 补 `8af343f` R6 不含 plan §7.3 新增要求，与 plan §7.3 末段一致 |
+| V2-S14（A R3） | 接受（同上） | T-V2-03 / 04 / 05 / 07 / 09 的 blocked_by 删去已满足的“v1 Handoff SHA”；第 3 节新增约定：blocked_by 只列未解除前置，已满足的闸门 1 / 2 / 4 仍按第 5 节开工前人工核对；第 1.2 节登记规则 1 补 `8af343f` R6 不含 plan §9.3 新增要求，与 plan §9.3 末段一致 |
 | V2-S14 补充（G-02 落实轮） | 接受 | 各任务状态行统一标“已满足前置：v1 Handoff `43b6d79`”，第 3 节同步；第 1.2 节登记规则 1 补互动方 `0e37fbf` / `9acf3de` / `5e9e1f4` 只作设计授权参考，不是 H-x 交付，H 表仍未交付 |
-| G-02 裁定落实（Walter 2026-10-28“可以”；不是 A 的建议） | 接受；属于 plan §7.4 实质修改，送 Analyze R8 / A R4 | plan §7.2 / §7.4 / §7.11 / §7.12 M-09 / §7.13 / §7.14；第 1.1 节 G-02 行改为已裁定，“A 定向复核”行新增当前口径（`79b5212..` 固定对象，`checklist-v2` 对 `425c1fd`），旧口径标为历史；第 3、4、5 节；T-V2-01 修改范围 / 标准 4 / 标准 6 / 命令 4 / 命令 6 和拆分规则；T-V2-02 的 M-09；矩阵 AC-002-6 / AC-008-1。新增的窄窗用例放在 T-V2-01 拥有的 `shell.spec`，不写 T-V2-08 的 `breakpoints.spec`；`UI_LAYOUT.md` 不改。任务数、工时和依赖不变 |
-| Analyze R8 F-01 / F-02（不是 A 的建议） | 接受（R8 修正），送复跑 R9 / A R4 | F-01（P2）：T-V2-01 修改范围（`Rail.vue` CSS 限定窄窗选择器、`flex: none` 落 `.nav-list > li`、纵向不滚用 `overflow-y: hidden`；`shell.spec` 新增用例含 `nowrap` 计算样式断言）与标准 4（计算样式防回退 / 行为证据 / 条件分支三层）；plan §7.4 / §7.11 / §7.14。F-02（P3）：T-V2-02 的 M-09、T-V2-01 标准 6 与修改范围的 `UI_NAV` 文案改为“单行、页面不横滚，仅空间不足时内部横滚”；plan §7.2 / §7.4 / §7.11 AC-008-1 / §7.12 M-09。O-1 / O-2 并入 F-01；O-3～O-5 不改。任务数、工时、标准 / 命令数、依赖和矩阵不变 |
-| Tasks 自查补充（不是 A 的建议） | 一并送 A 复核 | plan §7.13：S1-ctx 的 chip 需要 H-2 的 `StageLabel`；S1-intake 和 S1-ctx 同写 `AgentDrawer.vue`，因此串行；§7.0 中 `0ffa15e` 的表述改为“固定历史参照” |
+| G-02 裁定落实（Walter 2026-10-28“可以”；不是 A 的建议） | 接受；属于 plan §9.4 实质修改，送 Analyze R8 / A R4 | plan §9.2 / §9.4 / §9.11 / §9.12 M-09 / §9.13 / §9.14；第 1.1 节 G-02 行改为已裁定，“A 定向复核”行新增当前口径（`79b5212..` 固定对象，`checklist-v2` 对 `425c1fd`），旧口径标为历史；第 3、4、5 节；T-V2-01 修改范围 / 标准 4 / 标准 6 / 命令 4 / 命令 6 和拆分规则；T-V2-02 的 M-09；矩阵 AC-002-6 / AC-008-1。新增的窄窗用例放在 T-V2-01 拥有的 `shell.spec`，不写 T-V2-08 的 `breakpoints.spec`；`UI_LAYOUT.md` 不改。任务数、工时和依赖不变 |
+| Analyze R8 F-01 / F-02（不是 A 的建议） | 接受（R8 修正），送复跑 R9 / A R4 | F-01（P2）：T-V2-01 修改范围（`Rail.vue` CSS 限定窄窗选择器、`flex: none` 落 `.nav-list > li`、纵向不滚用 `overflow-y: hidden`；`shell.spec` 新增用例含 `nowrap` 计算样式断言）与标准 4（计算样式防回退 / 行为证据 / 条件分支三层）；plan §9.4 / §9.11 / §9.14。F-02（P3）：T-V2-02 的 M-09、T-V2-01 标准 6 与修改范围的 `UI_NAV` 文案改为“单行、页面不横滚，仅空间不足时内部横滚”；plan §9.2 / §9.4 / §9.11 AC-008-1 / §9.12 M-09。O-1 / O-2 并入 F-01；O-3～O-5 不改。任务数、工时、标准 / 命令数、依赖和矩阵不变 |
+| Tasks 自查补充（不是 A 的建议） | 一并送 A 复核 | plan §9.13：S1-ctx 的 chip 需要 H-2 的 `StageLabel`；S1-intake 和 S1-ctx 同写 `AgentDrawer.vue`，因此串行；§9.0 中 `0ffa15e` 的表述改为“固定历史参照” |
 
 ### 9. 工时、依赖与下一步
 
@@ -968,12 +1054,12 @@ v1 Handoff 合入 main 后，本文件和 v1 版本 tasks.md 的合并由集成�
   1. 已完成：v1 Handoff SHA 登记（`43b6d79`）、V2-S10～S12 落实、R3 定向 Analyze（`analyze-v2-r3.md`）、R4 合并（`eb6ebd8`，`analyze-v2-r4.md`）、合并后独立 Analyze R5（`analyze-v2-r5.md`，不通过）及其 F-01～F-05 修正；复跑 R6（`analyze-v2-r6.md`，R5 各项关闭，新 2 P3）及其 F-01 / F-02 修正。
   2. 定向复跑只读 Analyze，确认 R6 的 F-01 / F-02 关闭、无新增未解决项（闸门 4）；报告落盘后，集成人把该提交登记为 1.1 中 A 的固定复核对象。
   3. A 新开独立会话，定向复核 1.1“A 定向复核”行登记的固定提交（增量起点 `ded7161`，含 R3、R4、`5ba40ad`、R5 / R6 修正；审查路径与范围外断言按该行口径；不是 `d1c2133`），并把复核产物 SHA 登记进 1.1（闸门 2）。
-  4. Walter 裁定窄窗导航形态（1.1「待 Walter 裁定」，两种裁定的后续动作见该行）；如果改为横向滚动，先改 plan §7.4 / T-V2-01，再重跑 Analyze 并由 A 复核。集成人、集成验证分支和从 `43b6d79` 创建的壳实施 worktree 已登记（第 1.1 节），但不以建立工作树代替放行；S0 开工前，壳实施树要先快进到 A 复核过的规格提交。
+  4. Walter 裁定窄窗导航形态（1.1「待 Walter 裁定」，两种裁定的后续动作见该行）；如果改为横向滚动，先改 plan §9.4 / T-V2-01，再重跑 Analyze 并由 A 复核。集成人、集成验证分支和从 `43b6d79` 创建的壳实施 worktree 已登记（第 1.1 节），但不以建立工作树代替放行；S0 开工前，壳实施树要先快进到 A 复核过的规格提交。
   5. 以上都满足后，S0（T-V2-01 → T-V2-02）可以开工，因为它不依赖任何 H-x。S1 / S2 仍要等互动方交付 H-x：互动方 `8af343f` 的 plan / Tasks r5 还没有吸收 README「跨 feature 待同步事项」第一行的新增要求（共享未筛选缓存与 ensure/refresh、进行中口径、写 action 交接、H-3 路由切片先行、`sessionStore` 同一次导航内清空、`intakeStore.open(jobId?)` 快照与容器约定、`jobFixtures` 整集合替换）。这一项由互动方按其流程处理，壳不代写。
 - **本清单不启动实施。** 暂停前列出的后续顺序（历史）：
   1. Tasks 落盘；
   2. Analyze：R1（`analyze-v2.md`）发现 3 P2 / 4 P3，文档已修，待下一轮复跑。只读，重新读取 spec / plan / tasks 后出报告，发现问题就修复并重跑；
-  3. A 新开独立会话，定向复核 Tasks 和 plan §7 小改，并补勾 checklist-v2「阶段说明」；
+  3. A 新开独立会话，定向复核 Tasks 和 plan §9 小改，并补勾 checklist-v2「阶段说明」；
   4. 外部前置齐备：v1 Handoff SHA 已登记且在 main 上，所需的 H-x 已交付并集成，第 5 节闸门通过；
   5. 按依赖顺序 Implement；
   6. Converge：外部阻塞未解除时，必须报“未收敛（外部阻塞）”；

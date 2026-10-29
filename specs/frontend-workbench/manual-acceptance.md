@@ -79,7 +79,9 @@
 - 操作：在正常场景查看行情价格模块的样例折线，悬停查看浮窗，并在基准与窄窗口对照 [PALETTE_DARK](../../design/charts/PALETTE_DARK.md) 和 [tokens.json](../../frontend/src/design/tokens.json)。
 - 看什么：图表画布透明、与模块玻璃底连续，没有白底块；主序列、轴字、刻度和网格层次分明，不因暗底而糊成一片；线条、文字和浮窗可读且不被卡片裁切。主题保持黛驼亮化身份、不使用退役色；完整色板 / 对比度以自动化对拍为准，不把单序列样例当作全部图型的人工验证。
 - 截图证据：[m08-chart-1440](assets/handoff/m08-chart-1440.png)、[m08-chart-1440-tooltip](assets/handoff/m08-chart-1440-tooltip.png)、[m08-chart-960-scrolled](assets/handoff/m08-chart-960-scrolled.png)、[m08-chart-960-scrolled-tooltip](assets/handoff/m08-chart-960-scrolled-tooltip.png)（[m08-chart-960](assets/handoff/m08-chart-960.png)、[m08-chart-960-tooltip](assets/handoff/m08-chart-960-tooltip.png) 为未滚动到位的局部，被模块区边界裁切，只作 H-02 佐证）。
+- 截图证据补充（T-19）：[H-01 修复后 1440×900 样例图整图](assets/h01-fix-20261028/after-1440x900-full.png)、[程序生成的采集溯源与几何](assets/h01-fix-20261028/capture-full-1440.json)、[采集步骤](assets/h01-fix-20261028/README.md)。以上旧图保留作历史对照。
 - AI 辅助视觉验收（Handoff = claude-opus-5-5 via anthropic，2026-10-28，代码 `8920b06`，Chrome 156；AI 浏览器操作与看图，不是 Walter 人工验收）：符合（附 H-01）。画布透明，与模块玻璃底连续，无白底块；主序列线、轴字、刻度与网格层次分明；浮窗（日期 + 收盘价）在 1440 与 960 下完整、未被卡片裁切，960 靠右悬停时浮窗翻到左侧；主序列为主文字亮色，未见退役色。**H-01（新发现）**：图注“近 60 日收盘 · 样例”断成三行（数字 60 单独成行并右对齐），可读但版式不当。
+- 采集补充记录（T-19，2026-10-28，Implement = openai/gpt-6-astra via openai）：已补采修复后的整个 figure（图注 + 单位 + SVG 曲线与坐标轴），来源 HEAD `44845c8`、frontend 树 `03fda1deaef016793033c29f79ffce5b901f83a4`；Chrome 156.0.8078.49 / Playwright 1.64.1，1440×900、deviceScaleFactor 1、mock normal。脚本实测 figure 完整位于 viewport 与模块可视区、图注同行、60 点数据及主题一致、背景 transparent；实际 bounds 与 PNG SHA256 见 JSON。**本轮仅 AI 采集与自动断言，未作看图结论，不是 Walter 人工验收**；A-H01-P3-1 已补采、待 Walter 人工复核 M-08，不宣称关闭。旧观察保留为历史，H-02 未修复，人工框不改。
 - [ ] 人工验收通过（Walter 待复核；验收人 / 日期：待填写）
 
 ## M-09 九项导航
