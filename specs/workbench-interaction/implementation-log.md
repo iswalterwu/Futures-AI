@@ -1,6 +1,12 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
+> **当前状态（2026-10-29 r6.12 第五批派工准备；未审核、未实施；以本块为准。下一块 R4-A 关闭块中的“70 个任务 / 104.5 h / 43 未开始 / 235 / 235”为当时原文，其完成记录与开放项仍有效）**：
+> - **本批**：T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04（9 项，约 12 h，33 条命令）；逐任务文件所有权、模型、AC 与命令见 §20。
+> - **进度**：73 个任务、约 107 h；**27 已完成 / 46 未开始**；245 / 245；46 AC 最终验收 **0**；feature 未收敛。
+> - **开码前置**：独立 A 新会话 Checklist R11 定向复核通过并提交；R10 `37e2f71` 不自动覆盖新接口。T-A13a 是否属既有领域规则由 R11 判定。
+> - 本块不是 Review / Gate 2 / Handoff；没有运行产品测试，不预写结果。
+
 > **当前状态（2026-10-29 R4-A 关闭，第四批 5 项 + T-B04a 技术通过；以本块为准。下一块及 §16～§18 中的“Review 未通过”“待 §5.1 批准”“待 A”“R4-A 未关闭”“R2-C 不记关闭”“① 候选”均为当时原文）**：
 > - **进度**：70 个任务、约 104.5 h；**27 / 70 已完成**（21 + 第四批 5 + T-B04a；已完成 = 批次 / 增量 Review 通过，非最终 AC）；**43 未开始**；235 / 235；46 AC 最终验收 **0**；feature **未收敛**。
 > - **Review**：A 增量 Review `review-batch4-r4a.md`（原件 `46e8fbe`，claude-fable-5-1 via anthropic）判本增量通过（0 P1 / P2 / 0 新 P3）：**R4-A 关闭、R2-C 技术关闭、第四批 5 项 + T-B04a 技术通过**。原件 `9812f64` 的未通过结论原样保留（补修后复核闭环，不是翻票）。详见 §19。
@@ -482,6 +488,10 @@
 - **S-41、R3-B / R3-C、R-A、R-B 残留、R-C / R2-A、R-D ①③④、R-E、R-F、R2-B AgentClient 侧、R2-D**：本增量不涉及，归属不变。
 - 以上开放项**均未经 Walter 风险接受**；Walter 的批准只覆盖 R4-A 最小修复。
 
+【r6.12 第五批派工准备更新（2026-10-29；以本段为准，只登记落点，代码未改）】
+- **R3-B**：落点由“T-C03 或 T-A17 二选一”定为新任务 **T-A13a**（0.5 h：`removeUpload` 对 `removed` 记录返回 validation_error，pool spec 新增 1 组 2 例；plan §2.4【r6.12】）。它是否属既有领域规则、而非 AGENTS §5.1 的新 guard，由 Checklist R11 判定；判为须 §5.1 时 blocked_by Walter。**未修、未经风险接受**。
+- 其余未关项（R3-C、R4-B～R4-E、S-41、R-A、R-B 残留、R-C / R2-A、R-D ①③④、R-E、R-F、R2-B AgentClient 侧、R2-D）不在第五批，归属不变。
+
 【首批记账时原文】**下一步（不在本记账内执行）**：集成人按 tasks §6 DAG 派第二批（入口 T-A10 / T-A22 / T-A23 / T-A24；Implement 首选 `openai/gpt-6-astra`，新会话、实施树），开工前读本节对应项；H-1 ④ 待 `integration/frontend-workbench-v2` 所有者真正集成后由其登记，本 feature 不代写。
 
 ## 9. 第二批派工准备（r6.3，2026-10-29；r6.4 按 Checklist R8 B-12 拆分后更新；历史：已实施，并经 `f72a1a1` 批次 Review 通过；“待实施”为当时原文）
@@ -942,3 +952,73 @@
   - Draft PR #12 保持 Draft，不开 auto-merge、不转 ready；本轮不 merge、不处理 main 冲突、不删除任何目录或分支。本状态提交后，由集成人按常规 push 备份 integration / spec 分支（远端 head 当前仍是 `e285ad2`）。
   - main pin `90187f7` 与 R2-D 同步流程不变；不写 v2 树。
 - **下一步**：依赖已满足、可起步的有 T-A14 / T-A15 / T-A16 / T-C01。T-A16 / T-A19 开工前须先定案 R-A；T-B05 开工前先做 S-41 精度轮。下一批由集成人按既有流程起步（开工前精度 → Analyze → A Checklist 定向复核 → Implement → Converge → A Review），**不再重复询问通用代码授权**。全部任务完成、经全 feature Converge / Review / Gate 2 后才合 main。
+
+## 20. 第五批派工准备（r6.12，2026-10-29；采集台闭环开工前机制精度；未审核、未实施，不预写任何实施或测试结果）
+
+- **作者 / 通道**：Plan / Tasks / Analyze = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18917-d5b2-7520-921c-f26458a30be1`）。`claude-bridge` 在本协调窗口已明确 quota、无重置证据，本轮不重试；同模型官方通道近期成功；只换通道不换模型，未改任何 provider / key / 全局配置。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。
+- **工作树**：复用计划树 `D:/2030/Futures-AI-interaction-plan-batch4`（分支 `docs/workbench-interaction-batch4-plan`，起点 `4bc66273ab20ddbf819813bc017ee794643a6941`、clean；代码仍为 `ae592ba`），没有新建 D:/2030 目录。本轮只写 `specs/workbench-interaction/{plan,tasks,analyze,implementation-log,interface-handoff}.md` 与 `specs/README.md` 本 feature 两行；不写源码 / 测试 / fixture / spec / checklist / 旧 Review / 旧 Converge / docs；没有运行产品测试，没有 commit / push / merge，没有派子 agent。结构复算脚本与日志在协调器 Temp `wi-batch5-01a18388-q7s7olxl/prepare-*`，不是项目产物。
+- **重读输入**：AGENTS.md；`docs/plan.md`；`docs/designUI.md` §2.4 / §3 / §6；`docs/interaction.md` §3 / §7；冻结 spec（46 AC）；plan r6.11 全文；tasks §0 / §1 / §2a / §3 / §5 / §6 / §7 与 T-A12 / A13 / A15 / A17 / A22a / A22d / B04 / B06 / C01～C04 / D02 / E03 / F03；Checklist R10（`37e2f71`，blob `4537c55…`，26 / 26）；analyze R20；本文件 §8 / §19；interface-handoff；`review-batch3.md` R3-B；`review-batch4.md` / `review-batch4-r4a.md`。
+- **真读代码（`ae592ba`）得到的事实**：
+  - `StageWorkspace.vue` 只接收 `stage`、只渲染占位；`JobDetailPage.vue` 无采集列表、无投放入口、无介入历史；`stores/intake.ts`、`IntakeDrawer` / `IntakePanel` 都不存在。
+  - `jobsStore.readDetail` 每次成功都把 `currentJob` 换成新的契约对象（`computed(readonly)` 引用随之变化），可作重读信号。
+  - `DataClient` 没有 `listInterventions`；`real-stubs.spec.ts` 的 `requests` 表现有 22 键（23 例）。
+  - `job-state.ts` 的 `removeUpload` 不检查 `removed`（R3-B）；`confirmIntake` 回执中的 `upload` 已是确认后的记录，而 `preview.fields` 始终是提交时的合成字段；`getStageWorkspace` 的采集列表随 `jobsStore.refresh()` 重读，待归属池不在 jobsStore 内。
+  - `SourceNoteSchema.reliability` 是内联四值枚举，契约没有其中文文案。
+  - 既有断言中 `job-detail.spec.ts` 用全局选择器取 `h1`、`.job-*`、`[aria-current="step"]`、`[aria-pressed="true"]`，`list-create` / `detail-stage` E2E 以严格模式取 `heading level 1`、`X工作区` 区域；慢场景测试断言 ready 后无 `Loading` → 新组件须默认不读、不渲染上述元素。
+- **最小调度与缺口落点**：见 analyze.md「Analyze R21」§2～§4、tasks 页首 r6.12 块、plan【r6.12】。
+
+### 20.1 批次范围、顺序与模型
+
+| 序 | 任务 | 预计 | 依赖 | 标准 / 命令 | 最终 / 部分 AC |
+|---|---|---|---|---|---|
+| 1 | T-A01a ReliabilityLabel | 0.5 h | A01 | 3 / 3 | AC-003-3、AC-008-1 部分前置 |
+| 2 | T-A13a R3-B 重复删除拒绝 | 0.5 h | A13 | 3 / 3 | AC-007-3 部分前置（**R11 判定领域规则；判为 §5.1 则 blocked**） |
+| 3 | T-A15a listInterventions | 0.5 h | A13 | 3 / 3 | AC-007-1、AC-008-2、AC-008-3 部分前置 |
+| 4 | T-B06 介入历史侧栏 | 2 h | B04、A15a、A01a | 3 / 3 | AC-007-1 **最终**；AC-002-4、AC-003-3 部分前置 |
+| 5 | T-C01 投放面板 + intakeStore（H-5） | 2 h | A22、A12、A22a、A01a | 5 / 5 | AC-003-2 **最终**；AC-003-1 / 003-3 / 003-5 部分前置 |
+| 6 | T-C01a 抽屉容器 + 页面挂载 + CollectWorkspace | 1.5 h | C01、B04 | 5 / 5 | AC-003-1 / 003-5 / 007-3 部分前置 |
+| 7 | T-C02 预览 / 映射 / 确认 | 2 h | C01、C01a、A23 | 4 / 4 | AC-003-4、AC-003-6 **最终** |
+| 8 | T-C03 待归属池 / 归入 / 删除确认 | 1.5 h | C02、A13、C01a、A13a | 4 / 4 | AC-003-5 / 007-3 部分前置 |
+| 9 | T-C04 采集端到端 | 1.5 h | C03、B04、B06 | 3 / 3 | AC-003-1 本地子项；AC-003-3、AC-003-5 **最终** |
+
+合计 9 项、约 12 h、33 条命令；同一实施树串行，每项一个提交。**Implement** 首选 `openai/gpt-6-astra`（回退 `deepseek/deepseek-flash`，只在调用失败时回退）；**审核员 A**（Checklist R11 / 批次 Review）首选 `claude-fable-5-1`，先 `claude-bridge` 后 `anthropic`，回退 `claude-opus-5-5` → `openai/gpt-6.1-sol`，须新会话、与实施隔离、与实施模型不同（AGENTS §6）。测试变红、Analyze 有差距、Review 未通过都不是换模型的理由。
+
+### 20.2 逐任务文件所有权（只许写下列文件；其余一律不写，超出即停下回报）
+
+| 任务 | 生产文件 | 测试文件（新建 / 追加） | 生成物 |
+|---|---|---|---|
+| T-A01a | `frontend/src/contracts/types.ts`（只加 `ReliabilityLabel` + schema + 注册） | `tests/unit/jobs/contract-labels.spec.ts`（只新增 `WI reliability label` 组） | `frontend/contracts/{CONTRACT.md,schema.json}`（只经 `pnpm -C frontend contract`） |
+| T-A13a | `frontend/src/contracts/mock/job-state.ts`（只改 `removeUpload`）、`frontend/src/contracts/methods.ts`（只改 `removeUpload.description`） | `tests/unit/jobs/job-state-pool.spec.ts`（只新增 `WI R3-B repeated remove` 组） | 同上 |
+| T-A15a | `contracts/client.ts`、`contracts/methods.ts`、`contracts/real/index.ts`、`contracts/mock/index.ts`、`contracts/mock/job-state.ts`（均只加 `listInterventions`） | 新建 `tests/unit/jobs/job-state-history.spec.ts`；`tests/unit/jobs/real-stubs.spec.ts`（只在 `requests` 表追加一键） | 同上 |
+| T-B06 | 新建 `frontend/src/jobs/components/InterventionHistory.vue`；`frontend/src/jobs/pages/JobDetailPage.vue`（只改 ready 有作业分支的布局与挂载） | 新建 `tests/component/jobs/intervention-history.spec.ts` | — |
+| T-C01 | 新建 `frontend/src/jobs/stores/intake.ts`、`frontend/src/jobs/stages/IntakePanel.vue` | 新建 `tests/component/jobs/intake.spec.ts` | — |
+| T-C01a | 新建 `frontend/src/jobs/stages/IntakeDrawer.vue`、`frontend/src/jobs/stages/CollectWorkspace.vue`；`frontend/src/jobs/pages/JobListPage.vue`（投放按钮 + `.intake-slot`）、`frontend/src/jobs/pages/JobDetailPage.vue`（`.intake-slot` + 给 `StageWorkspace` 传两个 props）、`frontend/src/jobs/components/StageWorkspace.vue`（props 与 collect 分发） | `tests/component/jobs/intake.spec.ts`（追加 `WI H-5 container` / `WI H-5 close` / `WI page mount` / `WI non-modal` 组） | — |
+| T-C02 | `frontend/src/jobs/stores/intake.ts`（追加选中 / 预览 / 确认）、新建 `frontend/src/jobs/stages/{ExtractionPreview,MappingEditor}.vue`、`frontend/src/jobs/stages/IntakeDrawer.vue`、`frontend/src/jobs/stages/CollectWorkspace.vue` | 新建 `tests/component/jobs/extraction-preview.spec.ts` | — |
+| T-C03 | `frontend/src/jobs/stores/intake.ts`（追加池 / 归入 / 删除与写后池重读）、新建 `frontend/src/jobs/stages/UnassignedPool.vue`、`IntakeDrawer.vue`、`CollectWorkspace.vue` | 新建 `tests/component/jobs/unassigned-pool.spec.ts` | — |
+| T-C04 | **无**（只写 E2E） | 新建 `e2e/jobs/intake.spec.ts` | — |
+
+**全批禁止写**：`frontend/src/app/**`、`frontend/src/shared/**`、`frontend/src/agent/**`、`frontend/src/workbench/**`、`frontend/src/main.ts`、`frontend/src/jobs/routes.ts`、`frontend/src/jobs/stores/{jobs,session}.ts`、`frontend/src/jobs/persistence.ts`、`frontend/src/contracts/mock/fixtures/**`、`scripts/**`、`package.json` / 锁文件 / `vitest.config.ts` / `playwright.config.ts` / 其他配置、`docs/**`、`specs/**`（实施会话不改规格）、`backend/**`。R4-A 的 6 行生产修复（`JobDetailPage.vue` 的 `watch` 回调）原样保留，T-B06 / T-C01a 改该文件时不动它。
+
+**旧用例不改**（只允许在上表点名的文件中新增组）：`jobs-store.spec.ts`（27 例 `WI H-2` + 详情缓存组，整文件 43）、`routes.spec.ts` + `session-context.spec.ts`（17）、`job-list.spec.ts`（12）、`job-detail.spec.ts`（13）、`job-create.spec.ts`（5）、`badges.spec.ts`（48）、v1 三份契约测试（88）的期望与断言；`real-stubs.spec.ts` 只追加一键。若某既有用例因本批改动真实失败，停下回报，不改其断言、不 skip、不放宽生产规则来讨绿。
+
+### 20.3 逐任务验证命令（1:1，原文以 tasks.md 为准；前缀 `pnpm -C frontend`）
+
+- T-A01a：`test:unit tests/unit/jobs/contract-labels.spec.ts -t "WI reliability label"`；`test:unit tests/unit/jobs/contract-labels.spec.ts tests/unit/contracts.spec.ts tests/unit/contract-doc.spec.ts`；`contract --check && typecheck && lint`。
+- T-A13a：`test:unit tests/unit/jobs/job-state-pool.spec.ts -t "WI R3-B repeated remove"`；`test:unit tests/unit/jobs/job-state-pool.spec.ts`；`contract --check && typecheck && lint`。
+- T-A15a：`test:unit tests/unit/jobs/job-state-history.spec.ts -t "WI listInterventions"`；`… -t "WI history scenarios" && test:unit tests/unit/jobs/real-stubs.spec.ts`；`contract --check && typecheck && lint`。
+- T-B06：`test:unit tests/component/jobs/intervention-history.spec.ts -t "WI AC-007-1"`；`… -t "WI history refresh"`；`test:unit tests/component/jobs/job-detail.spec.ts && test:e2e e2e/jobs/detail-stage.spec.ts e2e/jobs/list-create.spec.ts && typecheck && lint`。
+- T-C01：`intake.spec.ts` 的 `WI AC-003-2` / `WI purpose required` / `WI metadata only` / `WI H-5 store`；`typecheck && lint`。
+- T-C01a：`intake.spec.ts` 的 `WI H-5 container` / `WI H-5 close` / `WI page mount` / `WI non-modal && typecheck && lint`；`test:unit tests/component/jobs/job-list.spec.ts tests/component/jobs/job-detail.spec.ts tests/component/jobs/job-create.spec.ts && test:e2e e2e/jobs/detail-stage.spec.ts e2e/jobs/list-create.spec.ts`。
+- T-C02：`extraction-preview.spec.ts` 的 `WI AC-003-4` / `WI AC-003-6` / `WI confirm refresh`；`test:unit tests/component/jobs/intake.spec.ts && typecheck && lint`。
+- T-C03：`unassigned-pool.spec.ts` 的 `WI pool assign` / `WI remove confirm` / `WI assign refresh`；`test:unit tests/component/jobs/intake.spec.ts tests/component/jobs/extraction-preview.spec.ts tests/unit/jobs/job-state-pool.spec.ts && typecheck && lint`。
+- T-C04：`test:e2e e2e/jobs/intake.spec.ts -g "WI AC-003-1 local"` / `-g "WI AC-003-3"` / `-g "WI AC-003-5"`。
+
+**批末回归**（Converge 前由实施者执行并登记，不是任务标准）：`test:unit`（当前基线 34 files / 1020 / 0，加本批新增）；`check`（六守卫）；`contract --check`（当前 24 methods / 10 events / 2 artifacts，本批后预计 25 methods）；`typecheck && lint`；`test:e2e e2e/shell.spec.ts e2e/agent.spec.ts e2e/jobs/detail-stage.spec.ts e2e/jobs/list-create.spec.ts e2e/jobs/intake.spec.ts`（当前四份 30 + 本批新增）；回归集合：`jobs-store.spec.ts -t "WI H-2"` 27、routes + session 17、badges 48、job-list 12、job-detail 13、job-create 5、v1 契约 88、real-stubs 24（22 个桩 + 新键 1 + 键集合断言 1）。其余 E2E、全量 `pnpm test`、人工截图、46 AC 最终验收**不在本批**。以上数字是预期口径，不是结果。
+
+### 20.4 闸门、交接与未关项
+
+- **开码前置**：独立 A 新会话 **Checklist R11 定向复核**通过并提交（建议范围见 analyze.md「Analyze R21」§7）。R10 不覆盖 r6.12 的新接口；本作者不勾选、不预判。R11 之前不派 Astra。
+- **R3-B**：T-A13a 的合法性（领域规则还是 §5.1 guard）由 R11 判定。若判为须 §5.1，本任务 blocked_by Walter；集成人可先做其余 8 项，T-C03 对 T-A13a 的依赖届时按“R3-B 未关、未经风险接受”登记处理，不得自称获批。
+- **H-x**（预期，不是结果）：本批完成后，H-5 的提供任务 T-C01 / T-C01a 齐备，可形成生产方 ①③；页面切片的 C 组齐备；④ 仍须 v2 消费方所有者集成后登记。H-6 仍缺 T-A21。
+- **仍开放、本批不处理**（均未经 Walter 风险接受）：R4-B～R4-E、S-41（T-B05 前）、R3-C（T-G04）、R-A / R-B 残留 / R-C / R2-A / R-D ①③④ / R-E / R-F / R2-B AgentClient 侧 / R2-D。
+- **合并**：Walter 已选全部工作完成后再合 main；Draft PR #12 保持 Draft、不开 auto-merge；25 个本 feature 目录保留复用；main `072bb12` 不导入、继续 pin `90187f7`，R2-D 流程不变；不写 v2 树。

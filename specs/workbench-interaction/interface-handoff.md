@@ -78,6 +78,14 @@
 > - **其余**：H-1 / H-3 / H-4 历史证据保留、当前有效 Checklist 并记 R10、④ 缺；H-5 未做；H-6 缺 T-A21。消费分支 `integration/frontend-workbench-v2` 只读仍 `3f63273`。
 >
 > 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；bridge 本协调窗口已确认限额，不重试；官方通道成功；未改配置）。
+> **当前状态（2026-10-29 r6.12 第五批派工准备 = 采集台闭环开工前机制精度；未审核、未实施；以本块为准。下一块 R4-A 关闭块的切片登记仍有效）**：
+> - **本批**：T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04，**全部待实施**；没有新代码，也没有新测试输出。开码前须独立 A 新会话 Checklist R11 定向复核通过并提交（R10 `37e2f71` 不自动覆盖新接口）。
+> - **H-5 接口（预期，不是结果）**：公开成员仍只有 `useIntakeStore().open(jobId?: string)` / `close()` / 只读 `isOpen` / `jobId`；`open` 每次调用都以 `jobId ?? null` 覆盖快照，store 不读 route；提交只用快照（内部 `submit` 的参数类型不含 `jobId`）；`close` 不导航、不调 agent。`IntakeDrawer` 无必需 props，根 `.glass-drawer` 填满父容器。草稿 / 选中 / 预览 / 待归属池与各写动作是本 feature 内部成员，不进交接接口（plan §2.3【r6.12】）。
+> - **页面切片（预期）**：C 组完成后，本方提供任务（T-B01 / B02 / B04 / C01 / C01a / C02 / C03 / C04）齐备；T-C04 现依赖 T-B06（介入历史展开取证），T-B06 / T-A15a / T-A01a / T-A13a 是依赖，不单列为提供任务。
+> - **契约增量（内部，不属任何切片）**：`DataClient.listInterventions(jobId, filter?)`（T-A15a）、`ReliabilityLabel`（T-A01a）、`removeUpload` 对已删除投放 validation_error（T-A13a，合法性由 R11 判定）；`CONTRACT_VERSION` 仍 2.0.0。
+> - **当前状态**：H-5 / 页面切片仍**未交付**（① ② ③ ④ 均未取得）；H-2·标签 ① `5c00cf6` / H-2·列表 ① `af24c82` 与 H-1 / H-3 / H-4 的历史生产方证据不变，④ 全缺；H-6 仍缺 T-A21。本块不宣称任何切片已交付或已被 v2 签收。
+>
+> 记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18917-d5b2-7520-921c-f26458a30be1`；bridge 本协调窗口已明确 quota、无重置证据，不重试；同模型官方通道近期成功；未改配置）。
 > **当前状态（2026-10-29 R4-A 关闭，第四批 5 项 + T-B04a 技术通过；以本块为准，下方各块中的“待 A”“R4-A 未关闭”“① 候选 / 不转生产已核”“本批未通过”为当时原文）**：
 > - **依据**：独立 A 增量 Review `review-batch4-r4a.md`（原件 `46e8fbe`，claude-fable-5-1 via anthropic）判本增量通过（0 P1 / P2 / 0 新 P3）：R4-A 关闭，第四批 5 项 + T-B04a 技术通过，R2-C 技术关闭。原第四批 Review 原件 `9812f64` 不改。
 > - **H-2·标签**：① `5c00cf695235155c4cfa9efb9df1fee06a161189` 由候选转为**生产已核**。CSS 令牌修正第四批 A 已逐值核对；原件给的条件“第四批技术通过”现已满足。② R10 `37e2f71`；③ 第四批 A 亲跑 18 / 9 / 21 / 48，加上本次增量 A 复跑 badges 48 / colors / glass；**④ 仍缺**。
@@ -161,6 +169,8 @@
 【Converge batch4 口径（2026-10-29，代码 `37e2f71..6c082fd`，待第四批独立代码 Review；以本段为准，上段“未实施”为当时原文）】当前有效 Checklist = **R10 `37e2f71`**（blob `4537c55…`，26 / 26）。H-1 / H-3 / H-4 / H-2·列表 / H-6 各行的 ② 是登记当时的有效轮次，原样保留追溯，可并记 R10；①③ 历史证据不改。**H-2·标签**：① 改登记为 B01 候选 `5c00cf6`（待 Review；`ebce4c8` 已审历史并存），③ 为实施者执行（18 / 9 + tone 21），复核条件 = 独立 A 在第四批 Review 中复跑 `WI status badges` 18 并判 R2-C；④ 缺。**H-2·列表**：公开交接成员签名与语义未变，① 仍为 `af24c82`；T-A22d `ca7dca1` 新增的详情缓存是内部成员（§3 落地核对），不改交接接口，`-t "WI H-2"` 仍 27（实施者于 `6c082fd` 复跑）。**页面切片**：B01 / B02 / B04 已实施、C 组未做 → 未交付。生产方集成树 `integration/workbench-interaction` @ `6c082fd` 只是旁证，**不能填作 ④**；④ 只能由 `integration/frontend-workbench-v2` 所有者登记（只读观察仍 `3f63273`，不含本批任何提交）。
 
 【R4-A 关闭后口径（2026-10-29，`review-batch4-r4a.md` 原件 `46e8fbe`；以本段为准，上段“① 候选待 Review”与表中“不转生产已核”为当时原文）】**H-2·标签** ① `5c00cf6` 转为生产已核（复核条件“第四批通过”已成立），②③ 见上表，④ 缺。**H-2·列表** ① 仍 `af24c82`，不因 R4-A 修复变化，也不需要等 v2 消费。**页面切片** 本方 B 组提供任务已完成，C 组未做 → 未交付。H-5 未做；H-6 缺 T-A21。所有切片 ④ 仍只能由 v2 消费方所有者登记。
+
+【r6.12 第五批派工准备口径（2026-10-29，未实施）】上表各行不改。H-5 的提供任务仍为 T-C01 / T-C01a；页面切片仍为 T-B01 / B02 / B04 / C01 / C01a / C02 / C03 / C04。本批完成并经批次 Review 通过后，H-5 可形成生产方 ①③（② 届时以已提交的有效 Checklist 轮次为准，预计 R11），④ 仍只能由 `integration/frontend-workbench-v2` 所有者登记；生产方集成树 SHA 不能填作 ④。
 
 ## 2. 逐项对拍（v2 要求 → r5 状态 → r6 落点）
 
@@ -260,6 +270,11 @@
 - **`JobStatusBadge`**（交接接口）：props 仍为 `status: JobStatus`，文案 / 图标仍只来自 `JobStatusLabel`；B01 `5c00cf6` 只新增根属性 `data-status=<status>` 与按 plan §1【r6.9】表的边框令牌规则。壳若按属性选择器消费，可依赖该属性；不新增 props。
 - **`useJobsStore()`**：交接成员 `jobs` / `listStatus` / `listError` / `ensureJobs` / `refresh` / `createJob` 签名与语义不变。T-A22d `ca7dca1` 新增的**内部**成员为只读 `currentJob`（类型层 `DeepReadonly<Job> | null`）、`currentStageWorkspace`（`DeepReadonly<StageWorkspace> | null`）、`detailStatus`、`detailError`，与 `openJob(jobId: string, stage: Stage | null): Promise<Stage | null>`；锚私有。`refresh()` 在打开过详情后会额外重读详情（壳只消费列表成员、从未打开详情时不发详情读）。这些内部成员不进交接接口。
 - **页面**：`JobListPage` / `JobDetailPage` 现为功能页；新增 `JobCard` / `StageRail` / `StageWorkspace` / `JobCreatePanel` 都是本 feature 内部组件，不属交接接口。名称以交付 commit 为准。
+
+【2026-10-29 r6.12 接口精度（第五批派工准备，未实施；名称以交付 commit 为准）】
+- **`useIntakeStore()`**（`jobs/stores/intake.ts`）：交接成员 = `open(jobId?: string): void`、`close(): void`、只读 `isOpen: boolean`、`jobId: string | null`。本 feature 内部另有只读 `draft` / `selection` / `previewStatus` / `previewError` / `pool` / `poolStatus` / `poolError`，以及 `updateDraft` / `resetDraft` / `submit` / `selectUpload` / `editMapping` / `confirm` / `loadPool` / `assign` / `remove`；`submit` / `confirm` / `assign` / `remove` 成功后恰一次 `jobsStore.refresh()`（池已加载时另重读一次池），失败以原 `ErrorResponse` reject。壳只调用交接成员即可：在任意挂载点 `open()` 后，用户可在抽屉内投放、确认并在待归属池中归入作业。
+- **`IntakeDrawer.vue`**：无必需 props；根 `<aside class="glass-drawer intake-drawer" aria-label="投放抽屉">`，宽高 100%，不自定位、无遮罩 / dialog / `aria-modal` / `inert` / 焦点锁；内含 `IntakePanel`、预览与映射、`UnassignedPool`。v2 前由 `JobListPage` / `JobDetailPage` 的 `.intake-slot` 挂载，v2 后由 AppShell `.intake-slot` 挂载、T-H01 移除页面级挂载。
+- **内部契约增量**（不属交接切片，只登记）：`DataClient.listInterventions(jobId: string, filter?: {stage?: Stage; kind?: InterventionKind}): Promise<Intervention[]>`；`ReliabilityLabel`（`high / medium / low / unknown` → 高 / 中 / 低 / 未知）；`removeUpload` 对已删除投放返回 validation_error。`CONTRACT_VERSION` 不变。
 
 ## 4. 不做的事（生产方边界）
 
