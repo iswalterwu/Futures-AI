@@ -1,0 +1,10 @@
+shell/main.js: FAILED
+shell/preload.js: FAILED
+shell/renderer/onboarding.html: FAILED
+shell/src/paths.js: FAILED
+shell/src/test-hooks.js: FAILED
+shell/test/e2e/harness-selftest.js: FAILED
+shell/test/e2e/index.js: FAILED
+shell/test/e2e/single-instance.js: FAILED
+specs/desktop-shell/implementation-evidence.md: FAILED
+sha256sum: WARNING: 9 computed checksums did NOT match

@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **最新检查点：T-05b/c/d/m/e/f 六项外壳基础任务已完成自动化复验，下一项 T-05g（2026-10-28）**。Astra 从 `83b91db` 串行实施，最终真实 `npm ci` 成功、单测 **34 passed / 0 skipped**、真实 Electron **2 场景 / 37/37 断言通过**；单实例后端始终只启动一次。实施源码已本地保存为 **`a643f81`**，未开始 T-05g / T-07。
-> 实施 = `openai/gpt-6-astra`，协调 = `openai/gpt-6.1-sol`；**先读最新 §12 与 `implementation-evidence.md` §7**。本批进程/场景临时目录已清理，无后台 worker；真实 Windows 前台焦点仍待 M-09，不把夹具/基础设施当作真实作业或全 feature 通过。Checklist 41/41 不变，Gate 2 未批准，仍不 push / PR / merge。
+> **最新实现检查点：T-05g～l 已实现，末次 42 单测 / 14 场景 / 213/213 断言通过；T-05k 稳定性复核未关闭（2026-10-29）**。一次联合运行的 root-locked 在 10s 等待窗口内超时，单独复跑与最后全集虽通过，根因未确认，不能称已修复。源码/风险已本地保存为实施提交 **`f7d347b`**；下一步先复核该事项，不直接进入 T-06b/T-07。
+> 实施 = `openai/gpt-6-astra`，协调 = `openai/gpt-6.1-sol`；**先读 §13 和 `implementation-evidence.md` §8.3～8.4**。本批进程/临时目录已清理，无后台 worker。需求与 Checklist 41/41 不变；末次绿灯不等于风险关闭、Converge、代码 Review 或 Gate 2，仍不 push / PR / merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -232,7 +232,7 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 
 在**同一实施工作树/分支**按既定任务从 **T-05b 路径/偏好纯模块**开始，随后 T-05c/d/m/e/f 等串行推进，不跳到 T-07。本次停在已验证的后端检查点，无后台 worker；开始下一批前按 AGENTS 重读相应文档与完整 Checklist（含本轮批准），首选 Implement 仍为 `openai/gpt-6-astra`，不因测试失败换模型。不要重复修复已解除的 T-04b，也不要未经批准连带剔除 PYZ 纯模块或放宽黑名单。
 
-## 12. 2026-10-28 外壳基础六任务（当前已验证检查点）
+## 12. 2026-10-28 外壳基础六任务（前序已验证检查点）
 
 ### 输入、交付与提交
 
@@ -260,3 +260,39 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 原始 run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-foundation-uvOXqTBv/`；完整测试日志 `C:/Users/iswal/AppData/Local/Temp/fai-foundation-01a18415/`。本批 agent 已结束，CIM owned 进程 **0**，无需保留服务或端口。旧后端 454/5 与 12/12 在本批未重跑，只保留为前序证据。
 - **下一项 T-05g 生命周期状态机纯模块**，之后 T-05h/i/j/k/l 等依序推进；其余 27 项与人工批次未完成。本批没有提前修旧重启缺陷、stdin 接线、host.json 迁移、启动错误页、设置业务、托盘/通知/日志/更新/打包，不把 null 的 tray/activity 快照假装成实现。
 - 真实 Windows 前台焦点 **M-09 未执行**；真实前端/作业/agent、干净机、15s、系统通知/托盘、真实 key、满盘 GUI、整体 Converge、独立代码 Review、Gate 2 等均未取得。后续如触发 CORS/权限/设计停止规则，仍停报，不自行放宽。已知 PYZ P3 不连带处理；不 push / PR / merge。
+
+## 13. 2026-10-29 生命周期与启动批次（实现检查点，稳定性复核待关闭）
+
+### 输入、实现与保存
+
+- 主树输入 `6d4ce80` / 实施树固定输入 **`e0fe1cd4eb464fb76971b18f5f6d72ffb2053a80`**，开始均干净且相关内容一致；Checklist **41 checked / 0 unchecked**。本批未改 spec / Plan / Checklist，未变任务原批准有效。
+- Implement = **`openai/gpt-6-astra` via openai**，session **`01a185d9-e062-733e-b5af-f1175102c292`**（04:10～04:46 UTC），元数据实核；同一实施树/分支唯一 writer，无回退。协调者仅派工、元数据、核对与串行保存，未代写代码或跑产品测试。
+- 按 g→h→i→j→k→l 实现状态机、真实后端/EOF 接线、恢复、启动/错误/mock 页面；8 个既有 shell 文件 + 17 个新文件，证据只追加。backend、依赖、onboarding.js、规划审核、全局配置与其他 feature 均未改；未开始 T-06b/T-07 或打包。
+- 结束后协调者确认 **26 文件 SHA-256 全部一致**，保存实施源码/证据为 **`f7d347b2a2f6796e5bbca0c608f327163046bc38`**，原样集成主树；不是“稳定性全部关闭”提交。主检查点 = 本文件所在 HEAD；实施树若同步进度文档，以 git log 查询最新 HEAD。
+
+### 最后源码上的验证与真实边界
+
+| 项 | 结果 |
+|---|---|
+| 本轮新基线 | npm ci 成功；34 unit / 2 场景 37/37，非仅引用前轮结果 |
+| 最后完整 unit | **42 passed / 0 failed / 0 skipped（4988.49ms）**，生产状态机直接测试 |
+| 最后完整 e2e | **14 场景 / 213/213 断言 / 0 failures / exit 0（67.092s）**，含原 2 场景与新 12 场景 |
+| 真实后端 | 正常 shutdown 清锁/端点/端口；崩溃后新端口/令牌、restarts1；仅杀外壳后 ≤5s 后端 exit0、自行释放资源、同目录重启 ready |
+| 假后端 | 严格三条件健康、重启恰 4 次启动/3 次预算、峰值 1、超时/磁盘满/错误页；不作真实满盘或业务证明 |
+| 资源/界面 | 就绪前启动页可见、retry、只读通道/数据目录错误、显式 mock 不 spawn、资源缺失不回退、补齐后重载不重启 backend |
+| 隔离/清理 | 全部自有 temp/ACL/helper；最终 owned 进程 **0**、ACL 已恢复并实写、场景 temp 已删除；无后台 worker/服务/端口保留 |
+| 运行时 | Electron33.4.11 / 内嵌 Node20.18.3 / Chrome130.0.6723.191；非打包 exe、非15s基准机验收 |
+
+具体 Windows 故障已修：先前仅杀外壳两次出现 exit0 却残留锁/端点，改为 Windows spawn `detached:true` 隔离控制台生命周期，**不 unref**、仍由状态机/pipe EOF 托管；无需 Job Object、后端改动或新依赖，之后真实清理与恢复通过。锁场景最初额外“整读锁文件”被字节锁拒绝，改用真实 Service.init 成功/锁存在/helper 存活，保留必需错误码/路径/零重启/真实 retry 断言。app-config `null` 入口形状校验也已修并完整重跑。
+
+### 未关闭：root-locked 一次间歇性超时
+
+- 首轮全集 212/212 通过；补 config-null 校验后的全集 **202/203、1 failure**：root-locked 等待 `failed` 的 10s 条件超时，清理前快照为 **gen1 / waiting_health / port=null**。失败运行已清理，不是进程残留。
+- **未改超时或断言**的单独核查 16/16 与最后全集 213/213 虽通过，但证据不能区分启动迟滞还是其他原因，**根因未确认、未宣称修复**。不得只引用绿灯丢掉 FAIL，不自行把该风险评级为 P3 或用户已接受。
+- **T-05k 保留“实现/末次通过，稳定性复核未关闭”状态**；下一次优先在原范围诊断时序/进程/标记观测，必要时交独立审核判断。不能仅靠增大超时、反复跑到绿灯或弱化断言关闭；如要改设计/安全面/权限范围，回 Plan 流程。此项未结算前，不直接推进 T-06b。
+
+### 证据与下一步
+
+- 详细证据 **`specs/desktop-shell/implementation-evidence.md` §8**；最终报告、派工、最终 unit/e2e、**间歇失败完整输出**与源码指纹在 **`specs/desktop-shell/handoff-artifacts/20261029-lifecycle/`**。完整会话/其他失败日志/diff/测试库留 Git 外。
+- 原始 run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-lifecycle-GULOgc3i/`；全部测试日志：`C:/Users/iswal/AppData/Local/Temp/fai-lifecycle-01a185d9/`。本轮未跑 Python 全量或 backend 打包，旧454/5与12/12只为历史证据。
+- **下一步先复核 T-05k 的 root-locked 间歇超时，再从 T-06b 继续**；其余21项、人工/外部验收仍未开始/未完成。旧 onboarding.js 的同步 backend() 消费者刻意留给 T-06b，不宣称设置业务可用。真实前端/作业/agent、clean install、15s、人工 M-ID、托盘/通知/诊断与整体 Converge/独立代码 Review/Gate2 均未取得；已知PYZ P3不变，不加 CORS、不 push/PR/merge。

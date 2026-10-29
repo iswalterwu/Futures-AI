@@ -9,7 +9,7 @@ module.exports = {
     const first = await ctx.launch({ env })
     const before = await ctx.waitFor(async () => {
       const current = await ctx.snapshot(first)
-      return current.window.visible ? current : null
+      return current.window.visible && current.backend.phase === 'ready' ? current : null
     })
     ctx.expectEqual('首实例后端存活', ctx.alive(before.backend.pid), true)
     ctx.expectEqual('首次 spawns 恰 1 条', ctx.registry().length, 1)

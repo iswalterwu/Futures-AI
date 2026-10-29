@@ -1,0 +1,10 @@
+npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
+added 70 packages in 11s
+
+17 packages are looking for funding
+  run `npm fund` for details
+
+real	0m11.501s
+user	0m0.091s
+sys	0m0.060s

@@ -5,30 +5,31 @@
 'use strict'
 
 const electron = require('electron')
-const { app, BrowserWindow, dialog, shell: electronShell } = electron
-const { spawn } = require('node:child_process')
+const { app, BrowserWindow, dialog, ipcMain, shell: electronShell } = electron
+const { Backend } = require('./src/backend')
 const fs = require('node:fs')
-const http = require('node:http')
 const path = require('node:path')
-const crypto = require('node:crypto')
-const { bootstrap } = require('./src/paths')
+const { bootstrap, resolvePaths, loadDataRoot, resolveTarget } = require('./src/paths')
+const startedAt = Date.now()
 const startup = bootstrap(app, process.env)
+const startupPage = path.join(__dirname, 'renderer', 'startup.html')
 
 const HEALTH_TIMEOUT_MS = process.env.FAI_TEST_HOOKS === '1'
   ? Number(process.env.FAI_HEALTH_TIMEOUT_MS || 30000) : 30000
-const MAX_RESTARTS = 3
-const SHUTDOWN_GRACE_MS = 5000
 
 const state = {
   backend: null,
-  backendInfo: null, // {port, token}
-  restarts: 0,
   quitting: false,
   window: null,
   logFile: null,
+  mode: process.argv.includes('--mock') || process.env.FAI_MODE === 'mock' ? 'mock' : 'backend',
+  status: { phase: 'starting' },
+  timing: { shown_ms: null, ready_ms: null, interactive_ms: null },
+  page: null,
+  navigation: 0,
 }
 let hooks = null
-if (process.env.FAI_TEST_HOOKS === '1' && !startup.error) {
+if (process.env.FAI_TEST_HOOKS === '1' && startup.paths) {
   hooks = require('./src/test-hooks').install(electron, startup, state, () => gracefulQuit(0))
 }
 
@@ -75,143 +76,91 @@ function backendCommand() {
 
 // ---------- 后端进程（R-002/R-003） ----------
 function startBackend() {
-  const root = startup.dataRoot
-  const portFile = path.join(root, 'host.json')
-  try {
-    fs.rmSync(portFile, { force: true })
-  } catch {
-    /* ignore */
-  }
-  const token = crypto.randomBytes(16).toString('hex')
-  const { cmd, args, cwd, env } = backendCommand()
-  log('starting backend')
-  const child = spawn(cmd, [...args, '--root', root, '--port-file', portFile, '--token', token], {
-    cwd,
-    env: { ...process.env, ...env },
-    stdio: ['ignore', 'pipe', 'pipe'],
-    windowsHide: true,
+  state.backend = new Backend({ root: startup.dataRoot,
+    portFile: path.join(startup.paths.stateDir, 'run', 'host.json'),
+    command: backendCommand, timeoutMs: HEALTH_TIMEOUT_MS })
+  state.backend.on('status', status => {
+    log(`backend ${status.phase} ${status.code || ''}`)
+    if (status.phase === 'stopping' || status.phase === 'stopped') return
+    setStatus({ ...status, phase: status.phase === 'spawning' ? 'starting' : status.phase })
+    if (status.phase === 'restarting' || status.phase === 'failed') void showStartup()
   })
-  child.stdout.on('data', (d) => log(`[backend] ${String(d).trim()}`))
-  child.stderr.on('data', (d) => log(`[backend:err] ${String(d).trim()}`))
-  child.on('exit', (code, signal) => {
-    log(`backend exited code=${code} signal=${signal}`)
-    if (!state.quitting) onBackendCrash()
+  state.backend.on('backend.ready', () => {
+    state.timing.ready_ms = Date.now() - startedAt
+    void loadTarget()
   })
-  state.backend = child
-  return { child, portFile, token }
+  state.backend.start()
 }
 
-function onBackendCrash() {
-  if (state.restarts >= MAX_RESTARTS) {
-    log('backend crashed too many times; giving up')
-    dialog.showErrorBox(
-      '后端启动失败',
-      `后端连续 ${MAX_RESTARTS} 次异常退出。可查看日志或导出诊断后重试。`
-    )
-    app.quit()
+function setStatus(status) {
+  state.status = { ...status, logPath: startup.paths ? path.join(startup.paths.stateDir, 'log', 'shell.log') : '' }
+  state.window?.webContents.send('fai:status', state.status)
+}
+async function showStartup() {
+  if (state.page === startupPage) return
+  await loadPage(startupPage)
+}
+async function loadPage(target) {
+  const navigation = ++state.navigation
+  state.page = target
+  try {
+    await state.window.loadFile(target)
+    if (navigation !== state.navigation || state.quitting) return
+    state.window.webContents.send('fai:status', state.status)
+    if (target !== startupPage) {
+      state.timing.interactive_ms = Date.now() - startedAt
+      log(`startup_timing ${JSON.stringify(state.timing)}`)
+    }
+  } catch {
+    if (navigation !== state.navigation || state.quitting) return
+    if (target === startupPage && !fs.existsSync(startupPage)) {
+      dialog.showErrorBox('启动界面资源缺失', `请重新安装。日志：${state.status.logPath || '状态目录不可用'}`)
+      await gracefulQuit(1)
+    } else if (target !== startupPage) {
+      setStatus({ phase: 'failed', code: 'frontend_missing', path: target })
+      await showStartup()
+    } else setStatus({ phase: 'failed', code: 'startup_internal', path: startupPage })
+  }
+}
+async function loadTarget() {
+  const selection = resolveTarget(app, process.env, process.resourcesPath, __dirname)
+  if (selection.error) {
+    setStatus({ phase: 'failed', ...selection.error })
+    await showStartup()
     return
   }
-  state.restarts += 1
-  const delay = 500 * state.restarts
-  log(`restarting backend in ${delay}ms (attempt ${state.restarts})`)
-  setTimeout(() => {
+  setStatus({ phase: state.mode === 'mock' ? 'mock' : 'ready' })
+  await loadPage(selection.target)
+}
+function beginStartup() {
+  if (state.mode === 'mock') void loadTarget()
+  else startBackend()
+}
+function installIpc() {
+  ipcMain.handle('fai:backend', () => state.backend?.getBackend() ?? null)
+  ipcMain.handle('fai:status', () => state.status)
+  ipcMain.handle('fai:retry', async () => {
     if (state.quitting) return
-    try {
-      startBackend()
-      waitForReady().then(onReady).catch(handleNotReady)
-    } catch (e) {
-      log(`restart failed: ${e}`)
-    }
-  }, delay)
-}
-
-function httpJson(port, token, method, pathname, body) {
-  return new Promise((resolve, reject) => {
-    const payload = body ? JSON.stringify(body) : null
-    const req = http.request(
-      {
-        host: '127.0.0.1',
-        port,
-        method,
-        path: pathname,
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          ...(payload ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } : {}),
-        },
-        timeout: 5000,
-      },
-      (res) => {
-        let data = ''
-        res.on('data', (c) => (data += c))
-        res.on('end', () => {
-          let parsed = {}
-          try {
-            parsed = data ? JSON.parse(data) : {}
-          } catch {
-            parsed = { raw: data }
-          }
-          resolve({ status: res.statusCode, body: parsed })
-        })
-      }
-    )
-    req.on('timeout', () => req.destroy(new Error('timeout')))
-    req.on('error', reject)
-    if (payload) req.write(payload)
-    req.end()
+    if (startup.error) {
+      const retried = startup.gotLock ? loadDataRoot(resolvePaths(app, process.env)) : bootstrap(app, process.env)
+      delete startup.error
+      Object.assign(startup, retried)
+      if (startup.error) { setStatus({ phase: 'failed', ...startup.error }); return }
+      beginStartup()
+    } else if (['frontend_missing', 'renderer_crashed'].includes(state.status.code)) {
+      await loadTarget()
+    } else if (state.backend) await state.backend.retry()
   })
-}
-
-// 就绪判定：/health 200 且 data_ready（AC-002-2；不用端点文件代替）
-async function waitForReady(portFile, token, timeoutMs = HEALTH_TIMEOUT_MS) {
-  const deadline = Date.now() + timeoutMs
-  let info = null
-  while (Date.now() < deadline) {
-    if (state.backend && state.backend.exitCode !== null) {
-      const err = new Error(`后端进程已退出（code=${state.backend.exitCode}）`)
-      err.code = 'backend_exited'
-      throw err
-    }
-    if (!info) {
-      try {
-        info = JSON.parse(fs.readFileSync(portFile, 'utf8'))
-      } catch {
-        info = null
-      }
-    }
-    if (info) {
-      try {
-        const res = await httpJson(info.port, token, 'GET', '/health')
-        if (res.status === 200 && res.body && res.body.data_ready === true) {
-          state.backendInfo = { port: info.port, token }
-          return res.body
-        }
-      } catch {
-        /* 尚未监听 */
-      }
-    }
-    await new Promise((r) => setTimeout(r, 150))
-  }
-  const err = new Error(`后端在 ${timeoutMs}ms 内未就绪`)
-  err.code = 'timeout'
-  throw err
-}
-
-function onReady(health) {
-  log(`backend ready: ${JSON.stringify(health)}`)
-  createWindow()
-}
-
-function handleNotReady(err) {
-  log(`backend not ready: ${err.code || ''} ${err.message}`)
-  dialog.showErrorBox(
-    '后端启动失败',
-    `${err.message}\n\n可重试，或查看日志：${path.join(startup.paths.stateDir, 'log', 'shell.log')}`
-  )
-  app.quit()
+  ipcMain.handle('fai:logs', async () => {
+    const folder = startup.paths ? path.join(startup.paths.stateDir, 'log') : null
+    if (!folder) return { error: 'localappdata_missing' }
+    const error = await electronShell.openPath(folder)
+    return error ? { error } : { path: folder }
+  })
 }
 
 // ---------- 窗口（R-005/R-009） ----------
-function createWindow() {
+async function createWindow() {
   const win = new BrowserWindow({
     width: 1440,
     height: 900,
@@ -225,17 +174,16 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      additionalArguments: [
-        `--fai-backend=${JSON.stringify({
-          port: state.backendInfo ? state.backendInfo.port : null,
-          token: state.backendInfo ? state.backendInfo.token : null,
-        })}`,
-      ],
+      additionalArguments: [`--fai-mode=${state.mode}`],
     },
   })
   state.window = win
   if (hooks) win.on('page-title-updated', event => event.preventDefault())
-  win.once('ready-to-show', () => win.show())
+  const shown = new Promise(resolve => win.once('ready-to-show', () => {
+    win.show()
+    state.timing.shown_ms = Date.now() - startedAt
+    resolve()
+  }))
   // 外链交给系统浏览器（AC-009-3）
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//.test(url)) electronShell.openExternal(url)
@@ -248,14 +196,21 @@ function createWindow() {
     }
   })
 
-  const frontendIndex = path.resolve(__dirname, '..', 'frontend', 'dist', 'index.html')
-  const builtinPage = path.join(__dirname, 'renderer', 'onboarding.html')
-  const target = fs.existsSync(frontendIndex) ? frontendIndex : builtinPage
-  log(`loading ${target}`)
-  win.loadFile(target)
-  win.on('closed', () => {
-    state.window = null
+  win.webContents.on('did-fail-load', (_event, code, _description, _url, isMainFrame) => {
+    if (!isMainFrame || code === -3 || state.quitting || state.page === startupPage) return
+    setStatus({ phase: 'failed', code: 'frontend_missing', path: state.page })
+    void showStartup()
   })
+  win.webContents.on('render-process-gone', () => {
+    if (state.quitting) return
+    const failedPath = state.page
+    state.page = null
+    setStatus({ phase: 'failed', code: 'renderer_crashed', path: failedPath })
+    void showStartup()
+  })
+  win.on('closed', () => { state.window = null })
+  await showStartup()
+  if (!state.quitting) await shown
 }
 
 // ---------- 退出（R-003） ----------
@@ -263,37 +218,19 @@ async function gracefulQuit(exitCode = 0) {
   if (state.quitting) return
   state.quitting = true
   log('graceful shutdown started')
-  const { backend, backendInfo } = state
   try {
-    if (backendInfo && backend && backend.exitCode === null) {
-      await httpJson(backendInfo.port, backendInfo.token, 'POST', '/shutdown', {})
-    }
-  } catch (e) {
-    log(`shutdown request failed: ${e}`)
-  }
-  if (backend && backend.exitCode === null) {
-    const exited = await new Promise((resolve) => {
-      const timer = setTimeout(() => resolve(false), SHUTDOWN_GRACE_MS)
-      backend.once('exit', () => {
-        clearTimeout(timer)
-        resolve(true)
-      })
-    })
-    if (!exited) {
-      log('backend did not exit in time; killing')
-      backend.kill()
-    }
+    await state.backend?.stop()
+  } catch {
+    log('backend stop failed')
+    app.exit(1)
+    return
   }
   log('graceful shutdown done')
   app.exit(exitCode)
 }
 
 // ---------- 单实例（AC-004-1） ----------
-if (startup.error) {
-  // 可操作错误页由 T-05k 接入；这里不回退目录，也不启动后端。
-  process.stderr.write(`STARTUP_FAILED ${JSON.stringify(startup.error)}\n`)
-  app.exit(1)
-} else if (!startup.gotLock) {
+if (!startup.gotLock && !startup.error) {
   // 第二实例：聚焦已有窗口后退出，不启动第二个后端（AC-004-1）
   app.quit()
 } else {
@@ -324,14 +261,11 @@ if (startup.error) {
 
   app.whenReady().then(async () => {
     log('shell starting')
-    for (const key of startup.ignored) log(`${key} ignored (packaged)`)
+    for (const key of startup.ignored || []) log(`${key} ignored (packaged)`)
     if (hooks) await hooks.startControl()
-    const { portFile, token } = startBackend()
-    try {
-      const health = await waitForReady(portFile, token)
-      onReady(health)
-    } catch (e) {
-      handleNotReady(e)
-    }
+    installIpc()
+    if (startup.error) setStatus({ phase: 'failed', ...startup.error })
+    await createWindow()
+    if (!state.quitting && !startup.error) beginStartup()
   })
 }

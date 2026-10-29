@@ -1,0 +1,58 @@
+
+> futuresai-shell@0.1.0 test:unit
+> node --test "test/unit/*.test.js"
+
+✔ 就绪需 200+ok+data_ready (342.4982ms)
+✔ 端点文件存在但 health 503 不就绪 (121.4348ms)
+✔ 预算 3 次后 restart_limit 且就绪不清零 (3063.063ms)
+✔ retry 清零预算 (589.6697ms)
+✔ 旧代际事件被忽略 (17.8558ms)
+✔ 超时先 kill 再 failed(health_timeout) (106.9639ms)
+✔ 退出码 3 + 标记 → failed(code) 不重启 (563.1478ms)
+✔ spawn ENOENT → backend_missing (13.9601ms)
+✔ bootstrap：setPath×3 先于 requestSingleInstanceLock (6.6773ms)
+✔ bootstrap：未拿到锁不触碰数据目录 (4.4045ms)
+✔ bootstrap：默认 LOCALAPPDATA\FuturesAI (3.9461ms)
+✔ bootstrap：pending 生效后 dataRoot 为新目录 (7.915ms)
+✔ bootstrap：打包且无钩子时忽略 FAI_DATA_ROOT (4.5753ms)
+✔ bootstrap：开发覆盖优先于偏好 (6.6896ms)
+✔ bootstrap：不可写返回 data_root_unwritable 且无临时目录 (82.4626ms)
+✔ runner：未知场景退出码 2 且未运行场景 (131.06ms)
+✔ runner：登记表不一致退出码 2 (59.2077ms)
+✔ runner：零断言判 FAIL (56.2833ms)
+✔ runner：缺外部工具判 FAIL (165.764ms)
+✔ runner：缺夹具判 FAIL (59.9899ms)
+✔ runner：断言 API 无布尔断言 (118.7974ms)
+✔ runner：两条断言通过退出码 0 (59.6757ms)
+✔ runner：临时目录已清理 (59.3886ms)
+✔ runner：临时目录外路径被拒 (146.2284ms)
+✔ fake-backend：ok 就绪 (273.8717ms)
+✔ fake-backend：health-fail 503 (266.4722ms)
+✔ fake-backend：startup-failed 退出码 3 + 标记 (344.3563ms)
+✔ fake-backend：stdin EOF 退出 (266.6961ms)
+✔ fake-backend：spawns.jsonl 登记 (234.0835ms)
+✔ fake-backend：slow-ready / hang / exit-before-ready / crash-after-ready 协议模式 (1466.1927ms)
+✔ 默认数据目录 = LOCALAPPDATA\FuturesAI (0.8345ms)
+✔ LOCALAPPDATA 缺失 → localappdata_missing (0.5662ms)
+✔ FAI_DATA_ROOT 仅在未打包或测试钩子下生效 (0.3238ms)
+✔ 偏好数据目录优先于默认路径 (0.2038ms)
+✔ 偏好缺失使用完整 schema v1 默认值且不创建文件 (2.5059ms)
+✔ 可写探测 EACCES → data_root_unwritable (2.8428ms)
+✔ 可写探测 ENOSPC → disk_full (1.0367ms)
+✔ pending 可写 → 生效并清空 (6.5253ms)
+✔ pending 不可写 → data_root_invalid 且原目录不变 (4.3024ms)
+✔ 偏好损坏 → prefs_invalid 且文件未改写 (8.9001ms)
+✔ 偏好写入失败返回原因 (3.6566ms)
+✔ 偏好写入先 tmp 后 rename，rename 失败保留旧文件 (8.4567ms)
+ℹ tests 42
+ℹ suites 0
+ℹ pass 42
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4988.4862
+
+real	0m5.541s
+user	0m0.077s
+sys	0m0.060s

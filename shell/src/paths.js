@@ -39,6 +39,12 @@ function bootstrap(app, env) {
     return { gotLock: false, paths, error: prefs.fileError(error, paths.stateDir) }
   }
   if (!app.requestSingleInstanceLock()) return { gotLock: false, paths }
+  return loadDataRoot(resolved)
+}
+
+// Retry the existing preference/probe path without taking the instance lock again.
+function loadDataRoot(resolved) {
+  const { paths } = resolved
   const result = { gotLock: true, paths, ignored: resolved.ignored }
   const loaded = prefs.load(paths.prefsFile)
   if (loaded.error) return { ...result, error: loaded.error }
@@ -48,4 +54,19 @@ function bootstrap(app, env) {
   return { ...result, prefs: applied.prefs, dataRoot, ...prefs.probe(dataRoot) }
 }
 
-module.exports = { resolvePaths, resolveDataRoot, bootstrap }
+function resolveTarget(app, env, resourcesPath, shellDir) {
+  if (app.isPackaged) {
+    const configPath = path.join(resourcesPath, 'app-config.json')
+    let config
+    try { config = JSON.parse(fs.readFileSync(configPath, 'utf8')) } catch {
+      return { error: { code: 'frontend_missing', path: configPath } }
+    }
+    if (config?.frontend === 'bundled') return { target: path.join(resourcesPath, 'frontend', 'index.html') }
+    if (config?.frontend !== 'builtin') return { error: { code: 'frontend_missing', path: configPath } }
+  } else if (env.FAI_FRONTEND_DIST) {
+    return { target: path.resolve(env.FAI_FRONTEND_DIST, 'index.html') }
+  }
+  return { target: path.join(shellDir, 'renderer', 'onboarding.html') }
+}
+
+module.exports = { resolvePaths, resolveDataRoot, bootstrap, loadDataRoot, resolveTarget }

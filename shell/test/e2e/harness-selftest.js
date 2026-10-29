@@ -11,7 +11,7 @@ module.exports = {
     ctx.expectEqual('默认数据目录 = LOCALAPPDATA\\FuturesAI', first.paths.dataRoot, path.join(ctx.env.LOCALAPPDATA, 'FuturesAI'))
     const snapshot = await ctx.waitFor(async () => {
       const current = await ctx.snapshot(first)
-      return current.window.visible ? current : null
+      return current.window.visible && current.backend.phase === 'ready' ? current : null
     })
     ctx.expectEqual('窗口存在', snapshot.window.exists, true)
     ctx.expectEqual('后端存活', ctx.alive(snapshot.backend.pid), true)

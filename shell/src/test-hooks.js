@@ -46,15 +46,13 @@ function install(electron, startup, state, requestQuit) {
   function snapshot() {
     const win = state.window
     const exists = Boolean(win && !win.isDestroyed())
-    const backendAlive = Boolean(state.backend && state.backend.exitCode === null)
     return {
       paths,
       versions: { electron: process.versions.electron, node: process.versions.node, chrome: process.versions.chrome },
       window: exists ? { exists: true, visible: win.isVisible(), minimized: win.isMinimized(),
         url: win.webContents.getURL(), title: win.getTitle() } : { exists: false },
-      // No invented lifecycle history/gen or tray/activity before their implementation tasks.
-      backend: { phase: state.quitting ? 'stopping' : (state.backendInfo && backendAlive ? 'ready' : 'starting'),
-        pid: backendAlive ? state.backend.pid : null, port: state.backendInfo?.port ?? null, restarts: state.restarts },
+      backend: state.backend ? state.backend.snapshot() :
+        { phase: 'idle', phases: [], gen: 0, restarts: 0, pid: null, port: null, lastCode: null },
       tray: null, activity: null, records, prefs: startup.prefs,
     }
   }
