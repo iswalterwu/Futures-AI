@@ -3,7 +3,7 @@ import { computed, readonly, ref } from 'vue'
 import { isTerminalEvent, type AgentEvent } from '../../agent/events.ts'
 import type { DataClient } from '../../contracts/client.ts'
 import { dataClient } from '../../contracts/index.ts'
-import type { ContractError, CreateJobInput, ErrorResponse, Job, JobListItem } from '../../contracts/types.ts'
+import type { ContractError, CreateJobInput, ErrorResponse, Job, JobListItem, Stage, StageWorkspace } from '../../contracts/types.ts'
 
 export type ListJobsFilter = NonNullable<Parameters<DataClient['listJobs']>[0]>
 
@@ -13,6 +13,11 @@ export const useJobsStore = defineStore('jobs', () => {
   const listError = ref<ContractError | null>(null)
   const filter = ref<ListJobsFilter | null>(null)
   const filteredJobs = ref<JobListItem[] | null>(null)
+  const currentJob = ref<Job | null>(null)
+  const currentStageWorkspace = ref<StageWorkspace | null>(null)
+  const detailStatus = ref<'idle' | 'loading' | 'ready' | 'error'>('idle')
+  const detailError = ref<ContractError | null>(null)
+  let anchor: { jobId: string; stage: Stage | null } | null = null
 
   async function ensureJobs(): Promise<void> {
     if (listStatus.value === 'idle') await refresh()
@@ -30,6 +35,38 @@ export const useJobsStore = defineStore('jobs', () => {
       listError.value = (cause as ErrorResponse).error
       listStatus.value = 'error'
     }
+    if (anchor !== null) {
+      try {
+        await readDetail(anchor)
+      } catch (cause) {
+        detailError.value = (cause as ErrorResponse).error
+        detailStatus.value = 'error'
+      }
+    }
+  }
+
+  async function openJob(jobId: string, stage: Stage | null): Promise<Stage | null> {
+    anchor = { jobId, stage }
+    if (currentJob.value?.id !== jobId) detailStatus.value = 'loading'
+    try {
+      return await readDetail(anchor)
+    } catch (cause) {
+      detailError.value = (cause as ErrorResponse).error
+      detailStatus.value = 'error'
+      return null
+    }
+  }
+
+  async function readDetail(target: { jobId: string; stage: Stage | null }): Promise<Stage | null> {
+    const job = await dataClient.getJob(target.jobId)
+    const stage = job === null ? null : target.stage ?? job.currentStage
+    const workspace = stage === null ? null : await dataClient.getStageWorkspace(target.jobId, stage)
+    currentJob.value = job
+    currentStageWorkspace.value = workspace
+    target.stage = stage
+    detailStatus.value = 'ready'
+    detailError.value = null
+    return stage
   }
 
   async function applyFilter(value: ListJobsFilter | null): Promise<void> {
@@ -62,6 +99,11 @@ export const useJobsStore = defineStore('jobs', () => {
     listError: computed(() => listError.value === null ? null : readonly(listError.value)),
     filter: computed(() => filter.value === null ? null : readonly(filter.value)),
     filteredJobs: computed(() => filteredJobs.value === null ? null : readonly(filteredJobs.value)),
+    currentJob: computed(() => currentJob.value === null ? null : readonly(currentJob.value)),
+    currentStageWorkspace: computed(() => currentStageWorkspace.value === null ? null : readonly(currentStageWorkspace.value)),
+    detailStatus: computed(() => detailStatus.value),
+    detailError: computed(() => detailError.value === null ? null : readonly(detailError.value)),
+    openJob,
     ensureJobs,
     refresh,
     applyFilter,

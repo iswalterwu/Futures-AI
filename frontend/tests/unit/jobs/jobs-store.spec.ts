@@ -445,3 +445,366 @@ describe('WI H-2 agent refresh — AC-002-4 / AC-006-6 / AC-007-2 partial', () =
     stopRecording()
   })
 })
+
+describe('WI detail cache open — AC-002-1 / AC-002-2 partial', () => {
+  let connection: ReturnType<typeof connect>
+  beforeEach(() => {
+    connection = connect()
+    const { client } = connection
+    vi.spyOn(dataClient, 'getJob').mockImplementation(id => client.getJob(id))
+    vi.spyOn(dataClient, 'getStageWorkspace').mockImplementation((...args) => client.getStageWorkspace(...args))
+  })
+
+  test('opens the requested stage with readonly members and nested data, without storage or list reads', async () => {
+    const { client, reads, store } = connection
+    const expectedJob = await client.getJob('j-process')
+    const expectedWorkspace = await client.getStageWorkspace('j-process', 'analyze')
+    const storage = ['getItem', 'setItem', 'removeItem', 'clear'].map(method =>
+      vi.spyOn(Storage.prototype, method as 'getItem'))
+    expect(store.currentJob).toBeNull()
+    expect(store.currentStageWorkspace).toBeNull()
+    expect(store.detailStatus).toBe('idle')
+    expect(store.detailError).toBeNull()
+    const opening = store.openJob('j-process', 'analyze')
+    expect(store.detailStatus).toBe('loading')
+    await expect(opening).resolves.toBe('analyze')
+    expect(store.currentJob).toEqual(expectedJob)
+    expect(store.currentStageWorkspace).toEqual(expectedWorkspace)
+    expect(store.currentStageWorkspace?.stage).toBe('analyze')
+    expect(store.detailStatus).toBe('ready')
+    expect(store.detailError).toBeNull()
+    expect(dataClient.getJob).toHaveBeenCalledExactlyOnceWith('j-process')
+    expect(dataClient.getStageWorkspace).toHaveBeenCalledExactlyOnceWith('j-process', 'analyze')
+    for (const key of ['currentJob', 'currentStageWorkspace', 'detailStatus', 'detailError']) {
+      expect(isReadonly(Object.getOwnPropertyDescriptor(store, key)?.value)).toBe(true)
+    }
+    expect(isReadonly(store.currentJob)).toBe(true)
+    expect(isReadonly(store.currentJob?.stages)).toBe(true)
+    expect(isReadonly(store.currentJob?.stages[0])).toBe(true)
+    expect(isReadonly(store.currentStageWorkspace)).toBe(true)
+    expect(isReadonly(store.currentStageWorkspace?.artifacts)).toBe(true)
+    expect(storage.every(spy => spy.mock.calls.length === 0)).toBe(true)
+    expect(reads).not.toHaveBeenCalled()
+    expect(store.listStatus).toBe('idle')
+    expect(store.listError).toBeNull()
+    expect(store).not.toHaveProperty('anchor')
+    expect(store).not.toHaveProperty('readDetail')
+    expect(store).not.toHaveProperty('closeJob')
+  })
+
+  test('null stage resolves to the business current stage and is reused by refresh', async () => {
+    const { client, store } = connection
+    const job = await client.getJob('j-process')
+    await expect(store.openJob('j-process', null)).resolves.toBe(job?.currentStage)
+    expect(store.currentStageWorkspace).toEqual(await client.getStageWorkspace('j-process', 'process'))
+    expect(store.currentStageWorkspace?.artifacts.length).toBeGreaterThan(0)
+    expect(isReadonly(store.currentStageWorkspace?.artifacts[0])).toBe(true)
+    vi.mocked(dataClient.getStageWorkspace).mockClear()
+    await store.refresh()
+    expect(dataClient.getStageWorkspace).toHaveBeenCalledExactlyOnceWith('j-process', 'process')
+  })
+
+  test('switching stages of the same job keeps ready and the old workspace until the read completes', async () => {
+    const { store } = connection
+    await store.openJob('j-process', 'analyze')
+    const cached = store.currentStageWorkspace
+    const opening = store.openJob('j-process', 'collect')
+    expect(store.detailStatus).toBe('ready')
+    expect(store.currentStageWorkspace).toBe(cached)
+    await expect(opening).resolves.toBe('collect')
+    expect(store.currentStageWorkspace?.stage).toBe('collect')
+    expect(store.detailStatus).toBe('ready')
+  })
+
+  test('opening a different job enters loading and replaces both caches on success', async () => {
+    const { client, store } = connection
+    await store.openJob('j-process', 'analyze')
+    const cached = store.currentJob
+    const opening = store.openJob('j-collect', 'collect')
+    expect(store.detailStatus).toBe('loading')
+    expect(store.currentJob).toBe(cached)
+    await expect(opening).resolves.toBe('collect')
+    expect(store.currentJob).toEqual(await client.getJob('j-collect'))
+    expect(store.currentStageWorkspace).toEqual(await client.getStageWorkspace('j-collect', 'collect'))
+  })
+})
+
+describe('WI detail cache states — AC-001-4 partial', () => {
+  let connection: ReturnType<typeof connect>
+  beforeEach(() => {
+    connection = connect()
+    const { client } = connection
+    vi.spyOn(dataClient, 'getJob').mockImplementation(id => client.getJob(id))
+    vi.spyOn(dataClient, 'getStageWorkspace').mockImplementation((...args) => client.getStageWorkspace(...args))
+  })
+
+  test('slow first open stays loading through both sequential reads, then becomes ready', async () => {
+    vi.useFakeTimers()
+    changeScenario('slow')
+    const { store } = connection
+    const opening = store.openJob('j-process', 'analyze')
+    expect(store.detailStatus).toBe('loading')
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(store.detailStatus).toBe('loading')
+    expect(store.currentJob).toBeNull()
+    expect(dataClient.getStageWorkspace).toHaveBeenCalledExactlyOnceWith('j-process', 'analyze')
+    await vi.advanceTimersByTimeAsync(1499)
+    expect(store.detailStatus).toBe('loading')
+    await vi.advanceTimersByTimeAsync(1)
+    await expect(opening).resolves.toBe('analyze')
+    expect(store.detailStatus).toBe('ready')
+    expect(store.currentJob?.id).toBe('j-process')
+    expect(store.currentStageWorkspace?.stage).toBe('analyze')
+    expect(store.listStatus).toBe('idle')
+    expect(store.listError).toBeNull()
+  })
+
+  test('empty preset id clears old caches, skips workspace reads and resolves null as ready', async () => {
+    const { store } = connection
+    await store.openJob('j-process', 'analyze')
+    changeScenario('empty')
+    vi.mocked(dataClient.getStageWorkspace).mockClear()
+    await expect(store.openJob('j-collect', 'collect')).resolves.toBeNull()
+    expect(store.currentJob).toBeNull()
+    expect(store.currentStageWorkspace).toBeNull()
+    expect(store.detailStatus).toBe('ready')
+    expect(store.detailError).toBeNull()
+    expect(dataClient.getStageWorkspace).not.toHaveBeenCalled()
+    expect(store.listStatus).toBe('idle')
+    expect(store.listError).toBeNull()
+  })
+
+  test.each([
+    { scenario: 'error', id: 'j-collect', code: 'adapter_error', retryable: true },
+    { scenario: 'normal', id: 'j-missing', code: 'not_found', retryable: false },
+  ] as const)('$scenario / $id resolves null with the original typed error and preserves both caches and list state', async ({ scenario, id, code, retryable }) => {
+    const { store } = connection
+    await store.ensureJobs()
+    await store.openJob('j-process', 'analyze')
+    const job = store.currentJob
+    const workspace = store.currentStageWorkspace
+    const list = store.jobs
+    const listError = store.listError
+    changeScenario(scenario)
+    vi.mocked(dataClient.getJob).mockClear()
+    vi.mocked(dataClient.getStageWorkspace).mockClear()
+    await expect(store.openJob(id, 'collect')).resolves.toBeNull()
+    const cause = await vi.mocked(dataClient.getJob).mock.results[0]!.value.catch((error: unknown) => error)
+    expect(store.detailStatus).toBe('error')
+    expect(cause).toEqual({ error: store.detailError })
+    expect(store.detailError).toMatchObject({ code, retryable })
+    expect(isReadonly(store.detailError)).toBe(true)
+    expect(store.currentJob).toBe(job)
+    expect(store.currentStageWorkspace).toBe(workspace)
+    expect(dataClient.getStageWorkspace).not.toHaveBeenCalled()
+    expect(store.jobs).toBe(list)
+    expect(store.listStatus).toBe('ready')
+    expect(store.listError).toBe(listError)
+  })
+
+  test('workspace failure after a successful job read preserves both old caches; a later open clears the error', async () => {
+    const { client, store } = connection
+    await store.openJob('j-process', 'analyze')
+    const job = store.currentJob
+    const workspace = store.currentStageWorkspace
+    vi.mocked(dataClient.getJob).mockImplementationOnce(async id => {
+      const result = await client.getJob(id)
+      changeScenario('error')
+      return result
+    })
+    vi.mocked(dataClient.getStageWorkspace).mockClear()
+    await expect(store.openJob('j-collect', 'collect')).resolves.toBeNull()
+    const cause = await vi.mocked(dataClient.getStageWorkspace).mock.results[0]!.value.catch((error: unknown) => error)
+    expect(cause).toEqual({ error: store.detailError })
+    expect(store.detailStatus).toBe('error')
+    expect(store.currentJob).toBe(job)
+    expect(store.currentStageWorkspace).toBe(workspace)
+    expect(store.listStatus).toBe('idle')
+    expect(store.listError).toBeNull()
+    changeScenario('normal')
+    await expect(store.openJob('j-collect', 'collect')).resolves.toBe('collect')
+    expect(store.detailStatus).toBe('ready')
+    expect(store.detailError).toBeNull()
+    expect(store.currentJob?.id).toBe('j-collect')
+    expect(store.currentStageWorkspace?.stage).toBe('collect')
+  })
+
+  test('successful detail open cannot clear an existing list read error', async () => {
+    const { store } = connection
+    changeScenario('error')
+    await store.ensureJobs()
+    const error = store.listError
+    changeScenario('normal')
+    await expect(store.openJob('j-process', 'analyze')).resolves.toBe('analyze')
+    expect(store.detailStatus).toBe('ready')
+    expect(store.detailError).toBeNull()
+    expect(store.listStatus).toBe('error')
+    expect(store.listError).toBe(error)
+  })
+})
+
+describe('WI detail cache refresh — AC-001-4 / AC-002-2 partial', () => {
+  let connection: ReturnType<typeof connect>
+  beforeEach(() => {
+    connection = connect()
+    const { client } = connection
+    vi.spyOn(dataClient, 'getJob').mockImplementation(id => client.getJob(id))
+    vi.spyOn(dataClient, 'getStageWorkspace').mockImplementation((...args) => client.getStageWorkspace(...args))
+  })
+
+  test('without an open anchor refresh only reads the list and leaves detail idle', async () => {
+    const { reads, store } = connection
+    await store.refresh()
+    expect(reads.mock.calls).toEqual([[]])
+    expect(dataClient.getJob).not.toHaveBeenCalled()
+    expect(dataClient.getStageWorkspace).not.toHaveBeenCalled()
+    expect(store.detailStatus).toBe('idle')
+    expect(store.detailError).toBeNull()
+  })
+
+  test('each refresh reads the last opened anchor once after base and filter, without loading or polling', async () => {
+    vi.useFakeTimers()
+    const { client, reads, store } = connection
+    await store.ensureJobs()
+    await store.openJob('j-collect', 'collect')
+    await store.openJob('j-process', 'analyze')
+    const expectedJob = await client.getJob('j-process')
+    const expectedWorkspace = await client.getStageWorkspace('j-process', 'analyze')
+    const getJob = vi.mocked(dataClient.getJob)
+    const getWorkspace = vi.mocked(dataClient.getStageWorkspace)
+    for (const filter of [null, { type: 'research' } as const]) {
+      changeScenario('normal')
+      await store.applyFilter(filter)
+      reads.mockClear()
+      getJob.mockClear()
+      getWorkspace.mockClear()
+      changeScenario('slow')
+      const cachedJob = store.currentJob
+      const cachedWorkspace = store.currentStageWorkspace
+      const refreshing = store.refresh()
+      expect(store.detailStatus).toBe('ready')
+      expect(store.currentJob).toBe(cachedJob)
+      expect(store.currentStageWorkspace).toBe(cachedWorkspace)
+      await vi.advanceTimersByTimeAsync(filter === null ? 1500 : 3000)
+      expect(store.detailStatus).toBe('ready')
+      expect(getJob).toHaveBeenCalledExactlyOnceWith('j-process')
+      expect(getWorkspace).not.toHaveBeenCalled()
+      await vi.advanceTimersByTimeAsync(1500)
+      expect(store.detailStatus).toBe('ready')
+      expect(store.currentJob).toBe(cachedJob)
+      await vi.advanceTimersByTimeAsync(1500)
+      await expect(refreshing).resolves.toBeUndefined()
+      expect(reads.mock.calls).toEqual(filter === null ? [[]] : [[], [filter]])
+      expect(getWorkspace).toHaveBeenCalledExactlyOnceWith('j-process', 'analyze')
+      expect(store.currentJob).toEqual(expectedJob)
+      expect(store.currentStageWorkspace).toEqual(expectedWorkspace)
+      expect(store.listStatus).toBe('ready')
+      expect(store.detailStatus).toBe('ready')
+      expect(store.detailError).toBeNull()
+      await vi.advanceTimersByTimeAsync(60000)
+      expect(getJob).toHaveBeenCalledTimes(1)
+      expect(getWorkspace).toHaveBeenCalledTimes(1)
+      expect(vi.getTimerCount()).toBe(0)
+    }
+  })
+
+  test('createJob uses its existing single refresh to reload the open detail and active filter once', async () => {
+    const { client, reads, writes, store } = connection
+    await store.ensureJobs()
+    await store.applyFilter({ type: 'research' })
+    await store.openJob('j-process', 'analyze')
+    reads.mockClear()
+    vi.mocked(dataClient.getJob).mockClear()
+    vi.mocked(dataClient.getStageWorkspace).mockClear()
+    const job = await store.createJob(input)
+    expect(writes).toHaveBeenCalledExactlyOnceWith(input)
+    expect(reads.mock.calls).toEqual([[], [{ type: 'research' }]])
+    expect(dataClient.getJob).toHaveBeenCalledExactlyOnceWith('j-process')
+    expect(dataClient.getStageWorkspace).toHaveBeenCalledExactlyOnceWith('j-process', 'analyze')
+    expect(store.jobs.some(item => item.id === job.id)).toBe(true)
+    expect(store.filteredJobs).toEqual(await client.listJobs({ type: 'research' }))
+    expect(store.currentJob).toEqual(await client.getJob('j-process'))
+    expect(store.currentStageWorkspace).toEqual(await client.getStageWorkspace('j-process', 'analyze'))
+  })
+
+  test('a missing open anchor still refreshes as not_found without contaminating successful list reads', async () => {
+    const { reads, store } = connection
+    await store.openJob('j-process', 'analyze')
+    const job = store.currentJob
+    const workspace = store.currentStageWorkspace
+    await expect(store.openJob('j-missing', 'collect')).resolves.toBeNull()
+    vi.mocked(dataClient.getJob).mockClear()
+    vi.mocked(dataClient.getStageWorkspace).mockClear()
+    await expect(store.refresh()).resolves.toBeUndefined()
+    expect(reads.mock.calls).toEqual([[]])
+    expect(dataClient.getJob).toHaveBeenCalledExactlyOnceWith('j-missing')
+    expect(dataClient.getStageWorkspace).not.toHaveBeenCalled()
+    expect(store.listStatus).toBe('ready')
+    expect(store.listError).toBeNull()
+    expect(store.detailStatus).toBe('error')
+    expect(store.detailError).toMatchObject({ code: 'not_found', retryable: false })
+    expect(store.currentJob).toBe(job)
+    expect(store.currentStageWorkspace).toBe(workspace)
+  })
+
+  test('list and detail failures record their own original errors, retain caches and recover independently on refresh', async () => {
+    const { reads, store } = connection
+    await store.ensureJobs()
+    await store.openJob('j-process', 'analyze')
+    const list = store.jobs
+    const job = store.currentJob
+    const workspace = store.currentStageWorkspace
+    changeScenario('error')
+    reads.mockClear()
+    vi.mocked(dataClient.getJob).mockClear()
+    vi.mocked(dataClient.getStageWorkspace).mockClear()
+    await expect(store.refresh()).resolves.toBeUndefined()
+    const listCause = await reads.mock.results[0]!.value.catch((error: unknown) => error)
+    const detailCause = await vi.mocked(dataClient.getJob).mock.results[0]!.value.catch((error: unknown) => error)
+    expect(store.listStatus).toBe('error')
+    expect(listCause).toEqual({ error: store.listError })
+    expect(store.listError?.code).toBe('adapter_error')
+    expect(store.detailStatus).toBe('error')
+    expect(detailCause).toEqual({ error: store.detailError })
+    expect(store.detailError?.code).toBe('adapter_error')
+    expect(store.listError).not.toBe(store.detailError)
+    expect(store.jobs).toBe(list)
+    expect(store.currentJob).toBe(job)
+    expect(store.currentStageWorkspace).toBe(workspace)
+    expect(dataClient.getJob).toHaveBeenCalledExactlyOnceWith('j-process')
+    expect(dataClient.getStageWorkspace).not.toHaveBeenCalled()
+    changeScenario('normal')
+    const retry = store.refresh()
+    expect(store.detailStatus).toBe('error')
+    await expect(retry).resolves.toBeUndefined()
+    expect(store.listStatus).toBe('ready')
+    expect(store.listError).toBeNull()
+    expect(store.detailStatus).toBe('ready')
+    expect(store.detailError).toBeNull()
+    expect(dataClient.getStageWorkspace).toHaveBeenCalledExactlyOnceWith('j-process', 'analyze')
+  })
+
+  test('a failed list read does not skip a successful detail read or let it clear the list error', async () => {
+    const { client, reads, store } = connection
+    await store.ensureJobs()
+    await store.openJob('j-process', 'analyze')
+    changeScenario('error')
+    reads.mockImplementationOnce(async (...args) => {
+      try {
+        return await client.listJobs(...args)
+      } finally {
+        changeScenario('normal')
+      }
+    })
+    vi.mocked(dataClient.getJob).mockClear()
+    vi.mocked(dataClient.getStageWorkspace).mockClear()
+    await expect(store.refresh()).resolves.toBeUndefined()
+    expect(store.listStatus).toBe('error')
+    expect(store.listError?.code).toBe('adapter_error')
+    expect(store.detailStatus).toBe('ready')
+    expect(store.detailError).toBeNull()
+    expect(dataClient.getJob).toHaveBeenCalledExactlyOnceWith('j-process')
+    expect(dataClient.getStageWorkspace).toHaveBeenCalledExactlyOnceWith('j-process', 'analyze')
+    expect(store.currentJob).toEqual(await client.getJob('j-process'))
+  })
+})
