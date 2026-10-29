@@ -23,6 +23,10 @@ const requests = {
   submitIntake: () => dataClient.submitIntake({ jobId: null, inputKind: 'url', url: 'https://example.invalid/sample', sourceNote: { purpose: '样例', reliability: 'unknown', publishedAt: null, validUntil: null, scopeNote: null } }),
   getIntakePreview: () => dataClient.getIntakePreview('u-unassigned-file'),
   confirmIntake: () => dataClient.confirmIntake('u-unassigned-file', []),
+  listUnassignedUploads: () => dataClient.listUnassignedUploads(),
+  assignUpload: () => dataClient.assignUpload('u-unassigned-file', 'j-collect'),
+  removeUpload: () => dataClient.removeUpload('u-unassigned-file', '样例删除'),
+  cancelJob: () => dataClient.cancelJob('j-collect', '样例取消'),
 } satisfies { [Method in keyof DataClient]: () => ReturnType<DataClient[Method]> }
 
 describe('WI real stubs — AC-008-3 partial', () => {

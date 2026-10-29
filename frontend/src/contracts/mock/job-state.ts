@@ -112,7 +112,9 @@ export function getJob(jobId: string): Job | null {
 export function getStageWorkspace(jobId: string, stage: Stage): StageWorkspace {
   findJob(jobId)
   const workspace = stage === 'deliver' ? state.deliverables[jobId] : state.details[jobId]?.[stage]
-  return structuredClone(workspace ?? emptyWorkspace(stage))
+  const result = structuredClone(workspace ?? emptyWorkspace(stage))
+  if (result.stage === 'collect') result.uploads = result.uploads.filter(upload => !upload.removed)
+  return result
 }
 
 export function createJob(input: CreateJobInput): WriteReceipt {
@@ -202,6 +204,56 @@ export function confirmIntake(uploadId: string, mapping: FieldMapping): IntakeRe
     upload.status = upload.quarantineReason === undefined ? 'ingested' : 'quarantined'
     const receipt = job ? appendDatasetRevision(working, job, now, { action: 'map_fix', uploadId, mapping }) : emptyReceipt()
     return { ...receipt, upload, preview: previews[uploadId] }
+  })
+}
+
+export function listUnassignedUploads(): Upload[] {
+  return structuredClone(state.uploads.uploads.filter(upload => upload.jobId === null && !upload.removed))
+}
+
+export function assignUpload(uploadId: string, jobId: string): WriteReceipt {
+  return commit(working => {
+    const { upload, previews } = findUpload(working, uploadId)
+    const job = writableJob(working, jobId)
+    if (upload.jobId !== null || upload.removed || !working.uploads.uploads.includes(upload)) {
+      throw { error: { code: 'validation_error', message: '只能归入池中未删除的未归属投放。', retryable: false } }
+    }
+    const detail = jobDetail(working, jobId)
+    upload.jobId = jobId
+    detail.collect.uploads.push(upload)
+    detail.previews[uploadId] = previews[uploadId]
+    working.uploads.uploads = working.uploads.uploads.filter(record => record.id !== uploadId)
+    delete working.uploads.previews[uploadId]
+    return appendDatasetRevision(working, job, new Date().toISOString(), {
+      action: 'ingest', uploadId, sourceNote: upload.sourceNote,
+    })
+  })
+}
+
+export function removeUpload(uploadId: string, reason: string): WriteReceipt {
+  return commit(working => {
+    const { upload } = findUpload(working, uploadId)
+    const job = upload.jobId === null ? null : writableJob(working, upload.jobId)
+    upload.removed = true
+    return job ? appendDatasetRevision(working, job, new Date().toISOString(), {
+      action: 'remove_source', uploadId, reason,
+    }) : emptyReceipt()
+  })
+}
+
+export function cancelJob(jobId: string, reason: string): WriteReceipt {
+  return commit(working => {
+    const job = writableJob(working, jobId)
+    const now = new Date().toISOString()
+    job.status = 'cancelled'
+    job.reason = reason
+    job.updatedAt = now
+    const event: Intervention = {
+      id: `i-${crypto.randomUUID()}`, jobId, stage: job.currentStage, artifactId: null, baseRev: null,
+      kind: 'delete', payload: { action: 'cancel_job', reason }, reason, outcome: 'recorded', createdAt: now,
+    }
+    working.interventions.push(event)
+    return { ...emptyReceipt(), jobs: [job], interventions: [event] }
   })
 }
 

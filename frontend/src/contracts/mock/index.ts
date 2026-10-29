@@ -195,6 +195,18 @@ export function createMockDataClient(): DataClient {
       const [id] = parseBoundary(dataMethods.getIntakePreview.params, [uploadId])
       return readJobState(() => jobState.getIntakePreview(id), dataMethods.getIntakePreview.result)
     },
+    async listUnassignedUploads() {
+      return readJobState(jobState.listUnassignedUploads, dataMethods.listUnassignedUploads.result)
+    },
+    assignUpload(uploadId, jobId) {
+      return writeJobState(dataMethods.assignUpload, [uploadId, jobId], jobState.assignUpload)
+    },
+    removeUpload(uploadId, reason) {
+      return writeJobState(dataMethods.removeUpload, [uploadId, reason], jobState.removeUpload)
+    },
+    cancelJob(jobId, reason) {
+      return writeJobState(dataMethods.cancelJob, [jobId, reason], jobState.cancelJob)
+    },
     async resetMockData() {
       await delayScenario(jobState.getJobScenario())
       jobState.resetJobState()

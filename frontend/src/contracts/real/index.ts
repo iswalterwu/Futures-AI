@@ -31,6 +31,10 @@ export const dataClient: DataClient = {
   async submitIntake() { throw new NotImplementedError('submitIntake') },
   async getIntakePreview() { throw new NotImplementedError('getIntakePreview') },
   async confirmIntake() { throw new NotImplementedError('confirmIntake') },
+  async listUnassignedUploads() { throw new NotImplementedError('listUnassignedUploads') },
+  async assignUpload() { throw new NotImplementedError('assignUpload') },
+  async removeUpload() { throw new NotImplementedError('removeUpload') },
+  async cancelJob() { throw new NotImplementedError('cancelJob') },
 }
 
 export const agentClient: AgentClient = {

@@ -8,6 +8,7 @@ import type {
   IntakeInput,
   IntakeReceipt,
   WriteReceipt,
+  Upload,
   DailyBriefResponse,
   Job,
   JobListItem,
@@ -47,6 +48,10 @@ export interface DataClient {
   submitIntake(input: IntakeInput): Promise<IntakeReceipt>
   getIntakePreview(uploadId: string): Promise<ExtractionPreview>
   confirmIntake(uploadId: string, mapping: FieldMapping): Promise<IntakeReceipt>
+  listUnassignedUploads(): Promise<Upload[]>
+  assignUpload(uploadId: string, jobId: string): Promise<WriteReceipt>
+  removeUpload(uploadId: string, reason: string): Promise<WriteReceipt>
+  cancelJob(jobId: string, reason: string): Promise<WriteReceipt>
 }
 
 export type AgentEventCallback = (event: AgentEvent) => void

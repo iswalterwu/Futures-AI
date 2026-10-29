@@ -126,7 +126,7 @@
 
 ### `getStageWorkspace`
 
-按作业与阶段读取当前共享状态的工作区副本，不按阶段态过滤内容或启动运行。empty 预置 id 与覆盖集合中缺工作区样例的作业返回带阶段的空集合（交付物和定稿快照为 null）；未知 id 在任何场景均为 not_found，error 的已知目标返回 adapter_error；slow 每次调用延迟 1500ms。
+按作业与阶段读取当前共享状态的工作区副本，不按阶段态过滤内容或启动运行。采集列表只展示未删除的投放，旧修订与预览锚仍保留。empty 预置 id 与覆盖集合中缺工作区样例的作业返回带阶段的空集合（交付物和定稿快照为 null）；未知 id 在任何场景均为 not_found，error 的已知目标返回 adapter_error；slow 每次调用延迟 1500ms。
 
 - 参数（位置参数元组）：`getStageWorkspaceParams`
 - 成功结果（Promise）：`StageWorkspace`
@@ -162,6 +162,38 @@
 
 - 参数（位置参数元组）：`confirmIntakeParams`
 - 成功结果（Promise）：`IntakeReceipt`
+- 拒绝：`ErrorResponse`
+
+### `listUnassignedUploads`
+
+返回未归属且未删除的投放记录副本，不分页。
+
+- 参数（位置参数元组）：`bootstrapParams`
+- 成功结果（Promise）：`listUnassignedUploadsResult`
+- 拒绝：`ErrorResponse`
+
+### `assignUpload`
+
+把池中未删除的投放及预览移入目标作业，追加 dataset 修订与一条 ingest；不重放未归属期间的确认。未知锚返回 not_found，已归属、已删除或目标作业只读时返回 validation_error。
+
+- 参数（位置参数元组）：`assignUploadParams`
+- 成功结果（Promise）：`WriteReceipt`
+- 拒绝：`ErrorResponse`
+
+### `removeUpload`
+
+标记投放已删除，使其从当前列表消失；保留记录、预览与旧修订。已归属者追加 dataset 修订及 delete / remove_source 事件，未归属者不写事件；终结作业拒绝写入。
+
+- 参数（位置参数元组）：`removeUploadParams`
+- 成功结果（Promise）：`WriteReceipt`
+- 拒绝：`ErrorResponse`
+
+### `cancelJob`
+
+将作业置 cancelled 并记录原因与 delete / cancel_job 事件；保留当前阶段、阶段状态及工作区快照，不中止已有运行；终结作业拒绝写入。
+
+- 参数（位置参数元组）：`cancelJobParams`
+- 成功结果（Promise）：`WriteReceipt`
 - 拒绝：`ErrorResponse`
 
 ### `resetMockData`
@@ -2009,6 +2041,37 @@
 | `$` | 是 | `[string, FieldMapping]` | 投放确认的位置参数。 |
 | `$[0]` | 是 | `string` | uploadId：待确认投放锚。 |
 | `$[1]` | 是 | `FieldMapping` | mapping：修正后的字段与单位映射。 |
+
+### `listUnassignedUploadsResult`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `Upload[]` | 待归属池的当前投放列表，不含已移入作业或已删除记录。 |
+| `$[]` | 是 | `Upload` | 投放持久化记录；只含元数据 / 来源语境 / 映射 / 状态，拒绝粘贴正文与完整提交参数。 |
+
+### `assignUploadParams`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `[string, string]` | 归入作业的位置参数。 |
+| `$[0]` | 是 | `string` | uploadId：池中的投放锚。 |
+| `$[1]` | 是 | `string` | jobId：目标作业锚。 |
+
+### `removeUploadParams`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `[string, string]` | 删除来源的位置参数。 |
+| `$[0]` | 是 | `string` | uploadId：要移除的投放锚。 |
+| `$[1]` | 是 | `string` | reason：删除理由，去除两端空白后非空。 |
+
+### `cancelJobParams`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `[string, string]` | 取消作业的位置参数。 |
+| `$[0]` | 是 | `string` | jobId：要取消的作业锚。 |
+| `$[1]` | 是 | `string` | reason：取消理由，去除两端空白后非空。 |
 
 ### `resetMockDataResult`
 

@@ -10,6 +10,7 @@ import {
   IntakeInputSchema,
   IntakeReceiptSchema,
   WriteReceiptSchema,
+  UploadSchema,
   CONTRACT_VERSION,
   DailyBriefResponseSchema,
   ErrorResponseSchema,
@@ -131,7 +132,7 @@ export const dataMethods = {
     result: JobSchema.nullable().describe('作业详情副本；仅 empty 初始化的预置 id 返回 null。'),
   },
   getStageWorkspace: {
-    description: '按作业与阶段读取当前共享状态的工作区副本，不按阶段态过滤内容或启动运行。empty 预置 id 与覆盖集合中缺工作区样例的作业返回带阶段的空集合（交付物和定稿快照为 null）；未知 id 在任何场景均为 not_found，error 的已知目标返回 adapter_error；slow 每次调用延迟 1500ms。',
+    description: '按作业与阶段读取当前共享状态的工作区副本，不按阶段态过滤内容或启动运行。采集列表只展示未删除的投放，旧修订与预览锚仍保留。empty 预置 id 与覆盖集合中缺工作区样例的作业返回带阶段的空集合（交付物和定稿快照为 null）；未知 id 在任何场景均为 not_found，error 的已知目标返回 adapter_error；slow 每次调用延迟 1500ms。',
     params: z.tuple([
       z.string().min(1).describe('jobId：工作区所属作业唯一标识，非空。'),
       StageSchema.describe('stage：要读取的阶段，不必是当前阶段。'),
@@ -160,6 +161,35 @@ export const dataMethods = {
       FieldMappingSchema.describe('mapping：修正后的字段与单位映射。'),
     ]).describe('投放确认的位置参数。'),
     result: IntakeReceiptSchema,
+  },
+  listUnassignedUploads: {
+    description: '返回未归属且未删除的投放记录副本，不分页。',
+    params: noParams,
+    result: z.array(UploadSchema).describe('待归属池的当前投放列表，不含已移入作业或已删除记录。'),
+  },
+  assignUpload: {
+    description: '把池中未删除的投放及预览移入目标作业，追加 dataset 修订与一条 ingest；不重放未归属期间的确认。未知锚返回 not_found，已归属、已删除或目标作业只读时返回 validation_error。',
+    params: z.tuple([
+      z.string().min(1).describe('uploadId：池中的投放锚。'),
+      z.string().min(1).describe('jobId：目标作业锚。'),
+    ]).describe('归入作业的位置参数。'),
+    result: WriteReceiptSchema,
+  },
+  removeUpload: {
+    description: '标记投放已删除，使其从当前列表消失；保留记录、预览与旧修订。已归属者追加 dataset 修订及 delete / remove_source 事件，未归属者不写事件；终结作业拒绝写入。',
+    params: z.tuple([
+      z.string().min(1).describe('uploadId：要移除的投放锚。'),
+      z.string().trim().min(1).describe('reason：删除理由，去除两端空白后非空。'),
+    ]).describe('删除来源的位置参数。'),
+    result: WriteReceiptSchema,
+  },
+  cancelJob: {
+    description: '将作业置 cancelled 并记录原因与 delete / cancel_job 事件；保留当前阶段、阶段状态及工作区快照，不中止已有运行；终结作业拒绝写入。',
+    params: z.tuple([
+      z.string().min(1).describe('jobId：要取消的作业锚。'),
+      z.string().trim().min(1).describe('reason：取消理由，去除两端空白后非空。'),
+    ]).describe('取消作业的位置参数。'),
+    result: WriteReceiptSchema,
   },
   resetMockData: {
     description: '显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。',
