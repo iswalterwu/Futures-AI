@@ -3,6 +3,7 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
+> **当前结论（2026-10-30 T-C04a 已实施 + R5-A 增量 Converge）：见文末「Analyze R27」**（当前索引；只读，不是审核结论；下一行指向 R25 的页首块、以及 R26 / R25 正文为当时原文，不改；R26 当轮未加页首行）。T-C04a 代码 `f63ef7c`（3 文件 +82 / −2，`selectReceipt` 一行普通赋值、无 guard）3 / 3 标准有代码与实施者命令证据（先红 2 / 1，后 32 / 79 / 1130），本任务增量已收口、待独立 A 增量 Review；37 已实施（36 已完成 + T-C04a 待 A）/ 37 未开始；74 / 107.5 h / 248 / 248 / 46 AC 不变，唯一回边 T-B03 → T-B04、无环；R5-A 代码已修、未关闭。
 > **当前结论（2026-10-30 r6.12.4：第五批 9 项实施后的批次 Converge）：见文末「Analyze R25」**（当前索引；只读，不是审核结论；下一行指向 R24 的页首块及 R24～R21 正文为当时原文，不改）。第五批 9 项（`f65d3c6` … `e609c2e`，代码 `b67a227..e609c2e -- frontend` 9 个前端提交 / 28 文件 / +3672 / −24）的标准逐条有代码与命令对应，实施者执行全过；两处 `intake.spec.ts` 例外与许可逐行相同；没有需按 §9 补的任务，定形只按精度登记（r6.12.4）；静读观察 O-B5-1～O-B5-9 交 A（O-B5-3 建议优先判定）。36 已实施（27 已完成 + 9 待第五批 Review）/ 37 未开始；73 / 107 h / 245 / 245 / 46 AC 不变，唯一回边 T-B03 → T-B04、无环；R3-B 代码已修、未关闭；下一步 = 独立 A 第五批代码 Review。
 > **当前结论（2026-10-30 r6.12.3：T-C02 开码前第二次源检查停的最小 scope / 类型精度修正）：见文末「Analyze R24」**（当前索引；只读登记，结构无变化；下一行指向 R23 的页首块及 R23 / R22 正文为当时原文，不改）。T-C02 另获 C01a `collect renders all input kinds…` 第 528 行总按钮数断言 → “投放到本作业”入口恰 1 个的一行替换（C03 继承不再改），与 r6.12.2 首例例外合为两处已知阶段性测试约束纠正、不删除验收覆盖；扫描无第三处；内部只读 `previewTarget: DeepReadonly<Upload> | null` 补“同一投放重试”的类型 / 清理点精度。33 已实施 / 40 未开始；标准 / 命令 / 工时 / 依赖 / AC 不变，R11 原件只读、不重开 Checklist；可再派 Astra 做 T-C02。
 > **当前结论（2026-10-30 r6.12.2：T-C02 / T-C03 开码范围冲突最小修正）：见文末「Analyze R23」**（当前索引；只读登记，结构无变化；下一行指向 R22 的页首块及 R22 / R21 正文为当时原文，不改）。第五批前 6 项已实施待 Review（`f65d3c6` … `6529f41`），33 已实施（27 已完成 + 6 待 Review）/ 40 未开始；T-C02 / T-C03 各获 `intake.spec.ts` 首例一条断言替换的唯一例外，标准 / 命令 / 工时 / 依赖 / AC 不变，R11 原件只读、不重开 Checklist；可再派 Astra 做 T-C02。
@@ -1986,3 +1987,41 @@ spec / plan / tasks / 代码之间**无冲突**；第四批 5 项**已收口、�
   - 进度：**36 已完成 / 38 未开始**；46 AC 最终验收 0；feature 未收敛（含 H 组外部阻塞）。
 - 不是需求变更，不回 Clarify / Gate 1。R11 仍有效，不重开 Checklist、不另设 Checklist。
 - **下一入口**：集成人提交本轮文档 → Implement（openai/gpt-6-astra，新会话）做 T-C04a → Converge → A 新会话代码增量 Review（对象 `e609c2e..<T-C04a 提交> -- frontend`，重点核：一行修复、旧例 3 行例外、无第二处、无 guard）。本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。
+
+## Analyze R27（只读；T-C04a 实施后的 R5-A 增量 Converge 一致性报告，2026-10-30；当前索引，R26 / R25 及更早轮次正文不改；区别于 Checklist R11 与第五批 / R5-A 代码 Review，**不是**审核结论）
+
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189eb-e03e-755d-b516-41616d94c44c`；`claude-bridge` 本窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改配置；不因测试或审核结论换模型）。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。工作树 = `D:/2030/Futures-AI-interaction-converge-batch4`，起点 HEAD `f63ef7c62f273626e4ee72f94d16bfa53b52f148`（clean），没有新建 D:/2030 目录。本轮**没有运行产品测试**，没有写代码 / 测试，没有改 spec / plan / checklist / 旧 Review / 旧 Converge / docs / HANDOFF / 其他树，没有 commit。结构脚本 `r5a-converge-struct.py` 原样复制自 R26 的 `r5a-struct.py`（判定逻辑未改），脚本、HEAD / WT dump 与日志在 Temp `wi-batch5-01a18388-q7s7olxl/r5a-converge-work/`，不是项目产物。
+
+### 1. 输入与性质
+
+- **重读**：AGENTS.md；`docs/plan.md`；冻结 spec（blob `102af73…`）；plan 页首 r6.13 与 §2.3【r6.13 成功回执同步】、§5 AC-003-4 行；tasks 页首 r6.13、T-C04a 全文（3 标准 / 3 命令）、T-G09、§5 AC-003-4；Checklist R11（`1f99f80`，blob `27a76aa6…`，26 / 26，只读）；本文件 R26；implementation-log §24；interface-handoff r6.13 块；`review-batch5.md` §4 R5-A～R5-E 与 §7。
+- **真读代码**：`git diff a2a2cdd f63ef7c` 全文（3 文件 +82 / −2）、`f63ef7c` 的 `stores/intake.ts` 全文、`src` 中 `previewTarget` 全部读点、两个测试的改动段与 harness；E2E 原 205 行字节前缀由本会话 `git show` + `cmp` 复核。测试数字只引用实施者日志（`astra-r5a-summary.md` + `astra-r5a-logs/`）。
+- **性质**：T-C04a 实施后的增量 Converge（`converge-batch5-r5a.md`）。不是需求变更、不是新机制，不改任何审核结论。
+
+### 2. 一致性（spec ↔ plan r6.13 ↔ tasks T-C04a ↔ 代码）
+
+| 落点 | 代码事实 | 结论 |
+|---|---|---|
+| plan §2.3【r6.13】“`selectReceipt` 同时写 `previewTarget` = 回执 upload 副本；`clearPreview` 条件不变；不加 guard” | `selectReceipt` 首行 `previewTarget.value = structuredClone(receipt.upload)`；其余源码逐字不变；无序号 / 锁 / 比较 / 禁用 | 一致；plan 无需新版本 |
+| tasks T-C04a 修改范围（3 文件；旧例恰 3 行；E2E 只追加） | 3 文件；旧例 hunk 恰标题 / 正断言 / 写后为 null 三行，用例数不变；E2E 原 205 行前缀 + 1 例 | 一致，无第二处冲突 |
+| 标准 1 / 2 / 3 | 组件 2 → 32；E2E 1 → 79；39 files / 1130 / 0 + 工程门 + 三文件 diff（实施者执行；先红 2 / 1） | 3 / 3 满足（见 converge-batch5-r5a §2） |
+| §5.1 边界 | R5-B / R5-C（待 Walter、未审批）、R5-D / R5-E 均未触及 | 授权内 |
+
+### 3. 结构复算（脚本只读；WT 对照 HEAD `f63ef7c`）
+
+- **HEAD**：74 / 107.5 h / 248 / 248；36 done / 0 impl / 38 todo（= R26 WT）。
+- **WT**：74 个任务、约 107.5 h（A 33 / 45.5、B 8 / 12、C 6 / 9、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4）；状态 **36 done / 1 impl（T-C04a）/ 37 todo / 0 other**；248 / 248，`PROBLEMS = []`；`UNKNOWN_DEP = []`；`CYCLE None`；`BACKEDGES = [(T-B03, T-B04)]`；spec 46 = 矩阵 46；`PARTIAL_NOT_ANCESTOR = []`；`BIDIR_BAD = []`；括注非依赖仍只有 T-A22（“原依赖 T-A10”）。T-C04a 仍 ∈ deps(T-G09)，后代 = T-G09 / T-G10 / T-H01～T-H04。
+- **逐任务 dump**：HEAD 与 WT 只差 1 行——T-C04a `status=todo → impl`；所有任务的预计 / 依赖 / 标准 / 命令全文逐字相同。
+- **可起步**（依赖全已完成的未开始任务）：T-A14 / T-A15 / T-A16 / T-G04。
+
+### 4. 保护面
+
+- 与 HEAD 相同、本轮未改：spec `102af73…`；checklist `27a76aa6…`（R11 原件，只读不勾）；plan；`review-batch5.md` `61bff89…`；`converge-batch5.md` `1f5c95d…`；更早 Review / Converge。`frontend` / `backend` / `docs` / AGENTS.md / HANDOFF.md 零差异；本文件 R26 / R25 及更早正文不改（页首加一行索引、末尾追加 R27）；`git diff --check` 无告警。
+- 未扩、未经风险接受：R5-B / R5-C（§5.1）、R5-D / R5-E、R4-B～R4-E、S-41、R3-C 等旧 P3。R3-B 技术关闭（`fe9c2c9`）不变。
+
+### 5. 结论（Analyze R27，当前索引）
+
+- spec ↔ plan r6.13 ↔ tasks T-C04a ↔ 代码 `f63ef7c` ↔ implementation-log §25 ↔ interface-handoff 一致，无冲突或歧义残留；本任务无缺口、不新增任务。
+- 结构 74 / 107.5 h / 248 / 248 / 46 AC，唯一回边 T-B03 → T-B04，无环。进度：**37 已实施 = 36 已完成 + T-C04a 1 项待 A**；**37 未开始**；46 AC 最终验收 0；feature **未收敛**。
+- R5-A 代码已修、**未关闭**。不回 Clarify / Gate 1；R11 仍有效，不另开 Checklist。
+- **下一入口**：集成人提交本轮文档 → 独立 A 新会话增量代码 Review（`a2a2cdd..f63ef7c -- frontend`，= `e609c2e..f63ef7c -- frontend`）。本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。

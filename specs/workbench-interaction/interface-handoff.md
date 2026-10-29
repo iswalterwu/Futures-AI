@@ -78,6 +78,12 @@
 > - **其余**：H-1 / H-3 / H-4 历史证据保留、当前有效 Checklist 并记 R10、④ 缺；H-5 未做；H-6 缺 T-A21。消费分支 `integration/frontend-workbench-v2` 只读仍 `3f63273`。
 >
 > 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；bridge 本协调窗口已确认限额，不重试；官方通道成功；未改配置）。
+> **当前状态（2026-10-30 T-C04a 已实施 + R5-A 增量 Converge；以本块为准。下一块 r6.13 中的“修复任务 T-C04a 待实施”为当时原文）**：
+> - **R5-A 修复**：T-C04a 代码 `f63ef7c62f273626e4ee72f94d16bfa53b52f148`（openai/gpt-6-astra，未回退）只在内部私有 `selectReceipt` 加一行同步 `previewTarget`；`useIntakeStore()` 交接成员 `open / close / isOpen / jobId` 与内部成员列表都不变。增量 Converge [converge-batch5-r5a.md](converge-batch5-r5a.md) 判已收口，**待 A 新会话增量 Review**。
+> - **H-5 / 页面切片**：① 旧候选 `e609c2e` 已经第五批 A 核对；**新候选 `f63ef7c` 待 A 增量 Review**，通过前不替换 ①。② R11 `1f99f80`。③ 实施者执行的新测试（组件 `WI R5-A` 2 / 整文件 32、E2E `WI R5-A` 1 / 全部 79），原 `WI H-5` 仍 **8**（实施者回归，未经 A）。**④ 仍缺 → 未交付**；不以生产方集成树（现 `f63ef7c`）填 ④。
+> - **其余**：H-6 仍缺 T-A21；process / analyze / deliver 仍为占位（D–F 未做）；其他切片登记不变。本 feature 不代 v2 消费或签收，不写 peer 树。
+>
+> 记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189eb-e03e-755d-b516-41616d94c44c`；bridge 本窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改配置）。
 > **当前状态（2026-10-30 第五批 Review 通过 + R5-A 补修登记 r6.13；以本块为准。下一块 Converge batch5 中的“待第五批独立代码 Review”“③ 实施者执行、待 A”“R3-B 未关闭”为当时原文）**：
 > - **第五批 Review**：`review-batch5.md` 原件 `fe9c2c9`，A = claude-fable-5-1 via anthropic。判**通过（0 P1 / 0 P2 / 5 P3）**；R3-B 技术关闭；C 组（T-C01 / C01a / C02 / C03 / C04）记已完成（非最终 AC）。
 > - **H-5**：①～③ 的候选 `e609c2e` 已经 A 亲跑核对：`WI H-5` 8 / `WI H-5 store` 6 / `container` 1 / `close` 1 / `intake.spec.ts` 38，**生产已核，但已知 R5-A 待修**。R5-A 是内部视图字段 `previewTarget` 在成功回执后未同步，交接成员 `open / close / isOpen / jobId` 不受影响。修复任务 T-C04a 只改内部私有 `selectReceipt`，不改交接接口；其提交经 A 增量 Review 通过后更新 ①。② R11 `1f99f80`。**④ 仍缺 → 待消费方集成（未交付）**，不得以生产方集成树填 ④。
@@ -190,6 +196,8 @@
 【Converge batch5 口径（2026-10-30，代码 `b67a227..e609c2e -- frontend`，待第五批独立代码 Review；以本段为准，上段“未实施”为当时原文）】当前有效 Checklist = **R11 `1f99f80`**（blob `27a76aa…`，26 / 26）；其他行的 ② 是登记当时的有效轮次，原样保留追溯，可并记 R11。**H-5** 与**页面切片**的提供任务都已实施：① 候选均为 `e609c2e`（生产代码终点 `7b802d4` + E2E），③ 为实施者执行的待审证据（见上表），**④ 均缺 → 待消费方集成（未交付）**。H-2·列表交接成员零差异，① 仍 `af24c82`；H-2·标签 ① 仍 `5c00cf6`；H-6 缺 T-A21。生产方集成树 `integration/workbench-interaction` @ `e609c2e` 只是旁证，**不能填作 ④**；本 feature 不写 v2 树、不代 peer 签收。
 
 【第五批 Review 后口径（2026-10-30，`review-batch5.md` 原件 `fe9c2c9`；r6.13；以本段为准，上段“待第五批独立代码 Review”“③ 待审”为当时原文）】第五批通过（0 P1 / P2 / 5 P3）。**H-5** 与**页面切片**：① 候选 `e609c2e` 已经 A 亲跑核对，**生产已核，但已知 R5-A 待修**。R5-A 只涉及内部视图字段 `previewTarget`，交接成员不变。T-C04a 修复并经 A 增量 Review 通过后，把 ① 更新为该提交；在此之前不把 `e609c2e` 当作已无已知缺陷的最终 ①。② R11 `1f99f80`。**④ 均缺 → 待消费方集成（未交付）**。H-6 缺 T-A21；D–F 仍为占位。不代 v2 消费方签收。
+
+【T-C04a 实施后口径（2026-10-30，代码 `f63ef7c`，增量 Converge `converge-batch5-r5a.md`；待 A 新会话增量 Review；以本段为准，上段“T-C04a 修复”为当时待实施表述）】**H-5** 与**页面切片**：① 旧候选 `e609c2e` 已经 A 核对；新候选 `f63ef7c`（`e609c2e..f63ef7c -- frontend` 3 文件 +82 / −2，交接成员零差异）待 A 增量 Review 通过后才替换 ①。② R11 `1f99f80`。③ 实施者新测试 `WI R5-A` 组件 2 / E2E 1，原 `WI H-5` 仍 8。**④ 均缺 → 待消费方集成（未交付）**。H-6 缺 T-A21；D–F 仍为占位。
 
 ## 2. 逐项对拍（v2 要求 → r5 状态 → r6 落点）
 
@@ -309,6 +317,8 @@
 名称与 r6.12 预期一致；本表上方各行无需改。
 
 【2026-10-30 r6.13 R5-A 补修口径（第五批 Review `fe9c2c9` 后；未实施）】`useIntakeStore()` 的交接成员与上表内部成员列表都不变。T-C04a 只让私有 `selectReceipt`（submit / confirm 成功）同时把内部 `previewTarget` 写为回执 upload 的副本，使成功回执后 `selection.upload` 与 `previewTarget` 指向同一投放（plan §2.3【r6.13】）。上方“batch5 落地核对”对 `e609c2e` 的事实描述仍准确，修复提交经增量 Review 后再按实际代码核对。
+
+【2026-10-30 T-C04a 落地核对（Converge 只读；代码 `f63ef7c`，待 A 增量 Review）】实际只在私有 `selectReceipt` 首行加 `previewTarget.value = structuredClone(receipt.upload)`；`useIntakeStore()` 返回对象（交接成员与内部成员）逐字不变，`previewTarget` 的 UI 读点仍只有 `IntakeDrawer` error 分支。名称与 r6.13 预期一致；本表无需改。
 
 ## 4. 不做的事（生产方边界）
 

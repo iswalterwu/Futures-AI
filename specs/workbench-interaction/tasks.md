@@ -1,5 +1,15 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
+> **当前状态（T-C04a 已实施 + R5-A 增量 Converge 已收口，待 A 新会话增量 Review，2026-10-30；以本块为准。下一块 r6.13 中的“T-C04a 未开始、可开码”“36 已完成 / 38 未开始”“下一步派 Implement”为当时原文）**：
+>
+> - **实施**：T-C04a 代码 `f63ef7c62f273626e4ee72f94d16bfa53b52f148`（父 `a2a2cdd`，其 frontend = `e609c2e`），openai/gpt-6-astra 新会话，未回退。3 文件 +82 / −2：`intake.ts` 只在私有 `selectReceipt` 加 `previewTarget.value = structuredClone(receipt.upload)` 一行；`unassigned-pool.spec.ts` 追加 `WI R5-A` 2 例 + 预登记旧例 3 行（用例数不变，其余 28 例零差异）；`e2e/jobs/intake.spec.ts` 原 205 行逐字节前缀后只追加 1 例。
+> - **证据**（实施者执行，Converge 未重跑）：旧生产下先红（组件 2 failed：target 仍为 A、B 选中被清；Chrome 1 failed：删 A 后预览 0）；修复后期望不变转绿：命令 1 = 2 → 32；命令 2 = 1 → 全部 E2E 79 / 12 files；命令 3 = 39 files / 1130 / 0 + typecheck / lint / 六守卫 / contract 25 / 10 / 2 + 三文件 diff。首跑 TS2345 只改新测试副本构造后全链重跑。另跑 `WI H-5` 8 / `WI H-2` 27 / labels 10 / 六文件 129。`pnpm test` 总命令 / build / 后端 / 截图 / 最终 AC 未跑。
+> - **Converge**：[converge-batch5-r5a.md](converge-batch5-r5a.md) 与 analyze.md「Analyze R27」判**本任务增量已收口、待独立 A 增量 Review**：3 / 3 标准有代码与命令证据；一行普通赋值、无 guard；无缺口、不新增任务；plan 不改；不是需求变更。
+> - **进度**：74 / 约 107.5 h / 248 / 248；**37 已实施 = 36 已完成 + T-C04a 1 项待 A**；**37 未开始**；46 AC 最终验收 **0**；feature 未收敛。
+> - **未变**：R5-A 代码已修、**未关闭**；R3-B 技术关闭不变；R5-B / R5-C 须 Walter §5.1 决定、未审批、未修；R5-D / R5-E 与旧 P3 未经风险接受；H-5 / 页面切片新候选 `f63ef7c` 待 A，④ 缺；H-6 缺 T-A21；R11 `1f99f80` 只读 26 / 26。
+> - **下一步**：独立 A 新会话增量代码 Review（固定 `a2a2cdd..f63ef7c -- frontend` + 本轮文档提交）。依赖已满足的其他未开始任务仍为 T-A14 / T-A15 / T-A16 / T-G04。
+> - 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a189eb-e03e-755d-b516-41616d94c44c`；bridge 本窗口既有限额、无重置证据，不重试；官方同模型成功；未改配置）。只写规格文档，未运行产品测试，未 commit。
+
 > **当前状态（r6.13 = 第五批 Review 通过 + R5-A 普通业务一致性补修登记，2026-10-30；以本块为准。下一块 r6.12.4 中的“9 项已实施待第五批 Review”“36 已实施（27 + 9 待 Review）/ 37 未开始”“R3-B 未关闭”“下一步 A 第五批代码 Review”为当时原文）**：
 >
 > - **第五批 Review**：独立 A [review-batch5.md](review-batch5.md)（原件 `fe9c2c92ac4d6778b0c7117a23b94919b2b71232`；A = claude-fable-5-1 via anthropic）判**本批通过：0 P1 / 0 P2 / 5 P3（R5-A～R5-E）**。A 的验证全部亲跑：全量单测 39 files / 1128 / 0；33 条任务命令与实施者同数；五份 E2E 34 + 其余 7 份 44，全部 78 分批通过；`WI H-5` 8；工程门（六守卫、contract 25 / 10 / 2、typecheck / lint）通过。9 项状态行已回写为“**已完成（第五批 Review 通过，非最终 AC）**”，【A 前原文】保留其后。**R3-B 技术关闭**（`e1cd4d4`，review-batch5 §5）。源码固定点仍是 `e609c2e`，`e609c2e..fe9c2c9` 没有 frontend 差异。
@@ -1620,7 +1630,7 @@
 
 ### T-C04a R5-A 普通业务一致性补修：成功回执同步 previewTarget，删除 / 归入另一投放不误清当前映射草稿（第五批 Review R5-A；r6.13）
 
-- **状态**：未开始。**可开码**：第五批 Review（`review-batch5.md` 原件 `fe9c2c9`）判本批通过，A 明判 R5-A 是普通业务流程一致性问题、不是 AGENTS §5.1 防线，可按现有功能授权在 AGENTS §2 第 9 步登记；集成人选择现在只修 R5-A；R11 `1f99f80` 仍为有效 Checklist、不重开｜R5-A 登记待实施、**未关闭**：须 Implement → Converge → A 新会话代码增量 Review 通过后才关闭；本任务不顺带 R5-B～R5-E，也不加任何并发 / 状态防护
+- **状态**：**已实施（R5-A 补修；待 A 新会话增量 Review，不计完成；R5-A 代码已修、未关闭）**｜commit `f63ef7c62f273626e4ee72f94d16bfa53b52f148`（父 `a2a2cdd`，frontend 与 `e609c2e` 相同；openai/gpt-6-astra 新会话 `01a189e3…`，未回退）；3 个授权文件 +82 / −2：`intake.ts` `selectReceipt` 一行；`unassigned-pool.spec.ts` 追加 `WI R5-A` 2 例 + 修改范围第 2 点那一例恰 3 行；`e2e/jobs/intake.spec.ts` 原 205 行前缀后追加 1 例。验证（实施者执行，Converge 未重跑；Temp `wi-batch5-01a18388-q7s7olxl/astra-r5a-logs/`）：命令 1 = 2 → 32；命令 2 = 1 → 79（12 files）；命令 3 = 39 files / 1130 / 0 + typecheck / lint / 六守卫 / contract 25 / 10 / 2 + `e609c2e..HEAD -- frontend` 三文件。**先红后绿**：旧生产下组件 2 failed、Chrome 1 failed，修复时期望未改。**失败留痕**：命令 3 首跑 typecheck TS2345（新测试第 512 行），只改新测试副本构造，命令 1 / 3 重跑同数。增量 Converge 见 `converge-batch5-r5a.md`（已收口、无缺口）｜以下为派工准备时原文：未开始。**可开码**：第五批 Review（`review-batch5.md` 原件 `fe9c2c9`）判本批通过，A 明判 R5-A 是普通业务流程一致性问题、不是 AGENTS §5.1 防线，可按现有功能授权在 AGENTS §2 第 9 步登记；集成人选择现在只修 R5-A；R11 `1f99f80` 仍为有效 Checklist、不重开｜R5-A 登记待实施、**未关闭**：须 Implement → Converge → A 新会话代码增量 Review 通过后才关闭；本任务不顺带 R5-B～R5-E，也不加任何并发 / 状态防护
   - **性质**：不是需求变更（spec / 46 AC 不变，不回 Clarify / Gate 1）。不是新机制或新 what，只在 R11 已审的“当前预览目标”语义内补一次赋值（plan §2.3【r6.13 成功回执同步】）。
   - **流程**：Implement（新会话，首选 openai/gpt-6-astra）→ Converge → A 新会话代码增量 Review（对象 = `e609c2e..<T-C04a 提交> -- frontend`）。实施提示（非新增标准）：可先在旧生产代码下跑新增 3 例确认红（复现 R5-A），再改 `selectReceipt` 转绿，并在状态行登记（同 T-B04a 口径）。
 - **预计**：0.5 h｜**依赖**：T-C03、T-C04
