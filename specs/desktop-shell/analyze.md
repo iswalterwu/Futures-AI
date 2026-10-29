@@ -450,3 +450,57 @@ P1：无。P2：无。
 
 1. A（新开独立会话，AGENTS §6）按 `settings-routing-review-request.md` 复查受影响项，结论只写入 `checklist.md`；全部复选框为勾选状态后 Astra 才可实施 T-06c/d。A 提出 P1/P2 → 回 Plan/Tasks 修补并重跑 Analyze；A 若判定需 Walter 工程批准 → 停止。
 2. 协调者把四个规划文件集成为固定评审提交并同步到实施树。
+
+## 迭代 9（Plan 修订 6：T-07a 运行器提前退出约定 + T-07b/c/e 钩子接线所有权之后；只读）
+
+> 输入：固定提交 `c1b40700b3824396d7a071868f904d181f6adcfd`（分支 `plan/desktop-shell-activity-harness`；主树快照，含 `implementation-evidence.md` §12 的 T-07a 预检停止；源码为 T-06c/d 检查点）+ 四个规划文件工作副本（`plan.md` 修订 6、`tasks.md` 修订 6、本节追加、新增 `activity-harness-review-request.md`）。作者 = `anthropic/claude-opus-5-5` via anthropic，会话 `01a187bb-94f0-739b-a564-841bc4ccb516`（bridge 同窗口已知耗尽不重复探活，官方探活 `ACTIVITY_PLAN_OK`；未回退）。协调 = `openai/gpt-6.1-sol`。日期 2026-10-29。
+> 本轮**不是** Converge、Review、产品测试通过或 Gate 2；没有运行任何测试、npm、构建、Electron 或联网请求，没有写源码。A 对修订 5 的 41/41 不是对修订 6 的批准。
+
+### 1. 重读的输入
+
+AGENTS.md；`docs/plan.md`、`docs/architecture.md`、`docs/interaction.md`、`docs/designUI.md`（与本修订相关段）；冻结 `spec.md`；`plan.md` 修订 5（§3.5、§4.3、§8.3、§9 AC-003-2/4、AC-006-1～4）；`tasks.md` 页首、顺序表、T-06c、T-07a～e、T-08d/e；`checklist.md`（第 4 轮记录与 R5-01～04）；本文件迭代 1～8；`review.md`；根 `HANDOFF.md` §18；`implementation-evidence.md` §11、§12；源码 `shell/check.js`、`shell/src/test-hooks.js`、`shell/main.js`、`shell/test/unit/check-runner.test.js`、`shell/test/fixtures/runner/*`、`shell/test/e2e/{index,harness-selftest}.js`。修补后重读 plan 修订 6（§0、§3.5、§8.3、§8.4）与 tasks T-06c、T-07a～e、T-08e 全文。
+
+### 2. 执行的检查（只有静态检查）
+
+| 检查 | 方法 | 结果 |
+|---|---|---|
+| 阻塞事实 | `rg -n` 核对行号 | 属实：`check.js:113` `launch`、`:155` 只记异常类型、`:160` 要求 `paths && (second \|\| controlPort)`、`:161` 提前退出直接抛错；`main.js:33` 顶层 `install(..., () => gracefulQuit(0))`、`:313` 控制通道在 `whenReady` 内；`test-hooks.js:20` 对话框只记 `buttons/unanswered`、`:56` `tray:null, activity:null`、`:89` `tray-click` → 409；`FAI_TEST_EVENTS` 在源码中尚无实现 |
+| spec 冻结 | `git diff --exit-code c1b4070 -- specs/desktop-shell/spec.md` | 无差异；AC 编号抽取 39（含 settings 的 AC-003-5）→ 38 |
+| 只读文件 | `git diff --exit-code c1b4070 --` spec / checklist / review / implementation-evidence / HANDOFF / `specs/README.md` / `shell` / `backend` | 均无差异；checklist 仍 41 个 `[x]`，作者未改 |
+| 改动集合 | `git status --short` | 仅 `plan.md`、`tasks.md`、`analyze.md` 修改与新增 `activity-harness-review-request.md` |
+| 空白与行尾 | `git diff --check`；按行计数 CR | 通过；三份既有文档仍全部 CRLF（plan 931/931、tasks 748/748 行，analyze 追加后同样全为 CRLF） |
+| 任务结构 | `rg` 抽取顺序表与任务块估时 | 41 行 / 41 块；两处均为 10×1h + 20×1.5h + 11×2h = **62h**；全部 0.5～2h；第 24 行 T-07a 2h，第 33 行 T-08e 依赖 `T-05l、T-06b、T-06d`（T-06d 在第 23 行，无前向依赖）；其余依赖与顺序不变 |
+| 完成标准 ↔ 验证 | 逐条对照 | T-07a 4/4，每条含 AC 编号（AC-003-4、AC-006-2/3）；第 4 条明言只证明运行器契约、不证明产品 AC；原 5 个 activity 单测名与 `events-invalid` 两条断言名保留；T-06c 验证 2～5 已加完成标准括注（R5-01） |
+| 名称一致 | `rg -c -F` 5 个运行器用例名、`expectEarlyExit`、`FAI_CHECK_PRODUCER`、`invalid_tray_path` | plan §8.4 与 tasks T-07a/T-07b 一致（5 个用例名各 1/1） |
+| 所有权 | plan §8.4 第 4、5 段 vs tasks T-07a/b/c/e 修改范围 | 一致：`check.js` 仅 T-07a（第 1、2 段，页首“登记约定”的显式例外）；`check-runner.test.js` 仅 T-07a 追加 5 例；`test-hooks.js` T-07a 校验 + `testEvents`、T-07b 快照读取 + `tray-click`、T-07c 对话框 `message/detail`、T-07e 不改；`main.js` 由 T-07b/c/e 按原范围改动；旧夹具、19 个旧场景、`src/{backend,paths,prefs}.js`、依赖只读 |
+| 安全面与控制面 | 对照 §8.3 命令集与快照键 | 无新命令、无 emit/注入事件、无主进程 JS、无任意路径/URL、无钩子业务状态、无令牌变化；快照键集合不变；preload 批准全集与 `startup-visible` 断言不变 |
+| 默认语义 | 对照 plan §8.4 第 1 段与 `check.js` 现状 | 默认 `launch`、10 s 观察窗、`scene.timeoutMs \|\| 30000`、清理 10 s → 自有 taskkill、泄漏即 FAIL、隔离校验全部保留；新约定只在显式传唯一值时生效 |
+| 证据分层 | plan §8.4 第 3 段 | Node 单测（替身在 spawn 边界，被测为真实 `check.js`）与真实 Electron `events-invalid`（真实 `main.js` 校验）分开；Node 单测不计作产品证据 |
+| `.gitignore` | `git check-ignore -v --no-index` 本请求文件与 T-07a 计划新增的 7 个路径 | 无输出、退出码 1（不被忽略） |
+| cwd | tasks T-07a 验证 | 全部 `shell`；静态核对在仓库根 |
+
+### 3. 发现
+
+| # | 级别 | 内容 | 处置 |
+|---|---|---|---|
+| AN9-01 | P3（已在修补阶段处理） | 自检：Node 子进程 `exit` 事件可能早于最后一段 stdout/stderr，若以 `exit` 判定，`paths` 或标记可能尚未解析而误判 | plan §8.4 第 1 段规定提前退出约定以 `close`（stdio 排空）为判定时点 |
+| AN9-02 | P3（已在修补阶段处理） | 自检：T-07c 把 `request-quit` 改接生产 `requestQuit()` 后，运行器清理遇到仍有运行中作业的场景会弹询问、无应答即取消，导致 10 s 后自有 taskkill 并 FAIL | plan §8.4 第 4 段与 T-07b/T-07c 修改范围：使用事件夹具的场景结束前等到无运行中作业；运行器清理语义不变 |
+| AN9-03 | P3（接受，测试缺口） | 提前退出约定的“10 s 内未退出”与“出现 control”两条拒绝分支没有 Node 单测：前者经现有辅助函数需 10 s 等待 + 10 s 清理，超过其 15 s 子进程上限；后者需要替身伪造控制服务 | 两分支沿用现有超时与清理代码，由 Converge/Review 代码核对；不为此改辅助函数或伪造控制服务 |
+| AN9-04 | P3（接受，运行时未核实） | Electron 33 在 `ready` 之前于 `install()` 内调用 `app.exit(4)` 是否以退出码 4 结束且不启动控制通道，静态无法证明 | plan §8.4 第 5 段与 T-07a 停止规则：不成立即停，不推迟校验、不改 `main.js` |
+| AN9-05 | P3（估时风险） | T-07a 合并运行器约定 + 5 个运行器用例 + 归约器 + 钩子校验 + 场景后为 2h，偏紧 | 保持 41 个任务；明显超出时按停止规则报告、由 Plan 拆分，不压缩验证 |
+| AN9-06 | P3（协调者动作） | 四个规划文件须集成为固定评审提交，并同步到实施树（原实施输入 `dad9352`）；T-07a 静态核对中的 `<实施输入>` 由协调者给定 | 见 `activity-harness-review-request.md` |
+
+既有 P3 跟踪：R5-01、R5-03 已按 A 第 4 轮要求在本次 Tasks 触碰中对齐（文本对齐，不改 AC/测试/T-08 代码）；R5-02（菜单 409 分支无自动化）仍 OPEN；R5-04 已由 T-06c/d 实施（空窗口分支仅静态核对），不是新需求。RL-01（P3 OPEN / UNKNOWN）及 A 报告 §4 的正负对照、RL-02～05、UTF-8、PYZ、507 GUI 为独立的后续义务，本修订不处理也不改写。
+
+P1：无。P2：无。
+
+### 4. 正式结论（迭代 9）
+
+- **文档一致性通过（修订 6 范围）**：冻结 spec、plan 修订 6 与 tasks（41 个任务，62h）之间无 P1/P2；不改 spec / AC / 后端 / settings schema / 业务工作流 / 生命周期策略 / CSP / CORS / 权限 / 控制通道鉴权 / 依赖 / 全局配置，不需回 Clarify / Gate 1，不需新 ADR。迭代 1～8 原样保留。
+- 本结论**不**代表代码已实现或任何测试已运行；历史 42 unit / 19 场景 310/310 只是 T-06c/d 检查点证据，新的 20 场景默认全集**未运行**。
+- **审批待定**：须由新的独立 A 复查（A 质量项按请求文件第 3 节）。
+
+### 5. 实施前置条件（修订 6）
+
+1. A（新开独立会话，AGENTS §6）按 `activity-harness-review-request.md` 复查受影响项，结论只写入 `checklist.md`；全部复选框为勾选状态后 Astra 才可恢复 T-07a。A 提出 P1/P2 → 回 Plan/Tasks 修补并重跑 Analyze；A 若判定需 Walter 工程批准 → 停止，A 不代 Walter 批准。
+2. 协调者把四个规划文件集成为固定评审提交并同步到实施树，并给出 T-07a 静态核对用的 `<实施输入>`。
