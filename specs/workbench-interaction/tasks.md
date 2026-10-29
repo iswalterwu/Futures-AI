@@ -1,6 +1,17 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
-> **当前状态（第四批 Review 未通过 + R4-A 工程审批等待 = 批次安全点，2026-10-29；以本块为准。下一块 Converge batch4 中的“5 项已实施、待第四批独立代码 Review”“69 个任务、约 104 h”“232 / 232”“43 项未开始”“下一步 = 独立 A 代码 Review”为当时原文）**：
+> **当前状态（R4-A 最小修复已获 Walter §5.1 批准，plan r6.11 生效；T-B04a 可开码，2026-10-29；以本块为准。下一块中的“Walter 尚未回复”“blocked_by: Walter §5.1 批准”“获准前不派 Astra”为当时原文）**：
+>
+> - **批准**：集成人报告 R4-A 与 `onCleanup` 约 3～5 行最小方案及归档选项后，Walter 原话回复：**“那就先修P2等全部工作完成后，再合入main”**。这是对 R4-A 最小修复的 §5.1 单独批准，并选定先修、feature 全部完成后再合 main。**不是**风险接受、**不是**提前 Gate 2，也不批准扩到 store 取消 / 锁 / 请求序号 / query。
+> - **范围**（= plan §2.1【r6.11】原文，不扩）：只改 `JobDetailPage.vue` 的 `watch` 回调（`onCleanup` + `stale` + canonical replace 前 `!stale`）；`job-detail.spec.ts` 只新增 `WI R4-A` 2 例；`detail-stage.spec.ts` 只新增 1 例；原 11 / 4 例不改；其他源码、store、query 禁止。T-B04a 标准 / 命令 / 依赖 / 工时不变。
+> - **进度不变**：70 个任务、约 104.5 h；21 已完成 + 5 已实施（第四批 Review 未通过，**不计完成**）+ 44 未开始（T-B04a 已解除 blocked、尚未实施）；235 / 235；46 AC 最终验收 **0**；feature 未收敛。批准 ≠ 修完，R4-A 未关闭，第四批仍判未通过。
+> - **流程**：不另开 Checklist R10.1 设计轮——A 原件已点名同一最小修复与测试范围，设计与任务已登记，缺的只是 §5.1 许可，现已到位；无新 what / 参数 / 机制。R10 `37e2f71` 保持只读 26 / 26。必须走 **Implement（新会话，首选 openai/gpt-6-astra，复用现有实施 worktree）→ Converge → A 新会话增量代码 Review**，不跳审、不自勾。实施中若发现草案外的真实设计问题，停下报告，不扩 scope。
+> - **未变**：R2-C 关闭仍待本批通过；R4-B～E / S-41 / R3-B / R3-C 等 P3 未经风险接受；H-2·标签 ① 候选 `5c00cf6` 仍待新 A 复核，④ 未放行；其余 43 项未开始。文中其他【r6.11 草案，待批】标记（T-G09、§2a、§5、§6）内容不变，按本块读作已生效。
+> - **远端上下文**（只记录，本轮不操作）：Draft PR #12（head = integration @ `e285ad2`，Draft、未设 automerge、DIRTY）保持 Draft，不合 main、不强推；main 继续 pin `90187f7`，R2D 流程不变。见 implementation-log §17。
+>
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188da-1d90-7009-9405-316722985a4e`；bridge 本窗口额度耗尽、无重置证据，不重试；官方通道近期成功；未改配置）。见 analyze.md「Analyze R19」。
+
+> 【历史原文，§5.1 等待状态已由上方批准块取代】**当前状态（第四批 Review 未通过 + R4-A 工程审批等待 = 批次安全点，2026-10-29；以本块为准。下一块 Converge batch4 中的“5 项已实施、待第四批独立代码 Review”“69 个任务、约 104 h”“232 / 232”“43 项未开始”“下一步 = 独立 A 代码 Review”为当时原文）**：
 >
 > **性质**：AGENTS §5.1 **工程变更审批**的硬边界，**不是**全 feature Gate 2、**不是** Handoff、也不是用户叫停。第四批 Review 原件判**未通过**，其中唯一 P2 = R4-A；修复需要新增一处 plan 明确不做的生命周期检查，须 Walter 本人对这一项单独批准。协调器已在本轮 commentary 向 Walter 报告 R4-A、触发概率、约 3～5 行的 `watch` `onCleanup` 失效标志与最小回归方案，**Walter 尚未回复**。把情况报告给集成人 ≠ Walter 同意。Walter 的通用代码授权（“允许”）仍然有效，但不覆盖这项新增 guard。**获准前不派 Astra、不写 guard 代码。**
 >
@@ -1164,7 +1175,7 @@
 
 ### T-B04 作业详情、阶段轨道与 URL 阶段参数
 
-- **状态**：**已实施，第四批 Review 未通过（R4-A 待 §5.1 批准 / 修复）**（`review-batch4.md` 原件 `9812f64`：本任务四条标准的字面经 A 判满足，A 亲跑命令 1～4 = 6 / 4 / 9 / 工程门，job-detail 整文件 11；**P2 R4-A 位于本任务的 `JobDetailPage.vue` async watch**：离开或选阶段后，迟到的 canonical replace 会劫持导航并覆盖历史，在 slow 场景可确定复现。修复草案 = **T-B04a**（blocked_by Walter §5.1 批准，获准前不得开码）；本任务标准 / 命令 / 工时不改，不计完成）｜原状态行“已实施（第四批第 4 项；待批次独立代码 Review）”为 Converge 时原文｜commit `cc6559d7bb0b5afb0e233b8295dbd55f1de41d9d`（父 `ca7dca1`；5 个授权文件，未改 store / routes / session）。验证（实施者会话 `01a187fa…` 执行，Converge 未重跑）：命令 1 `WI AC-002-1` 6；命令 2 e2e `WI AC-002-2` 4；命令 3 两文件 `WI AC-001-4` 9；命令 4 typecheck / lint 通过；详情组件整文件 11。**失败留痕**：命令 1 首跑 2 fail（新测试期待离开详情后不再 `getJob`，实际列表 `ensureJobs → refresh` 按 plan §2.3【r6.9】重读保留锚；只改新测试期望，未加页面 / store guard，经 RouterView 无 `undefined` 读 = R10 S-42 落实）；lint 首跑 2 条模板换行警告，修模板后通过｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6｜**r6.9：store 部分拆至 T-A22d，依赖增 T-A22d；本任务不改 `stores/jobs.ts`**；第四批第 4 项（R10 前不得开码）
+- **状态**：**已实施，第四批 Review 未通过（R4-A 待 §5.1 批准 / 修复）**（`review-batch4.md` 原件 `9812f64`：本任务四条标准的字面经 A 判满足，A 亲跑命令 1～4 = 6 / 4 / 9 / 工程门，job-detail 整文件 11；**P2 R4-A 位于本任务的 `JobDetailPage.vue` async watch**：离开或选阶段后，迟到的 canonical replace 会劫持导航并覆盖历史，在 slow 场景可确定复现。修复草案 = **T-B04a**（blocked_by Walter §5.1 批准，获准前不得开码；**2026-10-29 已获批，T-B04a 解除 blocked**，见页首）；本任务标准 / 命令 / 工时不改，不计完成）｜原状态行“已实施（第四批第 4 项；待批次独立代码 Review）”为 Converge 时原文｜commit `cc6559d7bb0b5afb0e233b8295dbd55f1de41d9d`（父 `ca7dca1`；5 个授权文件，未改 store / routes / session）。验证（实施者会话 `01a187fa…` 执行，Converge 未重跑）：命令 1 `WI AC-002-1` 6；命令 2 e2e `WI AC-002-2` 4；命令 3 两文件 `WI AC-001-4` 9；命令 4 typecheck / lint 通过；详情组件整文件 11。**失败留痕**：命令 1 首跑 2 fail（新测试期待离开详情后不再 `getJob`，实际列表 `ensureJobs → refresh` 按 plan §2.3【r6.9】重读保留锚；只改新测试期望，未加页面 / store guard，经 RouterView 无 `undefined` 读 = R10 S-42 落实）；lint 首跑 2 条模板换行警告，修模板后通过｜以下为派工准备时原文：未开始｜blocked_by: IMPL-GATE-R6｜**r6.9：store 部分拆至 T-A22d，依赖增 T-A22d；本任务不改 `stores/jobs.ts`**；第四批第 4 项（R10 前不得开码）
 - **预计**：2 h｜**依赖**：T-B01、T-A22d
 - **上下文**：spec R-002；plan §2.1（`router.replace`，未知 stage 回落到当前阶段）、§4.3（阶段状态只读契约，不推导）。
 - **修改范围**：`jobs/pages/JobDetailPage.vue`、新建 `jobs/components/{StageRail,StageWorkspace}.vue`（各阶段工作区占位，由 C–F 填充）；`stores/jobs.ts` 增加当前作业 / 阶段工作区视图缓存（`openJob(id, stage)`）并纳入 `refresh()`（§1-9）；`/jobs/:id` 缺省或未知 stage 时用 `router.replace` 补成作业 currentStage，T-A22b 的守卫随之设置会话上下文（r6）；详情三态（S-13：empty + 预置 id 时显示“暂无作业”）；新建 `tests/component/jobs/job-detail.spec.ts`、`e2e/jobs/detail-stage.spec.ts`。
@@ -1193,9 +1204,9 @@
   3. `pnpm -C frontend test:unit tests/component/jobs/job-list.spec.ts tests/component/jobs/job-detail.spec.ts -t "WI AC-001-4"`
   4. `pnpm -C frontend typecheck && pnpm -C frontend lint`
 
-### T-B04a R4-A 最小修复：离开详情或切换阶段后不再执行迟到的 canonical replace（第四批 Review R4-A；r6.11 草案，待 Walter §5.1 批准）
+### T-B04a R4-A 最小修复：离开详情或切换阶段后不再执行迟到的 canonical replace（第四批 Review R4-A；r6.11，已获 Walter §5.1 批准）
 
-- **状态**：未开始（**草案，blocked_by: Walter §5.1 批准**；【r6.11 待批，不生效】；**获准前不得开码、不派 Astra**）
+- **状态**：未开始（**可开码**：2026-10-29 Walter 原话“那就先修P2等全部工作完成后，再合入main”批准本项最小修复，plan r6.11 生效；范围严格按下方修改范围，不扩）｜原状态行“草案，blocked_by: Walter §5.1 批准；【r6.11 待批，不生效】；获准前不得开码、不派 Astra”为草案时原文，下文“为什么要单独批准”保留为背景
   - **性质**：不是需求变更（spec / 46 AC 不变，不回 Clarify / Gate 1）。这是第四批 Review 唯一 P2 R4-A 的 Converge 补修草案（AGENTS §2 第 9 步）。
   - **为什么要单独批准**：修复会新增一处 plan 明确不做的生命周期检查——plan §2.1【r6.9】写明“不加比较 / 去重 guard”，§2.3【r6.10】写明“任何新增 guard 按 AGENTS §5.1 先报 Walter”。因此须 Walter 本人对本项单独批准；他的通用代码授权不覆盖这一项。
   - **获准后的流程**：Implement（新会话，首选 openai/gpt-6-astra）→ Converge → **A 新会话增量 Review**。增量 Review 通过后才关闭 R4-A、改判第四批。

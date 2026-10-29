@@ -1516,3 +1516,45 @@ spec / plan / tasks / 代码之间**无冲突**；第四批 5 项**已收口、�
 - 草案处于 **blocked（等待 Walter AGENTS §5.1 单独批准）**，不授权实施。获批后按 Implement → Converge → A 新会话增量 Review 的顺序执行，通过后才关闭 R4-A、改判第四批。
 - 在此之前，第四批 Review 维持**未通过**，feature **未收敛**。
 - 本报告不是审核结论，不勾选 checklist。
+
+## Analyze R19（只读；R4-A 最小修复获 Walter §5.1 批准、plan r6.11 生效后的开码前登记，2026-10-29；当前索引，R18 及更早轮次原文不改；区别于 Checklist R10，**不是**审核结论）
+
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188da-1d90-7009-9405-316722985a4e`；`claude-bridge` 本协调窗口已确认额度耗尽、无重置证据，不重试；同模型官方通道近期成功；未改配置）。派工 = 集成人协调会话 `01a18388-a371-7746-8158-9fb15d55d819`。本轮**没有运行任何产品测试**，也没有写代码 / 测试；结构复算脚本 `approve-struct.py`（复用 R18 的 `status-blocked-struct.py`，未改逻辑）与日志在协调器 Temp `approve-01a188da/`，不是项目产物。
+
+### 1. 输入与授权事实
+
+- 重读：AGENTS.md §2 / §5.1 / §6；`docs/plan.md`；冻结 spec（LF SHA256 `ed0f6c6c…942d9`，末次提交 `8753fa9`，46 AC）；plan r6.11 草案；tasks T-B04a 全文；Checklist R10（`37e2f71`，blob `4537c55f226f0bdc4f39b19e7c369731cf23abba`，26 勾 / 0 未勾）；`review-batch4.md` R4-A（原件 `9812f64`，blob `0c04f6ad…`）；本文件 R18；implementation-log §16；interface-handoff。代码固定 `6c082fd`，`6c082fd..e285ad2` 只有文档。
+- **授权已到**：集成人报告 R4-A、`onCleanup` 约 3～5 行最小方案与归档选项后，Walter 原话回复：“**那就先修P2等全部工作完成后，再合入main**”。据此判定：这是对 R4-A 最小修复的 §5.1 单独批准，并选定 feature 全部完成后再合 main。它**不是**风险接受（P2 不降级）、**不是**提前 Gate 2，也不批准扩到 store 取消 / 锁 / 请求序号 / query 或立即清理现有目录。R18 §3 的授权缺口由此关闭；本轮不再就此或通用代码授权追问。
+
+### 2. 一致性（spec ↔ plan ↔ tasks）
+
+- plan 页首新增“r6.11 生效”行；§2.1 / §2.3【r6.11】标记改为已生效，草案正文原样保留。生效范围 = §2.1【r6.11】原文：只改 `JobDetailPage.vue` 的 `watch` 回调（`onCleanup` + `stale` + canonical replace 前 `!stale`）；`job-detail.spec.ts` 只新增 `WI R4-A` 2 例；`detail-stage.spec.ts` 只新增 1 例；原 11 / 4 例不改；其他源码、store、query 禁止。§2.1【r6.9】“不加比较 / 去重 guard”只对这一处失效标志例外。
+- tasks：页首新增批准块（原 §5.1 等待块标为历史）；T-B04a 标题 / 状态改为“已获批、可开码”；T-B04 状态行只追加“T-B04a 解除 blocked”一句。T-G09、§2a、§5、§6 中的【r6.11 草案】标记**内容不改**（G09 依赖原文保持），按页首块读作已生效。
+- spec / 46 AC 不变，不是需求变更，不回 Clarify / Gate 1；与 plan / tasks 无冲突、无新缺口。
+- **依赖说明**：T-B04a 依赖 T-B04 / T-B03 在 `6c082fd` 的**已实施代码**；二者仍是“已实施、第四批 Review 未通过”，不伪称已过 Review。
+
+### 3. Checklist 与复核路径（集成人决定）
+
+- **不另开 Checklist R10.1 设计轮**：A 原件 §3 (a) 已点名同一最小修复与测试范围；设计（plan §2.1【r6.11】）与任务（T-B04a）已登记；唯一缺的 §5.1 许可现已到位；没有新的 what / 参数 / 机制扩展。R10 保持只读 26 / 26。
+- **不跳审**：必须走 Implement（新会话，首选 openai/gpt-6-astra）→ Converge → **A 新会话增量代码 Review**；通过后才关闭 R4-A、改判第四批。实施中如发现不属于草案的真实设计问题，停下报告，不扩大范围。
+
+### 4. 结构复算（脚本只读，作用于本轮最终工作树；HEAD = `e285ad2` 对照）
+
+- 70 个任务，编号唯一、排序正确；104.5 h（A 30 / 44.5、B 8 / 11.5、C 5 / 7.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4），每项 0.5～2 h。
+- 状态 **21 已完成 + 5 已实施（Review 未通过）+ 44 未开始**，`OTHER` 0。
+- 标准 / 命令 **235 / 235**，逐任务 1:1；`MISSING_AC` = []，`PROBLEMS` = []。
+- `UNKNOWN_DEP` = []；`CYCLE None`；`BACKEDGES` = [(T-B03, T-B04)]，仍是唯一有意编号回边。
+- spec 46 = 矩阵 46；`PARTIAL_NOT_ANCESTOR` = []；`BIDIR_BAD` = []；AC-002-2 最终 = [T-B04, T-B04a, T-H04]，部分前置 A22 / A22d 均为 T-B04a 祖先；T-G09 依赖 = [G06, G07, G08, B04a]，T-B04a ∈ ancestors(T-H04)。
+- 逐任务 dump（预计 / 依赖 / 状态 / 标准 / 命令）与 HEAD **逐字相同**：本轮只改状态说明文字，不改任何标准、命令、依赖、工时。
+- 依赖已满足的未开始任务：已完成 + 已实施计入时 T-A14 / A15 / A16 / **B04a** / C01；T-B04a 的外部阻塞已解除。
+
+### 5. 状态与未关项
+
+- R4-A **未关闭**（已批准、未修），第四批 Review 维持未通过；原 5 项不计完成。R2-C 关闭仍以本批通过为条件。R4-B～E、S-41、R3-B / R3-C 及前两批 P3 均未经风险接受，归属不变。
+- H-2·标签 ① 候选 `5c00cf6` 须等新 A 复核本批通过后才可转已核生产；④ 未放行；页面切片未交付。46 AC 最终验收 **0**；feature **未收敛**。
+- 固定值：冻结 spec、`checklist.md`、各 review / converge 原件与 HEAD 零差异；本轮无代码 diff。
+
+### 6. 结论（Analyze R19，当前索引）
+
+- §5.1 授权已到；spec / plan / tasks 一致，结构不变（70 / 104.5 h / 235 / 235 / 21 + 5 + 44 / 46 AC 双向）。**可按 T-B04a 开码**，范围以 plan §2.1【r6.11】与 T-B04a 修改范围为限，不改冻结 spec 46 AC。
+- 实施后须 Converge + A 新会话增量 Review；在此之前不得记 R4-A 关闭或第四批通过。本报告不是审核结论，不勾选 checklist。

@@ -78,7 +78,12 @@
 > - **其余**：H-1 / H-3 / H-4 历史证据保留、当前有效 Checklist 并记 R10、④ 缺；H-5 未做；H-6 缺 T-A21。消费分支 `integration/frontend-workbench-v2` 只读仍 `3f63273`。
 >
 > 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；bridge 本协调窗口已确认限额，不重试；官方通道成功；未改配置）。
-> **当前状态（2026-10-29 第四批 Review 未通过 + R4-A 工程审批等待；以本块为准，上一块中的“待第四批独立代码 Review”“① 候选待 Review”为当时原文）**：
+> **当前状态（2026-10-29 R4-A 最小修复已获 Walter §5.1 批准，plan r6.11 生效；以本块为准，下一块中的“blocked_by Walter §5.1 批准，未开码”为当时原文）**：
+> - Walter 原话“那就先修P2等全部工作完成后，再合入main”批准 T-B04a（只改 `JobDetailPage.vue` 的 `watch` 回调 + 新增 3 例测试），**未实施、R4-A 未关闭**，第四批 Review 仍判未通过；不是风险接受、不是 Gate 2。T-B04a 不改 store、不改任何交接接口。
+> - **H-2·标签** ① 候选 `5c00cf6` 仍须等修复后新 A 复核本批通过；**④ 未放行**。H-2·列表 ① 仍 `af24c82`；页面切片未交付；其余 P3 未经风险接受；43 项后续任务未开始。Draft PR #12 保持 Draft，不合 main（implementation-log §17）。
+>
+> 记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188da-1d90-7009-9405-316722985a4e`；bridge 本窗口额度耗尽，不重试；官方通道近期成功；未改配置）。
+> 【历史原文】**当前状态（2026-10-29 第四批 Review 未通过 + R4-A 工程审批等待；以本块为准，上一块中的“待第四批独立代码 Review”“① 候选待 Review”为当时原文）**：
 > - **本批**：第四批代码 Review（`review-batch4.md`，原件 `9812f64`，A = claude-fable-5-1 via anthropic）判**未通过：1 P2 R4-A + 4 P3**。R4-A 是详情页迟到的 canonical replace，修复草案 T-B04a **blocked_by Walter AGENTS §5.1 批准**，未开码。代码固定 `6c082fd`。
 > - **H-2·标签**：① 候选 `5c00cf6` 因本批未通过**不转生产已核**（已审历史 `ebce4c8` 并存）；② R10 `37e2f71`；③ A 亲跑 `WI status badges` 18 / `WI source badge` 9 / `WI badge tone` 21 / badges 整文件 48 + colors / glass / typecheck / lint；④ 缺。交接接口（props / 文案 / 图标）不变。
 > - **H-2·列表**：公开成员不变，① 仍 `af24c82`；A 亲跑 `WI H-2` 27；④ 缺。T-B04a 草案不改 store，也不改交接接口。

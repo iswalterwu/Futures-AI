@@ -851,3 +851,13 @@
   - main `072bb12` 不在祖先、不导入，继续 pin `90187f7`（R2-D 流程不变）。
   - 未 push、未开 PR、未 merge。
 - **下一步**：先等 Walter 对 R4-A 最小修复的单独批复。批准范围以 plan §2.1【r6.11 草案】与 T-B04a 为限，不扩到 store / query / 全局防乱序。在此之前不派代码、不写 v2 / main。其余未关项按 §8 原归属处理。
+
+## 17. R4-A 最小修复获 Walter §5.1 批准，T-B04a 可开码（2026-10-29；只登记，未实施、无产品验证）
+
+- **作者**：claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188da-1d90-7009-9405-316722985a4e`；bridge 本窗口额度耗尽、无重置证据，不重试；官方通道近期成功；未改配置）。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。
+- **用户批复**（原话）：“**那就先修P2等全部工作完成后，再合入main**”。集成人在报告 R4-A、`onCleanup` 约 3～5 行最小方案与归档选项之后收到。判定 = R4-A 最小修复的 §5.1 单独批准 + 选定 feature 全部完成后再合 main；**不是**风险接受、**不是**提前 Gate 2，不批准扩到 store 取消 / 锁 / 请求序号 / query，也不是立即删除现有 25 个目录（保留；复用现有 worktree，phase 结束后按后续指令清理）。
+- **范围**（= plan §2.1【r6.11】，已生效）：只改 `JobDetailPage.vue` 的 `watch` 回调（`onCleanup` / `stale` / `!stale` 条件）+ `job-detail.spec.ts` 新增 2 例 + `detail-stage.spec.ts` 新增 1 例；原 11 / 4 例不改；其他源码、store、query 禁止。T-B04a 标准 / 命令 / 依赖 / 工时与 70 任务 / 235 对不变。
+- **流程**：不另开 Checklist R10.1（理由见 analyze.md「Analyze R19」§3），R10 `37e2f71` 保持 26 / 26 只读。下一步：Implement（新会话，首选 openai/gpt-6-astra，复用现有实施 worktree `feat/workbench-interaction-astra` @ `6c082fd`）→ Converge → A 新会话增量代码 Review。发现草案外的真实设计问题即停报。
+- **待测试**：T-B04a 三条命令（`WI R4-A` 组件 2 例 + 整文件 13；`WI R4-A` E2E 1 例 + 四份 E2E 30；全量单测 1020 + typecheck / lint + `git diff --stat 6c082fd HEAD -- frontend` 只含三文件）均**未运行**；本节只登记，没有任何产品验证。
+- **状态**：21 已完成 + 5 已实施（第四批 Review 未通过，不计完成）+ 44 未开始；R4-A 未关闭；R2-C 待本批通过；其余 P3 未经风险接受；46 AC 最终验收 0；feature 未收敛。
+- **远端上下文**（只记录，本轮不操作远端 / Root）：用户上轮备份已 push 3 个分支；Draft PR https://github.com/iswalterwu/Futures-AI/pull/12（head = integration @ `e285ad2`；isDraft = true，automerge = null，DIRTY）。Root 规格树 spec @ `4f11611766a12092758145910042a08fb5f9a524` 有 HANDOFF §15 备份记录；本树没有 §15，不从别树整体 merge。PR 继续 Draft，不合 main、不强推，不写 v2 树；main pin `90187f7` 与 R2-D 同步流程不变。功能尚未完成；Root 文档定向同步 / 恢复 §16 由集成人后续处理。
