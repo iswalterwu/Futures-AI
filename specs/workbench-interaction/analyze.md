@@ -3,7 +3,13 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
-> **当前结论（2026-10-29 第三批代码 Review 后 R3-A Converge 补修登记 r6.8）：见文末「Analyze R14」**
+> **当前结论（2026-10-29 T-A22c 实施后增量 Converge）：见文末「Analyze R15」**
+> - **T-A22c**：已实施 `af24c82`（2 个文件；方案 b，只删 `applyFilter` 成功分支两次赋值，新增 `WI H-2 list status` 两例，filter 组一例改为“只有显式 refresh 清错”）。实施者执行的 3 条任务命令与回归全过，红 → 绿属实。增量 Converge（`converge-batch3-cache-fix.md`）判与 r6.8 逐条一致、无规格差距，**待独立 A 增量 Review**。
+> - **R3-A**：代码已修、待 A 复核，不由本报告判关闭。R3-B / R3-C 未改。
+> - **结构**：68 个任务 / 102.5 h；227 / 227；**21 / 68 已实施**（20 已完成 + 1 待定向 Review）、47 未开始；DAG 与 46 行 AC 矩阵不变；46 AC 最终验收 0；feature **未收敛**。spec 46 AC 不改。
+> - **有效 Checklist**：R9 `ab742f5`（未改）。**不是** Review / Gate 2 / Handoff。
+>
+> 【历史原文】**当前结论（2026-10-29 第三批代码 Review 后 R3-A Converge 补修登记 r6.8）：见文末「Analyze R14」**
 > - **第三批**：T-A11 / A12 / A13 / A22a 经独立代码 Review 通过（`review-batch3.md`，原件 `49edb7e`；0 P1 / P2，3 P3），记为已完成。
 > - **R3-A**：集成人决定现在修 → 新增 **T-A22c**（≤ 0.5 h，依赖 T-A22a，方案 b，恢复 r6.6“`applyFilter(f)` 只写 `filter` / `filteredJobs`”的原意）。不回 Clarify，spec / 46 AC 不变。**修复任务已登记、待实施 / 待 A 增量复核**，代码未修。R3-B → T-C03 / T-A17、R3-C → T-G04，未修。
 > - **结构**：68 个任务 / 102.5 h；完成标准 / 命令 227 / 227；20 已完成、48 未开始；46 AC 最终验收 0；feature **未收敛**。
@@ -1121,4 +1127,93 @@
 - **一致性**：spec ↔ plan ↔ tasks ↔ interface-handoff ↔ implementation-log ↔ 审核原件 ↔ 真实代码，在 R3-A 范围内**无未登记冲突**。实现与已审设计之间的差距（G-8）已由 T-A22c 登记为待修；方案 (b) 恢复 r6.6“只写 `filter` / `filteredJobs`”的原意，**不回 Clarify**。
 - **任务 / 标准 / 命令 / 门槛**：T-A22c 3 ↔ 3，命令限定 jobs 路径与 WI 标题，标准引用 AC-001-1 / 001-2 / 001-4 部分前置与 AC-009-1；DAG 与 AC 祖先一致；Checklist R9 不变；实施后由新会话 A 增量代码 Review。
 - **进度**：68 个任务 / 102.5 h；20 已完成、48 未开始（含 T-A22c）；46 AC 最终验收 0；feature **未收敛**（48 项未实施 + H 组外部阻塞）。
+- **不是** Review、Gate 2 或 Handoff；H-x 无一“已交付”。
+
+---
+
+## Analyze R15（只读；T-A22c 实施后的增量 Converge 配套分析，2026-10-29；当前索引，R14 历史保留；区别于 Checklist R9，**不是**审核结论）
+
+> **阶段记录（脱敏）**：
+> - **角色与模型**：增量 Converge / 进度登记 + 本分析；实际模型 = **claude-opus-5-5 via anthropic**（PI_SESSION_ID `01a18755-53bb-72b4-87fa-bcc8b067eba0`）。
+> - **通道**：`claude-bridge` 本窗口已明确 quota / rate 限额，按 AGENTS §6 规则 2 / 5 不重试；官方通道成功。只换通道、不换模型，未改 provider / key / 路由 / 全局配置。
+> - **派工**：集成人协调会话 `01a18388-a371-7746-8158-9fb15d55d819`。
+> - **性质**：只读报告，不勾选 checklist。当前有效审核 = **Checklist R9**（`ab742f5`，本树 blob `74084c1337491a042c944096e1f290fe07aab324`，未改）。
+>
+> **写入与执行边界**：
+> - **可写范围**：唯一可写 worktree `D:/2030/Futures-AI-interaction-converge-batch3`（`docs/workbench-interaction-batch3-converge`，HEAD `af24c826f41580d27f90ce611fb2f55fec44acbf`，起始 clean）。只写 tasks / analyze / implementation-log / interface-handoff、新建 `converge-batch3-cache-fix.md`，以及 `specs/README.md` 本 feature 两行。
+> - **未改动**：代码 / 测试 / spec / plan / checklist / 原 Review 原件 / 原 Converge 报告 / 根 HANDOFF / 权威 docs / 其他 worktree。
+> - **未执行**：未 commit / push / merge；未安装；未启动服务或子 agent；**未运行任何产品测试**。
+> - **只读脚本与日志**（非项目产物，不清理共享 tmp），在 `C:/Users/iswal/AppData/Local/Temp/wi-batch3-01a18388-0yit2j1a/` 下：
+>   - 沿用 `cache-fix-plan-struct.py`，输出 `cache-fix-converge-structure.log`（本轮 tasks）与 `cache-fix-converge-structure-HEAD.log`（`af24c82` 上的 tasks，副本 `cache-fix-converge-tasks-HEAD.md`）；
+>   - 沿用 `cache-fix-plan-stdcmd.py` → `cache-fix-converge-std-cmd-diff.log`；
+>   - `cache-fix-converge-ready.py`（以 21 项已实施计入）→ `cache-fix-converge-ready.log`。
+
+### 1. 重新读取与输入
+
+- AGENTS.md（§2 第 7 / 9 / 10 步、§5、§6）、`docs/plan.md`。
+- 冻结 spec（AC-001-1 / 001-2 / 001-4 / 009-1）；plan 页首与 §2.3【r6.8】；tasks 页首 r6.8 块、§2a、T-A22a、T-A22c、T-B01 / T-B02、§5 / §6；checklist R9（只读）；本报告 R14。
+- `review-batch3.md`（`49edb7e`）R3-A、P1 / P2 / P3、O-R3-2、§8。
+- implementation-log 页首 / §7 / §8 / §11；interface-handoff 页首 / §1 / §3。
+- `git show e7716a8`（含 commit body 的排期决定）；`git diff e7716a8 af24c82` 全文；`af24c82` 上两个文件的完整内容。
+- 实施者回报 `astra-cache-fix-result.md` 与其会话日志（只读核对红 → 绿与命令输出），不代替代码阅读。
+
+### 2. 本轮范围与结论
+
+| 项 | 结果 |
+|---|---|
+| 范围 | 仅 T-A22c（0.5 h）。代码 `e7716a8..af24c82`：2 个文件，+67 / −3；`--name-status` 只有两个 `M`；`git diff --check` 通过 |
+| 代码 ↔ 标准 | 3 / 3 有对应实现与测试（逐条见 `converge-batch3-cache-fix.md` §2） |
+| 命令结果 | **实施者执行、本会话未重跑**：命令 1 = 2 pass；命令 2 = 27 pass（原四组 25 + 新 2；`WI H-2 filter` 仍 4）；命令 3 = typecheck / lint / `contract --check` 24 / 10 / 2。回归：全量 31 / 953 / 0、六守卫、shell + agent E2E 24 |
+| 失败留痕 | 修复前命令 1 为 2 fail（`ready`≠`idle`、`ready`≠`error`），准确复现 P1 / P2；删两行后通过 |
+| 所有权 | 只动 tasks 授权的两个文件；`main.ts`、契约 / 生成物、其他 jobs 源 / 测试、spec / checklist 均零差异 |
+| 规格差距 | 无。不需要 r6.9，plan / tasks 设计文本不改 |
+| 新增任务 / 需求 | 无 |
+| 本任务判定 | **增量已收口，待独立 A 增量 Review**；R3-A = 代码已修、待复核（本报告不判关闭） |
+| feature 判定 | **未收敛**：21 / 68 已实施（20 已完成 + 1 待定向 Review）、47 未开始；46 AC 最终验收 0 |
+
+### 3. 排期决定的登记口径
+
+`e7716a8` 的 commit body 记录：集成人接受 T-B01 依赖 T-A22c（AC-001-1 / 001-4 的祖先覆盖）。R14 §5 曾把它列为待集成人确认的代价；现已确认，**属于任务排期，不是新的产品需求或人工门**。tasks 中的依赖原样保留，不再列为待决项。
+
+### 4. 状态回写与结构复核
+
+- **状态回写**：
+  - T-A22c 状态行改为“已实施（待定向 Review …）”，附 commit、逐命令结果、失败留痕与回归，“未开始”留作原文。
+  - T-A22a 状态行只追加一句指向 T-A22c；标准、命令与 r6.7 / r6.8 原文都不改。
+  - tasks 页首新增“T-A22c 实施后增量 Converge”块，r6.8 块标为历史原文。
+- **结构复算**（本轮 tasks 对比 `af24c82`）：
+  - 68 个任务、编号唯一、排序正确；102.5 h（A 29 / 43.5、B 7 / 10.5、C 5 / 7.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4）。
+  - 完成标准 / 命令 **227 / 227**，problems = []；依赖无环、全部前向；T-A22c ← T-A22a，T-B01 / T-B02 含 T-A22c。
+  - AC 矩阵 46 行；`PARTIAL-PREREQ NOT ANCESTOR` = []；`BIDIR BAD` = []；T-A22c 仍在 AC-001-1 / 001-2 / 001-4 三行。
+  - 状态：20 × 已完成、1 × 已实施、47 × 未开始（HEAD：20 / 0 / 48）。
+  - 两份结构日志的差异只有三处：
+    1. 状态计数；
+    2. 集合打印顺序；
+    3. 全文 `-t` / `-g` 出现次数 217 → 218（WI 215 → 216）。第 3 处是 T-A22c 状态行里引用了 `-t "WI H-2 filter"` 的补充结果，属于说明文字，不是新命令；任务命令仍为 163 条、159 个不同标题。
+- **逐任务文本比对**（`cache-fix-converge-std-cmd-diff.log`）：预计 / 依赖 / 每条标准 / 每条命令，以及 §5～§7 全文均 **NO DIFF**。
+- **下一可起步**（`cache-fix-converge-ready.py`，以 21 项已实施计入，沿用 batch3 “已实施即计入依赖”的口径）：T-A14 / T-A15 / T-A16、T-B01、T-C01。`review-batch3.md` §8 要求 R3-A 在 T-B02 / H-2 ④ 之前关闭；T-B01 是否等 A 复核后再派，由集成人决定。
+
+### 5. H-x 与上游
+
+- **H-2·列表**：
+  - ① 候选 `af24c82`（T-A22c，祖先含 `0032fc6`），待 A 增量复核；
+  - ② R9 `ab742f5`；
+  - ③ `WI H-2 list status` 2、整文件 27（原四组 25）pass + 工程门（实施者执行，待 A）；
+  - **④ 仍缺，T-A22c 复核前不放行**。生产方集成树 `integration/workbench-interaction` @ `af24c82` 只是旁证；`integration/frontend-workbench-v2` = `3f63273`，不含 `af24c82`（只读核）。
+- **其他切片**：H-6 仍缺 T-A21；H-5 / 页面切片未做；H-1 / H-2·标签 / H-3 / H-4 保留原登记，仍待消费方集成（未交付）。
+- **上游**：main `072bb12` 不在祖先，继续 pin `90187f7`；R2-D 流程不变。
+
+### 6. 观察项与未解决项
+
+- **R3-A**：代码已修、待新会话 A 增量代码 Review（固定审 `e7716a8..af24c82` 与本文档提交；只核 R3-A，第三批其他结论保留）。复核前不得写“已完成 / 已关闭”。
+- **R3-B**（→ T-C03 / T-A17）、**R3-C**（→ T-G04）：未改，未经 Walter 风险接受。
+- **O-R3-1 / O-R3-3**：不变；O-R3-2 仍只是 plan 精度。
+- **前两批 P3**：状态不变（implementation-log §8）。
+- **外部 / 流程**：各切片 ④ 待 v2 所有者登记；H 组 v2 外部闸门；main 同步决策；本树文档待集成人审阅提交。
+
+### 7. 结论（Analyze R15，当前索引）
+
+- **一致性**：在 T-A22c 范围内，spec ↔ plan ↔ tasks ↔ interface-handoff ↔ implementation-log ↔ 审核原件 ↔ 真实代码**无冲突、无差距**。spec 46 AC 不改，不回 Clarify。
+- **任务**：T-A22c 已实施，3 / 3 标准有证据（实施者执行），增量已收口、**待独立 A 增量 Review**。
+- **进度**：68 个任务 / 102.5 h；21 / 68 已实施（20 已完成 + 1 待定向 Review）、47 未开始；227 / 227；DAG 与 46 行矩阵不变；46 AC 最终验收 0；feature **未收敛**。
 - **不是** Review、Gate 2 或 Handoff；H-x 无一“已交付”。

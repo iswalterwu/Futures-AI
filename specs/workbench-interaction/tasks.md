@@ -1,6 +1,27 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
-> **当前实施进度（第三批独立代码 Review 后 + R3-A Converge 补修登记 r6.8，2026-10-29；以本块为准。下方 batch3 块中的“4 项已实施、待第三批独立代码 Review”“20 / 67、47 未开始”“67 个任务 / 约 102 h / 224 / 224”“下一可起步 T-B01”等都是当时原文）**：
+> **当前实施进度（T-A22c 实施后增量 Converge，2026-10-29；以本块为准。下方 r6.8 块中的“20 项已完成、48 项未开始”“T-A22c 待实施 / 代码未修”“下一可起步 T-A22c”等都是当时原文）**：
+>
+> **进度**：**68 个任务、约 102.5 h**。**21 / 68 已实施** = **20 项已完成**（三批代码 Review 通过：`af95b66` 10 项、`f72a1a1` 6 项、`49edb7e` 4 项）+ **1 项已实施、待定向 Review**（**T-A22c**，`af24c826f41580d27f90ce611fb2f55fec44acbf`）；**47 项未开始**。46 AC 最终验收仍 **0**；feature **未收敛**（47 项未实施 + H 组外部阻塞 + T-A22c 待复核）。
+>
+> **T-A22c**（R3-A 方案 b；实施者 openai/gpt-6-astra，未回退；基线 `e7716a8`）：代码 diff `e7716a8..af24c82` 只有 2 个文件。`jobs/stores/jobs.ts` 只删 `applyFilter` 成功分支的 `listStatus` / `listError` 两次赋值；`jobs-store.spec.ts` 新增 `WI H-2 list status` 两例，并把 filter 组的一例改为“只有显式 refresh 清错”，未删测试。结果由实施者执行，增量 Converge 未重跑：
+> - **先红后绿**：修复前新两例分别以 `idle → ready`、base `error → ready` 失败；删两行后通过。
+> - **三条任务命令**：命令 1 `2` pass；命令 2 整文件 `27` pass（原四组 25 + 新 2，`WI H-2 filter` 仍 4）；命令 3 typecheck / lint / `contract --check` 24 / 10 / 2 均通过。
+> - **回归**：末轮全量单测 31 files / **953** / 0；六守卫；既有 shell + agent E2E **24** pass；4173 前后空闲；clean commit。
+>
+> 增量 Converge（`converge-batch3-cache-fix.md`，analyze.md「Analyze R15」）判：实施与 r6.8 逐条一致，无规格差距，**本任务增量已收口、待独立 A 增量 Review**。**R3-A = 代码已修、待 A 复核**，不由 Converge 判定关闭。R3-B（→ T-C03 / T-A17）、R3-C（→ T-G04）未改，未经 Walter 风险接受。
+>
+> **结构**（脚本复算）：68 个任务、约 102.5 h；完成标准 / 验证命令 **227 / 227**；依赖与 DAG 不变、无环；AC 矩阵 46 行不变。本轮只改状态行与本块，所有任务的预计 / 标准 / 命令都不改字。有效 Checklist 仍为 **R9**（`ab742f5`，blob `74084c13…`，未改）。
+>
+> **H-x**：
+> - **H-2·列表**：① 候选 `af24c82`（待 A 增量复核）；② R9 `ab742f5`；③ 新组 2 / 整文件 27（原四组 25）pass + 工程门（实施者执行，待 A）。**④ 仍缺，T-A22c 复核前不放行**；生产方集成树 `af24c82` 只是旁证。
+> - **H-6** 仍缺 T-A21；**H-5 / 页面切片**未做；H-1 / H-2·标签 / H-3 / H-4 仍为待消费方集成（未交付）。
+>
+> **下一可起步**：按依赖链（以 21 项已实施计入，沿用 batch3 口径），可起步的是 T-A14 / T-A15 / T-A16、T-B01、T-C01。`review-batch3.md` §8 要求 R3-A 在 **T-B02 / H-2 ④** 之前关闭；T-B01 是否等 A 复核后再派，由集成人决定。
+>
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18755-53bb-72b4-87fa-bcc8b067eba0`；`claude-bridge` 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。本块不是 Review / Gate 2 / Handoff。
+
+> 【历史原文，进度 / T-A22c 状态 / 下一可起步已由上方 T-A22c 增量 Converge 块取代】**当前实施进度（第三批独立代码 Review 后 + R3-A Converge 补修登记 r6.8，2026-10-29；当时以本块为准。下方 batch3 块中的“4 项已实施、待第三批独立代码 Review”“20 / 67、47 未开始”“67 个任务 / 约 102 h / 224 / 224”“下一可起步 T-B01”等都是当时原文）**：
 >
 > **进度**：**68 个任务、约 102.5 h**。**20 项已完成**（批次代码 Review 通过：首批 `af95b66` 10 项、第二批 `f72a1a1` 6 项、第三批 `49edb7e` 4 项 = T-A11 / T-A12 / T-A13 / T-A22a）；**48 项未开始** = 原 47 项 + 本轮新增的 **T-A22c**（R3-A 补修，0.5 h，待实施）。“已完成”= 所在批次代码 Review 通过，**不表示任何 AC 最终验收**：46 AC 最终验收仍 **0**；feature **未收敛**（48 项未实施 + H 组外部阻塞）。
 >
@@ -807,7 +828,7 @@
 
 ### T-A22a jobsStore：共享未筛选列表缓存、刷新、createJob action 与 agent 终态刷新（H-2·列表；r6 新增）
 
-- **状态**：**已完成（batch3；第三批代码 Review 通过 `49edb7e`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；P3 R3-A 的修复已登记为 T-A22c（r6.8），待实施 / 增量复核，H-2·列表 ④ 前须关闭）**｜原状态行“已实施（batch3，待第三批独立代码 Review）”为 Converge 时原文｜commit `0032fc6b3e47ee6de27a03c2c229ef57ca9115cc`。
+- **状态**：**已完成（batch3；第三批代码 Review 通过 `49edb7e`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；P3 R3-A 的修复已登记为 T-A22c（r6.8），待实施 / 增量复核，H-2·列表 ④ 前须关闭）**｜T-A22c 增量 Converge 后：修复已实施 `af24c82`，待 A 增量复核（以 T-A22c 状态行为准）｜原状态行“已实施（batch3，待第三批独立代码 Review）”为 Converge 时原文｜commit `0032fc6b3e47ee6de27a03c2c229ef57ca9115cc`。
   - **验证**（实施者执行，Converge 未重跑）：命令 1～4 依次为 `WI H-2 cache` 5 / `WI H-2 filter` 4 / `WI H-2 createJob refresh` 7 / `WI H-2 agent refresh` 9 pass；命令 5 为 typecheck、lint，均通过；本轮无失败。
   - **末轮 clean 树**：全量 `test:unit` 31 文件 951 pass / 0 fail；`check` 六守卫通过；`contract --check` 24 / 10 / 2；既有 `e2e/{shell,agent}.spec.ts` 24 pass（4173 自管，结束后无监听）。
   - **S-38**：已落实（`refresh` 自身 resolve，真实 error 场景下无 unhandled rejection）。
@@ -865,7 +886,12 @@
 
 ### T-A22c R3-A 补修：applyFilter 成功不改写未筛选列表读状态（H-2·列表；r6.8 Converge 补修新增）
 
-- **状态**：未开始｜Converge 补修（AGENTS §2 第 9 步）：第三批代码 Review `49edb7e` 的 P3 R3-A 修复任务；实施后由新会话 A 做增量代码 Review，只核 R3-A 是否关闭（其他 Review 结论保留）｜原 blocked_by: IMPL-GATE-R6（已满足）
+- **状态**：**已实施（待定向 Review：新会话 A 增量代码 Review 只核 R3-A；不表示 AC 最终验收；R3-A 代码已修、未判关闭）**｜原状态行“未开始”为 r6.8 登记时原文｜commit `af24c826f41580d27f90ce611fb2f55fec44acbf`（父 `e7716a8`；只改 `jobs/stores/jobs.ts` −2 与 `jobs-store.spec.ts` +67 / −1）。
+  - **验证**（实施者执行，增量 Converge 未重跑）：命令 1 `WI H-2 list status` 2 pass；命令 2 整文件 27 pass（原四组 25 + 新 2；`-t "WI H-2 filter"` 仍 4）；命令 3 typecheck、lint、`contract --check`（24 / 10 / 2）均通过。
+  - **失败留痕**：修复前命令 1 为 2 fail（`expected 'ready' to be 'idle'`、`expected 'ready' to be 'error'`），复现 R3-A P1 / P2；删两行后通过。
+  - **末轮回归**：全量 `test:unit` 31 文件 953 pass / 0 fail；`check` 六守卫通过；既有 `e2e/{shell,agent}.spec.ts` 24 pass（4173 前后空闲）；提交前 diff / 暂存范围检查通过，clean。
+  - **增量 Converge**：`converge-batch3-cache-fix.md`，判与 r6.8 逐条一致、无规格差距、待独立 A 增量 Review；R3-A 是否关闭由 A 判定。
+  - Converge 补修（AGENTS §2 第 9 步），对应第三批代码 Review `49edb7e` 的 P3 R3-A；第三批其他 Review 结论保留｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：0.5 h｜**依赖**：T-A22a
 - **上下文**：`review-batch3.md` §5 R3-A、§4 探针 P1 / P2、§8 第 2 条。`0032fc6` 中 `jobs/stores/jobs.ts` 的 `applyFilter(f)` 成功分支（第 43–44 行）写 `listStatus='ready'` / `listError=null`；`ensureJobs()` 只在 `listStatus==='idle'` 时加载（第 17–19 行）。后果有二：全新 store 若先 `applyFilter` 再 `ensureJobs()`，`jobs` 从未加载却显示 ready，且之后 ensure 不再加载（P1）；未筛选列表读失败后，一次筛选成功会把错误“洗白”（P2）。集成人采用 A 原件最小方案 **(b)**，即恢复 T-A22a【r6.6 精度】“`applyFilter(f)` 只写 `filter` / `filteredJobs`”的原意：不是需求变更，不回 Clarify，spec / 46 AC 不变。口径见 plan §2.3【r6.8】；O-R3-2 的精度一并登记。
 - **修改范围**：
