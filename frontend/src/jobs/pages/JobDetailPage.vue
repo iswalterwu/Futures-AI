@@ -5,6 +5,8 @@ import { JobTypeLabel, StageSchema, type Stage } from '../../contracts/types.ts'
 import EmptyState from '../../shared/components/EmptyState.vue'
 import ErrorState from '../../shared/components/ErrorState.vue'
 import Loading from '../../shared/components/Loading.vue'
+import { useUiStore } from '../../stores/ui.ts'
+import InterventionHistory from '../components/InterventionHistory.vue'
 import JobStatusBadge from '../components/JobStatusBadge.vue'
 import StageRail from '../components/StageRail.vue'
 import StageWorkspace from '../components/StageWorkspace.vue'
@@ -13,6 +15,7 @@ import { useJobsStore } from '../stores/jobs.ts'
 const route = useRoute()
 const router = useRouter()
 const jobsStore = useJobsStore()
+const ui = useUiStore()
 const viewedStage = computed(() => {
   const result = StageSchema.safeParse(route.params.stage)
   return result.success ? result.data : null
@@ -70,16 +73,24 @@ function selectStage(stage: Stage) {
           {{ jobsStore.currentJob.goal }}
         </p>
       </header>
-      <StageRail
-        :stages="jobsStore.currentJob.stages"
-        :current-stage="jobsStore.currentJob.currentStage"
-        :viewed-stage="viewedStage"
-        @select="selectStage"
-      />
-      <StageWorkspace
-        v-if="viewedStage !== null"
-        :stage="viewedStage"
-      />
+      <div
+        class="detail-columns"
+        :data-viewport-collapsed="ui.viewport.collapsed"
+      >
+        <div class="detail-main">
+          <StageRail
+            :stages="jobsStore.currentJob.stages"
+            :current-stage="jobsStore.currentJob.currentStage"
+            :viewed-stage="viewedStage"
+            @select="selectStage"
+          />
+          <StageWorkspace
+            v-if="viewedStage !== null"
+            :stage="viewedStage"
+          />
+        </div>
+        <InterventionHistory :job="jobsStore.currentJob" />
+      </div>
     </template>
   </section>
 </template>
@@ -102,5 +113,23 @@ function selectStage(stage: Stage) {
 
 .job-goal {
   white-space: pre-wrap;
+}
+
+.detail-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--fai-space-grid-gap);
+  min-width: 0;
+}
+
+.detail-columns[data-viewport-collapsed='true'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.detail-main {
+  display: grid;
+  gap: var(--fai-space-section-gap);
+  min-width: 0;
 }
 </style>
