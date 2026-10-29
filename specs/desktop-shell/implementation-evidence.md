@@ -521,3 +521,80 @@ profiling 首代：`uvicorn` cumulative **214866µs**，`fastapi` **285820µs**�
 
 - 追加证据后空白检查曾报第523行 new blank line at EOF；已定点移除新增尾部空行后复查，保留此文档检查失败记录。源码未再编辑，最后测试与五个源码SHA仍对应当前源码。
 - **无整体feature完成 / Converge / 独立代码Review / Gate2 / 用户风险接受结论**。RL-01及所有条件保持；人工M-13/14/15、真实前端/作业/agent/drain、真实key/注册、日志诊断隐私、clean install、基准机15s、发布通道、系统toast/托盘、满盘/507 GUI等均未取得。本轮checkpoint不代替这些证据。
+
+## 11. 2026-10-29 T-06c → T-06d 实施检查点（止于 T-07a 前）
+
+### 11.1 输入、身份与前置条件
+
+- Implement = **`openai/gpt-6-astra` via openai**；实际 session **`01a186ef-ba6d-74d6-987e-a3a349fc1f5e`**，指定 PI 三字段实核；唯一 writer，无子 agent、模型回退或配置/鉴权改动。
+- 工作树 **`D:/2030/Futures-AI-desktop-implement`**，分支 **`feat/desktop-shell-astra`**；固定输入及结束 HEAD **`be6efe8a9a7e62a7596c17107a2240e1df131e45`**。起始工作区干净；本轮留下未提交差异，未 commit/push/PR/merge/reset。
+- 按批准的 **Plan 修订5 / Analyze迭代8 / 独立A第4轮**执行。A=`anthropic/claude-fable-5-1`，独立session `01a186df-a8d4-7549-a450-deb727c6dd65`，固定审核HEAD `38c482c6c97085d25c913e3cfdee2c0938854201`，相对 `4b0c3c5` 仅四个规划文档。当前checklist明确41/41、无P1/P2、R5-01～04四个P3；不是沿用旧轮自动批准，也不是代码Review/Gate2。
+- 本轮实际条目计数（`^- \[x\]` / `^- \[ \]`）开始及结束均 **41 checked / 0 unchecked**，未改checklist。实施先完成C及18场景验证，再开始D；按断言名核对R5-01，不把标准/验证序号错位当作覆盖。
+
+### 11.2 实际改动与验收边界
+
+| 任务 | 本轮自动化子句结果 |
+|---|---|
+| **T-06c** | **通过**。`routeToMain()`共用于backend.ready、固定openMain IPC、frontend_missing/renderer_crashed重试；当前代际Bearer真实GET `/settings/profile`，只接收200+布尔completed，未完成先引导、完成走原目标、mock直通；请求代际变化不覆盖生命周期，合法响应失败走既有startup_internal。无completed副本或文件直读。`openSettings()`/`openMain()`无参数bridge，忽略渲染层参数，未就绪/空窗口返回not_ready。生产应用菜单“文件 › 设置…”（fai-settings / CmdOrCtrl+,）在控制通道之前安装，与IPC共用openSettings。保存/跳过真实核心成功后openMain，设置页back-main返回目标。覆盖AC-005-1/2与WO-01/05界面子句、AC-009-2 bridge子句及AC-007-3旧资源回归；不代表托盘入口完成 |
+| **T-06d** | **通过**。删除旧renderPrefill/REGISTER_URL；仅显式prepare-guide点击经当前端点/令牌发起no-store真实指引GET。核心五项label/value及submit.notes安全DOM只读渲染；Category为官方标签、包含Reason for use、只有指引区显示完整合成邮箱。缺项列data-missing与核心hint，焦点首缺项，无open-register；key密码输入与验证按钮仍可用但测试不提交。齐全才创建按钮，核心submit.url经window.open→既有主进程外链处理→被截获的openExternal。openMain/openSettings文档重载后清空，不写Web存储。覆盖AC-005-3注册指引及AC-005-4隐私区分的本任务子句；不代表真实注册/key验证或诊断隐私验收 |
+
+- 新 `onboarding`：全新自有root、真实源码宿主；首次引导保存单个姓名且其他可空→内置设置页；退出后真实核心load/onboard_state证明completed=true、skipped=false与档案；二次启动不显示引导。
+- 新 `onboarding-skip`：既有frontend-stub只是页面目标，不是假业务API；有前端仍先引导→跳过→前端→**实际安装MenuItem.click**→设置保存补填→back-main→前端；真实核心证明skipped=true与补填落盘。缺失/其他字符串/`__proto__`/对象item均400且不导航；另外实测renderer两个固定入口忽略URL参数、不出外链、不重启后端。
+- `test-hooks.js`只新增navigation数组和一个app-menu-click分支；后者仅`message.item === 'settings'`查固定菜单id并调用click，不直接导航、不执行主进程JS；400与正常路径实测。409缺失/不可用分支存在，**按R5-02仍无自动化**，不构造假菜单求覆盖。记录仅action/via/result，无档案字段。
+- `startup-visible`仅扩充既有eval的typeof结果、替换五成员断言为Plan字面量APPROVED18/REQUIRED_NOW7/FORBIDDEN四断言；其余原断言保留。`frontend-missing`仅增加真实set_onboard_state完成前提及一条断言（含必要spawnSync导入）；原缺失/日志/补资源重试/代际端点/后端缺失/清理断言全部保留。
+- 新 `registration-guide`使用真实settings.profile.update/load与加密文件证明；档案仅合成example.test邮箱，fixture通过stdin而非argv传字段，只输出布尔结果。五项期望为测试内字面量，没有再次调用生产guide函数构造期望。HTML样式姓名/用途保持文本，无img/script/onerror插入；普通表单仍遮蔽、只读区在form外无输入控件。Resource Timing证明点击前0次/点击后1次真实指引请求，未观察到上游资源或key请求；localStorage/sessionStorage/IndexedDB/CacheStorage均空，两个导航后同样空。浏览器动作仅记录固定核心URL，不访问EIA。
+- T-06b的dirty-email-only patch、password/成功清空、安全DOM与来源表未回退；最终settings-sources/ui-masking原样通过，真实核心11项+placeholder1=12项，姓名保存不覆盖邮箱。受测Electron file://的GET/PUT/DELETE及guide GET成功，**未触发CORS/OPTIONS/权限STOP**；没有OPTIONS失败现场，也不据此宣称别的环境的CORS行为。未更改backend、代理、headers、安全开关、CSP或sandbox。
+
+### 11.3 全部本轮测试命令与真实结果
+
+原始输出在Git外 **`C:/Users/iswal/AppData/Local/Temp/fai-routing-01a186ef/`**（下称RUN）；cwd均为`shell`，用`{ time <命令>; } > RUN/<日志> 2>&1`保存后实录退出码。每行exit0；无skip被算作通过。
+
+| 阶段 | 命令 | 结果 | 日志 / 墙钟 |
+|---|---|---|---|
+| 本轮新基线 | `npm ci` | 70 packages，exit0 | baseline-ci.log / 3.899s |
+| 本轮新基线 | `npm run test:unit` | **42/42，0failed/skip/cancelled** | baseline-unit.log / 5.536s |
+| 本轮新基线 | 默认 `npm run check` | **16场景236/236，failures0** | baseline-e2e.log / 72.940s |
+| C定向 | `npm run check -- onboarding onboarding-skip startup-visible frontend-missing settings-sources ui-masking mock` | **7场景110/110，failures0** | c-targeted.log / 34.158s |
+| C完成 | `npm ci` | 70 packages | c-ci.log / 3.548s |
+| C完成 | `npm run test:unit` | **42/42，0failed/skip/cancelled** | c-unit.log / 5.603s |
+| C完成、D未开始 | 默认 `npm run check` | **18场景273/273，failures0** | c-e2e.log / 89.576s |
+| D指引 | `npm run check -- registration-guide` | **1场景37/37，failures0** | d-guide.log / 9.636s |
+| 最后源码 | `npm ci` | 70 packages | d-ci.log / 3.315s |
+| 最后源码 | `npm run test:unit` | **42/42，0failed/skip/cancelled，4969.1066ms** | d-unit.log / 5.500s |
+| 最后源码 | `npm run check -- startup-visible frontend-missing onboarding onboarding-skip registration-guide settings-sources ui-masking` | **7场景129/129，failures0** | d-targeted.log / 43.870s |
+| **最后源码** | 默认 `npm run check` | **19场景310/310，failures0** | d-e2e.log / 99.586s |
+
+计数变化可追溯：原236 + startup-visible净增3 + frontend-missing前提1 + onboarding14 + onboarding-skip19 = C阶段273；再加registration-guide37 = 最终310，包含原runner清理断言。没有削减旧断言、加大deadline或改runner。
+
+本轮**没有测试FAIL或CORS阻塞**，没有反复运行失败直到绿。历史§9的202/203及§10的8/10失败仍原文保留，不用本轮结果抹除。辅助清理验证第一次Bash复合命令因参数替换引号报`unexpected EOF while looking for matching '}'`、exit2，未执行清理核查；修正为rg提取路径后重新执行，实测结果见下节。npm每次既有boolean@3.2.0 deprecated提示、Git LF→CRLF提示保留，未改依赖或配置消除。指纹比对exit1为授权文件变化、check-ignore exit1为不被忽略、新文件diff --no-index --check exit1为正常新增差异、无未勾选项rg exit1为0项，均不冒充产品失败或产品测试。
+
+实际构建机 **Node v25.2.1 / npm11.7.0 / Python3.14.2**；真实runtime **Electron33.4.11 / 内嵌Node20.18.3 / Chrome130.0.6723.191**。未重跑后端全量、打包或安装；旧454/5在线skip与12/12产物冒烟只属历史，不升级为本轮证据。
+
+### 11.4 冻结、指纹与清理
+
+- 仅8个授权既有源码、3个授权新scene，以及本文件追加§11；其余tracked内容相对固定输入无差异。输入manifest共**230**个tracked文件，证据追加前222个字节相同、8个授权差异；本节追加后实核221个字节相同、9个授权差异（唯一新增变化为本证据）。backend/**、src/backend/paths/prefs、runner、unit、fixtures、其余14旧scene、package/lock、.gitignore、AGENTS/docs/Spec/Plan/Tasks/Checklist/Analyze/Review/HANDOFF/README和其他工作树均未改。
+- `git diff --exit-code be6efe8 -- .`排除上述8个既有源码与本证据后为空；`git diff --check`通过，三个新增文件无空白错误且不被ignore。静态`rg -n 'renderPrefill|REGISTER_URL|location\.reload' shell/renderer`无命中；无query/hash视图参数。输入/最终源码指纹、冻结检查与diff均保留在RUN；日志、真实合成档案、token、原始session不入Git。
+- 六次e2e调用共**68个自有scene临时根**逐个核查已不存在，原runner进程退出/临时目录删除断言均通过；未改变隔离、清理或泄漏即FAIL规则，未用强制清理把失败改绿。三次默认全集内root-unwritable恢复ACL并成功验证写入；holder/helper/backend均退出，无删锁求绿。最终CIM与监听/服务查询（只输出计数，无argv）为 **OWNED_ROUTING_PROCESSES=0 / LISTENERS=0 / SERVICES=0**，见RUN/cleanup.log；未broad kill，未动用户数据。外部日志/manifest保留为证据。
+- 最后源码SHA-256（RUN/code.sha256；最后测试之后未再编辑源码）：
+
+```text
+fa176ec9715d945daa175ab72ae2789f5cec0c5637b9ceae968929e5e2d4fcc3  shell/main.js
+9b6bf4da0d29ef0097095950775aa6ab978fc03cf125b780ff72a8f82c1d443a  shell/preload.js
+d0e5e7f2f6a3cea4ed801b465ce435c65ac6dbb7d4638db6a90d39d8198156ba  shell/renderer/onboarding.html
+a41630bc09e10efff9d56bffbbd74d4da1f4eb43c77774815a1f00bd4d05c3a7  shell/renderer/onboarding.js
+6af095c4f33aee7e16b60e01a2c06d6322c468a4b882d94cf6536d6a100fe66d  shell/src/test-hooks.js
+d69c5c05be6577f0c1b44f7ce1227f4c3ba334dab70a186302f0bec51e1d10f9  shell/test/e2e/startup-visible.js
+54ba0df73ebb32d4cd5db0cf126ccd8f0cf6401dcb463161adc2a4c0762c6d86  shell/test/e2e/frontend-missing.js
+55680df52868d1eecc58a40cb458bb2e02eb0d0906720683a5de03ee031e0cad  shell/test/e2e/index.js
+310808b551ab6d0cb0a7a511ddcb222f29a726481593fadeeaae22ddf4129371  shell/test/e2e/onboarding.js
+cbccb21407b54eeedf0fdfcf71972cb5bbd8918377776494ca749448e443ca19  shell/test/e2e/onboarding-skip.js
+a0d926709e28cf6cc9e7fd245e4c4f9f54d9f28605986c11abdc873bae6cd212  shell/test/e2e/registration-guide.js
+```
+
+### 11.5 保留风险与停止点
+
+- **RL-01仍P3 OPEN / UNKNOWN / nonblocking**；本轮三次默认全集未复现，不等于历史根因已修。10s观察窗、30s生产deadline、原root-lock断言与时间线均未改；RL-02/03/04/05、PYZ残余、507 GUI缺口及全部既有边界继续保留，不连带修补。
+- **R5-02**菜单409自动化缺口继续登记。**R5-03必须在T-08e之前**由授权规划者补T-06d依赖和“真实核心完整档案 + 点击prepare-guide”前提；本轮不改Tasks，也不让生产行为迁就旧文本。R5-04的typeof取值与空窗口not_ready已落实，空窗口保护为静态检查，不冒充GUI自动化。
+- 本轮仅完成T-06c/d的自动化实施子句，**已停在T-07a之前**。下一任务为T-07a，由协调者另行派工；没有整体feature完成/Converge/独立代码Review/Gate2/Handoff结论。
+- 人工M-13/14/15、真实前端工作台/作业/agent/drain、真实EIA注册/key/上游、日志诊断隐私（T-08d）、clean Windows安装卸载、基准机15s、系统toast/托盘、满盘/507 GUI、发布通道等均未取得。本轮绿灯不代表用户风险接受。
+- 证据追加后的首次`git diff --check`报第600行new blank line at EOF、exit2；已定点移除新增尾部空行后复查。未修改源码，11项源码指纹全部仍相同；保留这次文档检查失败，不计为产品测试失败。

@@ -5,8 +5,8 @@
 'use strict'
 
 const electron = require('electron')
-const { app, BrowserWindow, dialog, ipcMain, shell: electronShell } = electron
-const { Backend } = require('./src/backend')
+const { app, BrowserWindow, Menu, dialog, ipcMain, shell: electronShell } = electron
+const { Backend, httpJson } = require('./src/backend')
 const fs = require('node:fs')
 const path = require('node:path')
 const { bootstrap, resolvePaths, loadDataRoot, resolveTarget } = require('./src/paths')
@@ -87,7 +87,7 @@ function startBackend() {
   })
   state.backend.on('backend.ready', () => {
     state.timing.ready_ms = Date.now() - startedAt
-    void loadTarget()
+    void routeToMain()
   })
   state.backend.start()
 }
@@ -132,6 +132,41 @@ async function loadTarget() {
   setStatus({ phase: state.mode === 'mock' ? 'mock' : 'ready' })
   await loadPage(selection.target)
 }
+async function routeToMain() {
+  if (!state.window) return { error: 'not_ready' }
+  if (state.mode === 'mock') {
+    await loadTarget()
+    return { opened: true }
+  }
+  const endpoint = state.backend?.getBackend()
+  if (!endpoint) return { error: 'not_ready' }
+  const gen = state.backend.gen
+  try {
+    const response = await httpJson(endpoint.port, endpoint.token, 'GET', '/settings/profile', 5000)
+    if (state.backend.gen !== gen || !state.backend.getBackend()) return { error: 'not_ready' }
+    if (response.status !== 200 || typeof response.body?.onboarding?.completed !== 'boolean') {
+      throw new Error('invalid_profile_response')
+    }
+    if (response.body.onboarding.completed) await loadTarget()
+    else {
+      setStatus({ phase: 'ready' })
+      await loadPage(path.join(__dirname, 'renderer', 'onboarding.html'))
+    }
+    return { opened: true }
+  } catch {
+    if (state.backend.gen === gen && state.backend.getBackend()) {
+      setStatus({ phase: 'failed', code: 'startup_internal' })
+      await showStartup()
+    }
+    return { error: 'not_ready' }
+  }
+}
+async function openSettings(via) {
+  const available = Boolean(state.window && (state.mode === 'mock' || state.backend?.getBackend()))
+  if (available) await loadPage(path.join(__dirname, 'renderer', 'onboarding.html'))
+  if (hooks) hooks.records.navigation.push({ action: 'open-settings', via, result: available ? 'opened' : 'not_ready' })
+  return available ? { opened: true } : { error: 'not_ready' }
+}
 function beginStartup() {
   if (state.mode === 'mock') void loadTarget()
   else startBackend()
@@ -139,6 +174,12 @@ function beginStartup() {
 function installIpc() {
   ipcMain.handle('fai:backend', () => state.backend?.getBackend() ?? null)
   ipcMain.handle('fai:status', () => state.status)
+  ipcMain.handle('fai:open-settings', () => openSettings('renderer'))
+  ipcMain.handle('fai:open-main', async () => {
+    const result = await routeToMain()
+    if (hooks) hooks.records.navigation.push({ action: 'open-main', via: 'renderer', result: result.opened ? 'opened' : 'not_ready' })
+    return result
+  })
   ipcMain.handle('fai:retry', async () => {
     if (state.quitting) return
     if (startup.error) {
@@ -148,7 +189,7 @@ function installIpc() {
       if (startup.error) { setStatus({ phase: 'failed', ...startup.error }); return }
       beginStartup()
     } else if (['frontend_missing', 'renderer_crashed'].includes(state.status.code)) {
-      await loadTarget()
+      await routeToMain()
     } else if (state.backend) await state.backend.retry()
   })
   ipcMain.handle('fai:logs', async () => {
@@ -262,6 +303,13 @@ if (!startup.gotLock && !startup.error) {
   app.whenReady().then(async () => {
     log('shell starting')
     for (const key of startup.ignored || []) log(`${key} ignored (packaged)`)
+    Menu.setApplicationMenu(Menu.buildFromTemplate([
+      { label: '文件', submenu: [
+        { id: 'fai-settings', label: '设置…', accelerator: 'CmdOrCtrl+,', click: () => openSettings('app-menu') },
+        { type: 'separator' }, { role: 'quit' },
+      ] },
+      { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' },
+    ]))
     if (hooks) await hooks.startControl()
     installIpc()
     if (startup.error) setStatus({ phase: 'failed', ...startup.error })

@@ -1,11 +1,19 @@
 'use strict'
 const fs = require('node:fs')
 const path = require('node:path')
+const { spawnSync } = require('node:child_process')
 const stub = path.resolve(__dirname, '../fixtures/frontend-stub/index.html')
 module.exports = {
   timeoutMs: 45000,
   requires: { tools: ['python', 'taskkill'], files: [stub, require('electron')] },
   async run(ctx) {
+    const root = ctx.owned(path.join(ctx.env.LOCALAPPDATA, 'FuturesAI'))
+    const seed = spawnSync('python', ['-c',
+      'import sys; from pathlib import Path; from settings.onboarding import set_onboard_state; set_onboard_state(Path(sys.argv[1]), completed=True)', root],
+    { cwd: path.resolve(__dirname, '../../../backend'), env: { ...ctx.env, PYTHONIOENCODING: 'utf-8' },
+      encoding: 'utf8', windowsHide: true, timeout: 10000 })
+    ctx.expectEqual('真实核心设置引导完成', seed.status, 0)
+    if (seed.status !== 0) throw new Error('core fixture failed (payload not logged)')
     const frontend = ctx.owned(path.join(ctx.root, 'missing-frontend'))
     const app = await ctx.launch({ env: { FAI_FRONTEND_DIST: frontend } })
     const page = await ctx.waitFor(async () => {

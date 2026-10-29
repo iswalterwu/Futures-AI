@@ -20,4 +20,6 @@ contextBridge.exposeInMainWorld('futuresai', {
   },
   retryStartup: () => ipcRenderer.invoke('fai:retry'),
   openLogs: () => ipcRenderer.invoke('fai:logs'),
+  openSettings: () => ipcRenderer.invoke('fai:open-settings'),
+  openMain: () => ipcRenderer.invoke('fai:open-main'),
 })
