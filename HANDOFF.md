@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **当前阶段：Plan6 / Analyze9 / 独立A第5轮41/41通过，无P1/P2，准备恢复T07a并依序推进T07b～e（2026-10-29）**。固定规划a59fb98，明确单值早退契约、固定标记/隔离与T07钩子接线所有权；不改需求/业务/安全。代码仍T06检查点，20及后续场景尚未跑。
-> **先读 §19（最新批准）**，§18为已处理的文档阻塞历史。RL-01 OPEN、R5-02与R6跟踪保留；R5-01/03文字对齐已关闭，不代表T08实现。先同步固定实施输入再启动；无push/PR/merge/Gate2。
+> **当前阶段：T07b预检发现两条过渡期null断言冲突；拆批让T07a按A5先实施，b～e待窄兼容Plan/A（2026-10-29）**。新基线42unit/19场景310通过，无T07源码，证据§13；Plan6/A5的a批准仍有效。20及29场景未跑。
+> **先读 §20（最新拆批）**，§19为A5批准。不得按场景伪造null、放宽断言或跳任务；RL/R5/R6边界保持，无push/PR/merge/Gate2。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -378,4 +378,11 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 专用 `expectEarlyExit:'test-events-invalid'` 仅接受code4+固定行首标记、close后判定，paths/隔离仍先校验；布尔标记+最多20字符carry，不保存rawstderr。正常launch/control/default时限/cleanup不改。FAI_CHECK_PRODUCER只用于Node runner单测夹具进程边界，**真实events-invalid必须记录无两项单测环境变量的原始命令**。T07b/c只开放既有snapshot/真实MenuItem.click/生产quit入口/实际dialog字段接线，e不改hook；无新命令/菜单模拟/业务假状态。
 - A首选 **anthropic/claude-fable-5-1** 官方，ACTIVITY_REVIEW_OK探活成功；新独立session **01a187cd-186f-746e-995d-2f315089cdb5**，树 `D:/2030/Futures-AI-desktop-activity-checklist` / `review/desktop-shell-activity-harness`，HEAD固定a59fb98，真实diff c1b4070..HEAD仅4文档+179/-22。只写Checklist/不跑测试；18保护输入SHA前后全一致，模型元数据实核。
 - **A5：41/41、无P1/P2、R6-01～05五P3；允许T07a恢复与b/c/e钩子既定所有权**，A独立判断无需额外工程批准/ADR/Gate1（不替Walter授权）。R6-01control拒绝分支可选第6单测未纳入；R6-02替身变量蓄意误用残余须真实命令证明、不加未经批准的加固；R6-03check.js仅a可改、b/c/e裸写均指index登记；R6-04app.exit4未ready真实效果待测、失败STOP；R6-05close判断优先级异常/隔离→缺paths→control→code→marker。
-- 旧41不自动批准新修订，本轮已新审。下一步串行同步批准资料并固定实施HEAD，再由同首选Astra按a→b→c→d→e单writer推进，止于T08前；测试夹具不算真实作业/drain/系统托盘toast观感。当前无T07代码/本轮产品测试，旧42/310仅前序；RL-01/RL02等义务、R5-02/PYZ/UTF8/507GUI/人工外部证据/Gate2不变。
+- 旧41不自动批准新修订，本轮已新审。以上为A5批准时点；之后输入7c61681已跑新基线、在T07b预检发现另一旧断言兼容缺口，见§20，非A5/模型失败。
+
+## 20. 2026-10-29 T07b旧null断言兼容STOP；a独立推进
+
+- 首选Astra新session **01a187d9-b23d-712f-8297-3106886f9e49**（openai/gpt-6-astra元数据实核），输入 **7c61681e92448bd566c420470cf0cb58db5fea2e**；新基线npm ci成功、42unit/0skip、默认19场景310/310（98.741s），真实命令清除了FAI_CHECK_E2E_DIR/FAI_CHECK_PRODUCER。19根删除/CIM所属进程监听服务0/ACL通过；辅助temp枚举第一次只截TEMP导致0根exit1，修正后19/0，没有重跑产品测试。
+- 预检发现harness-selftest:26与crash-restart:32仍断言tray/activity=[null,null]；b必须回报真实对象，前者只读、后者e只许追加且原断言保留，不能同时成立。AST遵整批STOP未写代码，仅追加证据§13；a～e/20/29场景均未完成，未用假null/按场景创建托盘迁就旧断言。
+- 协调者改为**a单项批次按A5既定权限继续，止于b前**：a不接main/tray，现有null断言仍有效。并行Plan者只在独立文档工作树对上述两处过渡断言及b/e文件所有权最小修补，Analyze/A后才可接b～e。两writer不同树/互不写同文件；共享进度由协调串行集成，不以拆批跳任务或越过新审批。
+- 当前无T07源码；原始新基线 `C:/Users/iswal/AppData/Local/Temp/fai-t07-01a187d9-7exsC2/`，run同§19。无模型回退/配置变化，RL-01仍OPEN、R5-02/R6/UTF8/PYZ/507GUI及人工外部/Gate2边界不变。

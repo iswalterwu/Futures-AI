@@ -21,7 +21,7 @@ specs/<feature>/
 |---|---|---|---|---|
 | data-layer | in-progress | 无 | 2026-10-27 | 已合并（PR #1/#2）；v23（D-013 库存收敛 + D-014 EIA 双路径）Gate 1 已批准 → Plan/Implement |
 | settings | in-progress（核心完成，GUI blocked） | desktop-shell、data-layer v23 | 2026-10-28 | 核心 + CLI 完成并经 A 单审通过；GUI 类 AC 由 T-08 随 desktop-shell 承载（Walter 批准分阶段交付） |
-| desktop-shell | in-progress（Plan6/Analyze9/A5通过，准备T07a～e） | frontend-workbench（完整前端集成）、settings、data-layer v23 | 2026-10-29 | 固定规划a59fb98经独立A5新审41/41、无P1/P2、5P3，明确早退code4/安全标记runner约定与既有T07钩子最小所有权，R5-01/03文本对齐关闭；待同步原树固定输入后Astra顺序a～e、止于T08前，无T07代码/20及后续场景证据。旧42/310仅前序，入口HANDOFF.md §19，RL/R5-02/R6/人工外部/Gate2保留，无push/PR/merge |
+| desktop-shell | in-progress（a按A5拆批推进，b～e待两旧null断言兼容Plan/A） | frontend-workbench（完整前端集成）、settings、data-layer v23 | 2026-10-29 | 输入7c61681新基线42unit/19场景310通过，b预检发现harness-selftest/crash-restart仍要求null而b需真实对象；未写源码/目标20或29，证据§13。a按Plan6/A5独立继续，文档者另树最小兼容Analyze/A后才b～e，不伪造或弱化；入口HANDOFF.md §20，RL/R5/R6/人工外部/Gate2边界不变，无push/PR/merge |
 | frontend-workbench | in-progress（v1 实施中；v2 Clarify 草稿待 Gate 1） | 无后端依赖；v2 集成 AC 依赖 workbench-interaction 前端 | 2026-10-28 | v1 地基在 feat/frontend-workbench（基线 fdaa7d8）；v2 草稿位于隔离 worktree D:/2030/Futures-AI-workbench-v2（spec/frontend-workbench-v2）：九项导航/固定作业轨道/全局投放/对话上下文，52 AC、Q-023～Q-030 待 Walter 批准；未进入 v2 Plan |
 | workbench-interaction | in-progress（Checklist A 独立审核中） | frontend-workbench v1 地基；壳集成待 v2 批准；api 仅后续真实集成 | 2026-10-28 | Phase 1.5 协作交付骨架；Spec Gate 1 已批准（9 需求/46 AC），Plan 完成。审阅包 checklist-review-request.md；bridge 实测额度受限，已启动 claude-fable-5-1 via anthropic 新会话；未取得结论，不进入 Tasks / Implement |
 

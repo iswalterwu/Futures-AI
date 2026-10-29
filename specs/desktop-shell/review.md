@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前阶段：**Plan6 / Analyze9 / 独立A第5轮41/41通过，无P1/P2，准备T07a～e**。固定规划a59fb98明确早退code4/安全标记及最小runner/钩子接线所有权，无需求/安全放宽；R5-01/03文字对齐关闭，R5-02/R6/RL保留。代码尚无T07实现，20及后续场景未跑；非代码Review/Converge/Gate2。
+> 当前阶段：**T07b预检遇两条旧null断言兼容STOP；a按Plan6/A5拆批先做，b～e待窄Plan/A**。输入7c61681新基线42unit/19场景310通过（非T07完成），证据§13仅追加；无T07源码/20或29场景证据。RL/R5-02/R6/人工外部/Gate2不变。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -278,7 +278,13 @@ run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-routing-2nBCT4xX/`。以�
 - 四规划文档集成 **a59fb98a5d627b6347c7106287739f7791a756f5**，Plan6/Tasks/Analyze9/newrequest共+179/-22，仅现条目替换。41任务/62h，a2h；单值早退契约code4+固定标记、close后判定、固定20字符carry/布尔观察、正常握手/隔离/时限/cleanup不变。Node producer替身只为运行器负例、不证明产品；真实events-invalid仍Electron。b/c钩子仅既有状态/真菜单click/真退出回调/dialog字段接线，e不改hook；无Spec/AC/业务/后端/生命周期/安全/依赖变化。
 - A5首选 **anthropic/claude-fable-5-1 via anthropic**，ACTIVITY_REVIEW_OK探活成功，新session **01a187cd-186f-746e-995d-2f315089cdb5**（元数据实核）；独立树 `D:/2030/Futures-AI-desktop-activity-checklist` / `review/desktop-shell-activity-harness`，固定HEADa59fb98审真实c1b4070..HEADdiff，只改Checklist，不跑测试/改源码。18输入SHA前后全部一致；**41/41、无P1/P2、5P3，T07a恢复及b/c/e接线前置满足**。A独立判断无需新增工程批准/ADR/Gate1，不替Walter授权。
 - R5-01、R5-03按A4要求完成文本对齐并由A5关闭；R5-02未闭。新R6：01control拒绝可选第6unit未做；02替身变量蓄意误用残余，Handoff附真实events-invalid命令、不自行一行加固；03b/c/e的check.js裸写只指index；04app.exit4未ready运行效果必须真测否则STOP；05close判断顺序异常/隔离→缺paths→control→code→marker。AN9-03超时/control分支无unit、估时/运行时风险仍记录，不冒充已测。
-- 下一步在无writer边界同步批准文档/Checklist到原实施树固定新HEAD，再由Astra依序T07a～e，止于T08前；当前无T07源码/产品测试，无20及后续场景通过证据。RL01及RL02正负对照/UTF8/PYZ/507GUI与人工外部/Gate2义务不变。
+- 上述为A5批准时点，后续实际输入7c61681/新基线与兼容STOP如下；RL01及RL02正负对照/UTF8/PYZ/507GUI与人工外部/Gate2义务不变。
+
+### T07新基线通过，b旧null断言冲突；拆批a先实施
+
+- 首选Implement=openai/gpt-6-astra via openai，新session **01a187d9-b23d-712f-8297-3106886f9e49**（元数据实核），输入7c61681，无回退/配置改变。npm ci成功、42unit/0skip、真实默认19场景310/310（98.741s）；原始命令显式env-u两单测变量，运行时33.4.11/20.18.3/130.0.6723.191。19根删除、所属CIM进程/监听/服务0、ACL通过；辅助TEMP枚举第一次exit1/0根已修成19根/0残留，未重跑测试。
+- `harness-selftest.js:26` / `crash-restart.js:32` 精确null二元断言与T07b真实snapshot矛盾，前者只读、后者e只许追加，故整体预检STOP；不是产品失败/模型错误。唯一写入证据§13；a～e源码与目标20/29均未做，不隐藏状态求绿。
+- 协调拆分：Astra仅a按A5继续，b不接线前两旧断言仍合法；另由Opus在独立文档树最小说明两处替换/所有权并Analyze/A，不能提前接b。不同树/文件职责隔离，共享文件协调串行集成，不是需求改动/跳任务。原始新基线`C:/Users/iswal/AppData/Local/Temp/fai-t07-01a187d9-7exsC2/`。RL/R5/R6与人工/外部/Gate2义务不变，无push/PR/merge。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 
