@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **当前状态：T07a预检因运行器提前退出/安全标记观察契约缺口停止，安排窄Plan修补（2026-10-29）**。未写T07源码/未跑npm或产品测试，唯一实施输出为证据§12。T06b/c/d最后42unit/19场景310为前序检查点，不能当作本轮复验；T07b未开始。
-> **先读 §18（最新停止点）**与证据§12，再看§17。RL-01 OPEN及R5义务保留；不得绕过ctx.launch/路径隔离，先固定规划/Analyze/A复查再继续，无push/PR/merge/Gate2。
+> **当前阶段：T07b预检发现两条过渡期null断言冲突；拆批让T07a按A5先实施，b～e待窄兼容Plan/A（2026-10-29）**。新基线42unit/19场景310通过，无T07源码，证据§13；Plan6/A5的a批准仍有效。20及29场景未跑。
+> **先读 §20（最新拆批）**，§19为A5批准。不得按场景伪造null、放宽断言或跳任务；RL/R5/R6边界保持，无push/PR/merge/Gate2。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -369,4 +369,20 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 静态预检发现：ctx.launch只接受paths+control就绪，事件文件入口非法提前exit4会直接抛错、不返回实例；stderr只捕获异常类型，无TEST_EVENTS_INVALID安全标记观察接口。Tasks登记约定未给runner本体/旧unit/fixture写入权，实施者遵STOP不绕过ctx.launch、second语义或首paths隔离，不写伪造输出/延迟失败。
 - **T07a BLOCKED/未实施，T07b未开始**；无npm ci、unit或Electron，不能说本轮0fail或沿用42/310为复验。唯一输出为implementation-evidence §12，247输入指纹中246不变/仅证据变化；git diff --check通过。辅助路径误读已保留；未创建产品进程/场景根/端口/服务/ACL修改，不是已跑场景的清理证明。
 - 下一步由首选Opus窄修Plan/Tasks：明确批准早退观察/固定安全标记与对应runner单测/fixture所有权，Analyze追加后固定提交交独立A。T07后续hook接线所有权如有同类已观测缺口一并由规划者核查，不代写代码、不新增高权限/控制协议或放宽测试。Spec/AC/业务/后端/生命周期/安全不变；A若需工程批准则停报Walter。
-- run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-activity-HmP6S6Ej/`；外置预检 `C:/Users/iswal/AppData/Local/Temp/fai-activity-01a187b3-oMCjoJ/`。RL/PYZ/UTF8、R5-03(T08e前补前提依赖)、人工/外部证据与Gate2边界不变。
+- run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-activity-HmP6S6Ej/`；外置预检 `C:/Users/iswal/AppData/Local/Temp/fai-activity-01a187b3-oMCjoJ/`。以上为静态停止时点，修订6/A5已解决文档前置见§19；RL/PYZ/UTF8/人工/外部与Gate2边界不变。
+
+## 19. 2026-10-29 Plan6 / Analyze9 / A第5轮批准：准备T07a～e
+
+- Plan首选 **anthropic/claude-opus-5-5** 官方，本轮ACTIVITY_PLAN_OK真实探活成功；同窗口bridge七日额度已知耗尽不重复。新session **01a187bb-94f0-739b-a564-841bc4ccb516**（元数据实核），独立树 `D:/2030/Futures-AI-desktop-activity-plan` / `plan/desktop-shell-activity-harness`，输入c1b4070；只写4规划文档，无源码/测试/配置改动。失败的格式错误edit调用未改文件，原样记录；未换模型。
+- 固定规划提交 **a59fb98a5d627b6347c7106287739f7791a756f5**：Plan6新增§8.4、Tasks窄技术/所有权对齐、Analyze追加9、新activity-harness-review-request。任务仍41、62h（a=2h），无Spec/AC/后端/业务/生命周期策略/安全/依赖变更；R5-01验证括注和R5-03(T08e依赖T06d+真实档案/点击前提)按A4要求完成。
+- 专用 `expectEarlyExit:'test-events-invalid'` 仅接受code4+固定行首标记、close后判定，paths/隔离仍先校验；布尔标记+最多20字符carry，不保存rawstderr。正常launch/control/default时限/cleanup不改。FAI_CHECK_PRODUCER只用于Node runner单测夹具进程边界，**真实events-invalid必须记录无两项单测环境变量的原始命令**。T07b/c只开放既有snapshot/真实MenuItem.click/生产quit入口/实际dialog字段接线，e不改hook；无新命令/菜单模拟/业务假状态。
+- A首选 **anthropic/claude-fable-5-1** 官方，ACTIVITY_REVIEW_OK探活成功；新独立session **01a187cd-186f-746e-995d-2f315089cdb5**，树 `D:/2030/Futures-AI-desktop-activity-checklist` / `review/desktop-shell-activity-harness`，HEAD固定a59fb98，真实diff c1b4070..HEAD仅4文档+179/-22。只写Checklist/不跑测试；18保护输入SHA前后全一致，模型元数据实核。
+- **A5：41/41、无P1/P2、R6-01～05五P3；允许T07a恢复与b/c/e钩子既定所有权**，A独立判断无需额外工程批准/ADR/Gate1（不替Walter授权）。R6-01control拒绝分支可选第6单测未纳入；R6-02替身变量蓄意误用残余须真实命令证明、不加未经批准的加固；R6-03check.js仅a可改、b/c/e裸写均指index登记；R6-04app.exit4未ready真实效果待测、失败STOP；R6-05close判断优先级异常/隔离→缺paths→control→code→marker。
+- 旧41不自动批准新修订，本轮已新审。以上为A5批准时点；之后输入7c61681已跑新基线、在T07b预检发现另一旧断言兼容缺口，见§20，非A5/模型失败。
+
+## 20. 2026-10-29 T07b旧null断言兼容STOP；a独立推进
+
+- 首选Astra新session **01a187d9-b23d-712f-8297-3106886f9e49**（openai/gpt-6-astra元数据实核），输入 **7c61681e92448bd566c420470cf0cb58db5fea2e**；新基线npm ci成功、42unit/0skip、默认19场景310/310（98.741s），真实命令清除了FAI_CHECK_E2E_DIR/FAI_CHECK_PRODUCER。19根删除/CIM所属进程监听服务0/ACL通过；辅助temp枚举第一次只截TEMP导致0根exit1，修正后19/0，没有重跑产品测试。
+- 预检发现harness-selftest:26与crash-restart:32仍断言tray/activity=[null,null]；b必须回报真实对象，前者只读、后者e只许追加且原断言保留，不能同时成立。AST遵整批STOP未写代码，仅追加证据§13；a～e/20/29场景均未完成，未用假null/按场景创建托盘迁就旧断言。
+- 协调者改为**a单项批次按A5既定权限继续，止于b前**：a不接main/tray，现有null断言仍有效。并行Plan者只在独立文档工作树对上述两处过渡断言及b/e文件所有权最小修补，Analyze/A后才可接b～e。两writer不同树/互不写同文件；共享进度由协调串行集成，不以拆批跳任务或越过新审批。
+- 当前无T07源码；原始新基线 `C:/Users/iswal/AppData/Local/Temp/fai-t07-01a187d9-7exsC2/`，run同§19。无模型回退/配置变化，RL-01仍OPEN、R5-02/R6/UTF8/PYZ/507GUI及人工外部/Gate2边界不变。

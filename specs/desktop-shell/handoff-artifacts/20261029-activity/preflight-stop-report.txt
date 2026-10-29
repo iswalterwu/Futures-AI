@@ -1,0 +1,25 @@
+**T-07a 已按停止规则标为 BLOCKED，未写实现；T-07b NOT STARTED。**
+
+- 模型：`openai/gpt-6-astra via openai`
+- Session：`01a187b3-5e6b-76b8-b88a-1209f19e5f0a`
+- HEAD：`dad9352cb5222611b8adff5e66060d528315c64c`
+- Checklist：**41 checked / 0 unchecked**，未修改。
+
+### 阻塞原因
+静态核对发现，要求的 `events-invalid` 验收不能由当前只读运行器正常承载：
+1. `shell/check.js:160–161`：`ctx.launch()` 必须等到 `paths + control`；提前退出 4 会抛错，不返回实例。
+2. `shell/check.js:153–156`：stderr 仅提取异常类型，没有 `TEST_EVENTS_INVALID` 安全标记的观察接口。
+
+需要 Plan/Tasks 作者明确最小运行器契约、相关测试及写入所有权，经 Analyze/A 复查后继续。本轮未绕过 `ctx.launch()`、伪造输出或修改旧断言。
+
+### 实际结果与改动
+- **基线及最终产品测试均未运行**：预检即触发 STOP；未执行 npm ci/unit/Electron，不把历史 42/310 当成本轮结果。
+- 唯一改动：`specs/desktop-shell/implementation-evidence.md` **追加 §12**。
+- 247 项输入指纹中，**246 项不变，仅证据追加变化**；`git diff --check` 通过，无新源码文件。
+- 辅助错误：首次枚举误用 feature 内 HANDOFF 路径，已改读根目录并记录。
+- 未创建产品进程、监听、服务、scene roots 或 ACL 修改；无服务端口保留。未提交、推送或合并。
+
+证据目录：
+`C:/Users/iswal/AppData/Local/Temp/fai-activity-01a187b3-oMCjoJ/`
+
+RL-01 仍为 **P3 OPEN/UNKNOWN、非阻塞**；其他既有义务未改变。

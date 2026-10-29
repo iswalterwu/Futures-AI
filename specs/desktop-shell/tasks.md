@@ -6,6 +6,7 @@
 > - **输入**：冻结 `spec.md` v1（Gate 1 2026-10-28）+ `plan.md` 修订 3 + A 的初轮 `checklist.md`（只读）。固定源码基线 `8ba1b6a304f916e3d57ebdd6b89790b75a15f14c`，规划文件为未提交工作副本。
 > - **修订 4（2026-10-28，T-04b 构建收集源头修正）**：作者同上（`anthropic/claude-opus-5-5` via anthropic，本轮官方通道最小真实调用成功；bridge 同窗口已知耗尽，不重复探活）。输入 = 固定提交 `1275ae2` + `plan.md` 修订 4（§0、§7.5）。只改 T-04b 的上下文、修改范围、估时、完成标准、验证与执行细则，以及执行顺序表第 8 行和合计；任务数仍为 41，其他任务、依赖与历史计数不变。A 对修订 3 的 41/41 不自动覆盖修订 4，T-04b 的修订 4 部分须等 A 独立复查后才能实施。
 > - **修订 5（2026-10-29，T-06c/T-06d 设置导航与测试兼容）**：作者同上（`anthropic/claude-opus-5-5` via anthropic；bridge 同窗口已知耗尽不重复探活，官方探活 `ROUTING_PLAN_OK`；同一 Plan 阶段收尾，非回退）。输入 = 固定提交 `4b0c3c5`（代码同 `d77ce69`）+ `plan.md` 修订 5（§0、§3.3、§4.1、§6.1、§8.3）。只改 T-06c / T-06d 的上下文、修改范围、完成标准、验证与执行细则，T-06c 估时 1.5h → 2h，执行顺序表第 22/23 行与合计（61h → 61.5h）；任务数仍 41，依赖与顺序不变，spec/AC 不变。A 对修订 4 的 41/41 不自动覆盖修订 5；T-06c/d 须等 A 按 `settings-routing-review-request.md` 独立复查后才能实施。
+> - **修订 6（2026-10-29，T-07a 运行器提前退出观察契约 + T-07b/c/e 钩子接线所有权）**：作者 `anthropic/claude-opus-5-5` via anthropic，会话 `01a187bb-94f0-739b-a564-841bc4ccb516`（bridge 同窗口已知耗尽不重复探活，官方探活 `ACTIVITY_PLAN_OK`；非回退）。输入 = 固定提交 `c1b4070`（主树快照，含证据 §12 的 T-07a 停止记录）+ `plan.md` 修订 6（§0、§3.5、§8.3、§8.4）。只改：T-07a 的上下文、修改范围、完成标准、验证与执行细则（估时 1.5h → 2h），T-07b/c/e 的修改范围与执行细则（钩子接线所有权，估时不变），T-06c 验证括注（R5-01），T-08e 依赖与场景前提（R5-03），执行顺序表第 24/33 行与合计（61.5h → 62h）；任务数仍 41，其他依赖与顺序不变，spec/AC 不变。T-07a 中 `shell/check.js` 的运行器逻辑写入是页首“登记约定”的**显式例外**，只限 plan §8.4 第 1、2 段。A 对修订 5 的 41/41 不自动覆盖修订 6；T-07a 须等 A 按 `activity-harness-review-request.md` 独立复查后才能恢复。
 > - **执行前置条件（硬）**：Implement 开始前重新读取 `checklist.md` 全文，**全部复选框均已由 A 勾选**才可开始。本文件生成时 A 初轮为 30/41、Tasks/Analyze 对齐项待 A 复查；**当前审批状态以 `checklist.md` / `review.md` 为准**，未全部勾选前 Implement 不得开始。
 > - **执行者**：全部实施任务（含纠偏任务）由 `openai/gpt-6-astra` 执行；仅在调用失败（额度/鉴权/持续错误）时按 AGENTS §6 回退 `deepseek/deepseek-flash`，测试变红不是回退理由。**2026-10-28 17:25 UTC 用户明确恢复；原 Astra 会话从 `782aa20` 完成后端复验（最终 451 passed / 5 online skips），真实构建成功，但 T-04b 冒烟因 `_internal/pyarrow/tests` 黑名单命中而 blocked（11/12）。按冻结规则停止，未启动 T-05；实际进度见本文件末尾、`review.md` 与根目录 `HANDOFF.md`，不能将后端子句通过等同于最终 AC 验收。**
 > - **最新后端检查点（2026-10-28）**：T-04b 修订 4 已由 Astra 从 `3a9ec35` 完成七步验证并交协调者保存为实施提交 `c1e33e0`：聚焦 3 passed、全量 454 passed / 5 online skips、干净重建成功、未修改冒烟 12/12、文件路径仅少目标测试资产 17（新增/其他移除均 0）。黑名单未改；详见实施进度与 `implementation-evidence.md` §6，不代表全 feature/GUI/外部 AC 或 Gate 2 完成。当时停在 T-05b 之前，当前批次见下一行。
@@ -15,6 +16,8 @@
 > - **最新设置检查点（2026-10-29）**：Astra从c33fa9d完成T-06b并保存d77ce69：42unit/0skip、16场景236/236，真实file设置XHR未触发CORS。T-06c/d因两个旧场景兼容与菜单驱动方案缺口暂停；先Plan/Tasks/Analyze/A窄修补确认，不隐匿API/假菜单或改生产路由取绿，不进入T-07；RL-01仍OPEN非阻塞。
 > - **修订5最新实施检查点（2026-10-29）**：Plan5/Analyze8固定38c482c与A第4轮41/41先通过；Astra以be6efe8实施T06c/d，保存209262e，最后源码42unit/19场景310/310、0fail/skip。固定导航/真实菜单驱动/两旧场景兼容与核心指引自动化通过，尚无人工M13/14/15；下一T07a未启动，仍18任务及外部验收。原RL条件/R5-02与R5-03的T08e依赖前提补齐义务不得漏过。
 > - **T07a最新停止点（2026-10-29）**：Astra从dad9352静态预检后STOP：ctx.launch不返回earlyexit4实例、stderr无固定安全标记观察；未获runner/旧unit/fixture写入权，未绕过launch或隔离。无T07代码/npm/产品测试，证据§12仅追加；先窄Plan/Tasks/Analyze/A再继续，T07b未开始，原42/310仅前序证据。
+> - **修订6最新质量批准（2026-10-29）**：Plan6/Analyze9固定a59fb98后独立A5新审41/41、无P1/P2、R6-01～05五P3，允许T07a恢复与b/c/e既有钩子接线；R5-01/03文字对齐由A关闭，R5-02保留。待同步固定新实施输入后按a→b→c→d→e推进、止于T08前；20及后续场景未跑，旧42/310仅前序证据，RL与人工/外部/Gate2边界不变。
+> - **最新拆批（2026-10-29）**：输入7c61681新基线42unit/19场景310通过；b预检发现harness-selftest/crash-restart的临时null断言与真实snapshot矛盾，整批未写源码，仅证据§13。协调改派a单项按A5实施，止于b；文档者独立树补两处最小兼容并Analyze/A后再b～e，不伪造null/弱化旧断言，20/29未跑。
 > - **工作树**：一个 Astra 实施工作树 / 分支串行完成全部任务；`shell/main.js`、`preload.js`、`renderer/onboarding.*`、`package.json`/`package-lock.json`、`backend/app/*` 是共享文件，不安排并行写入者。
 > - **登记约定**：各任务修改范围中的"`shell/check.js`（登记）"均指在登记表 `shell/test/e2e/index.js` 中加入场景名（plan §8.3），不改运行器逻辑。
 - **命令状态**：下列所有"待新增"的测试文件、测试名、e2e 场景、npm 脚本在 Implement 前**都不存在、都未运行**；本文件不表示任何验证已通过。测试名为约定名，实施时须按此命名，以便验证输出能逐条对上。
@@ -62,7 +65,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 | 21 | T-06b 内置页纠偏 | 1.5h | T-03b、T-05j |
 | 22 | T-06c 引导路由与设置入口（修订 5：`routeToMain`/`openMain`/应用菜单/`app-menu-click`/两旧场景兼容） | 2h | T-06b、T-05l |
 | 23 | T-06d 内置页注册指引（缺项先引导；修订 5 细则） | 1.5h | T-03c、T-06c |
-| 24 | T-07a 活动归约器 + 事件夹具 | 1.5h | T-05e |
+| 24 | T-07a 活动归约器 + 事件夹具 + 运行器提前退出约定（修订 6） | 2h | T-05e |
 | 25 | T-07b 托盘 / 关窗行为 / 托盘菜单 | 1.5h | T-07a、T-06c |
 | 26 | T-07c 退出守卫 | 1.5h | T-07b |
 | 27 | T-07d 设置"应用"区（偏好与数据目录） | 2h | T-06c |
@@ -71,7 +74,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 | 30 | T-08b 日志接线与崩溃现场 | 1.5h | T-08a、T-05h、T-07d |
 | 31 | T-08c 诊断包模块 | 1.5h | T-08a |
 | 32 | T-08d 诊断导出入口 + 隐私 e2e | 2h | T-08b、T-08c、T-07b、T-05j、T-06d |
-| 33 | T-08e 渲染层安全 | 1.5h | T-05l、T-06b |
+| 33 | T-08e 渲染层安全 | 1.5h | T-05l、T-06b、T-06d |
 | 34 | T-08f 磁盘满界面路径 | 1h | T-08b、T-07d、T-03b |
 | 35 | T-09a 更新模块 | 1.5h | T-05b |
 | 36 | T-09b 关于页 | 1h | T-07d |
@@ -82,7 +85,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 | 41 | T-10d 打包产物 e2e | 1h | T-10c |
 | — | T-M1、T-M2a～c 人工验收批次（非代码任务） | 各 1.5–2h | T-10d |
 
-合计 41 个实施任务、约 **61.5 h**（修订 5：T-06c 1.5h → 2h；修订 4 时为 61h：T-04b 1.5h → 2h；修订 3 时为 60.5h）；另 4 个人工验收批次（约 6–8 h，执行人为人，不是 Implement 模型）。
+合计 41 个实施任务、约 **62 h**（修订 6：T-07a 1.5h → 2h；修订 5 时为 61.5h：T-06c 1.5h → 2h；修订 4 时为 61h：T-04b 1.5h → 2h；修订 3 时为 60.5h）；另 4 个人工验收批次（约 6–8 h，执行人为人，不是 Implement 模型）。
 
 ---
 
@@ -448,10 +451,10 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
   5. AC-007-3（保持）：`frontend-missing` 先用真实核心 `set_onboard_state(root, completed=True)` 再首启，原有缺失页 / 打开日志 / 补齐后重试成功 / 重载不重启后端 / `getBackend` 当前端口 / 后端缺失分支 / 清理断言**全部保留不改**。
 - **验证**（待新增；cwd `shell`，最后源码上）：
   1. → `npm run check -- onboarding`：`PASS onboarding › 首次进入引导`、`› 保存后进入设置区`、`› 真实核心 completed=true skipped=false`、`› 第二次运行进入设置页`。
-  2. → `npm run check -- onboarding-skip`：`PASS onboarding-skip › 有前端时仍先进入引导`、`› 跳过后进入主界面`、`› 菜单设置… 打开设置页`、`› navigation 记录 app-menu`、`› 档案可保存`、`› 返回主界面回到前端`、`› 真实核心 skipped=true`、`› 未知菜单项 400`；人工 M-13（T-M2b）。
-  3. → `npm run check -- startup-visible`：`PASS startup-visible › 仅批准的 preload 成员`、`› 当前必需成员齐全`、`› 成员类型符合契约`、`› 不暴露高权限对象或任意导航`，其余原断言名照旧通过。
-  4. → `npm run check -- frontend-missing settings-sources ui-masking mock`：`PASS frontend-missing › 真实核心设置引导完成` + 全部原断言名；另三场景原断言全部通过（未改文件）。
-  5. → `npm ci`；`npm run test:unit`（现有单测全部通过、0 skip）；无参数 `npm run check`（**18** 个登记场景、0 failures；T-06d 后为 19）。
+  2. （完成标准 2，含完成标准 3）→ `npm run check -- onboarding-skip`：`PASS onboarding-skip › 有前端时仍先进入引导`、`› 跳过后进入主界面`、`› 菜单设置… 打开设置页`、`› navigation 记录 app-menu`、`› 档案可保存`、`› 返回主界面回到前端`、`› 真实核心 skipped=true`、`› 未知菜单项 400`；人工 M-13（T-M2b）。
+  3. （完成标准 4）→ `npm run check -- startup-visible`：`PASS startup-visible › 仅批准的 preload 成员`、`› 当前必需成员齐全`、`› 成员类型符合契约`、`› 不暴露高权限对象或任意导航`，其余原断言名照旧通过。
+  4. （完成标准 5）→ `npm run check -- frontend-missing settings-sources ui-masking mock`：`PASS frontend-missing › 真实核心设置引导完成` + 全部原断言名；另三场景原断言全部通过（未改文件）。
+  5. （回归，无单独完成标准）→ `npm ci`；`npm run test:unit`（现有单测全部通过、0 skip）；无参数 `npm run check`（**18** 个登记场景、0 failures；T-06d 后为 19）。
 - **修订 5 执行细则**：
   - 顺序：main/preload/菜单/路由 → test-hooks 命令 → onboarding.* 导航 → 两旧场景兼容 → 两新场景与登记 → 验证 → 证据追加。
   - 静态核对（Converge 复核）：`rg -n "location\.reload" shell/renderer` 无命中；`git diff --stat 4b0c3c5 -- shell` 只含修改范围内文件；`rg -n "app-menu-click" shell/src/test-hooks.js` 仅一个分支且以 `=== 'settings'` 精确比较；`git status --short --ignored shell` 新场景不被忽略。
@@ -475,24 +478,33 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
   3. → 同上：`PASS registration-guide › 点击前指引区为空`、`› 档案表单邮箱为遮蔽值`、`› 指引区不在表单内`；人工 M-14、M-15（T-M2b）。
   4. → 同上（修订 5）：`PASS registration-guide › 缺项焦点在第一个缺项输入框`、`› 离开后指引清空`、`› 未写入 Web 存储`；随后 cwd `shell`：`npm ci`；`npm run test:unit`（0 skip）；`npm run check -- startup-visible frontend-missing onboarding onboarding-skip registration-guide settings-sources ui-masking`；最终无参数 `npm run check`（**19** 个登记场景、0 failures）；静态 `rg -n "renderPrefill|REGISTER_URL|location\.reload" shell/renderer` 无命中。
 
-### T-07a 活动归约器 + 事件夹具来源
+### T-07a 活动归约器 + 事件夹具来源 + 运行器提前退出约定（修订 6）
 
-- **上下文**：托盘/通知/退出守卫的唯一状态来源。plan §3.5。依赖：T-05e（钩子加载夹具）。
-- **修改范围**：新增 `shell/src/activity.js`、`shell/test/unit/activity.test.js`、`shell/test/e2e/events-invalid.js`；`shell/src/test-hooks.js`（`FAI_TEST_EVENTS` 文件加载，非法 → 退出码 4）；`shell/check.js`。
-- **估时**：1.5h
+- **上下文**：托盘/通知/退出守卫的唯一状态来源。plan §3.5。依赖：T-05e（钩子加载夹具）。**修订 6**：首次实施在写代码前静态预检停止（`implementation-evidence.md` §12）——`ctx.launch()` 对提前退出直接抛错、不返回实例，stderr 没有安全标记观察；而在 `install()` 入口正确拒绝非法事件文件必然在控制通道之前以退出码 4 结束。设计权威：plan §3.5（标记格式与校验时点）、§8.4 第 1～5 段。先实现运行器约定并用 Node 单测锁定正负对照，再写归约器、钩子校验与真实 Electron 场景。
+- **实施前置（修订 6）**：A 按 `activity-harness-review-request.md` 的独立复查已记入 `checklist.md`，且全部复选框为勾选状态。
+- **修改范围**（修订 6，唯一可写集合）：新增 `shell/src/activity.js`、`shell/test/unit/activity.test.js`、`shell/test/e2e/events-invalid.js`、`shell/test/fixtures/runner/early-exit/index.js`、`shell/test/fixtures/runner/early-exit/early-exit.js`、`shell/test/fixtures/runner/producers/early-exit.js`；`shell/src/test-hooks.js`（**只**在 `paths` 之后校验 `FAI_TEST_EVENTS`：非法 → 固定枚举原因的标记行 + `app.exit(4)`，合法 → 返回值加只读 `testEvents`；plan §3.5、§8.4 第 4 段）；`shell/check.js`（**运行器逻辑，页首“登记约定”的显式例外**：只实现 plan §8.4 第 1 段 `expectEarlyExit:'test-events-invalid'` 与第 2 段 `FAI_CHECK_PRODUCER`）；`shell/test/unit/check-runner.test.js`（**只追加** plan §8.4 第 3 段 5 个用例，原用例与辅助函数不改）；`shell/test/e2e/index.js`（追加登记 `events-invalid`）；`specs/desktop-shell/implementation-evidence.md`（只追加）。只读：`shell/main.js`、`preload.js`、`renderer/**`、`src/{backend,paths,prefs}.js`、其余单测与夹具（含 `fixtures/runner/{ok,mismatch,missing-tool,unknown-marker,zero-assert}`、`fake_backend.py`、`frontend-stub`）、19 个已登记场景、`package.json` / `package-lock.json`、`backend/**`、全部规划审核文档与全局配置。
+- **估时**：2h（修订 6：原 1.5h + 运行器约定、5 个运行器用例与夹具；偏紧，明显超出按停止规则报告）
 - **完成标准**：
   1. AC-003-4（逻辑）：等待退出时排队项 → `cancelled_on_exit`，新到 `job.queued/started` → `rejected_exiting`，均出现在副作用（日志/提示）中。
   2. AC-006-2（逻辑）、WO-06（最近 AC：AC-006-2）：`stage_completed`/`verification.pending`/`intervention.conflict`/`backend.error` 产生对应通知种类；托盘状态 error > running > idle；`notifications=false` 时不产生通知副作用但托盘状态照常（AC-006-3 逻辑）。
-  3. AC-006-2、AC-003-4（其 e2e 的夹具前提；不证明真实作业）：`FAI_TEST_EVENTS` 只接受事件数组文件路径（plan §3.5）；非法 → 退出码 4 + `TEST_EVENTS_INVALID`。
+  3. AC-006-2、AC-003-4（其 e2e 的夹具前提；不证明真实作业）：`FAI_TEST_EVENTS` 只接受事件数组文件路径（plan §3.5）；非法 → 退出码 4 + `TEST_EVENTS_INVALID`。修订 6：由真实 Electron `events-invalid` 经运行器提前退出约定证明；校验发生在控制通道之前，标记原因只取固定枚举，不含文件名、路径或事件内容。
+  4. AC-006-2、AC-003-4（夹具前提的观测可信度，plan §8.4 第 1～3 段；只证明运行器契约，不证明产品 AC）：提前退出约定正例（标记跨块、退出码 4）通过；负对照退出码不符、缺标记、`paths` 缺失或越界、默认启动遇提前退出均判 FAIL；运行器输出不含替身写出的原因哨兵；原有运行器用例照旧通过；默认 19 个场景加 `events-invalid` 共 20 个登记场景在原断言不变的情况下通过。
 - **验证**（待新增）：
   1. → `cd shell && npm run test:unit`：`ok … 等待退出时排队项标 cancelled_on_exit`、`ok … 等待退出时新作业标 rejected_exiting`。
   2. → 同上：`ok … 四类事件产生对应通知种类`、`ok … 托盘状态 error>running>idle`、`ok … 通知关闭时托盘状态仍更新`。
-  3. → `cd shell && npm run check -- events-invalid`：`PASS events-invalid › 退出码 4`、`› 输出 TEST_EVENTS_INVALID`。
+  3. → `cd shell && npm run check -- events-invalid`：`PASS events-invalid › 退出码 4`、`› 输出 TEST_EVENTS_INVALID`；静态 `rg -n "TEST_EVENTS_INVALID" shell/src/test-hooks.js` 只命中以固定枚举原因写标记的一处。
+  4. → `cd shell && npm run test:unit`：`ok … runner：提前退出约定 标记跨块且退出码 4 通过`、`ok … runner：提前退出约定 退出码不符判 FAIL`、`ok … runner：提前退出约定 缺标记判 FAIL`、`ok … runner：提前退出约定 paths 缺失或越界判 FAIL`、`ok … runner：默认启动遇提前退出仍判 FAIL`，原 `runner：…` 用例全部仍为 ok；随后在最后源码上 `npm ci`、`npm run test:unit`（0 skip）、无参数 `npm run check`（**20** 个登记场景、0 failures）。
+- **修订 6 执行细则**：
+  - 顺序：`check.js` 约定 + 替身与夹具 + 5 个运行器用例（只动运行器即可变绿）→ `activity.js` 与单测 → 钩子校验 → `events-invalid` 场景与登记 → 全量验证 → 证据追加。
+  - 静态核对（Converge 复核；`<实施输入>` 由协调者给定）：`git diff --stat <实施输入> -- shell` 只含修改范围内文件；`rg -n "expectEarlyExit" shell` 只命中 `check.js`、`test/e2e/events-invalid.js`、`test/fixtures/runner/early-exit/early-exit.js`；`rg -n "FAI_CHECK_PRODUCER" shell` 只命中 `check.js` 与 `test/unit/check-runner.test.js`；`git diff <实施输入> -- shell/check.js` 不改 10000 ms 观察窗、`scene.timeoutMs || 30000`、清理与泄漏判定、默认 `launch` 分支；`git check-ignore -v --no-index` 新增文件不被忽略；`git diff --check` 通过。
+  - 停止规则（plan §8.4 第 5 段）：真实 Electron 中 `install()` 内 `app.exit(4)` 不能在控制通道之前以退出码 4 结束或标记未写出；需要新控制命令、emit/注入事件、主进程 JS、任意路径/URL、钩子保存业务状态；需要改默认 `launch` 语义、时限、清理或泄漏判定；任何旧场景只有弱化断言才能通过；估时明显超出 2h（报告协调者由 Plan 拆分，不压缩验证）。出现即停，写证据报协调者。
+  - 禁止：`second:true` 冒充；`ctx.launch()` 之外直接 spawn；捕获 `launch` 异常后读取 `ctx.instances`；伪造 `SMOKE` 行；把事件校验推迟到控制通道之后；放宽默认 `launch` 或现有断言；打印或保存原始 stderr、原因、文件名、事件内容。
+  - 回滚：回退上述文件即回到 T-06d 检查点。
 
 ### T-07b 托盘 / 关窗行为 / 托盘菜单（AC-006-1、AC-006-4、WO-07）
 
 - **上下文**：现关窗即退出、无托盘。plan §4.3 第 1 步、§3.5。依赖：T-07a、T-06c。
-- **修改范围**：`shell/main.js`（Tray、`closeBehavior`、托盘菜单：打开主窗口/运行中作业/设置…/退出）；新增 `shell/test/e2e/close-to-tray.js`、`close-quit.js`、`tray-menu.js`；`shell/check.js`。
+- **修改范围**：`shell/main.js`（Tray、`closeBehavior`、托盘菜单：打开主窗口/运行中作业/设置…/退出）；新增 `shell/test/e2e/close-to-tray.js`、`close-quit.js`、`tray-menu.js`；`shell/check.js`。修订 6（plan §8.4 第 4 段）：`shell/main.js` 另持有 `state.activity`、`state.tray`、`state.trayMenu`（传给 `tray.setContextMenu` 的同一真实 `Menu`），并作为事件来源适配器调度 `hooks.testEvents`；`shell/src/test-hooks.js` **只**改快照 `tray`/`activity` 从这些真实对象读取、`tray-click {path}` 取代 409 占位并调用真实托盘菜单项 `click()`（1～2 级标签精确匹配；400 `invalid_tray_path`、409 `tray_item_missing`/`tray_item_unavailable`），不新增命令或快照键。使用事件夹具的场景在结束前等到快照 `activity` 无运行中作业（夹具自带 `job.finished`），以兼容 T-07c 之后的运行器清理。
 - **估时**：1.5h
 - **完成标准**：
   1. AC-006-1：事件夹具运行中作业 + `close-window` → 窗口隐藏未销毁、后端存活、托盘状态 `running`（夹具驱动；真实作业【外部】）。
@@ -506,7 +518,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 ### T-07c 退出守卫（AC-003-2、AC-003-4、WO-02）
 
 - **上下文**：plan §3.5 退出守卫、§4.3 第 2 步。依赖：T-07b。
-- **修改范围**：`shell/main.js`（`requestQuit`、对话框、等待模式、托盘"取消退出"）；新增 `shell/test/e2e/quit-guard-cancel.js`、`quit-guard-wait.js`；`shell/check.js`。
+- **修改范围**：`shell/main.js`（`requestQuit`、对话框、等待模式、托盘"取消退出"）；新增 `shell/test/e2e/quit-guard-cancel.js`、`quit-guard-wait.js`；`shell/check.js`。修订 6（plan §8.4 第 4 段）：`shell/main.js` 把传给 `install()` 的退出回调从 `gracefulQuit(0)` 改为生产 `requestQuit()`，使 `request-quit` 走退出守卫；`shell/src/test-hooks.js` **只**在消息对话框记录中增加生产代码实际传入的 `message`、`detail` 字符串（未传则省略），用于“对话框列出排队作业”，不增加其他字段；完成后无参数 `npm run check` 全部登记场景（含 T-07a/b 场景）在运行器清理语义不变的情况下通过。
 - **估时**：1.5h
 - **完成标准**：
   1. AC-003-2：运行中作业 + 应答"取消退出" → 应用与后端仍在、作业仍为运行中。
@@ -530,7 +542,7 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 ### T-07e 系统通知（AC-006-2、AC-006-3、WO-06）
 
 - **上下文**：plan §3.5 通知、§7.3 `setAppUserModelId`。依赖：T-07a、T-07d、T-05i。
-- **修改范围**：`shell/main.js`（通知派发、`app.setAppUserModelId`、`backend.error/ready` 事件接入）；新增 `shell/test/e2e/notify.js`、`notify-off.js`；`shell/test/e2e/crash-restart.js`（补通知/托盘断言）；`shell/check.js`。
+- **修改范围**：`shell/main.js`（通知派发、`app.setAppUserModelId`、`backend.error/ready` 事件接入）；新增 `shell/test/e2e/notify.js`、`notify-off.js`；`shell/test/e2e/crash-restart.js`（补通知/托盘断言）；`shell/check.js`。修订 6（plan §8.4 第 4 段）：不改 `shell/src/test-hooks.js`；`main.js` 在钩子启用时使用现有出口 `hooks.outlets.Notification`，并把生命周期 `backend.error/ready` 接入归约器；“托盘曾为 error”由轮询快照 `tray.state` 证明，不新增历史字段。
 - **估时**：1h
 - **完成标准**：
   1. AC-006-2：`stage_completed` 事件 → 通知记录器收到 `stage_completed` 一条（系统 toast 观感留 M-06）。
@@ -597,12 +609,12 @@ T-01～T-06 曾在**没有 desktop-shell checklist** 的情况下实施；下表
 
 ### T-08e 渲染层安全（AC-009-2、AC-009-3、WO-10，A-18）
 
-- **上下文**：plan §3.4（白名单只挂 `defaultSession`，回环仅 `xhr`/`webSocket`）、§8.3（host-resolver-rules、回环夹具服务）、§9 AC-009-2。依赖：T-05l、T-06b。
+- **上下文**：plan §3.4（白名单只挂 `defaultSession`，回环仅 `xhr`/`webSocket`）、§8.3（host-resolver-rules、回环夹具服务）、§9 AC-009-2。依赖：T-05l、T-06b、T-06d（修订 6 / R5-03：`#open-register` 只在真实核心完整档案 + 点击 `#prepare-guide` 后出现，plan §6.1 第 9 段末条）。
 - **修改范围**：`shell/main.js`（`webRequest` 白名单、`will-navigate` 收紧、`setWindowOpenHandler`）；`shell/src/test-hooks.js`（`host-resolver-rules`）；`shell/check.js`（回环夹具服务）；新增 `shell/test/e2e/csp.js`、`external-link.js`。
 - **估时**：1.5h
 - **完成标准**：
   1. AC-009-2：①无 CSP 的 `frontend-stub`：远程 script/iframe/fetch 与回环 script → 夹具服务 `Host: remote.fai.test` 命中 = 0、`/evil.js` 命中 = 0、`window.__remoteExecuted` 未定义、iframe 未加载；正对照回环 `fetch /ok` 200 且命中恰 1、经 `getBackend()` 的 `/health` fetch 200。②有 CSP 的内置引导页（真实后端）：远程命中 = 0、未执行；正对照：组织类型下拉 12 项。不断言拦截计数。
-  2. AC-009-3：点击"打开 EIA 注册页" → `openExternal` 记录器收到该 URL、窗口 URL 不变；`will-navigate` 到非 http(s) 协议被拒且不交给系统。
+  2. AC-009-3：场景前提（修订 6 / R5-03，与 T-08d 相同）——启动前用真实 settings 核心写入完整档案，进入设置页点击 `#prepare-guide` 后出现 `#open-register`；点击"打开 EIA 注册页" → `openExternal` 记录器收到该 URL、窗口 URL 不变；`will-navigate` 到非 http(s) 协议被拒且不交给系统。
   3. WO-10（最近 AC：AC-009-2）：①中远程命中 = 0；静态核查主进程出站点只有更新检查与 `openExternal`。
 - **验证**（待新增）：
   1. → `cd shell && npm run check -- csp`：`PASS csp › 无CSP页 远程命中 = 0`、`› 远程脚本未执行`、`› iframe 未加载`、`› 回环脚本被拒`、`› 正对照 /ok = 200`、`› 正对照 后端 /health = 200`、`› 内置页 远程命中 = 0`、`› 内置页 正对照 12 项`。
