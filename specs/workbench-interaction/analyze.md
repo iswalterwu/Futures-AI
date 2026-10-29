@@ -3,7 +3,11 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
-> **当前结论（2026-10-29 T-A22c 实施后增量 Converge）：见文末「Analyze R15」**
+> **当前状态补记（2026-10-29 T-A22c 增量代码 Review 后；只是页首状态链接，不是新的 Analyze 轮次，R15 仍是最新 Analyze 索引，其正文原样保留）**：
+> - 独立 A 增量代码 Review（[`review-batch3-cache-fix.md`](review-batch3-cache-fix.md)，A = claude-fable-5-1 via anthropic，原件提交 `69faacccabd8b089a9f240b28e6449a8fea90619`）判 T-A22c **通过：0 P1 / P2、0 新 P3，R3-A 关闭**。R15 正文中“待独立 A 增量 Review”“R3-A = 代码已修、待复核”“④ 复核前不放行”是 R15 当时的原文，本报告不改写。
+> - 当前进度：68 个任务 / 102.5 h；**21 / 68 已完成**、47 未开始；227 / 227；DAG 与 46 行 AC 矩阵不变（状态登记时脚本复算，见 implementation-log §13）；46 AC 最终验收 0；feature **未收敛**。R3-B / R3-C 仍未修、未经 Walter 风险接受；H-2·列表 ④ 仍缺。有效 Checklist 仍为 R9 `ab742f5`。记账者 = claude-opus-5-5 via anthropic（bridge 本窗口已明确限额、未重试；未改配置）。**不是** Review / Gate 2 / Handoff。
+>
+> 【历史原文（R15 撰写时）】**当前结论（2026-10-29 T-A22c 实施后增量 Converge）：见文末「Analyze R15」**
 > - **T-A22c**：已实施 `af24c82`（2 个文件；方案 b，只删 `applyFilter` 成功分支两次赋值，新增 `WI H-2 list status` 两例，filter 组一例改为“只有显式 refresh 清错”）。实施者执行的 3 条任务命令与回归全过，红 → 绿属实。增量 Converge（`converge-batch3-cache-fix.md`）判与 r6.8 逐条一致、无规格差距，**待独立 A 增量 Review**。
 > - **R3-A**：代码已修、待 A 复核，不由本报告判关闭。R3-B / R3-C 未改。
 > - **结构**：68 个任务 / 102.5 h；227 / 227；**21 / 68 已实施**（20 已完成 + 1 待定向 Review）、47 未开始；DAG 与 46 行 AC 矩阵不变；46 AC 最终验收 0；feature **未收敛**。spec 46 AC 不改。

@@ -1,6 +1,25 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
-> **当前实施进度（T-A22c 实施后增量 Converge，2026-10-29；以本块为准。下方 r6.8 块中的“20 项已完成、48 项未开始”“T-A22c 待实施 / 代码未修”“下一可起步 T-A22c”等都是当时原文）**：
+> **当前实施进度（T-A22c 增量代码 Review 后状态登记，2026-10-29；以本块为准。下方“T-A22c 实施后增量 Converge”块中的“1 项已实施、待定向 Review”“R3-A = 代码已修、待 A 复核”“④ T-A22c 复核前不放行”“T-B01 是否等 A 复核”等都是当时原文）**：
+>
+> **进度**：**68 个任务、约 102.5 h**。**21 / 68 已完成**（四次批次 / 增量代码 Review 通过：首批 `af95b66` 10 项、第二批 `f72a1a1` 6 项、第三批 `49edb7e` 4 项 = T-A11 / T-A12 / T-A13 / T-A22a、增量 `69faacc` 1 项 = T-A22c）；**47 项未开始**。“已完成”= 所在批次代码 Review 通过，**不表示任何 AC 最终验收**：46 AC 最终验收仍 **0**；feature **未收敛**（47 项未实施 + H 组外部阻塞）。
+>
+> **T-A22c 增量代码 Review**（`review-batch3-cache-fix.md`，集成人原样提交于 `69faacccabd8b089a9f240b28e6449a8fea90619`，只引用、不改写）：审核员 A = claude-fable-5-1 via anthropic（新会话、独立 worktree，固定审文档 `eb91340` + 代码 diff `e7716a8..af24c82`）。判**本增量通过：0 P1 / P2、0 新 P3；R3-A 关闭**（探针 P1 / P2 在 `af24c826f41580d27f90ce611fb2f55fec44acbf` 上不再复现）。A 亲跑：`WI H-2 list status` **2**、整文件 **27**（原四组 5 / 4 / 7 / 9 保持）、typecheck / lint / `contract --check` 24 / 10 / 2；全量 `test:unit` 31 files / **953** / 0；六守卫；v1 三份契约测试 88；real-stubs 23；既有 shell + agent E2E **24** / 0；只读探针 6 例。**未跑**：其余 7 份 E2E、全量 `pnpm test`；无截图。第三批原 Review `49edb7e`（0 P1 / P2、3 P3）结论不变。
+>
+> **P3 状态**：**R3-A 已关闭**（`69faacc`）。**R3-B**（→ T-C03 / T-A17）、**R3-C**（→ T-G04）**仍未修、未经 Walter 风险接受**；前两批 P3（R-A～R-F、R2-A～R2-E）状态不变，见 implementation-log §8。
+>
+> **结构**（脚本复算，见 implementation-log §13）：68 个任务、约 102.5 h；完成标准 / 验证命令 **227 / 227**；依赖与 DAG 不变、无环；AC 矩阵 46 行、部分前置均为最终任务祖先。本轮只改 T-A22c / T-A22a / T-B01 / T-B02 状态行、§2a H-2·列表备注与本块；所有任务的预计 / 标准 / 命令不改字。有效 Checklist 仍为 **R9**（`ab742f5`，blob `74084c13…`，未改）。
+>
+> **H-x**：
+> - **H-2·列表**：① `af24c82`（经增量 Review 核对；已审历史 `0032fc6` 保留）；② R9 `ab742f5`；③ 实施者与 A 亲跑同数（2 / 27 + 工程门，全量 953、E2E 24）。本方“T-A22c 复核前不放行 ④”的条件已解除；**④ 仍缺 → 待消费方集成（未交付）**。消费分支 `integration/frontend-workbench-v2` 只读观察仍为 `3f63273`、不含 `af24c82`。
+> - **H-6** 仍缺 T-A21；**H-5 / 页面切片**未做；H-1 / H-2·标签 / H-3 / H-4 保留历史生产方证据，仍为待消费方集成（未交付）。
+> - **页面现状**：`/jobs` 与详情页仍是 T-A22 骨架，jobsStore 只被 `main.ts` 订阅、无页面消费；写 API 中只有 `createJob` 经 store 接入，且无 UI 调用方。不能称作业页面已完成。
+>
+> **下一可起步**（依赖已满足）：T-A14 / T-A15 / T-A16、**T-B01**（之后 T-B02 / T-B04）、T-C01。T-B01 是首个消费徽标的页面任务，开工前按 implementation-log §8 R2-C 核对状态边框令牌映射（不新增色值）。批次划分由集成人决定。
+>
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1876b-2420-709d-b58f-04d6eed0d36f`；`claude-bridge` 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。本块是批次记账，不是 Review / Gate 2 / Handoff。
+
+> 【历史原文，进度 / T-A22c 状态 / H-2 ④ 放行条件已由上方增量 Review 后块取代】**当前实施进度（T-A22c 实施后增量 Converge，2026-10-29；当时以本块为准。下方 r6.8 块中的“20 项已完成、48 项未开始”“T-A22c 待实施 / 代码未修”“下一可起步 T-A22c”等都是当时原文）**：
 >
 > **进度**：**68 个任务、约 102.5 h**。**21 / 68 已实施** = **20 项已完成**（三批代码 Review 通过：`af95b66` 10 项、`f72a1a1` 6 项、`49edb7e` 4 项）+ **1 项已实施、待定向 Review**（**T-A22c**，`af24c826f41580d27f90ce611fb2f55fec44acbf`）；**47 项未开始**。46 AC 最终验收仍 **0**；feature **未收敛**（47 项未实施 + H 组外部阻塞 + T-A22c 待复核）。
 >
@@ -265,7 +284,7 @@
 |---|---|---|---|
 | H-1 | T-A02（`JobContextSchema`）、T-A09（`CONTRACT_VERSION='2.0.0'`）、**T-A09a**（`SendMessage.jobContext?`、十类事件公共可选 `jobContext`、mock 透传） | `test:unit tests/unit/jobs/agent-context-contract.spec.ts`；`test:unit tests/unit/jobs/contract-version.spec.ts -t "WI scenarios"` | **T-A09 ≠ H-1**。r5 中 SendMessage / events / mock 透传都在 T-A18，H-1 须等 T-A18；r6 把这部分拆为 T-A09a（只依赖 T-A02 / T-A09），H-1 不再等待 mock 状态层。作业**运行关联**（activeRunId / overlay，S-15）仍在 T-A18，不属 H-1 交付，但 T-A18 命令 4 复跑 H-1 定向测试，保证不回归 |
 | H-2·标签 | T-A01（`JobStatusLabel / StageLabel / StageStateLabel / JobTypeLabel` 等九张映射）、T-A23（`JobStatusBadge`） | `test:unit tests/unit/jobs/contract-labels.spec.ts -t "WI labels"`；`test:unit tests/component/jobs/badges.spec.ts -t "WI status badges"` | 只要 `StageLabel` 的 S1-ctx 可只等 T-A01 |
-| H-2·列表 | T-A01（`ACTIVE_JOB_STATUSES`）、T-A02（`JobListItem` 字段）、T-A10（`listJobs`）、T-A12（`createJob`）、**T-A22a**（jobsStore 共享未筛选缓存 ①～⑤、`createJob` action、agent 终态刷新、`main.ts` 订阅）、**T-A22c**（r6.8，R3-A 补修：`applyFilter` 成功不改写未筛选列表读状态） | `test:unit tests/unit/jobs/jobs-store.spec.ts -t "WI H-2"` | 可调用写 action = `useJobsStore().createJob(input)`；inbox / 投放 action 不算本切片。r6.8：T-A22c 关闭前不放行 ④ |
+| H-2·列表 | T-A01（`ACTIVE_JOB_STATUSES`）、T-A02（`JobListItem` 字段）、T-A10（`listJobs`）、T-A12（`createJob`）、**T-A22a**（jobsStore 共享未筛选缓存 ①～⑤、`createJob` action、agent 终态刷新、`main.ts` 订阅）、**T-A22c**（r6.8，R3-A 补修：`applyFilter` 成功不改写未筛选列表读状态） | `test:unit tests/unit/jobs/jobs-store.spec.ts -t "WI H-2"` | 可调用写 action = `useJobsStore().createJob(input)`；inbox / 投放 action 不算本切片。r6.8：T-A22c 关闭前不放行 ④（已于 `69faacc` 关闭；④ 仍待消费方） |
 | H-3·路由切片 | **T-A22**（`jobs/routes.ts` 两条路由 + `registerJobRoutes` + `main.ts` 挂载前注册；依赖改为 T-A01） | `test:unit tests/unit/jobs/routes.spec.ts` | 不含页面功能；页面为骨架 |
 | 页面切片 | T-B01、T-B02、T-B04（`/jobs` 列表与详情）、T-C01、T-C01a、T-C02、T-C03、T-C04（IntakeDrawer 投放提交 / 确认 / 待归属池归入） | `test:e2e e2e/jobs/intake.spec.ts`；`test:e2e e2e/jobs/detail-stage.spec.ts -g "WI AC-002-2"`；`test:unit tests/component/jobs/job-list.spec.ts` | 待归属池在 IntakeDrawer 内（T-C03），任何挂载点都能完成归属 |
 | H-4 | **T-A22b**（`sessionStore.context` 只读 + `registerJobRoutes` 中的 `afterEach` 守卫） | `test:unit tests/unit/jobs/session-context.spec.ts -t "WI H-4"` | **无公开 setter**：只经路由守卫设置；壳 S1-ctx 因而条件依赖 H-3·路由切片（v2 tasks §1.2 已预设此分支） |
@@ -828,7 +847,7 @@
 
 ### T-A22a jobsStore：共享未筛选列表缓存、刷新、createJob action 与 agent 终态刷新（H-2·列表；r6 新增）
 
-- **状态**：**已完成（batch3；第三批代码 Review 通过 `49edb7e`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；P3 R3-A 的修复已登记为 T-A22c（r6.8），待实施 / 增量复核，H-2·列表 ④ 前须关闭）**｜T-A22c 增量 Converge 后：修复已实施 `af24c82`，待 A 增量复核（以 T-A22c 状态行为准）｜原状态行“已实施（batch3，待第三批独立代码 Review）”为 Converge 时原文｜commit `0032fc6b3e47ee6de27a03c2c229ef57ca9115cc`。
+- **状态**：**已完成（batch3；第三批代码 Review 通过 `49edb7e`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；P3 R3-A 的修复已登记为 T-A22c（r6.8），待实施 / 增量复核，H-2·列表 ④ 前须关闭）**｜T-A22c 增量 Converge 后：修复已实施 `af24c82`，待 A 增量复核（以 T-A22c 状态行为准）｜增量 Review 后：R3-A 已关闭（`69faacc`；以 T-A22c 状态行为准）｜原状态行“已实施（batch3，待第三批独立代码 Review）”为 Converge 时原文｜commit `0032fc6b3e47ee6de27a03c2c229ef57ca9115cc`。
   - **验证**（实施者执行，Converge 未重跑）：命令 1～4 依次为 `WI H-2 cache` 5 / `WI H-2 filter` 4 / `WI H-2 createJob refresh` 7 / `WI H-2 agent refresh` 9 pass；命令 5 为 typecheck、lint，均通过；本轮无失败。
   - **末轮 clean 树**：全量 `test:unit` 31 文件 951 pass / 0 fail；`check` 六守卫通过；`contract --check` 24 / 10 / 2；既有 `e2e/{shell,agent}.spec.ts` 24 pass（4173 自管，结束后无监听）。
   - **S-38**：已落实（`refresh` 自身 resolve，真实 error 场景下无 unhandled rejection）。
@@ -886,7 +905,9 @@
 
 ### T-A22c R3-A 补修：applyFilter 成功不改写未筛选列表读状态（H-2·列表；r6.8 Converge 补修新增）
 
-- **状态**：**已实施（待定向 Review：新会话 A 增量代码 Review 只核 R3-A；不表示 AC 最终验收；R3-A 代码已修、未判关闭）**｜原状态行“未开始”为 r6.8 登记时原文｜commit `af24c826f41580d27f90ce611fb2f55fec44acbf`（父 `e7716a8`；只改 `jobs/stores/jobs.ts` −2 与 `jobs-store.spec.ts` +67 / −1）。
+- **状态**：**已完成（增量代码 Review 通过 `69faacccabd8b089a9f240b28e6449a8fea90619`：0 P1 / P2、0 新 P3，R3-A 关闭；A 亲跑本任务命令同数通过；不表示 AC 最终验收）**｜原状态行“已实施（待定向 Review …；R3-A 代码已修、未判关闭）”为增量 Converge 时原文｜原状态行“未开始”为 r6.8 登记时原文｜commit `af24c826f41580d27f90ce611fb2f55fec44acbf`（父 `e7716a8`；只改 `jobs/stores/jobs.ts` −2 与 `jobs-store.spec.ts` +67 / −1）。
+  - **增量 Review**（`review-batch3-cache-fix.md`，A = claude-fable-5-1 via anthropic，固定审 `eb91340` + diff `e7716a8..af24c82`）：A 亲跑命令 1 = 2、命令 2 = 27（原四组 5 / 4 / 7 / 9）、命令 3 通过（24 / 10 / 2）；全量 31 files / 953 / 0、六守卫、v1 契约 88、real-stubs 23、shell + agent E2E 24；只读探针 P1 / P2 不再复现。未跑其余 7 份 E2E，无截图。R3-B / R3-C 不在范围、仍未修。
+  - 以下“验证 / 失败留痕 / 末轮回归 / 增量 Converge”四条为增量 Converge 时登记原文：
   - **验证**（实施者执行，增量 Converge 未重跑）：命令 1 `WI H-2 list status` 2 pass；命令 2 整文件 27 pass（原四组 25 + 新 2；`-t "WI H-2 filter"` 仍 4）；命令 3 typecheck、lint、`contract --check`（24 / 10 / 2）均通过。
   - **失败留痕**：修复前命令 1 为 2 fail（`expected 'ready' to be 'idle'`、`expected 'ready' to be 'error'`），复现 R3-A P1 / P2；删两行后通过。
   - **末轮回归**：全量 `test:unit` 31 文件 953 pass / 0 fail；`check` 六守卫通过；既有 `e2e/{shell,agent}.spec.ts` 24 pass（4173 前后空闲）；提交前 diff / 暂存范围检查通过，clean。
@@ -948,7 +969,7 @@
 
 ### T-B01 作业列表渲染与三态
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准）：消费徽标前用既有 `--fai-status-*` 令牌核对状态边框映射，不新增色值｜r6.8：依赖增 T-A22c（R3-A 补修须先于列表读状态的首个页面消费者）
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准）：消费徽标前用既有 `--fai-status-*` 令牌核对状态边框映射，不新增色值｜r6.8：依赖增 T-A22c（R3-A 补修须先于列表读状态的首个页面消费者）｜T-A22c 已完成、R3-A 已关闭（`69faacc`），依赖已满足
 - **预计**：1.5 h｜**依赖**：T-A10、T-A22、T-A22a、T-A22c、T-A23
 - **上下文**：spec R-001；plan §2.2。
 - **修改范围**：`jobs/pages/JobListPage.vue`（数据取自 `useJobsStore()` 的未筛选缓存，挂载时 `ensureJobs()`，错误重试 `refresh()`——r6，T-A22a）、新建 `jobs/components/JobCard.vue`（标题、类型、状态徽、当前阶段、更新时间；角标位预留给 T-G02）；三态复用 `Loading` / `EmptyState` / `ErrorState`（错误态含可复制诊断）；新建 `tests/component/jobs/job-list.spec.ts`。
@@ -963,7 +984,7 @@
 
 ### T-B02 筛选、搜索与清空
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜r6.8：依赖增 T-A22c（`review-batch3.md` R3-A 要求在本任务 / H-2 ④ 之前关闭）
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜r6.8：依赖增 T-A22c（`review-batch3.md` R3-A 要求在本任务 / H-2 ④ 之前关闭）｜R3-A 已于 `69faacc` 关闭；本任务仍须待 T-B01
 - **预计**：1 h｜**依赖**：T-B01、T-A22c
 - **上下文**：spec R-001（状态 / 类型筛选、标题搜索）。
 - **修改范围**：`JobListPage.vue` 的筛选条（选项文案来自 `JobStatusLabel` / `JobTypeLabel`）、经 T-A22a 的 `applyFilter(filter)`（调用 listJobs(filter)，结果单独存为 `filteredJobs`、不覆盖未筛选缓存，不在前端重新筛选）；扩充 `job-list.spec.ts`。
