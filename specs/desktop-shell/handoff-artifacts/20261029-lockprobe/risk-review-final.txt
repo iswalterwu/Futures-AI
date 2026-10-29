@@ -1,0 +1,12 @@
+Corrections applied to `specs/desktop-shell/root-lock-risk-review.md` only (same session, HEAD `681d4bb`, no other files, no runtime).
+
+## 修正后结论与改变的事实
+
+**改变的事实（v1 过度声明 → v2）**，已在报告新增 §0.1 保留追溯：
+
+1. **`_stale` 读取**：确认 `lock.py` 第 108 行是整文件 `read_text()`，不是有界 PID 读；§8.3 的 Node 整读 EBUSY 证明冲突在本环境真实存在。撤回"无冲突"。保留的结论：`except OSError: return False` 与 `startup_failure` 的 `except (OSError, ValueError)` 使**两条分支都立即 `LockBusy`**，无重试/等待——这一点不依赖读取是否成功。
+2. **历史快照的证明力**：`snapshot().pid` 依 `!g.exited`（Node `exit` 事件），不是 OS 存活，也不暴露 `g.marker`。历史现场只证明"到该观察点 Node 未观测到 exit/close/分类"；候选现场扩为三类且均未排除：(a) Python 仍运行、标记未出；(b) 标记已到但 exit/close 未到；(c) OS 已退出但 Node 未送达 exit（§9.4 正常间隙 62 ms，10 s 级无证据但未排除）。
+3. **RL-04 范围**：`path=str(root)` + `ensure_ascii=False`，`path` 与 `detail` 都可能被 chunk 边界污染（`code` 不受影响）；影响错误页路径显示准确性，仍 P3，建议整体 Review 前作 Converge 任务用 `StringDecoder` 修复（生产代码，须派工）。与历史 FAIL 无关（该次路径为 ASCII）。
+4. **绝对表述**：`poll()` 每 100 ms 一次同步 `readFileSync`，同步 FS 停顿/未观测间隔未被全局排除；snapshot 应答只证明应答时刻主循环可响应。
+
+**严重度与处置（修正后不变，但论证基础更换）**：无 P1/P2；RL-01 保持 **P3 OPEN / UNKNOWN**；T-05k 可作 **nonblocking 残余**继续 Implement。新的论证不依赖"无标记/OS 存活"，而是按源码对三类候选逐一给出生产有界结果：(a)(b) → deadline 内 exit 则 `failed(data_root_locked)`（晚但正确），否则 30 s → kill → `health_timeout`；(c) → deadline → 对已死 PID 的 `taskkill` 失败 → `failed(startup_internal)`。三类都不自动重启、不伪造就绪、不触碰持锁者，最坏是错误码退化，不是无响应/静默。**新增升级条件**：若复现证实为 (c)，属外壳侧进程观测缺陷，升 P2 回修 `src/backend.js`。§4 的对照实验与含 OS 存活的时间线（现有 `alive` 字段可区分 (c)，区分 (a)/(b) 需 producer 侧时刻、须批准）仍须在整体 Converge/Review 前完成。不是整 feature 通过、Converge、Gate 2 或用户接受。

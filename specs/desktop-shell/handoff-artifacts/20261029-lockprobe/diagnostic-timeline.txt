@@ -1,0 +1,60 @@
+
+> futuresai-shell@0.1.0 check
+> node check.js root-locked
+
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-root-locked-b78ypA"
+LOCK_TIMELINE {"event":"helper-launch","ms":0}
+LOCK_TIMELINE {"event":"helper-ready","ms":1130,"pid":56132}
+PASS root-locked › 真实 Service 初始化后锁文件存在
+PASS root-locked › 真实持锁辅助进程存活
+LOCK_TIMELINE {"event":"electron-launch","ms":1131}
+LOCK_TIMELINE {"event":"paths","ms":1347}
+LOCK_TIMELINE {"event":"control","ms":1397}
+LOCK_TIMELINE {"event":"paths-control-ready","ms":1457,"pid":64448}
+LOCK_TIMELINE {"event":"snapshot","ms":1472,"phase":"idle","phases":[],"gen":0,"restarts":0,"pid":null,"port":null,"lastCode":null,"alive":false}
+LOCK_TIMELINE {"event":"producer","ms":1703,"observation":{"event":"lockprobe","kind":"command","ms":0.1587,"timeoutMs":30000}}
+LOCK_TIMELINE {"event":"producer","ms":1714,"observation":{"event":"lockprobe","kind":"spawn-return","ms":11.6107,"gen":1,"pid":62168}}
+LOCK_TIMELINE {"event":"producer","ms":1715,"observation":{"event":"lockprobe","kind":"status","ms":12.3814,"gen":1,"phase":"waiting_health","code":null}}
+LOCK_TIMELINE {"event":"producer","ms":1715,"observation":{"event":"lockprobe","kind":"spawn","ms":12.8288,"gen":1,"pid":62168}}
+LOCK_TIMELINE {"event":"snapshot","ms":1719,"phase":"waiting_health","phases":["idle","spawning","waiting_health"],"gen":1,"restarts":0,"pid":62168,"port":null,"lastCode":null,"alive":true}
+LOCK_TIMELINE {"event":"producer","ms":3516,"observation":{"event":"lockprobe","kind":"stdout-first","ms":1813.9036,"gen":1}}
+LOCK_TIMELINE {"event":"producer","ms":3525,"observation":{"event":"lockprobe","kind":"marker-parsed","ms":1822.6276,"gen":1,"code":"data_root_locked"}}
+LOCK_TIMELINE {"event":"producer","ms":3825,"observation":{"event":"lockprobe","kind":"exit","ms":2122.3452,"gen":1,"code":3}}
+LOCK_TIMELINE {"event":"producer","ms":3825,"observation":{"event":"lockprobe","kind":"close","ms":2122.4462,"gen":1,"code":3}}
+LOCK_TIMELINE {"event":"producer","ms":3826,"observation":{"event":"lockprobe","kind":"status","ms":2123.4224,"gen":1,"phase":"failed","code":"data_root_locked"}}
+LOCK_TIMELINE {"event":"snapshot","ms":3842,"phase":"failed","phases":["idle","spawning","waiting_health","failed"],"gen":1,"restarts":0,"pid":null,"port":null,"lastCode":"data_root_locked","alive":false}
+LOCK_TIMELINE {"event":"renderer","ms":3844,"code":"data_root_locked"}
+PASS root-locked › 页面 code = data_root_locked
+PASS root-locked › 含路径
+PASS root-locked › 提示另一进程占用
+PASS root-locked › restarts = 0
+PASS root-locked › 启动失败进程已退出
+PASS root-locked › 持锁辅助进程未被误杀
+LOCK_TIMELINE {"event":"release-helper","ms":3844}
+LOCK_TIMELINE {"event":"helper-exit","ms":4026,"code":0}
+PASS root-locked › 辅助进程优雅退出
+LOCK_TIMELINE {"event":"producer","ms":4079,"observation":{"event":"lockprobe","kind":"status","ms":2376.5234,"gen":1,"phase":"stopping","code":null}}
+LOCK_TIMELINE {"event":"producer","ms":4079,"observation":{"event":"lockprobe","kind":"status","ms":2377.0743,"gen":1,"phase":"stopped","code":null}}
+LOCK_TIMELINE {"event":"producer","ms":4080,"observation":{"event":"lockprobe","kind":"status","ms":2377.6403,"gen":2,"phase":"spawning","code":null}}
+LOCK_TIMELINE {"event":"producer","ms":4087,"observation":{"event":"lockprobe","kind":"spawn-return","ms":2384.993,"gen":2,"pid":49112}}
+LOCK_TIMELINE {"event":"producer","ms":4088,"observation":{"event":"lockprobe","kind":"status","ms":2385.6667,"gen":2,"phase":"waiting_health","code":null}}
+LOCK_TIMELINE {"event":"producer","ms":4088,"observation":{"event":"lockprobe","kind":"spawn","ms":2385.9441,"gen":2,"pid":49112}}
+LOCK_TIMELINE {"event":"producer","ms":5974,"observation":{"event":"lockprobe","kind":"status","ms":4271.8072,"gen":2,"phase":"ready","code":null}}
+LOCK_TIMELINE {"event":"retry-ready","ms":6035,"gen":2,"pid":49112}
+PASS root-locked › 解除占用后真实重试成功
+PASS root-locked › 真实后端非夹具
+LOCK_TIMELINE {"event":"producer","ms":6037,"observation":{"event":"lockprobe","kind":"status","ms":4335.0612,"gen":2,"phase":"stopping","code":null}}
+LOCK_TIMELINE {"event":"producer","ms":6464,"observation":{"event":"lockprobe","kind":"exit","ms":4761.7369,"gen":2,"code":0}}
+LOCK_TIMELINE {"event":"producer","ms":6464,"observation":{"event":"lockprobe","kind":"close","ms":4761.7945,"gen":2,"code":0}}
+LOCK_TIMELINE {"event":"producer","ms":6474,"observation":{"event":"lockprobe","kind":"status","ms":4771.4709,"gen":2,"phase":"stopped","code":null}}
+PASS root-locked › 退出码 0
+LOCK_TIMELINE {"event":"electron-exit","ms":6769,"code":0}
+PASS root-locked › 后端 pid 已退出
+PASS root-locked › 后端 pid 已退出
+PASS root-locked › 锁辅助 PID 已退出
+PASS root-locked › 临时目录已删除
+SUMMARY 16/16 assertions; 1 scenes; failures=0
+
+real	0m7.499s
+user	0m0.060s
+sys	0m0.060s

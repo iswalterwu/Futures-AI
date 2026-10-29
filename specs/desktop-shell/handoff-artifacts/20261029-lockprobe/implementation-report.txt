@@ -1,0 +1,34 @@
+**T-05k 本轮有界诊断完成；历史根因仍 UNKNOWN，稳定性风险保持 OPEN。未开始 T-06b。**
+
+- 实际模型：`openai/gpt-6-astra via openai`
+- Session：`01a18620-5f99-7422-91f6-e006cb8c47a3`
+- 固定输入及结束 HEAD：`35e5f7869b9d80bcf49a37ab21336072ed611ffc`
+- 开始工作树干净；Checklist 独立核对 **41 checked / 0 unchecked**。
+
+### 诊断结论
+实际执行 **2 次定向诊断（含 1 次 import profiling）+ 1 次全集诊断**，均未复现。
+- 普通定向、全集中，真实 Python spawn → `failed(data_root_locked)` 分别约 **2.11s、2.42s**；标记解析、exit3、页面错误码、零重启及解除占用后 retry 均正常。
+- Profiling 测得 `app.main` 累计导入约 **1.47s**；有额外观测开销，不能解释历史失败。
+- **10s 观察窗口与 30s producer deadline 不同，但尚无历史因果证据。** 本轮未完成受控慢启动及缺失/错误标记的正负对照，因此不调整超时、不宣称修复。
+
+### 最终改动
+1. `shell/test/e2e/root-locked.js`：仅增加安全单调时间线及失败时最后观测，原错误继续抛出；原断言、超时、清理不变。
+2. `specs/desktop-shell/implementation-evidence.md`：只追加 **§9**，历史原文保留。
+
+临时 `test-hooks.js` 观测已全部撤除，字节与输入一致；生产代码未改。
+
+### 最后源码验证
+| 验证 | 结果 |
+|---|---|
+| 全 unit | **42 passed，0 failed / skipped** |
+| 独立 root-locked | **16/16** |
+| 默认全部 14 场景 | **213/213，0 failures** |
+
+本轮无新增测试失败；历史 **202/203、1 failure** 完整保留，未因绿灯关闭风险。旧 Python 全量与打包结果未重跑。
+
+**清理与冻结：** owned 进程 **0**；ACL 已恢复并实写验证，场景临时目录已删除，无后台服务或端口保留。`git diff --check` 通过；213 个输入文件中 **211 个未改，仅上述 2 个授权差异**。无提交、push、PR、merge 或配置变更。
+
+证据：`specs/desktop-shell/implementation-evidence.md` §9
+原始日志：`C:/Users/iswal/AppData/Local/Temp/fai-lockprobe-01a18620/`
+
+下一步仍应限定 T-05k：补受控慢启动与标记/超时负对照，并争取捕获自然失败时序；不能直接进入 T-06b。
