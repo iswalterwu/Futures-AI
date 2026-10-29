@@ -3,6 +3,7 @@ import { useIntakeStore } from '../stores/intake.ts'
 import IntakePanel from './IntakePanel.vue'
 import ExtractionPreview from './ExtractionPreview.vue'
 import MappingEditor from './MappingEditor.vue'
+import UnassignedPool from './UnassignedPool.vue'
 import Loading from '../../shared/components/Loading.vue'
 import ErrorState from '../../shared/components/ErrorState.vue'
 
@@ -41,6 +42,7 @@ const intake = useIntakeStore()
       <ExtractionPreview />
       <MappingEditor :key="intake.selection.upload.id" />
     </template>
+    <UnassignedPool />
   </aside>
 </template>
 

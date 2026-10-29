@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import type { DeepReadonly } from 'vue'
-import type { Job, StageWorkspace } from '../../contracts/types.ts'
+import { ref, type DeepReadonly } from 'vue'
+import { dataMethods } from '../../contracts/methods.ts'
+import ErrorState from '../../shared/components/ErrorState.vue'
+import type { ContractError, ErrorResponse, Job, StageWorkspace } from '../../contracts/types.ts'
 import ArtifactStatusBadge from '../components/ArtifactStatusBadge.vue'
 import { useIntakeStore } from '../stores/intake.ts'
 
@@ -9,6 +11,33 @@ defineProps<{
   workspace: Extract<DeepReadonly<StageWorkspace>, { readonly stage: 'collect' }>
 }>()
 const intake = useIntakeStore()
+const removeTarget = ref<string | null>(null)
+const reason = ref('来源不再适用')
+const validationMessage = ref('')
+const error = ref<ContractError | null>(null)
+
+function requestRemove(uploadId: string) {
+  removeTarget.value = uploadId
+  reason.value = '来源不再适用'
+  validationMessage.value = ''
+  error.value = null
+}
+
+async function confirmRemove(uploadId: string) {
+  validationMessage.value = ''
+  error.value = null
+  const result = dataMethods.removeUpload.params.def.items[1].safeParse(reason.value)
+  if (!result.success) {
+    validationMessage.value = '请填写删除理由。'
+    return
+  }
+  try {
+    await intake.remove(uploadId, result.data)
+    removeTarget.value = null
+  } catch (cause) {
+    error.value = (cause as ErrorResponse).error
+  }
+}
 </script>
 
 <template>
@@ -44,6 +73,47 @@ const intake = useIntakeStore()
         >
           预览 / 修正
         </button>
+        <button
+          type="button"
+          @click="requestRemove(upload.id)"
+        >
+          删除来源
+        </button>
+        <section
+          v-if="removeTarget === upload.id"
+          aria-label="确认删除来源"
+        >
+          <h3>确认删除来源</h3>
+          <p>删除后从当前采集列表移除，历史记录仍保留。</p>
+          <label>删除理由<textarea
+            v-model="reason"
+            aria-label="删除理由"
+          /></label>
+          <p
+            v-if="validationMessage"
+            role="alert"
+          >
+            {{ validationMessage }}
+          </p>
+          <button
+            type="button"
+            @click="confirmRemove(upload.id)"
+          >
+            确认删除
+          </button>
+          <button
+            type="button"
+            @click="removeTarget = null"
+          >
+            取消
+          </button>
+          <ErrorState
+            v-if="error"
+            module-id="intake-remove"
+            :error="error"
+            @retry="confirmRemove(upload.id)"
+          />
+        </section>
       </li>
     </ul>
     <p v-if="workspace.uploads.length === 0">
@@ -68,6 +138,15 @@ const intake = useIntakeStore()
 .collect-workspace li {
   padding: var(--fai-space-grid-gap);
   border: thin solid var(--fai-glass-module-border);
+}
+
+.collect-workspace textarea {
+  box-sizing: border-box;
+  width: 100%;
+  background: var(--fai-bg-middle);
+  color: var(--fai-text-primary);
+  border: thin solid var(--fai-glass-module-border);
+  font: inherit;
 }
 
 .collect-workspace button {

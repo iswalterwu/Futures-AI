@@ -258,7 +258,8 @@ describe('WI H-5 store', () => {
     expect(isReadonly(store.draft)).toBe(true)
     expect(Object.keys(store.$state)).toEqual([])
     expect(store.selection).toBeNull()
-    expect(store).not.toHaveProperty('pool')
+    expect(store.pool).toEqual([])
+    expect(isReadonly(store.pool)).toBe(true)
     const assertTypes = () => {
       // @ts-expect-error H-5 target is readonly.
       store.jobId = 'j-process'
