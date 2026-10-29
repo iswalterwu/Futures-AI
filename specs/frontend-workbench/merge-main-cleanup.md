@@ -1,5 +1,7 @@
 # frontend-workbench v2 S0 阶段合入 main 与目录清理记录（merge-main-cleanup.md）
 
+> **独立 A 集成复核已完成（协调登记，2026-10-29）**：A = `claude-fable-5-1 via anthropic`，全新独立会话 / 工作树，固定审 `d837b03d481c614eabe15bf8ab0618602f04a18d`，结论 **通过（仅本次阶段集成），0 P1 / 0 P2**。原样产物提交 `17d131bc9157cf0028880d90eef74625a3039eed`，文件 `review-main-integration.md` 已原样集成；没有新增代码。A 的清理台账时点 P3 按执行前置落实：本次 PR head 必须包含 `3f63273`、`9e68233`、`d837b03` 及 A 复核报告 / 本登记，绝不以旧集成树 `3f63273` 单独作为 head。第 7 节表中 SHA 只代表初盘时点；删除前再次逐目录核对最新 HEAD、干净状态和分支 ref，并保留全部本会话分支引用。测试 / A 已满足，接下来由协调器确认远端 main 未前进、开 PR 合入，成功后才删除白名单 14 个工作树；不预写远端合并或目录删除结果。完整 v2 / P3-1 / 人工验收的边界照旧。
+
 > **后续验证登记（协调集成，2026-10-29）**：真实 merge 为 `3f632739fc186396221482364cf16e3629b4b24f`（父 `76abe92` / `cf8e11b`）。Astra 在该代码上亲跑完整前端验证：**564/564 unit/component、70/70 e2e、六守卫 / typecheck / lint / build 全部成功**，仅保留既有大 chunk 警告；原样报告 `validation-main-integration.md` 已提交 `9e682339bc8f60625277cfa3a9196f8e6bcb6611`。独立只读集成 Analyze / Converge 原文见 `analyze-main-integration.md`：S0 集成内部已收敛，0 P1/P2，2 个不阻断本次合入的 P3；完整 v2 仍未收敛（外部阻塞）。其中迁移快照时态建议已由 `handoff-v2-s0.md` 页首明确，第 1～7 节均属旧 SHA；S1-track 与 main H-01 数字样式的前瞻约束留待 S1 开工前核验，不新增或放行任务。当前尚待独立 A 集成复核、真实 PR / merge，目录清理仍未执行。下方“尚未验证”等只反映作者写入固定 merge 时点，不能覆盖本段。最终合并提交及清理结果通过 PR 记录 / 协调器执行摘要确认，不在提交内预写自身 merge SHA。
 
 > **作者**：`claude-opus-5-5 via anthropic`，由协调器新派的集成 / 交接文档会话。不是 Implement，不是审核员 A，也不是协调器。bridge 在本限额窗口已有真实额度 / 限流失败，本会话没有重试，也没有改 provider、路由或配置。
