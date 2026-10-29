@@ -1,7 +1,13 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
-> **当前状态（2026-10-30 r6.12.1：Checklist R11 已通过，P3 S-44～S-48 已吸收；第五批可开码、未实施；以本块为准。下一块 r6.12 派工准备块中的“未审核”“开码前置待 R11”“T-A13a 由 R11 判定”为当时原文）**：
+> **当前状态（2026-10-30 r6.12.2：第五批前 6 项已实施待 Review；T-C02 开码前的测试权限冲突已做最小范围修正；以本块为准。下一块 r6.12.1 中“第五批可开码、未实施”“27 已完成 / 46 未开始”为当时原文，其 R11 结论与依赖纪律仍有效）**：
+> - **已实施（未 Review，不计完成）**：T-A01a `f65d3c6` → T-A13a `e1cd4d4` → T-A15a `a2efb98` → T-B06 `0d09748` → T-C01 `4af80e8` → T-C01a `6529f41`（openai/gpt-6-astra，实施树 `D:/2030/Futures-AI-interaction-implement`，分支 `feat/workbench-interaction-astra`；未回退）。T-C01a 的命令与批末回归是实施者实测，见 §21.1。
+> - **进度**：73 个任务 / 约 107 h / 245 / 245；**33 已实施（27 已完成 + 6 已实施待第五批 Review）/ 40 未开始**；46 AC 最终验收 0；feature 未收敛。T-C02 / T-C03 / T-C04 未写。
+> - **停止点与修正**：Astra 在 T-C02 源读取时停下——T-C01 首例的 `not.toHaveProperty('selection' | 'pool')` 与 R11 已审的 C02 `selection` / C03 `pool` 必然冲突（正常权限 / 断言冲突，不是调用失败）。本轮按集成人许可，只给 T-C02 / T-C03 各加一条 `intake.spec.ts` **唯一例外**（§21.2），不改标准 / 命令 / 工时 / 依赖 / AC，不重开 Checklist。下一步：再派 Astra 自 `6529f41` 做 T-C02 → C03 → C04，批末 Converge → 独立 A 代码 Review（须核例外未削减业务 / 隐私断言）。
+> - 记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1897e-0511-7342-b84e-b11df7e9957e`；通道同前，未改配置）；只写规格文档，未运行产品测试，未 commit。
+
+> 【r6.12.1 原文，其“未实施 / 27 / 46”已由上方 r6.12.2 块取代】**当前状态（2026-10-30 r6.12.1：Checklist R11 已通过，P3 S-44～S-48 已吸收；第五批可开码、未实施；以本块为准。下一块 r6.12 派工准备块中的“未审核”“开码前置待 R11”“T-A13a 由 R11 判定”为当时原文）**：
 > - **开码前置（已满足）**：独立 A Checklist R11 原件 = 提交 `1f99f80`（claude-fable-5-1 via anthropic；`checklist.md` blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`；审查对象 `fdac9f2`）判**通过，26 ☑ / 0 ☐，0 P1 / 0 P2**，5 项 P3 S-44～S-48 不阻断。**第五批有效 Checklist = R11 `1f99f80`**；R10 `37e2f71` 为历史、勾选不改。本轮吸收只改措辞 / 实施提示 / 登记、无新机制，按原 R11 可开码，不再找 A 重新投票。
 > - **T-A13a（R3-B）**：R11 判定为既有领域规则，可在现有授权内实施，不需 Walter §5.1 另批；R3-B 维持开放、未修，关闭由第五批代码 Review 判。第五批任何任务依赖未满足即阻塞，不得照常实施或忽略依赖。
 > - **进度**：第五批 9 项**仍未实施**；73 个任务 / 约 107 h / 245 / 245；**27 已完成 / 46 未开始**；46 AC 最终验收 0；feature 未收敛。首项 T-A01a，Implement 首选 openai/gpt-6-astra（新会话）；派工提醒见 §20.5。
@@ -1007,6 +1013,8 @@
 
 **旧用例不改**（只允许在上表点名的文件中新增组）：`jobs-store.spec.ts`（27 例 `WI H-2` + 详情缓存组，整文件 43）、`routes.spec.ts` + `session-context.spec.ts`（17）、`job-list.spec.ts`（12）、`job-detail.spec.ts`（13）、`job-create.spec.ts`（5）、`badges.spec.ts`（48）、v1 三份契约测试（88）的期望与断言；`real-stubs.spec.ts` 只追加一键。若某既有用例因本批改动真实失败，停下回报，不改其断言、不 skip、不放宽生产规则来讨绿。
 
+【r6.12.2 唯一例外】T-C01 / T-C01a 新建的 `intake.spec.ts` 同样按“已有用例不改”保护；唯一例外是 `describe('WI H-5 store')` 首例中两条“C01 不提前做 C2 / C3”的临时负断言：T-C02 只换 `selection` 一行与标题、T-C03 只换 `pool` 一行，规则与核对方法见 §21.2 与 tasks T-C02 / T-C03 修改范围。上表文件所有权不变；T-C02 / T-C03 对 `intake.spec.ts` 只有这一处改动权限，不在该文件新增组。
+
 ### 20.3 逐任务验证命令（1:1，原文以 tasks.md 为准；前缀 `pnpm -C frontend`）
 
 - T-A01a：`test:unit tests/unit/jobs/contract-labels.spec.ts -t "WI reliability label"`；`test:unit tests/unit/jobs/contract-labels.spec.ts tests/unit/contracts.spec.ts tests/unit/contract-doc.spec.ts`；`contract --check && typecheck && lint`。
@@ -1043,3 +1051,28 @@
   若实施中发现上述提示与真实环境不符，停下回报，不改标准 / 命令讨绿。
 - **S-48 人工验收登记**：v1 介入历史侧栏常驻、内容默认收起、展开才读（A 已认可为 v1 展示精度）；人工看点登记在 T-B06 修改范围与 T-G08 / T-G10 上下文（R11 点名 M-02 / M-09，以清单编号为准）。这是提示，不是新增硬 AC / 工程门；不加新颜色，也不加默认展开机制。
 - **派工**：R11 已提交，本节吸收为措辞级、无新机制，可按 §20.1 顺序派 Astra（首选 openai/gpt-6-astra，新会话、实施树；回退规则同 §20.1）。每任务固定 commit + 逐命令输出摘要；超 2 h、旧用例真实失败、需改 §20.2 以外文件，或与 plan / tasks 精度不符时，先停下回报。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1894d-29db-730d-9090-8d4c26c5575f`）；只写本 feature 规格文档，未改代码 / 测试 / spec / checklist / docs，未运行产品测试，未 commit。
+
+## 21. 第五批前 6 项已实施与 T-C02 开码范围冲突最小修正（r6.12.2，2026-10-30；登记与权限修正，不是 Converge / Review / Gate 2，不预写 C02 结果）
+
+- **记账者 / 通道**：claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1897e-0511-7342-b84e-b11df7e9957e`）；通道同前轮，未改 provider / key / 全局配置。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。工作树 = 计划树 `D:/2030/Futures-AI-interaction-plan-batch4`，起点 HEAD `6529f41833cb82a802824808cda1a37ecca427a8`（clean），没有新建 D:/2030 目录。本轮只写 `specs/workbench-interaction/{tasks,analyze,implementation-log}.md` 与 `specs/README.md` 本 feature 行；未改源码 / 测试 / spec / checklist / 旧 Review / 旧 Converge / docs / HANDOFF；未运行产品测试；未 commit / push / merge；未派子 agent。临时脚本与日志在协调器 Temp `wi-batch5-01a18388-q7s7olxl/scope-fix-*`，不是项目产物。
+- **重读输入**：AGENTS.md；`docs/plan.md`；spec（blob `102af73…`）；plan §2.3【r6.12 / r6.12.1】；tasks 页首、T-C01 / T-C01a / T-C02 / T-C03 原文；Checklist R11（`1f99f80`，blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`，26 ☑ / 0 ☐）；analyze.md「Analyze R22」；本文件 §20；**真读** `frontend/tests/component/jobs/intake.spec.ts:252-283` 与 `frontend/src/jobs/stores/intake.ts`（@ `6529f41`）；实施者摘要 `wi-batch5-01a18388-q7s7olxl/astra-drawer-preview-summary.md`。
+
+### 21.1 停止点与已实施登记（实施者执行，本记账者未亲跑）
+
+- **提交链**（实施树 `D:/2030/Futures-AI-interaction-implement`，分支 `feat/workbench-interaction-astra`；本计划树 HEAD 同一提交）：T-A01a `f65d3c6` → T-A13a `e1cd4d4` → T-A15a `a2efb98` → T-B06 `0d09748` → T-C01 `4af80e8` → T-C01a `6529f41`。Implement = openai/gpt-6-astra via openai，未回退。六项**已实施、待第五批 Converge / 代码 Review**，不计完成；R3-B 是否关闭由 Review 判。
+- **T-C01a 摘要**（实施者实测，日志在 Temp `astra-drawer-preview-logs/`）：只写 6 个授权文件（新建 `IntakeDrawer.vue` / `CollectWorkspace.vue`，改 `JobListPage.vue` / `JobDetailPage.vue` / `StageWorkspace.vue`，追加 `intake.spec.ts`）；`intake.spec.ts` 新增 13 例（container 1 / close 1 / page mount 10 / non-modal 1），原 25 例与 imports / helpers 为逐字节前缀，整文件 38 例。五条标准命令通过（命令 3、4 首跑分别有 1 例新测试写错 / 26 条 lint 换行，只修新增部分后同命令重跑通过）。提交后回归：全量单测 **37 files / 1085 passed / 0 failed**（基线 1072 + 13）、六守卫、`contract --check` 25 methods / 10 events / 2 artifacts、typecheck、lint、旧四份 E2E **30 passed**；其余 E2E、全量 `pnpm test`、后端、截图、46 AC 最终验收未跑。
+- **停止点**：Astra 在 T-C02 开码前按源读取发现冲突并停下——T-C01 用例（`intake.spec.ts:253-283`）`starts closed with a deep-readonly draft and exposes no selection/pool or writable target; DTO excludes jobId` 第 260 / 261 行为 `expect(store).not.toHaveProperty('selection')` / `('pool')`；T-C02 按 R11 已审计划须暴露只读 `selection`（初值 null），T-C03 须暴露只读 `pool`（初值 `[]`），与“T-C01 / C01a 已有用例不改”无法同时成立。**没有 C02 生产 / 测试 WIP，没有第二个 SHA，未声称 C02 红测**；未用隐藏 / 惰性属性或排除测试绕过。这是正常权限 / 阶段断言冲突：不是模型调用失败（不触发 §6 回退），不是新需求（不回 Clarify、不需用户另批）。
+
+### 21.2 范围许可与唯一例外（只改测试权限 / 断言替换规则）
+
+- **判断**：两条负断言在 T-C01 时只表达“本任务不提前实现 C2 / C3”，不是冻结 spec 的 what，也不是 R11 审过的约束；R11 审过的正是 C02 `selection` / C03 `pool` 机制。把它们换成正向初值 + 只读断言，**加强**只读契约而非削弱。
+- **T-C02 例外**（只限 `describe('WI H-5 store')` 首例）：标题 → `starts closed with readonly H-5 state and internal view caches; DTO excludes jobId`；`expect(store).not.toHaveProperty('selection')` → `expect(store.selection).toBeNull()`；可在不执行的 `assertTypes` 内追加 `// @ts-expect-error selection is readonly.` + `store.selection = null`。`pool` 的不存在断言此时不动。
+- **T-C03 例外**（同一用例，标题不再改）：`expect(store).not.toHaveProperty('pool')` → `expect(store.pool).toEqual([])` + `expect(isReadonly(store.pool)).toBe(true)`；可在 `assertTypes` 内追加 `// @ts-expect-error pool is readonly.` + `store.pool = []`。保留 C02 的 selection 初值 null 与其他全部正向检查。
+- **保护面（逐字保留）**：该用例的 `isOpen` false、`jobId` null、`draft` 等于 `initialDraft` 且 `isReadonly`、`Object.keys(store.$state)` 为 `[]`（selection / pool 因此须按 plan §2.3 私有 ref + 对外 `computed` 暴露，与现有 `isOpen` / `jobId` / `draft` 同写法）、原 4 条只读 `@ts-expect-error`、`submit` 不能覆盖 jobId 的 `@ts-expect-error`、分配 DTO 三种输入；T-C01 其余用例与 T-C01a 13 例、imports、helpers、describe 名、用例数；全部业务 / 隐私断言（AC-003-2 白名单、必填、metadata only、File / FileReader / createObjectURL 0 次、`fai.jobs.v1` 不含正文、快照 / 刷新恰一次 / 失败不刷新等）。禁止 `skip` / `only` / `todo`、删除 / 移动用例、Proxy / `defineProperty` / 不可枚举 / 惰性属性等隐藏手段。
+- **不变**：spec / checklist（R11 原件只读）/ 46 AC / 标准数 / 验证命令 / 工时 / 依赖 / 任务数（73 / 107 h / 245 / 245）；sourceMeta、jobId 快照、提交、刷新、隐私等已审规则；§20.2 文件所有权表（T-C02 / T-C03 原本就有 `intake.ts` 写权限，`intake.spec.ts` 只多这一处改动许可）。T-C02 命令 4 / T-C03 命令 4 跑 `intake.spec.ts` 整文件，正好覆盖例外；T-C01 命令 4 `-t "WI H-5 store"` 仍选中该用例（新标题不匹配其他 `-t` 选择器）。
+
+### 21.3 待验证（交下一轮实施与 Review，不预写结果）
+
+- T-C02 实施后：`git diff 6529f41 -- frontend/tests/component/jobs/intake.spec.ts` 只含 §21.2 的标题 / selection 行（及可选 2 行类型断言）；`intake.spec.ts` 仍 38 例且全过；T-C02 四条命令按原文执行并登记。
+- T-C03 实施后：`git diff <T-C02 提交> -- frontend/tests/component/jobs/intake.spec.ts` 只含 pool 行（及可选 2 行）；T-C03 四条命令按原文执行。
+- 批末：Converge → 独立 A 第五批代码 Review，须核本例外没有削减业务 / 隐私断言、没有隐藏字段 hack，并判 R3-B。

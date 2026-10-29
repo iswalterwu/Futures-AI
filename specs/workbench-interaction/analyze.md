@@ -3,6 +3,7 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
+> **当前结论（2026-10-30 r6.12.2：T-C02 / T-C03 开码范围冲突最小修正）：见文末「Analyze R23」**（当前索引；只读登记，结构无变化；下一行指向 R22 的页首块及 R22 / R21 正文为当时原文，不改）。第五批前 6 项已实施待 Review（`f65d3c6` … `6529f41`），33 已实施（27 已完成 + 6 待 Review）/ 40 未开始；T-C02 / T-C03 各获 `intake.spec.ts` 首例一条断言替换的唯一例外，标准 / 命令 / 工时 / 依赖 / AC 不变，R11 原件只读、不重开 Checklist；可再派 Astra 做 T-C02。
 > **当前结论（2026-10-30 r6.12.1：Checklist R11 已通过 + P3 S-44～S-48 吸收）：见文末「Analyze R22」**（当前索引；只读登记，结构无变化）。Checklist R11 原件 `1f99f80`（A = claude-fable-5-1 via anthropic，blob `27a76aa6…`）通过 26 / 26、0 P1 / P2；第五批 9 项仍未实施，可按 R11 开码。下一行指向 R21 的页首块及 R21 正文中的“未审核”“须 R11 后才可开码”“R3-B 由 R11 判定 / 判为 §5.1 时其余 8 项照常推进”为当时原文，正文不改，其条件分支已由 R11 判定废止。本行不是审核结论。
 > **当前结论（2026-10-29 r6.12 第五批派工准备）：见文末「Analyze R21」**（当前索引；下一行“R20 仍是最新 Analyze 索引”为当时原文，R20 及更早轮次正文不改）。第五批 = T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04（9 项，约 12 h，33 条命令）；结构 73 个任务 / 107 h / 245 / 245，27 已完成 / 46 未开始；唯一编号回边 T-B03 → T-B04，无环；AC 矩阵 46 行双向一致。**未审核、未实施**：须独立 A 新会话 Checklist R11 定向复核通过并提交后才可开码；R10 不自动覆盖新接口。本行不是审核结论。
 > **当前状态补记（2026-10-29 R4-A 关闭后；只是页首状态链接，不是新的 Analyze 轮次，R20 仍是最新 Analyze 索引，其正文原样保留）**：独立 A 增量 Review [review-batch4-r4a.md](review-batch4-r4a.md)（原件 `46e8fbe`，claude-fable-5-1 via anthropic）判**本增量通过（0 P1 / P2 / 0 新 P3）**：R4-A 关闭，R2-C 技术关闭，第四批 5 项 + T-B04a 技术通过。tasks 状态改为 **27 已完成 + 43 未开始**；结构不变（70 / 104.5 h / 235 / 235 / 46 AC 双向；唯一回边 B03 → B04；无环）；46 AC 最终验收 0；feature 未收敛。见 tasks 页首、implementation-log §19。下一行“待 A”“21 + 6 已实施”为 R20 当时原文。
@@ -1759,4 +1760,42 @@ spec / plan / tasks / 代码之间**无冲突**；第四批 5 项**已收口、�
 
 - 五项 P3 已按 R11 授权吸收，均为措辞 / 实施提示 / 登记，**没有新机制**、没有新 guard / 写权限扩展 / 测试标准；结构 73 / 107 h / 245 / 245 / 46 AC 与唯一回边 T-B03 → T-B04 不变，无环。
 - 原 R11 结论（通过，26 / 26）覆盖本轮，**按原 R11 可开码**，不再找 A 重新投票：第五批自 T-A01a 起按 tasks §6 DAG 串行实施（Implement 首选 openai/gpt-6-astra，新会话、实施树），任一依赖未满足即阻塞；派工提醒见 implementation-log §20.5。完成后走 Converge → 独立 A 代码 Review（R3-B 关闭与否由其判定）。
+- 本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。
+
+## Analyze R23（只读；第五批前 6 项实施后、T-C02 开码前的测试权限冲突最小范围修正 r6.12.2，2026-10-30；当前索引，R22 / R21 及更早轮次正文不改；区别于 Checklist R11，**不是**审核结论）
+
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1897e-0511-7342-b84e-b11df7e9957e`；通道同前轮，未改配置）。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。工作树 = 计划树 `D:/2030/Futures-AI-interaction-plan-batch4`，起点 HEAD `6529f41833cb82a802824808cda1a37ecca427a8`（clean），没有新建 D:/2030 目录。本轮没有运行产品测试，没有写代码 / 测试 / fixture，没有改 spec / checklist / 旧 Review / 旧 Converge / docs / HANDOFF，没有 commit。结构脚本 `scope-fix-struct.py`（复制自 R22 的 `refine-struct.py`，逻辑未改）、HEAD / WT dump 与日志在协调器 Temp `wi-batch5-01a18388-q7s7olxl/scope-fix-work/`，不是项目产物。
+
+### 1. 输入与性质
+
+- 重读：AGENTS.md；`docs/plan.md`；spec（blob `102af73bb448224fda5002430842868632b5b66a`）；plan §2.3【r6.12 / r6.12.1】；tasks 页首与 T-C01 / T-C01a / T-C02 / T-C03 原文；Checklist R11（`1f99f80`，blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`，26 ☑ / 0 ☐）；本文件 R22；implementation-log §20；真读 `frontend/tests/component/jobs/intake.spec.ts:252-283`、`frontend/src/jobs/stores/intake.ts` 与实施者摘要 `astra-drawer-preview-summary.md`。
+- 事实：第五批前 6 项已由 Astra 实施并提交（`f65d3c6` / `e1cd4d4` / `a2efb98` / `0d09748` / `4af80e8` / `6529f41`），未经 Converge / Review。Astra 在 T-C02 开码前**按源读取**停下：T-C01 首例第 260 / 261 行 `expect(store).not.toHaveProperty('selection' | 'pool')` 与 T-C02 只读 `selection`（初值 null）/ T-C03 只读 `pool`（初值 `[]`）必然冲突，而 T-C02 / T-C03 修改范围写着“T-C01 / C01a 已有用例不改”。无 C02 WIP、无红测声明。
+- 性质：tasks 内部的**阶段性断言与后续任务权限冲突**（tasks 自身缺口），不是 spec ↔ plan 冲突，不是新需求，不是模型调用失败。现有 `intake.ts` 以私有 ref + 对外 `computed` 暴露 `isOpen` / `jobId` / `draft`，同用例的 `Object.keys(store.$state)` 为 `[]` 断言因此对 C02 / C03 也可满足，无需放宽。
+
+### 2. 修正（tasks / implementation-log；逐项）
+
+| 落点 | 内容 | 结论 |
+|---|---|---|
+| tasks T-C02 修改范围 | “一律不改”句加注；新增【r6.12.2】唯一例外：首例标题改为 `starts closed with readonly H-5 state and internal view caches; DTO excludes jobId`，`not.toHaveProperty('selection')` → `expect(store.selection).toBeNull()`，`assertTypes` 内可加 selection 只读 `@ts-expect-error`；pool 行不动 | 负断言换成正向初值 + 类型层只读，**加强**而非删除 |
+| tasks T-C03 修改范围 | 同上加注；`not.toHaveProperty('pool')` → `expect(store.pool).toEqual([])` + `expect(isReadonly(store.pool)).toBe(true)`，`assertTypes` 内可加 pool 只读 `@ts-expect-error`；标题沿用 C02 版 | 同上；`isReadonly` 已在既有 imports |
+| 两例外共同保护面 | 该用例其余全部正向检查（isOpen / jobId / draft + readonly / `$state` 空 / 原 4 条只读 ts-expect-error / jobId 不可覆盖 / 分配 DTO 三输入）、其余用例、C01a 13 例、imports、helpers、describe 名、用例数、全部业务与隐私断言逐字保留；禁止 skip / only / todo、删移用例、Proxy / 不可枚举 / 惰性属性隐藏；以 `git diff` 限定行核对 | 不削减 AC-003-2 / 隐私 / 快照 / 刷新覆盖 |
+| tasks 页首 | 新增 r6.12.2 当前块：6 项已实施待 Review、33 已实施（27 + 6）/ 40 未开始、停止点、修正、下一步 | 6 项状态行保留派工原文“未开始”，以页首为准 |
+| implementation-log | 页首 r6.12.2 块；§20.2 旧用例保护段加唯一例外指针；新增 §21（停止点 / 实施者实测摘要 / 范围许可 / 待验证） | 实施者数字只引用，不冒称亲跑 |
+
+命令覆盖：T-C02 命令 4、T-C03 命令 4 均跑 `intake.spec.ts` 整文件，覆盖例外；T-C01 命令 4 `-t "WI H-5 store"` 经 describe 名仍选中该用例，新标题不命中其他 `-t` 选择器（`WI AC-003-2` / `WI purpose required` / `WI metadata only` / `WI H-5 container` / `WI H-5 close` / `WI page mount` / `WI non-modal`）。plan 不需改（纯范围修正，selection / pool 设计未变）；interface-handoff 不改（H-5 公开成员不变，交付状态待 Review 后登记）。
+
+### 3. 结构复算（脚本只读；WT 对照 HEAD `6529f41`）
+
+- **WT = HEAD**：73 个任务，约 107 h（A 33 / 45.5、B 8 / 12、C 5 / 8.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4），每项 0.5～2 h；完成标准 / 验证命令 245 / 245，逐任务 1:1，`PROBLEMS = []`；`UNKNOWN_DEP = []`；`CYCLE None`；`BACKEDGES = [(T-B03, T-B04)]`（唯一有意回边）；spec 46 = 矩阵 46；`PARTIAL_NOT_ANCESTOR = []`；`BIDIR_BAD = []`。第五批 9 项 / 12 h / 33 条命令，依赖不变。
+- **逐任务 dump**（预计 / 依赖 / 状态 / 每条标准与命令全文）HEAD 与 WT **逐字相同**（`cmp` 一致）：没有标准或命令被删减、放宽或改写；改动只在页首与 T-C02 / T-C03 修改范围。
+- **状态口径**：脚本按状态行计 27 done / 46 todo / 0 other，因第五批 6 项状态行按指示保留派工原文；真实进度以页首为准 = **33 已实施（27 已完成 + 6 已实施待 Review）/ 40 未开始**，46 AC 最终验收 0。
+
+### 4. 保护面
+
+- spec blob `102af73…`、checklist blob `27a76aa6…`（= R11 原件 `1f99f80`，26 ☑ / 0 ☐）与 HEAD 相同；`git diff --stat` 只涉及本 feature 的 tasks / analyze / implementation-log 与 `specs/README.md` 本 feature 行；`frontend` / `backend` / `docs` / `AGENTS.md` / `HANDOFF.md` / plan / interface-handoff / 旧 Review / 旧 Converge 零差异；`git diff --check` 无告警。
+
+### 5. 结论（Analyze R23，当前索引）
+
+- 冲突已按最小范围修正：只给 T-C02 / T-C03 各一条 `intake.spec.ts` 首例断言替换许可，负断言换为正向初值 + 只读断言；结构 73 / 107 h / 245 / 245 / 46 AC、唯一回边 T-B03 → T-B04、无环均不变。不是需求变更，不回 Clarify / Gate 1；R11 已审 selection / pool 机制未变，原 R11 覆盖，不重开 Checklist / 投票。
+- **下一入口**：再派 Astra（openai/gpt-6-astra，新会话，实施树自 `6529f41`）按 DAG 做 T-C02 → T-C03 → T-C04，按 implementation-log §21.3 核对例外 diff；批末 Converge → 独立 A 第五批代码 Review（须核例外未削减业务 / 隐私断言并判 R3-B）。
 - 本报告不是审核结论，不勾选 checklist，不填 Gate 1 / Gate 2。

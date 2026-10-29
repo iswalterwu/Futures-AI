@@ -1,5 +1,13 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
+> **当前状态（r6.12.2 = T-C02 / T-C03 开码范围冲突最小修正，2026-10-30；以本块为准。下一块 r6.12.1 中“第五批 9 项仍未实施”“27 已完成 / 46 未开始”为当时原文，其 R11 结论与依赖纪律仍有效）**：
+>
+> - **实施进度**：第五批前 6 项已由 Implement（openai/gpt-6-astra，实施树 `D:/2030/Futures-AI-interaction-implement`，分支 `feat/workbench-interaction-astra`）实施并各自提交：T-A01a `f65d3c6` → T-A13a `e1cd4d4` → T-A15a `a2efb98` → T-B06 `0d09748` → T-C01 `4af80e8` → T-C01a `6529f41`（本计划树 HEAD 同为 `6529f41`）。**未经 Converge / 第五批代码 Review，不计完成**；这 6 项的任务状态行保留派工时原文“未开始”，以本块为准。总体 73 个任务 / 约 107 h / 245 / 245：**33 已实施（27 已完成 + 6 已实施待 Review）/ 40 未开始**；46 AC 最终验收 0；feature 未收敛。R3-B 代码已由 T-A13a 修改，是否关闭仍由第五批代码 Review 判定。
+> - **停止点**：Astra 提交 T-C01a 后、开码 T-C02 前，在**源读取**时停下（正常的权限 / 断言冲突，不是模型调用失败，未回退）：T-C01 用例 `WI H-5 store` 首例（`frontend/tests/component/jobs/intake.spec.ts:253-283`）含 `expect(store).not.toHaveProperty('selection')` 与 `…('pool')`，而 T-C02 / T-C03 按 R11 已审计划须新增只读 `selection`（初值 null）/ `pool`（初值 `[]`），与“T-C01 / C01a 已有用例不改”必然冲突。没有 C02 生产或测试 WIP，未声称 C02 红测。
+> - **修正**（只改测试权限 / 断言替换规则）：这两条负断言当时只表达“C01 不提前做 C2 / C3”，不是冻结的 what。T-C02 / T-C03 修改范围各加【r6.12.2】**唯一例外**：只许改该首例的标题与各自那一条“不存在”断言，换成正向初值 + 只读断言；其余用例、harness、imports、业务与隐私断言逐字不动（详见 T-C02 / T-C03 与 implementation-log §21）。spec / checklist / AC / 标准数 / 验证命令 / 工时 / 依赖 / 任务数都不改；sourceMeta、jobId 快照、提交、刷新、隐私等已审规则不改。不是新需求，不回 Clarify，不需用户另批；R11 已审的 selection / pool 机制不变，不重开 Checklist（analyze.md「Analyze R23」）。
+> - **下一步**：可再派 Astra（新会话，同一实施树，起点 `6529f41`）按 DAG 做 T-C02 → T-C03 → T-C04；批末 Converge → 独立 A 第五批代码 Review，Review 须核本范围修正没有削减业务 / 隐私断言。
+> - 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1897e-0511-7342-b84e-b11df7e9957e`；通道同前，未改配置）。本轮只写规格文档，未运行产品测试；上述 6 项的测试结果是实施者实测（implementation-log §21.1），本作者未亲跑。
+
 > **当前状态（r6.12.1 = Checklist R11 已通过 + 其 P3 S-44～S-48 措辞 / 实施提示吸收，2026-10-30；以本块为准。下一块 r6.12 派工准备块中的“未审核”“开码前置须 R11”为当时原文，其第 4 点原条件句已废止）**：
 >
 > - **R11**：独立 A（claude-fable-5-1 via anthropic）Checklist R11 原件 = 提交 `1f99f80`（`checklist.md` blob `27a76aa6…`；审查对象 `fdac9f2`）：**通过，26 ☑ / 0 ☐，0 P1 / 0 P2**；5 项 P3 S-44～S-48 不阻断，由作者自行吸收、不需重过 Checklist。**第五批有效 Checklist = R11 `1f99f80`**；R10 `37e2f71` 为历史，其勾选不改。
@@ -1501,7 +1509,12 @@
   - **`frontend/src/jobs/stages/CollectWorkspace.vue`**：每行加“预览 / 修正”按钮 → 先 `intake.open(job.id)` 再 `intake.selectUpload(upload)`；状态徽旁显示 `quarantineReason`。
   - 新建 `frontend/tests/component/jobs/extraction-preview.spec.ts`（harness 同 T-C01；需要“mapping 与 `preview.fields` 不同的待验证投放”或 quarantined 样例时，经 `window.__FAI_MOCK__.jobFixtures` 在系统边界注入，覆盖会话只在内存）。
   - **不做**：待归属池 / 归入 / 删除（T-C03）、真实解析、启发式隔离、批量确认。
-  - **一律不改**：`stores/jobs.ts`、契约 / 生成物、`StageWorkspace.vue` 的分发规则、页面文件、`shared/**`、`app/**`；T-C01 / T-C01a 已有用例。
+  - **一律不改**：`stores/jobs.ts`、契约 / 生成物、`StageWorkspace.vue` 的分发规则、页面文件、`shared/**`、`app/**`；T-C01 / T-C01a 已有用例（【r6.12.2】唯一例外见下条）。
+  - 【r6.12.2 范围修正：`intake.spec.ts` 唯一例外】只许改 `describe('WI H-5 store')` 的首个用例（原标题 `starts closed with a deep-readonly draft and exposes no selection/pool or writable target; DTO excludes jobId`），且只做三件事：
+    1. 标题改为 `starts closed with readonly H-5 state and internal view caches; DTO excludes jobId`（T-C03 不再改标题）；
+    2. 把 `expect(store).not.toHaveProperty('selection')` 这一行替换为 `expect(store.selection).toBeNull()`；
+    3. 可在该用例不执行的 `assertTypes` 函数内追加 `// @ts-expect-error selection is readonly.` + `store.selection = null`（类型层只读断言）。
+    `expect(store).not.toHaveProperty('pool')` 本任务不动（T-C03 才做池）。该用例其余内容逐字保留：`isOpen` false、`jobId` null、`draft` 等于初值且 `isReadonly`、`Object.keys(store.$state)` 为 `[]`（因此 `selection` 须按 plan §2.3 私有 ref + 对外 `computed` 暴露，不进 `$state`）、原有 4 条只读 `@ts-expect-error`、`submit` 不能覆盖 jobId 的 `@ts-expect-error`、分配 DTO 三种输入。其余 24 个 T-C01 用例与 T-C01a 的 13 个用例、imports、`connect` / `initialDraft` / `note` 等 helper、各 describe 名与用例数一律不动。禁止 `skip` / `only` / `todo`、删除或移动用例、用 Proxy / `defineProperty` / 不可枚举 / 惰性属性隐藏字段。核对：`git diff 6529f41 -- frontend/tests/component/jobs/intake.spec.ts` 只含上述行；命令 4 跑整文件即覆盖本例外。
 - **完成标准**：
   1. 预览展示识别类型、字段 / 列映射、单位、时间范围；修改映射和单位之后，只有点击确认才调用 confirmIntake，之前状态保持为待验证（AC-003-4 **最终**）。【r6.12】null 单位 / 时间范围显示“未知”；编辑器初值等于 `upload.mapping`（以注入的、mapping 与 `preview.fields` 不同的待验证投放断言）；确认前 `confirmIntake` 透传 spy 为 0 次，确认时恰 1 次且参数为编辑后的映射。
   2. 待验证 / 已入库 / 隔离三种状态有文案和图标，隔离显示原因；去掉颜色后仍可区分（AC-003-6 **最终**）。【r6.12】采集列表行与预览两处都按 `UploadStatusLabel` 显示；非 pending 的投放没有“确认入库”按钮。
@@ -1529,7 +1542,11 @@
   - **`frontend/src/jobs/stages/IntakeDrawer.vue`**：挂入 `UnassignedPool`。
   - **`frontend/src/jobs/stages/CollectWorkspace.vue`**：每行加“删除来源”按钮 → 行内非模态 `<section aria-label="确认删除来源">`：理由 `<textarea>` 默认“来源不再适用”、可修改；“确认删除” / “取消”。理由校验复用契约 `dataMethods.removeUpload.params` 中的 reason schema（不另立规则）；确认 → `intake.remove(id, reason)`；取消 → 关闭面板，零调用；失败显示 `ErrorState`（`moduleId='intake-remove'`）。被删除的行在 refresh 后从当前列表消失（契约当前投影），历史仍保留 `remove_source`。
   - 新建 `frontend/tests/component/jobs/unassigned-pool.spec.ts`（harness 同 T-C01；透传 spy 覆盖 `listUnassignedUploads` / `assignUpload` / `removeUpload` / `listJobs` / `getJob`）。
-  - **一律不改**：`job-state.ts` / 契约 / 生成物（R3-B 已归 T-A13a）、`stores/jobs.ts`、`StageWorkspace.vue`、页面文件、`shared/**`、`app/**`；T-C01 / C01a / C02 已有用例。
+  - **一律不改**：`job-state.ts` / 契约 / 生成物（R3-B 已归 T-A13a）、`stores/jobs.ts`、`StageWorkspace.vue`、页面文件、`shared/**`、`app/**`；T-C01 / C01a / C02 已有用例（【r6.12.2】唯一例外见下条）。
+  - 【r6.12.2 范围修正：`intake.spec.ts` 唯一例外，接 T-C02 已做的同一用例】只许在 `describe('WI H-5 store')` 首个用例（标题已由 T-C02 改为 `starts closed with readonly H-5 state and internal view caches; DTO excludes jobId`，本任务不再改）中：
+    1. 把 `expect(store).not.toHaveProperty('pool')` 这一行替换为 `expect(store.pool).toEqual([])` 与 `expect(isReadonly(store.pool)).toBe(true)` 两行（`isReadonly` 已在既有 imports 中）；
+    2. 可在不执行的 `assertTypes` 函数内追加 `// @ts-expect-error pool is readonly.` + `store.pool = []`。
+    T-C02 加入的 `expect(store.selection).toBeNull()` 及 selection 只读断言、该用例其余全部正向检查（含 `Object.keys(store.$state)` 为 `[]`，故 `pool` 同样须私有 ref + 对外 `computed` + `readonly`）逐字保留；其余用例、imports、helper、describe 名与用例数，以及 `extraction-preview.spec.ts` 已有用例一律不动。禁止项与 T-C02 例外相同（不 skip、不删移用例、不以 Proxy / 不可枚举 / 惰性属性隐藏字段）。核对：`git diff <T-C02 提交> -- frontend/tests/component/jobs/intake.spec.ts` 只含上述行；命令 4 跑整文件即覆盖本例外。
 - **完成标准**：
   1. 池中列出未归属的投放，归入后从池中消失（AC-003-5 部分前置）。【r6.12】“归入作业”只列 `ACTIVE_JOB_STATUSES` 中的作业（normal 下不含 j-cancelled，含 j-failed）；详情页直达打开抽屉时同样可选作业。
   2. 删除来源：先取消确认 → 不调用 removeUpload；再确认 → 调用并带理由（AC-007-3 部分前置）。【r6.12】确认时 `removeUpload` 恰 1 次、参数为 (uploadId, 默认或修改后的理由)；成功后该行从采集列表消失，`listInterventions(jobId)` 仍含对应 `remove_source`（历史保留）。
