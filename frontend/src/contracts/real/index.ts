@@ -27,6 +27,10 @@ export const dataClient: DataClient = {
   async getJob() { throw new NotImplementedError('getJob') },
   async getStageWorkspace() { throw new NotImplementedError('getStageWorkspace') },
   async resetMockData() { throw new NotImplementedError('resetMockData') },
+  async createJob() { throw new NotImplementedError('createJob') },
+  async submitIntake() { throw new NotImplementedError('submitIntake') },
+  async getIntakePreview() { throw new NotImplementedError('getIntakePreview') },
+  async confirmIntake() { throw new NotImplementedError('confirmIntake') },
 }
 
 export const agentClient: AgentClient = {

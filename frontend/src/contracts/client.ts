@@ -2,6 +2,12 @@ import type { AgentEvent } from '../agent/events.ts'
 import type {
   Bootstrap,
   CalendarEntry,
+  CreateJobInput,
+  ExtractionPreview,
+  FieldMapping,
+  IntakeInput,
+  IntakeReceipt,
+  WriteReceipt,
   DailyBriefResponse,
   Job,
   JobListItem,
@@ -37,6 +43,10 @@ export interface DataClient {
   getJob(jobId: string): Promise<Job | null>
   getStageWorkspace(jobId: string, stage: Stage): Promise<StageWorkspace>
   resetMockData(): Promise<null>
+  createJob(input: CreateJobInput): Promise<WriteReceipt>
+  submitIntake(input: IntakeInput): Promise<IntakeReceipt>
+  getIntakePreview(uploadId: string): Promise<ExtractionPreview>
+  confirmIntake(uploadId: string, mapping: FieldMapping): Promise<IntakeReceipt>
 }
 
 export type AgentEventCallback = (event: AgentEvent) => void

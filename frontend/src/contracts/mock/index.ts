@@ -182,6 +182,19 @@ export function createMockDataClient(): DataClient {
       const items = await readFixture('research', fixtureSchemas.research)
       return scenario === 'empty' ? [] : items
     },
+    createJob(input) {
+      return writeJobState(dataMethods.createJob, [input], jobState.createJob)
+    },
+    submitIntake(input) {
+      return writeJobState(dataMethods.submitIntake, [input], jobState.submitIntake)
+    },
+    confirmIntake(uploadId, mapping) {
+      return writeJobState(dataMethods.confirmIntake, [uploadId, mapping], jobState.confirmIntake)
+    },
+    async getIntakePreview(uploadId) {
+      const [id] = parseBoundary(dataMethods.getIntakePreview.params, [uploadId])
+      return readJobState(() => jobState.getIntakePreview(id), dataMethods.getIntakePreview.result)
+    },
     async resetMockData() {
       await delayScenario(jobState.getJobScenario())
       jobState.resetJobState()
@@ -235,6 +248,16 @@ export function createMockAgentClient(): AgentClient {
       return () => { listeners.delete(cb) }
     },
   }
+}
+
+async function writeJobState<Args extends unknown[], Result>(
+  method: { params: z.ZodType<Args>; result: z.ZodType<Result> },
+  input: Args,
+  write: (...args: Args) => Result,
+): Promise<Result> {
+  const args = parseBoundary(method.params, input)
+  await delayScenario(jobState.getJobScenario())
+  return parseBoundary(method.result, write(...args))
 }
 
 async function readJobState<T>(read: () => T, schema: z.ZodType<T>): Promise<T> {

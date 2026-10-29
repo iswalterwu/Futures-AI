@@ -250,6 +250,12 @@ export const JobSchema = z.object({
   createdBy: z.enum(['human', 'schedule']).describe('创建者：人或计划。'),
   parentJobId: z.string().min(1).nullable().describe('父作业锚；没有父作业时为 null。'),
 }).refine(hasJobReason, { path: ['reason'], message: 'failed / cancelled 必须提供非空原因' }).describe('作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。')
+export const CreateJobInputSchema = z.strictObject({
+  title: z.string().trim().min(1).describe('作业标题，去除两端空白后必填。'),
+  type: JobTypeSchema,
+  subject: z.string().trim().min(1).nullable().describe('品种 / 主题；去除两端空白后非空，未指定时 null。'),
+  goal: z.string().describe('目标说明，可为空或多行。'),
+}).describe('人创建作业的输入；不接受状态、创建者或定稿字段。')
 export const JobContextSchema = z.object({
   jobId: z.string().min(1).describe('作业上下文锚；命名对照 job_id→jobId。'),
   stage: StageSchema,
@@ -591,7 +597,14 @@ export const WriteReceiptSchema = z.strictObject({
   inbox: InboxCountsSchema,
 }).describe('领域写回执，携带变更对象与收件箱计数；不表示 agent run 已完成。')
 
+export const IntakeReceiptSchema = WriteReceiptSchema.extend({
+  upload: UploadSchema.describe('本次提交或确认后的投放元数据，不含正文。'),
+  preview: ExtractionPreviewSchema.describe('该投放的合成抽取预览。'),
+}).describe('投放写回执，复用领域写回执并携带投放及预览。')
+
 export const contractSchemas = {
+  CreateJobInput: CreateJobInputSchema,
+  IntakeReceipt: IntakeReceiptSchema,
   DeliverableFixtures: DeliverableFixturesSchema,
   UploadFixtures: UploadFixturesSchema,
   JobCollections: JobCollectionsSchema,
@@ -747,5 +760,7 @@ export type Revision = z.infer<typeof RevisionSchema>
 export type StageWorkspace = z.infer<typeof StageWorkspaceSchema>
 export type InboxCounts = z.infer<typeof InboxCountsSchema>
 export type WriteReceipt = z.infer<typeof WriteReceiptSchema>
+export type CreateJobInput = z.infer<typeof CreateJobInputSchema>
+export type IntakeReceipt = z.infer<typeof IntakeReceiptSchema>
 export type InterventionPayload = z.infer<typeof InterventionPayloadSchema>
 export type Intervention = z.infer<typeof InterventionSchema>

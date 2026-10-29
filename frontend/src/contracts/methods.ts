@@ -4,6 +4,12 @@ import type { AgentClient, DataClient } from './client.ts'
 import {
   BootstrapSchema,
   CalendarEntrySchema,
+  CreateJobInputSchema,
+  ExtractionPreviewSchema,
+  FieldMappingSchema,
+  IntakeInputSchema,
+  IntakeReceiptSchema,
+  WriteReceiptSchema,
   CONTRACT_VERSION,
   DailyBriefResponseSchema,
   ErrorResponseSchema,
@@ -131,6 +137,29 @@ export const dataMethods = {
       StageSchema.describe('stage：要读取的阶段，不必是当前阶段。'),
     ]).describe('阶段工作区查询的位置参数。'),
     result: StageWorkspaceSchema,
+  },
+  createJob: {
+    description: '创建人的作业，初始为 collecting / collect，四阶段为运行中 / 未开始 / 未开始 / 未开始；只建立空草稿交付物及首版，不自动推进或定稿。',
+    params: z.tuple([CreateJobInputSchema]).describe('input：新作业标题、类型、可空主题与目标说明。'),
+    result: WriteReceiptSchema,
+  },
+  submitIntake: {
+    description: '提交一种投放及来源说明，返回待验证记录与合成预览，不解析或抓取正文。jobId 非空时归入该作业并记录 ingest，否则进入待归属池；终结作业拒绝写入。',
+    params: z.tuple([IntakeInputSchema]).describe('input：提交时确定的作业锚、输入种类及来源说明。'),
+    result: IntakeReceiptSchema,
+  },
+  getIntakePreview: {
+    description: '读取投放锚对应的合成预览副本，未知锚返回 not_found。',
+    params: z.tuple([z.string().min(1).describe('uploadId：投放唯一标识，非空。')]).describe('投放预览查询的位置参数。'),
+    result: ExtractionPreviewSchema,
+  },
+  confirmIntake: {
+    description: '确认未删除的待验证投放并修正映射；有既定隔离原因时保留原因并隔离，否则入库。保留修正前映射，已归属者追加 dataset 修订与 map_fix；终结作业拒绝写入。',
+    params: z.tuple([
+      z.string().min(1).describe('uploadId：待确认投放锚。'),
+      FieldMappingSchema.describe('mapping：修正后的字段与单位映射。'),
+    ]).describe('投放确认的位置参数。'),
+    result: IntakeReceiptSchema,
   },
   resetMockData: {
     description: '显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。',

@@ -19,6 +19,10 @@ const requests = {
   getJob: () => dataClient.getJob('j-collect'),
   getStageWorkspace: () => dataClient.getStageWorkspace('j-collect', 'collect'),
   resetMockData: () => dataClient.resetMockData(),
+  createJob: () => dataClient.createJob({ title: '样例作业', type: 'daily', subject: null, goal: '样例目标' }),
+  submitIntake: () => dataClient.submitIntake({ jobId: null, inputKind: 'url', url: 'https://example.invalid/sample', sourceNote: { purpose: '样例', reliability: 'unknown', publishedAt: null, validUntil: null, scopeNote: null } }),
+  getIntakePreview: () => dataClient.getIntakePreview('u-unassigned-file'),
+  confirmIntake: () => dataClient.confirmIntake('u-unassigned-file', []),
 } satisfies { [Method in keyof DataClient]: () => ReturnType<DataClient[Method]> }
 
 describe('WI real stubs — AC-008-3 partial', () => {

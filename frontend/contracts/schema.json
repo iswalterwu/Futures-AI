@@ -176,6 +176,54 @@
         "$ref": "#/$defs/ErrorResponse"
       }
     },
+    "createJob": {
+      "description": "创建人的作业，初始为 collecting / collect，四阶段为运行中 / 未开始 / 未开始 / 未开始；只建立空草稿交付物及首版，不自动推进或定稿。",
+      "params": {
+        "$ref": "#/$defs/createJobParams"
+      },
+      "result": {
+        "$ref": "#/$defs/WriteReceipt"
+      },
+      "error": {
+        "$ref": "#/$defs/ErrorResponse"
+      }
+    },
+    "submitIntake": {
+      "description": "提交一种投放及来源说明，返回待验证记录与合成预览，不解析或抓取正文。jobId 非空时归入该作业并记录 ingest，否则进入待归属池；终结作业拒绝写入。",
+      "params": {
+        "$ref": "#/$defs/submitIntakeParams"
+      },
+      "result": {
+        "$ref": "#/$defs/IntakeReceipt"
+      },
+      "error": {
+        "$ref": "#/$defs/ErrorResponse"
+      }
+    },
+    "getIntakePreview": {
+      "description": "读取投放锚对应的合成预览副本，未知锚返回 not_found。",
+      "params": {
+        "$ref": "#/$defs/getIntakePreviewParams"
+      },
+      "result": {
+        "$ref": "#/$defs/ExtractionPreview"
+      },
+      "error": {
+        "$ref": "#/$defs/ErrorResponse"
+      }
+    },
+    "confirmIntake": {
+      "description": "确认未删除的待验证投放并修正映射；有既定隔离原因时保留原因并隔离，否则入库。保留修正前映射，已归属者追加 dataset 修订与 map_fix；终结作业拒绝写入。",
+      "params": {
+        "$ref": "#/$defs/confirmIntakeParams"
+      },
+      "result": {
+        "$ref": "#/$defs/IntakeReceipt"
+      },
+      "error": {
+        "$ref": "#/$defs/ErrorResponse"
+      }
+    },
     "resetMockData": {
       "description": "显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。",
       "params": {
@@ -216,6 +264,98 @@
     }
   },
   "$defs": {
+    "CreateJobInput": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "作业标题，去除两端空白后必填。"
+        },
+        "type": {
+          "$ref": "#/$defs/JobType"
+        },
+        "subject": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "品种 / 主题；去除两端空白后非空，未指定时 null。"
+        },
+        "goal": {
+          "type": "string",
+          "description": "目标说明，可为空或多行。"
+        }
+      },
+      "required": [
+        "title",
+        "type",
+        "subject",
+        "goal"
+      ],
+      "additionalProperties": false,
+      "description": "人创建作业的输入；不接受状态、创建者或定稿字段。"
+    },
+    "IntakeReceipt": {
+      "type": "object",
+      "properties": {
+        "jobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Job"
+          },
+          "description": "本次写入改变的作业。"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Artifact"
+          },
+          "description": "本次改变的产物。"
+        },
+        "revisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Revision"
+          },
+          "description": "本次产生的修订。"
+        },
+        "interventions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Intervention"
+          },
+          "description": "本次新增或更新 outcome 的介入事件。"
+        },
+        "inbox": {
+          "$ref": "#/$defs/InboxCounts"
+        },
+        "upload": {
+          "description": "本次提交或确认后的投放元数据，不含正文。",
+          "$ref": "#/$defs/Upload"
+        },
+        "preview": {
+          "description": "该投放的合成抽取预览。",
+          "$ref": "#/$defs/ExtractionPreview"
+        }
+      },
+      "required": [
+        "jobs",
+        "artifacts",
+        "revisions",
+        "interventions",
+        "inbox",
+        "upload",
+        "preview"
+      ],
+      "additionalProperties": false,
+      "description": "投放写回执，复用领域写回执并携带投放及预览。"
+    },
     "DeliverableFixtures": {
       "type": "object",
       "propertyNames": {
@@ -7511,6 +7651,62 @@
       "minItems": 2,
       "maxItems": 2,
       "description": "阶段工作区查询的位置参数。"
+    },
+    "createJobParams": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/CreateJobInput"
+        }
+      ],
+      "items": false,
+      "minItems": 1,
+      "maxItems": 1,
+      "description": "input：新作业标题、类型、可空主题与目标说明。"
+    },
+    "submitIntakeParams": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/IntakeInput"
+        }
+      ],
+      "items": false,
+      "minItems": 1,
+      "maxItems": 1,
+      "description": "input：提交时确定的作业锚、输入种类及来源说明。"
+    },
+    "getIntakePreviewParams": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "description": "uploadId：投放唯一标识，非空。"
+        }
+      ],
+      "items": false,
+      "minItems": 1,
+      "maxItems": 1,
+      "description": "投放预览查询的位置参数。"
+    },
+    "confirmIntakeParams": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "description": "uploadId：待确认投放锚。"
+        },
+        {
+          "description": "mapping：修正后的字段与单位映射。",
+          "$ref": "#/$defs/FieldMapping"
+        }
+      ],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "投放确认的位置参数。"
     },
     "resetMockDataResult": {
       "type": "null",

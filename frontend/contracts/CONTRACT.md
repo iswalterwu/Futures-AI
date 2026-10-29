@@ -132,6 +132,38 @@
 - 成功结果（Promise）：`StageWorkspace`
 - 拒绝：`ErrorResponse`
 
+### `createJob`
+
+创建人的作业，初始为 collecting / collect，四阶段为运行中 / 未开始 / 未开始 / 未开始；只建立空草稿交付物及首版，不自动推进或定稿。
+
+- 参数（位置参数元组）：`createJobParams`
+- 成功结果（Promise）：`WriteReceipt`
+- 拒绝：`ErrorResponse`
+
+### `submitIntake`
+
+提交一种投放及来源说明，返回待验证记录与合成预览，不解析或抓取正文。jobId 非空时归入该作业并记录 ingest，否则进入待归属池；终结作业拒绝写入。
+
+- 参数（位置参数元组）：`submitIntakeParams`
+- 成功结果（Promise）：`IntakeReceipt`
+- 拒绝：`ErrorResponse`
+
+### `getIntakePreview`
+
+读取投放锚对应的合成预览副本，未知锚返回 not_found。
+
+- 参数（位置参数元组）：`getIntakePreviewParams`
+- 成功结果（Promise）：`ExtractionPreview`
+- 拒绝：`ErrorResponse`
+
+### `confirmIntake`
+
+确认未删除的待验证投放并修正映射；有既定隔离原因时保留原因并隔离，否则入库。保留修正前映射，已归属者追加 dataset 修订与 map_fix；终结作业拒绝写入。
+
+- 参数（位置参数元组）：`confirmIntakeParams`
+- 成功结果（Promise）：`IntakeReceipt`
+- 拒绝：`ErrorResponse`
+
 ### `resetMockData`
 
 显式重置作业样例记录与已读状态，恢复种子数据；不影响导航、抽屉与布局设置，不生成分析介入事件。
@@ -161,6 +193,35 @@
 字段路径以 `$` 为根；`[]` 为列表元素，`[n]` 为位置参数，`oneOf[n]` / `anyOf[n]` 为分支。引用类型见同名小节。
 类型中的枚举与常量直接来自 schema；必填不等于非空，null、空列表与零的语义见字段说明。
 完整格式、范围与长度约束见 `schema.json`；AgentRun 的唯一终态、同次运行与 stepId 单调约束还须遵守通用约定，不能只依赖 JSON Schema。
+
+### `CreateJobInput`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 人创建作业的输入；不接受状态、创建者或定稿字段。 |
+| `$.title` | 是 | `string` | 作业标题，去除两端空白后必填。 |
+| `$.type` | 是 | `JobType` | 作业类型：日报、专题、临时。 |
+| `$.subject` | 是 | `string &#124; null` | 品种 / 主题；去除两端空白后非空，未指定时 null。 |
+| `$.subject.anyOf[0]` | 是 | `string` |  |
+| `$.subject.anyOf[1]` | 是 | `null` |  |
+| `$.goal` | 是 | `string` | 目标说明，可为空或多行。 |
+
+### `IntakeReceipt`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `object` | 投放写回执，复用领域写回执并携带投放及预览。 |
+| `$.jobs` | 是 | `Job[]` | 本次写入改变的作业。 |
+| `$.jobs[]` | 是 | `Job` | 作业详情；getJob 仅在 empty 场景查询预置 fixture id 时返回 null，任何场景的未知 id 返回 not_found。 |
+| `$.artifacts` | 是 | `Artifact[]` | 本次改变的产物。 |
+| `$.artifacts[]` | 是 | `Artifact` | 阶段产物与修订锚；修订内容另由 Revision 保存。 |
+| `$.revisions` | 是 | `Revision[]` | 本次产生的修订。 |
+| `$.revisions[]` | 是 | `Revision` | 四种产物修订的判别联合；提交深拷贝，读 API 返回副本，历史不可变。 |
+| `$.interventions` | 是 | `Intervention[]` | 本次新增或更新 outcome 的介入事件。 |
+| `$.interventions[]` | 是 | `Intervention` | 介入事件十个必有字段，camelCase；原动作不可改，检查点仅更新 outcome。action↔kind 对应关系由 zod 边界校验，见各 payload 分支的 kind 说明。 |
+| `$.inbox` | 是 | `InboxCounts` | 契约提供的收件箱计数，不由 UI 从状态推导。 |
+| `$.upload` | 是 | `Upload` | 本次提交或确认后的投放元数据，不含正文。 |
+| `$.preview` | 是 | `ExtractionPreview` | 该投放的合成抽取预览。 |
 
 ### `DeliverableFixtures`
 
@@ -1919,6 +1980,35 @@
 | `$` | 是 | `[string, Stage]` | 阶段工作区查询的位置参数。 |
 | `$[0]` | 是 | `string` | jobId：工作区所属作业唯一标识，非空。 |
 | `$[1]` | 是 | `Stage` | stage：要读取的阶段，不必是当前阶段。 |
+
+### `createJobParams`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `[CreateJobInput]` | input：新作业标题、类型、可空主题与目标说明。 |
+| `$[0]` | 是 | `CreateJobInput` | 人创建作业的输入；不接受状态、创建者或定稿字段。 |
+
+### `submitIntakeParams`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `[IntakeInput]` | input：提交时确定的作业锚、输入种类及来源说明。 |
+| `$[0]` | 是 | `IntakeInput` | 三种投放输入，必须选择一种；只校验元数据，不解析原文。 |
+
+### `getIntakePreviewParams`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `[string]` | 投放预览查询的位置参数。 |
+| `$[0]` | 是 | `string` | uploadId：投放唯一标识，非空。 |
+
+### `confirmIntakeParams`
+
+| 字段 | 必填 | 类型 / 值域 | 语义 |
+| --- | --- | --- | --- |
+| `$` | 是 | `[string, FieldMapping]` | 投放确认的位置参数。 |
+| `$[0]` | 是 | `string` | uploadId：待确认投放锚。 |
+| `$[1]` | 是 | `FieldMapping` | mapping：修正后的字段与单位映射。 |
 
 ### `resetMockDataResult`
 
