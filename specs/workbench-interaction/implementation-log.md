@@ -1,7 +1,17 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
-> **当前状态（2026-10-29 第二批实施后 Converge batch2；以本行为准，下列各“当前状态”行为当时原文）**：
+> **当前状态（2026-10-29 第二批独立 Review 后记账；以本块为准，下列各“当前状态”块 / 行均为当时原文）**：
+> - **进度**：**16 / 67 已完成**，**51 未开始**。“已完成”= 所在批次代码 Review 通过，**不表示 AC 最终验收**（46 AC 最终 0）。首批 10 项经 `af95b66`；第二批 6 项（T-A09b `75a1159`、T-A10 `1841029`、T-A22 `cc59e94`、T-A22b `b38cf43`、T-A23 `ebce4c8`、T-A24 `27e59e6`；代码固定 `27e59e610e2ab8c14e7c3db554609e52e40f5f76`）经独立 A 判**本批通过：0 P1 / P2，5 项 P3 R2-A～R2-E**。
+> - **审核 artifact**：`review-batch2.md`，A = claude-fable-5-1 via anthropic（新会话、独立 worktree，固定审文档 `858025d` + 代码 `27e59e6`）；集成人原样提交于 `f72a1a187405e9f9dcba5bb22f47ad840141702d`，已 ff 到本文档树与生产方集成树 `integration/workbench-interaction`；只引用、不改写。A 亲跑证据见 §6 第二批补记。
+> - **Checklist**：当前有效 = R8.1 `34d339eb1705310927f06d95aaf64bfc9bf4a5c3`（blob `99e096ad9f82bffe2e61d13ea5a8512d5075ce71`，26 / 26，B-12 拆分已关）；R8 `7b91a2c` 未通过记录保留。
+> - **feature**：**未收敛**（51 项未实施 + H 组 `blocked_by: frontend-workbench-v2`）。H-2·标签 / H-3 / H-4 / H-1 生产方 ①②③ 具备、**④ 均未取得**（待消费方集成，未交付）；H-2·列表 / H-6 / H-5 / 页面切片未交付。
+> - **下一可起步**：T-A11（依赖 T-A10 已满足），之后按 tasks §6 DAG。Walter 授权（“允许”）在既有 tasks 内持续有效，不重复请求；仍逐批 Converge / 独立 Review，不替代全 feature Review / Gate 2。
+> - **上游**：main `072bb12` 不在本批祖先，本批 pin `90187f7`；集成人决定本批不自动同步，后续同步须按 tasks §7 重核 → Analyze → A 定向复核，并与 v2 所有者协调 T-V2-09#4（R2-D）。不是 T-A11 的硬阻塞。
+>
+> 不是全 feature Review / Gate 2 / Handoff。
+>
+> 【历史原文】**当前状态（2026-10-29 第二批实施后 Converge batch2；当时以本行为准）**：
 > - **进度**：**16 / 67 已实施**，**51 未开始**。首批 10 项（T-A01～T-A09、T-A09a）已完成，并经 `af95b66` 批次 Review，记录不改写。第二批 6 项**已实施、待本批独立代码 Review**：T-A09b `75a1159`、T-A10 `1841029`、T-A22 `cc59e94`、T-A22b `b38cf43`、T-A23 `ebce4c8`、T-A24 `27e59e6`。
 > - **Checklist**：R8 未通过（`7b91a2c`，B-12 粒度）→ r6.4 拆出 T-A09b → **R8.1 通过**（`34d339eb1705310927f06d95aaf64bfc9bf4a5c3`，blob `99e096ad…`，26 / 26）。**当前有效 Checklist = R8.1 `34d339e`**（不是旧 R7 `9acf3de`）。
 > - **集成**：集成人已 ff-only 并入生产方集成树 `integration/workbench-interaction` @ `27e59e6`（旁证）；未写 v2 树，H-x 的 ④ 全部缺。
@@ -10,8 +20,8 @@
 > - **上游**：main 已到 `072bb12`（v2 S0），本批仍 pin `90187f7`、未导入，见 `converge-batch2.md` §6。
 >
 > 不是全 feature Review / Gate 2 / Handoff；本行不预填本批独立 Review 结果。
-> **当前状态（2026-10-29 首批独立 Review 后记账；以本行为准，下一行“待独立 Review”为当时原文）**：**10 / 66 已完成**（T-A01～T-A09、T-A09a；代码固定 `13a3373`），**独立 A 本批 Review 通过（0 P1 / P2，6 项 P3 R-A～R-F）**，审核原件 `review-batch-a09a.md` 提交于 `af95b66505875609f7ed3f823e047cd16226a1c5`，已 ff 到本文档树与生产方集成树 `integration/workbench-interaction`；“已完成”= 本批代码 Review 通过，**不表示 AC 最终验收**：46 AC 最终 **0**，其余 **56 项未开始**，feature **未收敛**（尚未实施 + H 组外部阻塞）；H-1 ①②③ 具备（③ 现含 A 亲跑）、**④ 未取得**，其余 H-x 未交付。Walter 代码实施授权与集成人指定在既有 tasks 范围内持续有效，后续批次不需重复授权；本次在首批 10 项的清晰安全点收尾汇报（非用户暂停）。下一批入口按 tasks §6 DAG：T-A10 / T-A22 / T-A23 / T-A24。P3 后续定位见 §8。不是全 feature Review / Gate 2 / Handoff。
-> **当前状态（2026-10-29 Checklist R8 后 r6.4；以本行为准，下一行为当时原文）**：首批 10 / 67 已完成（不变；固定结果与 `af95b66` Review 不改写）。独立 A 的 **Checklist R8 未通过**（原件 `7b91a2c`；25 / 26，V-02 ☐；唯一 P2 = B-12 T-A10 粒度）。r6.4 只做 Tasks 层拆分：新增 **T-A09b**（R-B 种子校正，fixture-only，0.5 h，依赖 T-A08），T-A10 恢复核心 2 h（依赖 T-A09、T-A09b；标准 5 只保留真实 `getStageWorkspace` 读回 12 个种子空态）。**第二批 = T-A09b、T-A10、T-A22、T-A22b、T-A23、T-A24（6 项，约 7 h）**；任务 67 / 约 102 h，标准 / 命令 224 / 224。**blocked**：须 A 新会话 R8.1 增量复核关闭 B-12、补勾 V-02 并提交后才可开码；未写代码、未运行任何产品测试、无新 commit。R-B 落点改为 T-A09b（残留见 §8），R-D 口径不变，R-A / R-C / R-E / R-F 未处理。46 AC 最终 0；feature 未收敛；H-x 无一已交付。
+> 【历史原文】**当前状态（2026-10-29 首批独立 Review 后记账；当时以本行为准，下一行“待独立 Review”为当时原文）**：**10 / 66 已完成**（T-A01～T-A09、T-A09a；代码固定 `13a3373`），**独立 A 本批 Review 通过（0 P1 / P2，6 项 P3 R-A～R-F）**，审核原件 `review-batch-a09a.md` 提交于 `af95b66505875609f7ed3f823e047cd16226a1c5`，已 ff 到本文档树与生产方集成树 `integration/workbench-interaction`；“已完成”= 本批代码 Review 通过，**不表示 AC 最终验收**：46 AC 最终 **0**，其余 **56 项未开始**，feature **未收敛**（尚未实施 + H 组外部阻塞）；H-1 ①②③ 具备（③ 现含 A 亲跑）、**④ 未取得**，其余 H-x 未交付。Walter 代码实施授权与集成人指定在既有 tasks 范围内持续有效，后续批次不需重复授权；本次在首批 10 项的清晰安全点收尾汇报（非用户暂停）。下一批入口按 tasks §6 DAG：T-A10 / T-A22 / T-A23 / T-A24。P3 后续定位见 §8。不是全 feature Review / Gate 2 / Handoff。
+> 【历史原文】**当前状态（2026-10-29 Checklist R8 后 r6.4；当时以本行为准，下一行为当时原文）**：首批 10 / 67 已完成（不变；固定结果与 `af95b66` Review 不改写）。独立 A 的 **Checklist R8 未通过**（原件 `7b91a2c`；25 / 26，V-02 ☐；唯一 P2 = B-12 T-A10 粒度）。r6.4 只做 Tasks 层拆分：新增 **T-A09b**（R-B 种子校正，fixture-only，0.5 h，依赖 T-A08），T-A10 恢复核心 2 h（依赖 T-A09、T-A09b；标准 5 只保留真实 `getStageWorkspace` 读回 12 个种子空态）。**第二批 = T-A09b、T-A10、T-A22、T-A22b、T-A23、T-A24（6 项，约 7 h）**；任务 67 / 约 102 h，标准 / 命令 224 / 224。**blocked**：须 A 新会话 R8.1 增量复核关闭 B-12、补勾 V-02 并提交后才可开码；未写代码、未运行任何产品测试、无新 commit。R-B 落点改为 T-A09b（残留见 §8），R-D 口径不变，R-A / R-C / R-E / R-F 未处理。46 AC 最终 0；feature 未收敛；H-x 无一已交付。
 > 【历史原文】**当前状态（2026-10-29 第二批派工准备 r6.3；当时以本行为准，下一行为当时原文）**：首批 10 / 66 已完成（不变）；**第二批 T-A10、T-A22、T-A22b、T-A23、T-A24 待实施**——派工范围、精度口径、命令与写权限见 §9；未写代码、未运行任何产品测试、无新 commit，不预写结果。R-B 已定案（fixture-only，归 T-A10）、R-D 口径已定（不加 refine、按构造保持），R-A / R-C / R-E / R-F 未处理（§8）。46 AC 最终 0；feature 未收敛；H-x 无一已交付。
 > 【历史原文】**当前状态（2026-10-29 首批实施后 Converge；以本行为准）**：**10 / 66 已实施**（T-A01～T-A09、T-A09a，实施者 openai/gpt-6-astra，固定 commit 见 §6），已由集成人 ff-only 集成到生产方集成树 `integration/workbench-interaction` @ `13a3373f7ebd2075fb8bcfe32033127a916fa6b9`；Converge（claude-opus-5-5 via anthropic）判本批范围**已收口、待独立 Review**，feature 整体**未收敛（尚未实施 56 项 + H 组外部阻塞）**；H-1 具备 ①②③、④ 未取得（未交付），其余 H-x 未交付。不是 Review / Gate 2 / Handoff。详见 `converge-batch-a09a.md`、analyze.md「Analyze R8」。
 > 【历史原文】**当前状态（2026-10-28 建档）**：**尚未开码**。66 个任务全部“未开始”；没有实现提交、没有运行任何产品测试、没有集成 SHA。下文“证据”各栏均为待填，不预写任何成功结果。
@@ -30,7 +40,7 @@
 | 授权规格种子（开码前置完成） | **已完成** | 定向导入提交 `8753fa9f65dae685f765f316b00e6287750f0cf7`（源 `1ad7963`；只含 `specs/workbench-interaction/**` 与 README 本 feature 行 / 跨 feature 行，`90187f7` 为其祖先，前端代码 = `90187f7`）。实施树、生产方集成树均自该提交起步；本批代码 diff 以 `8753fa9..13a3373` 为准 |
 | 首批批次代码 Review（非全 feature Review、非 Gate 2） | **通过**：0 P1 / P2，6 项 P3（R-A～R-F，未经 Walter 风险接受，见 §8） | A = claude-fable-5-1 via anthropic，新会话、独立 worktree，固定审 `b0b065f` + 代码 `13a3373`；审核原件提交 `af95b66505875609f7ed3f823e047cd16226a1c5`（只引用、不改写） |
 | 第二批开码前置：Checklist R8 → R8.1 | **已满足**：R8 未通过（审 `8ad5e28`，原件 `7b91a2c`；唯一 P2 B-12 = T-A10 粒度）→ r6.4 拆出 T-A09b、Analyze R10（`8bf56b8`）→ **R8.1 通过**（26 / 26，B-12 关闭，1 项 P3 S-37） | A = claude-fable-5-1 via anthropic，新会话、独立 worktree；R8.1 原件提交 `34d339eb1705310927f06d95aaf64bfc9bf4a5c3`，`checklist.md` blob `99e096ad9f82bffe2e61d13ea5a8512d5075ce71`。**当前有效 Checklist = R8.1** |
-| 第二批批次代码 Review（非全 feature Review、非 Gate 2） | **待进行**（不预填结果） | 只读输入见 `converge-batch2.md` §10；代码 diff `34d339e..27e59e6 -- frontend` |
+| 第二批批次代码 Review（非全 feature Review、非 Gate 2） | **通过**：0 P1 / P2，5 项 P3（R2-A～R2-E，未修、未经 Walter 风险接受，见 §8）（本行登记前曾为“待进行”） | A = claude-fable-5-1 via anthropic，新会话、独立 worktree，固定审文档 `858025d` + 代码 `27e59e6`（diff `34d339e..27e59e6 -- frontend`）；审核原件 `review-batch2.md` 提交 `f72a1a187405e9f9dcba5bb22f47ad840141702d`（只引用、不改写） |
 | H 组外部闸门 `frontend-workbench-v2` | **阻塞**（不变） | v2 壳方 S1 / S2 交付并集成前，T-H01～T-H04 不验收；Converge 对 AC-003-1 / AC-005-5 / AC-007-4 的 v2 子项必报“未收敛（外部阻塞）” |
 
 ## 2. 基线、分支与工作树
@@ -49,6 +59,8 @@
 | 本批记账（Review 后） | 同 Converge 文档树，HEAD `af95b66`（已含审核原件） | 记账会话只写 tasks / implementation-log / interface-handoff 与 README 本 feature 两行；不 commit（由集成人提交） |
 | 第二批实施（batch2） | 实施树 `feat/workbench-interaction-astra` 自 R8.1 `34d339e` 起步，HEAD = `27e59e610e2ab8c14e7c3db554609e52e40f5f76`（clean）；生产方集成树 `integration/workbench-interaction` 由集成人 ff-only 到同一 SHA（本轮只读 `rev-parse` 核验，clean） | 实施会话 / 集成人（同上） |
 | Converge 文档树（batch2） | `D:/2030/Futures-AI-interaction-converge-batch2` / `docs/workbench-interaction-batch2-converge`，固定起点 `27e59e6`（与实施 / 生产集成树代码相同） | Converge 会话只写本 feature 的 plan / tasks / analyze / implementation-log / interface-handoff / `converge-batch2.md` 与 README 本 feature 两行；不改代码、不 commit（由集成人提交） |
+| 第二批 Review 树（只读审查） | `D:/2030/Futures-AI-interaction-review-batch2` / `review/workbench-interaction-batch2-code`（起点 `858025d`；审核员 A 只写 `review-batch2.md`，由集成人原样提交 `f72a1a1`） | 审核员 A（已结束）；不写代码 / checklist |
+| 本批记账（第二批 Review 后） | 同 batch2 Converge 文档树，HEAD `f72a1a1`（已含审核原件；实施树仍 `27e59e6`，代码相同） | 记账会话只写 tasks / implementation-log / interface-handoff / plan（R2-E 一句）与 README 本 feature 两行；不 commit（由集成人提交） |
 | 只读参照 | main `D:/2030/Futures-AI-interaction-main-ref-90187f7`；旧基线 `D:/2030/Futures-AI-interaction-base-43b6d79`；v2 `D:/2030/Futures-AI-interaction-v2-ref-79b5212`（`79b5212`） | 禁止写 |
 | v2 自有树（他人所有） | `D:/2030/Futures-AI-workbench-v2-integration`（`integration/frontend-workbench-v2`）及其实施树，归另一协调会话 | **严禁写 / 代 merge**；H-x 的 ④ 集成 SHA 只能由其所有者登记 |
 
@@ -65,7 +77,7 @@
 
 测试变红、Converge 发现差距、Review 未通过都是正常结果，不是换模型理由；所有候选不可用 → 标 blocked 并报告。
 
-## 4. 首批派工范围（待开码前置完成后执行）
+## 4. 首批派工范围（历史：已于 batch-a09a 执行完毕；“待开码前置完成后执行”为当时原文）
 
 - **任务**：T-A01 → T-A02 / T-A03 → T-A04 → T-A05 → T-A06 → T-A07 → T-A08 → T-A09 → T-A09a（严格按 tasks §6 DAG；T-A09a 依赖 T-A02 / T-A09）。每个任务的修改范围、完成标准（引用 AC）与验证命令以 tasks.md 原文为准，不在本文件复述或改写。
 - **文件所有权**（tasks §1-5）：只改 `frontend/src/contracts/**`（作业契约 v2 段、方法表、mock、real 桩、可选 `SendMessage.jobContext`）、`frontend/src/agent/events.ts`（可选 `jobContext`，T-A09a）、`frontend/contracts/{CONTRACT.md,schema.json}`（只经 `pnpm -C frontend contract` 生成）、`frontend/tests/unit/jobs/**`，以及 T-A09 指定的三份既有契约测试中受 2.0.0 影响的断言。**不改** `app/**`、`workbench/**`、`agent/{store.ts,AgentDock.vue,AgentDrawer.vue,CotTimeline.vue}`、`scripts/{contract-build,check}.mjs`、`package.json` / 锁文件、`backend/`、`docs/`、冻结 spec。
@@ -113,24 +125,32 @@
 - **每任务附加检查**：每个任务提交前另跑 typecheck、lint、`git diff --check` 和 staged diff 检查，均通过。
 - **未改动项**：未安装依赖，`package.json` / 锁文件未改。
 
-**本批证据均为“待本批独立代码 Review”**，不是审核结论。
+**本批证据登记时均为“待本批独立代码 Review”**（当时原文，不是审核结论；Review 结论与 A 亲跑见表后补记）。
 
 | 任务 / 切片 | 实施 commit | 验证命令输出摘要（实施者执行） | 生产方集成 SHA（旁证） | v2 集成 SHA（④） | 状态 |
 |---|---|---|---|---|---|
-| T-A09b | `75a115975b50d8078f159f2e41ce5c401318f0b7` | `WI not-started seeds` 1 / `fixtures.spec.ts` 整文件 23 pass；typecheck / lint 过 | `27e59e6`（ff-only） | — | 已实施（待本批 Review） |
+| T-A09b | `75a115975b50d8078f159f2e41ce5c401318f0b7` | `WI not-started seeds` 1 / `fixtures.spec.ts` 整文件 23 pass；typecheck / lint 过 | `27e59e6`（ff-only） | — | 已完成（本批 Review 通过 `f72a1a1`，非 AC 最终验收；登记时为“待本批 Review”） |
 | T-A10 | `1841029f5a948b53ef21cbc54967556dc04e0815` | `WI listJobs` 2 / `WI scenarios read` 33 / `WI slow` 3 / `real-stubs.spec.ts` 14 / `WI not-started seeds` 1 pass；`contract` 生成后 `contract --check` = 15 methods / 10 events / 2 artifacts；typecheck / lint 过；段末全量单测 23 文件 776 pass / 0 fail，`check` 六守卫过。**失败留痕**：场景组首跑 23 pass / 10 fail（新测试嵌套匹配器未容纳 `message` 字段）→ 只修新测试匹配器 → 33 pass | `27e59e6` | — | 同上 |
 | T-A22 | `cc59e946df2d08178b03e3b37928ab34517067d7` | `WI routes` 7 / `WI register` 2 pass；typecheck / lint 过 | `27e59e6` | — | 同上 |
 | T-A22b | `b38cf43f602390d7645cc84514d0da9860a7e0b7` | `WI H-4 enter` 4 / `WI H-4 leave same navigation` 3 / `WI H-4 readonly` 1 pass；typecheck / lint 过；`routes.spec.ts` 整文件 9 pass | `27e59e6` | — | 同上 |
 | T-A23 | `ebce4c85b1422a62b883117f75459a1fdee81b80` | `WI status badges` 18 / `WI source badge` 9 pass；`check --only colors` / `glass`、typecheck / lint 过；`contract-labels.spec.ts -t "WI labels"` 10 pass（H-2 旁证）。**失败留痕**：首跑 16 fail / 2 pass（新测试选择器把根 `<span>` 纳入索引）→ 只修新测试选择器 → 全过 | `27e59e6` | — | 同上 |
 | T-A24 | `27e59e610e2ab8c14e7c3db554609e52e40f5f76` | `WI lcs` 6 / `WI limit` 7 pass；typecheck / lint 过；依赖未改 | `27e59e6` | — | 同上 |
 | 本批末轮联合回归 | `27e59e6` | 全量 `test:unit` **27 文件 833 pass / 0 fail**；`check` 六守卫过；`contract --check` 15 / 10 / 2；typecheck、lint（0 warning）过；`test:e2e e2e/shell.spec.ts e2e/agent.spec.ts` **24 pass / 0 fail**（先确认 4173 空闲，Playwright 自管 webServer，结束后空闲；未下载浏览器）；保护目录零差异 | `27e59e6` | — | — |
-| H-2·标签 | ① `ebce4c8`（含 T-A01 `07ef7cc`） | ③ `WI labels` 10、`badges.spec.ts -t "WI status badges"` 18 pass（待审核证据）；② R8.1 `34d339e` | `27e59e6`（**旁证，不是 ④**） | **未取得** | **待消费方集成（未交付）**：生产方 3 / 4 |
-| H-3·路由切片 | ① `cc59e94` | ③ `routes.spec.ts` 7 / 2 pass（待审核证据）；② R8.1 | `27e59e6`（旁证） | **未取得** | **待消费方集成（未交付）**：生产方 3 / 4；页面为骨架 |
-| H-4 | ① `b38cf43` | ③ `session-context.spec.ts` 4 / 3 / 1 pass（待审核证据）；② R8.1 | `27e59e6`（旁证） | **未取得** | **待消费方集成（未交付）**：生产方 3 / 4 |
+| H-2·标签 | ① `ebce4c8`（含 T-A01 `07ef7cc`） | ③ `WI labels` 10、`badges.spec.ts -t "WI status badges"` 18 pass（实施者执行；**独立 A 亲跑同数通过**，`review-batch2.md` §1 / §5，`f72a1a1`）；② R8.1 `34d339e` | `27e59e6`（**旁证，不是 ④**） | **未取得** | **待消费方集成（未交付）**：生产方 3 / 4 |
+| H-3·路由切片 | ① `cc59e94` | ③ `routes.spec.ts` 7 / 2 pass（实施者执行；**独立 A 亲跑同数通过**，整文件 9，`f72a1a1`）；② R8.1 `34d339e` | `27e59e6`（旁证） | **未取得** | **待消费方集成（未交付）**：生产方 3 / 4；页面为骨架 |
+| H-4 | ① `b38cf43` | ③ `session-context.spec.ts` 4 / 3 / 1 pass（实施者执行；**独立 A 亲跑同数通过**，`f72a1a1`）；② R8.1 `34d339e` | `27e59e6`（旁证） | **未取得** | **待消费方集成（未交付）**：生产方 3 / 4 |
 | H-2·列表 / H-6 / H-5 / 页面切片 | 部分前置（T-A10 读 API 等） | 部分 | — | 未取得 | 未交付：H-2·列表缺 T-A12 / T-A22a；H-6 缺 T-A11 / T-A21；H-5 未做；页面切片缺 B / C 组 |
 | 其余任务（51 项） | 未取得 | 未运行 | 未取得 | — | 未开始 |
 
-本批 Converge 报告 = `converge-batch2.md`（由集成人提交后以其 SHA 为准）。H-1 行保持上表首批登记不变。
+本批 Converge 报告 = `converge-batch2.md`，集成人提交于 `858025d0b75f529e160b973ba5bda10848889228`（判本批收口、feature 未收敛）。H-1 行保持上表首批登记不变。
+
+【2026-10-29 第二批独立 Review 后补记】本批独立 Review = `review-batch2.md`（A = claude-fable-5-1 via anthropic，审核原件提交 `f72a1a187405e9f9dcba5bb22f47ad840141702d`，**本批通过，0 P1 / P2，5 P3 R2-A～R2-E**）。以下为 **A 在独立 worktree 亲跑**的结果（引自审核原件 §1，日志在协调器独占临时目录 `review-b2-*`，结论以已提交原件为准；**本记账会话未跑任何测试**）：
+- `install --frozen-lockfile` exit 0（锁文件未改）；`contract --check` = `15 methods, 10 events, 2 artifacts match`；`check` 六守卫全过、之后仍 clean；`check --only colors` / `glass`、typecheck、lint 过。
+- 全量 `test:unit` **27 files / 833 passed / 0 failed**；三份既有 v1 契约测试 **88 passed**。
+- 本批 21 条任务命令全部 exit 0，用例数与上表实施者逐条相同；H-2 旁证 `WI labels` 10 passed。
+- `test:e2e e2e/shell.spec.ts e2e/agent.spec.ts` **24 passed / 0 failed**（先核 4173 无监听，Playwright 自管 webServer，结束后无 LISTEN）。
+- **未跑**：全量 `pnpm test` 中其余 7 份 E2E（breakpoints / modules / scenarios / smoke / theme / tokens / workbench，归 T-G09 / T-H04）；无人工截图、无 Gate 2。46 AC 最终验收仍 0。
+- A 的只读边界探针（独占目录，非产品测试）支撑 R2-B / R2-C 判定，不改受控代码 / 测试。
 
 ## 7. 派工 / 回退记录（脱敏；只记角色、任务、基线、实际 provider/model、失败类别）
 
@@ -154,6 +174,10 @@
 | 2026-10-29 | Implement（新会话，实施树） | T-A22 → T-A22b → T-A23 → T-A24 | `1841029` | `openai/gpt-6-astra`（首选，未回退） | 4 个任务 commit（`cc59e94`、`b38cf43`、`ebce4c8`、`27e59e6`）；A23 首跑 16 fail（新测试选择器，正常任务结果）→ 修新测试后全过；末轮全量单测 27 文件 833 / 0、六守卫、既有 shell + agent E2E 24 / 0 |
 | 2026-10-29 | 集成人 | 第二批 ff-only 集成 | `34d339e` | — | `integration/workbench-interaction` @ `27e59e6`（旁证；未写 v2 集成树，④ 全缺） |
 | 2026-10-29 | Converge / 状态记账 + Analyze R11 | 第二批 6 项对比、最小接口精度同步（r6.5）、状态回写、本日志 / 交接 / README 登记 | `27e59e6`（文档树 `docs/workbench-interaction-batch2-converge`） | `anthropic/claude-opus-5-5`（PI_SESSION_ID `01a18625-c9a1-76a3-aa8d-fefefec99096`；本轮协调器最小真实调用 `claude-bridge/claude-opus-5-5` exit 1，provider / invocation error 类、**未确认 quota**；同模型官方通道 exit 0；只换通道、未改配置） | 本批已收口、待独立 Review；feature 未收敛；未改代码 / 测试 / spec / checklist / 已有 Review 原件；未跑产品测试；未 commit（由集成人提交） |
+| 2026-10-29 | 集成人 | 提交 batch2 Converge 文档 | `27e59e6` | — | 提交 `858025d0b75f529e160b973ba5bda10848889228` |
+| 2026-10-29 | 审核员 A（新会话、独立 worktree `D:/2030/Futures-AI-interaction-review-batch2`，只读审查） | 第二批 T-A09b / A10 / A22 / A22b / A23 / A24 批次代码 Review | 文档 `858025d`、代码 `27e59e6`（diff `34d339e..27e59e6`） | `anthropic/claude-fable-5-1`（PI_SESSION_ID `01a18636-553d-77ae-afbd-b5a736447a7a`；协调器对 `claude-bridge/claude-fable-5-1` 最小调用 exit 1 = **provider / invocation error，未确认 quota**；同模型官方通道成功；只换通道、未改配置；与 Implement 异模型、与 Converge 隔离） | **本批通过**：0 P1 / P2，5 P3（R2-A～R2-E）；亲跑见 §6 补记；只写审核原件，未改代码 / checklist |
+| 2026-10-29 | 集成人 | 原样提交审核原件并 ff | `858025d` | — | 提交 `f72a1a187405e9f9dcba5bb22f47ad840141702d`；ff 到本文档树与生产方集成树 `integration/workbench-interaction`；实施树仍 `27e59e6`（代码相同） |
+| 2026-10-29 | 计划 / 分析类（第二批 Review 后纯文档记账，非 Handoff、非 Gate 2） | tasks 六项状态 + 页首、本日志、interface-handoff、plan §2.4 R2-E 一句精度、README 本 feature 两行；临时目录交接摘要 | 文档树 HEAD `f72a1a1` | `anthropic/claude-opus-5-5`（PI_SESSION_ID `01a18647-6186-7141-8ea5-ad1a1da07c72`；协调器对 `claude-bridge/claude-opus-5-5` 最小调用 exit 1 = provider / invocation error，未确认 quota；同模型官方通道成功；只换通道、未改配置） | 文档完成；未改代码 / 测试 / spec / checklist / 旧 Review / converge / analyze / 审核原件 / 根 HANDOFF / docs；未跑产品测试；未 commit（由集成人提交） |
 
 ## 8. 首批 Review P3 后续定位（只登记，不改规范机制；**均未经 Walter 风险接受**，本批不修代码）
 
@@ -179,9 +203,26 @@
 - **R-C**：`methodSemantics` 现为 15 条（本批接入 3 个读方法），前瞻文案仍待 T-G06 复核。
 - **R-A / R-E / R-F**：仍未处理，未经 Walter 风险接受。
 
-**下一步（不在本记账内执行）**：集成人按 tasks §6 DAG 派第二批（入口 T-A10 / T-A22 / T-A23 / T-A24；Implement 首选 `openai/gpt-6-astra`，新会话、实施树），开工前读本节对应项；H-1 ④ 待 `integration/frontend-workbench-v2` 所有者真正集成后由其登记，本 feature 不代写。
+【batch2 Review 后更新（`review-batch2.md` `f72a1a1`；以本段为准，上一段“待本批独立代码 Review”为当时原文）】
+- **R-B**：仍“**部分落实、未关**”。A 独立复算：12 / 12 未开始种子为空，已开始阶段 0 改动；但 done 阶段上游产物仍为 `status=draft`（A 列出 17 个），本 feature 不自动审批。
+- **S-37**：正向 workspace 断言已落实，并经 A 核对。
+- **R-D**：未新增 guard。A 的探针证实 ⑤ 仍可提交，“按构造保持”待写方法任务落实，**未修**。
+- **R-A**：仍须 T-A16 / T-A19 开工前定案。
+- **R-C / R-E / R-F**：本批不涉及、未处理；R-C 与 R2-A 同归 T-G06。
 
-## 9. 第二批派工准备（r6.3，2026-10-29；r6.4 按 Checklist R8 B-12 拆分后更新；待实施，不预写结果）
+**第二批 Review P3 台账**（审核原文以 `review-batch2.md` §4 为准；全部 P3 只登记，**未修、未经 Walter 风险接受**，不新增 AC / 完成标准 / 命令 / guard / 机制）：
+
+| # | 摘要 | 归属 / 时点 | 当前状态 |
+|---|---|---|---|
+| R2-A | `listJobs` / `getJob` / `getStageWorkspace` 的方法 describe 混入 mock 实现语义（empty / error / slow、共享会话状态、预置 normal 集合），进入 CONTRACT.md 成为 real 实现义务；关联首批 R-C | T-G06 收口时与 R-C 一并把 mock 场景句迁回 `jobScenarios`；接入写方法的任务沿用 v1 实现中立写法 | 未修 |
+| R2-B | 未经 `createMockDataClient()` 初始化即访问模块状态会得到 `TypeError` / 裸 `ZodError`，不是契约错误（= Converge O-B2-3）；当前无生产调用方，不可触发 | T-A11 / T-A18 按正常调用顺序接入（状态由 DataClient 工厂建立，AgentClient 不自行初始化），并以测试固定；**不在此加 guard**（AGENTS §5.1） | 未修 |
+| R2-C | 三个自制徽标统一用 `--fai-status-ok` 边框，`failed` / `conflict` / `quarantined` 语义反向（= O-B2-4）；AC-001-5 已靠文案 + 图标满足 | 首个消费徽标的页面任务（T-B01 / T-C04 / T-F01）或 T-G10 M-01 前，以既有令牌映射核对；不新增色值、不改契约；本记账不改代码 | 未修 |
+| R2-D | `routes.spec.ts` 真实路由表用例与 pin `90187f7` 基线耦合；main `072bb12` 的 `nav.ts` 已有 `jobs` 占位，同步后该用例与 v2 `shell.spec` 的 `/jobs` owner 占位断言已知会红（= O-B2-6） | 集成人决定同步时：按 tasks §7 重核 §0.0 → 重跑 Analyze → A 定向复核 → 派指定范围小任务改写用例；与 v2 所有者协调 T-V2-09#4；不能用本批旧基线的绿冒充新基线；不代改壳测试 | 未修（后续同步风险，非本批缺陷） |
+| R2-E | 新读方法的场景延迟 / error 跟随当前共享状态的 scenario，v1 十方法仍按工厂闭包捕获的 scenario（= O-B2-1）；A 判为 S-27 设计的推论，生产只有一个 client，不可观察 | plan §2.4 已按 A 建议补一句精度（本轮登记）；T-A18 沿用同一来源；不改代码 / 行为，不是新需求 | 已登记精度；代码未改 |
+
+【首批记账时原文】**下一步（不在本记账内执行）**：集成人按 tasks §6 DAG 派第二批（入口 T-A10 / T-A22 / T-A23 / T-A24；Implement 首选 `openai/gpt-6-astra`，新会话、实施树），开工前读本节对应项；H-1 ④ 待 `integration/frontend-workbench-v2` 所有者真正集成后由其登记，本 feature 不代写。
+
+## 9. 第二批派工准备（r6.3，2026-10-29；r6.4 按 Checklist R8 B-12 拆分后更新；历史：已实施，并经 `f72a1a1` 批次 Review 通过；“待实施”为当时原文）
 
 - **范围（r6.4）**：T-A09b → T-A10；T-A22 → T-A22b；T-A23、T-A24 独立；同一实施树串行（6 项，约 7 h = 0.5 + 2 + 1 + 1 + 1.5 + 1；r6.3 为 5 项约 6.5 h）。**开码前置**：A 新会话 R8.1 增量复核关闭 B-12、补勾 V-02 并提交（当前 Checklist R8 未通过 = blocked）。每个任务的修改范围、完成标准（引用 AC）与验证命令以 tasks.md 原文为准，本节只摘口径，不改写。**不在本批**：T-A11（持久化）、T-A12 起的写方法、T-A18（Agent 运行关联）、T-A22a、B 组页面与其后任务——不提前实现；其余 51 项未开始（全 feature 67 项中 57 项未开始），46 AC 最终验收不因本批冒称通过。
 - **基线**：实施树 / 生产方集成树 HEAD `0920004`（代码 = 受审 `13a3373`），upstream 继续 pin `90187f7`，正式 base `43b6d79`；main `cf8e11b` 相对 `90187f7` 只改 `specs/README.md` 与 frontend-workbench 文档 / 截图（frontend / docs / AGENTS / backend / design 零差异），只记录、不自动合入。
@@ -205,4 +246,5 @@
 - **H-x 生产方证据（完成后可形成，现均未取得）**：H-3·路由切片 = T-A22 commit + `routes.spec.ts`；H-4 = T-A22b commit + `session-context.spec.ts -t "WI H-4"`；H-2·标签 = T-A01 + T-A23 commit + `contract-labels.spec.ts -t "WI labels"` / `badges.spec.ts -t "WI status badges"`；② 当前有效 = R7 `9acf3de`（r6.4：A 已对 r6.3 做 Checklist R8 但**未通过**（`7b91a2c`），不能作 ②；R8.1 通过并提交后以其 SHA 为准）；④ 只能由 `integration/frontend-workbench-v2` 所有者登记。
 - **复核状态（r6.4，以本句为准）**：A 已按下句建议做 Checklist R8（限定范围定向复核）：T-A23 / H-4 `bindRouter` / R-B 落法 / R-D / T-A24 设计通过，唯一阻断 B-12（粒度）→ r6.4 拆分 → A 新会话 R8.1 只核增量（拆分落点 / 新任务 1:1 / AC 祖先 / 依赖 / 结构数字）并补勾 V-02；在此之前第二批 6 项均不得开码（下句“T-A10 / T-A22 / T-A24 可先开工”已失效）。
 - **复核与实施状态（batch2，以本句为准）**：R8.1 已通过并提交（`34d339e`），第二批据此开码；6 项已实施（`75a1159` → `27e59e6`），并已集成到生产方集成树 `27e59e6`。② 当前有效 = **R8.1 `34d339e`**。本批独立代码 Review 待进行。上面“blocked / 待 R8.1”的表述是当时原文。
+- **Review 状态（第二批 Review 后，以本句为准）**：本批独立代码 Review 已完成并**通过**（`review-batch2.md`，`f72a1a1`，0 P1 / P2，5 P3 R2-A～R2-E，见 §8）；上句“待进行”为当时原文。
 - **复核建议（r6.3 原文）**：R-B（A 首批 Review 自身建议的落法）、R-D（不扩机制）、T-A22 / T-A24 不需开码前另行 A 复核；T-A23（tasks §7 所指“基线事实与任务文字不符”一类）与 H-4 `bindRouter`（交接接口新增公开成员名；R7 审过机制、未审该名称）建议由审核员 A（新会话、异模型）对 r6.3 文档 diff 做一次**限定范围定向复核**（只审这两处 + R-B 落点）并提交 SHA 后，再开 T-A22b / T-A23 的代码；T-A10 / T-A22 / T-A24 可先开工。若要以本批代码 Review 替代该定向复核，属 Walter / 集成人裁量，本文件不代定；不声称 R7 自动覆盖 r6.3。

@@ -1,6 +1,30 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
-> **当前实施进度（Converge batch2，2026-10-29；本块为准，取代下方 r6.4 块里的“状态：blocked / 第二批不得开码 / 57 未开始”。那些是 R8.1 之前的历史原文，保留以便追溯审查输入）**：
+> **当前实施进度（第二批独立 Review 后记账，2026-10-29；本块为准，取代下方 Converge batch2 块中“6 项已实施、待本批独立代码 Review”等当时原文）**：
+>
+> **进度**：**16 / 67 已完成**，**51 未开始**。“已完成”= 所在批次代码 Review 通过，**不表示任何 AC 最终验收**：46 AC 最终验收仍 **0**（本批多为“部分前置”；T-A23 只完成 AC-001-5 的组件半项，人工 M-01 归 T-G10）。
+> - 首批 **10 项**：T-A01～T-A09、T-A09a，`af95b66` 批次 Review 通过，固定 commit 与验证结果不改写。
+> - 第二批 **6 项**：T-A09b `75a1159`、T-A10 `1841029`、T-A22 `cc59e94`、T-A22b `b38cf43`、T-A23 `ebce4c8`、T-A24 `27e59e6`（代码固定 `27e59e610e2ab8c14e7c3db554609e52e40f5f76`，diff `34d339e..27e59e6 -- frontend`）。独立审核员 A = claude-fable-5-1 via anthropic（新会话、独立 worktree，固定审文档 `858025d` + 代码 `27e59e6`）判**本批通过：0 P1 / P2，5 项 P3（R2-A～R2-E）**；审核原件 `review-batch2.md` 由集成人原样提交于 `f72a1a187405e9f9dcba5bb22f47ad840141702d`（只引用、不改写）。
+>
+> **A 亲跑证据**（引自 `review-batch2.md` §1；本记账会话未跑任何测试）：全量 `test:unit` 27 files / 833 pass / 0 fail；三份既有 v1 契约测试 88 pass；本批 21 条任务命令全部通过且用例数与实施者逐条相同；H-2 旁证 `WI labels` 10 pass；`test:e2e e2e/shell.spec.ts e2e/agent.spec.ts` 24 pass（Playwright 自管 4173，结束后无 LISTEN）；`contract --check` 15 methods / 10 events / 2 artifacts；`check` 六守卫、typecheck、lint 通过。**未跑**：全量 `pnpm test` 中其余 7 份 E2E；无人工截图。
+>
+> **P3 归属**（均未修、未经 Walter 风险接受；只在对应任务状态行加阅读提示，不新增标准 / 命令 / guard / 机制；台账见 implementation-log §8）：
+> - R2-A（方法 describe 混入 mock 实现语义）→ T-G06，与 R-C 一并收口。
+> - R2-B（未初始化模块状态的错误形态）→ T-A11 / T-A18 按正常调用顺序实施并以测试固定，不加 guard。
+> - R2-C（三个徽标统一 ok 边框令牌）→ 首个消费徽标的页面任务（T-B01 / T-C04 / T-F01）或 T-G10 M-01 前，用既有令牌映射核对；本记账不改代码。
+> - R2-D（`routes.spec` 与 pin 基线耦合）→ 同步 main `072bb12` 时按 §7 重核、重跑 Analyze、经 A 定向复核后再派指定范围小任务；不能用本批旧基线的绿冒充新基线。
+> - R2-E（新读方法场景来源与 v1 不同）→ plan §2.4 已补一句精度（不改代码 / 行为），T-A18 沿用同一来源。
+> - 首批遗留：R-B 部分落实（done 阶段上游 draft 不自动审批，未关）；S-37 正向断言已落实；R-A 仍须 T-A16 / T-A19 前定案；R-C / R-D / R-E / R-F 见 implementation-log §8。
+>
+> **结构不变**：67 个任务 / 约 102 h，标准 / 命令 224 / 224，46 AC，依赖 DAG 不变。
+>
+> **下一可起步任务**：**T-A11**（依赖 T-A10 已满足），之后按 §6 DAG（T-A12 等）。Walter 的代码实施授权（原话“允许”）与集成人指定在既有 tasks 范围内持续有效，后续批次不再重复请求授权；但不跳过逐批 Converge / 独立 Review，也不替代全 feature Review / Gate 2。
+>
+> **上游**：main `072bb12`（含 v2 S0）**不在**本批祖先，本批 pin `90187f7`；集成人决定本批不自动同步。同步前须走 §7 重核 → Analyze → A 定向复核，并与 v2 所有者协调 T-V2-09#4。这不是 T-A11 起步的硬阻塞。
+>
+> **H-x**：H-2·标签 / H-3·路由切片 / H-4 的生产方 ①②③ 齐（③ 含 A 亲跑）；**④ 未取得**——只读核对 `integration/frontend-workbench-v2` = `3f63273`，四个切片 ① 都不是其祖先。因此仍为“待消费方集成（未交付）”。H-1 同此。H-2·列表 / H-6 / H-5 / 页面切片的提供任务未齐，未交付。本块不是全 feature Review / Gate 2 / Handoff。
+
+> 【历史原文，已由上方第二批 Review 后块取代】**实施进度（Converge batch2，2026-10-29；当时以本块为准，取代下方 r6.4 块里的“状态：blocked / 第二批不得开码 / 57 未开始”。那些是 R8.1 之前的历史原文，保留以便追溯审查输入）**：
 >
 > **进度**：**16 / 67 已实施**，**51 未开始**。
 > - 首批 **10 项已完成**：T-A01～T-A09、T-A09a。固定 commit、验证结果和 `af95b66` 批次 Review 均不改写。
@@ -334,7 +358,7 @@
 
 ### T-A09b R-B 种子校正：未开始阶段内置工作区置空（fixture-only；r6.4 从 T-A10 拆出）
 
-- **状态**：**已实施（batch2，待本批独立代码 Review；不表示 AC 最终验收）**｜commit `75a115975b50d8078f159f2e41ce5c401318f0b7`；验证（实施者执行，Converge 未重跑）：命令 1 `WI not-started seeds` 1 pass；命令 2 `fixtures.spec.ts` 整文件 23 pass；命令 3 typecheck / lint 通过。Converge 只读脚本核对：12 个未开始种子为空；已开始阶段与 `34d339e` 逐一相等；`jobs.json` 未变；只有 j-cancelled `previews={}`、j-collect / j-cancelled `reconciliations=[]` 变化。R-B：本任务只校正 12 个未开始样例；done 阶段的上游 draft 产物照旧残留，未自动审批，R-B 仍“部分落实、未关”（implementation-log §8）｜原 blocked_by: IMPL-GATE-R6（已满足）｜开码前置 R8.1 已满足（`34d339e`）
+- **状态**：**已完成（batch2；本批代码 Review 通过 `f72a1a1`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；R-B 仍部分落实、未关）**｜commit `75a115975b50d8078f159f2e41ce5c401318f0b7`；验证（实施者执行，Converge 未重跑）：命令 1 `WI not-started seeds` 1 pass；命令 2 `fixtures.spec.ts` 整文件 23 pass；命令 3 typecheck / lint 通过。Converge 只读脚本核对：12 个未开始种子为空；已开始阶段与 `34d339e` 逐一相等；`jobs.json` 未变；只有 j-cancelled `previews={}`、j-collect / j-cancelled `reconciliations=[]` 变化。R-B：本任务只校正 12 个未开始样例；done 阶段的上游 draft 产物照旧残留，未自动审批，R-B 仍“部分落实、未关”（implementation-log §8）｜原 blocked_by: IMPL-GATE-R6（已满足）｜开码前置 R8.1 已满足（`34d339e`）
 - **预计**：0.5 h｜**依赖**：T-A08
 - **上下文**：`review-batch-a09a.md` R-B（= Converge O-2）；plan §2.4【r6.3，R-B】种子口径；Checklist R8 B-12（R-B 与状态层零耦合、可独立用 `fixtures.spec.ts` 验收，故单列，不再并入 T-A10）。五份 `fixtures/jobs/*.json` 与 `fixtures.spec.ts` 已由 T-A07 / T-A08 交付（依赖 T-A08 即足）；本任务**不需要** T-A09 / T-A10 的状态层或任何 DataClient 运行状态。首批 T-A07 / T-A08 的固定 commit、验证结果与 Review 结论不改写，本任务是其后的独立 fixture 校正提交。
 - **修改范围**（只改种子数据与对应测试断言；不是生产 guard、不是读侧推导；无代码 / schema / 类型 / 生成物改动）：只许修改 `frontend/src/contracts/mock/fixtures/jobs/{job-detail,deliverable}.json` 与 `frontend/tests/unit/jobs/fixtures.spec.ts`。以 plan §2.4 样例表（即 fixtures.spec 中手写的十行状态表）阶段态为 `not_started` 的 12 个 (作业, 阶段) 为准——j-collect 的 process / analyze / deliver、j-process 的 analyze / deliver、j-failed / j-running / j-human 的 deliver、j-cancelled 的四个阶段——把对应工作区改为空集合：collect `{stage, uploads:[], artifacts:[], revisions:[]}`；process `{stage, sources:[], series:[], artifacts:[], revisions:[], derivedValues:[]}`；analyze `{stage, artifacts:[], revisions:[]}`；deliver `{stage, artifacts:[], revisions:[], deliverable:null, finalSnapshot:null}`；collect 未开始的作业（j-cancelled）`previews={}`，process 未开始的作业（j-collect、j-cancelled）`reconciliations=[]`（不留指向不存在投放 / 序列的孤立样例）。**不改**：`jobs.json`（十个作业、ID、status / currentStage / 阶段态 / pendingCount）、`interventions.json`（i-seed-1～6 的锚全在已开始阶段，校正后仍可达）、`uploads.json`、已开始阶段的全部内容与 ID；done 阶段产物状态照旧（不把 draft 升为 confirmed，见 implementation-log §8 R-B 残留）；`types.ts` / 生成物 / plan 样例表 / 需求不变。`fixtures.spec.ts` 只做三处收窄——`test.each(Object.keys(details))` 的逐作业内容断言（两条投放与预览、两源两序列、≥3 步单链配方、lineage、两条对账、≥3 结论三种证据）只对**已开始**阶段；`WI deliverable fixtures` 中对全部作业的 deliver 循环（交付块锚可达）只对 deliver 已开始者；`WI final only delivered` 的“非 j-delivered 均为 draft 且三锚 null”改为“deliver 已开始者 draft 且三锚 null、deliver 未开始者 `deliverable=null` / `finalSnapshot=null`”——并新增 `WI not-started seeds` 用例断言上述 12 个空态与 previews / reconciliations（期望来自手写状态表，不从 fixture 推导）；不删用例、不改既有标题、不放宽对 schema 边界与已开始样例的任何断言。
@@ -349,7 +373,7 @@
 
 ### T-A10 mock 状态层核心与读方法（S-13）
 
-- **状态**：**已实施（batch2，待本批独立代码 Review；不表示 AC 最终验收）**｜commit `1841029f5a948b53ef21cbc54967556dc04e0815`；验证（实施者执行，Converge 未重跑）：命令 1～5：`WI listJobs` 2 / `WI scenarios read` 33 / `WI slow` 3 / `real-stubs.spec.ts` 14 / `WI not-started seeds` 1 pass；命令 6：`contract --check`（15 methods / 10 events / 2 artifacts）/ typecheck / lint 通过；段末全量单测 23 文件 776 pass / 0 fail；**失败留痕**：场景组首跑 23 pass / 10 fail，原因是新测试的嵌套匹配器没有容纳错误对象里的 `message` 字段；只改新测试匹配器后 33 pass，未放宽生产代码或既有测试；S-37（Checklist R8.1 P3）：`job-state-read.spec.ts` 的 `WI not-started seeds read` 用例同时断言了非空正向样例（j-collect collect 等于原样例且有 2 条投放；j-deliver deliver 等于原样例，六类块按序）。**断言已落实**，本标准未改字；R-D：未新增 guard（`JobStateSchema` 只组合既有边界 schema）；状态按构造保持的策略留给后续写方法（implementation-log §8）。｜原 blocked_by: IMPL-GATE-R6（已满足）｜开码前置 R8.1 已满足（`34d339e`）
+- **状态**：**已完成（batch2；本批代码 Review 通过 `f72a1a1`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；本批 P3 R2-A / R2-B / R2-E 的后续归属见页首，未修）**｜commit `1841029f5a948b53ef21cbc54967556dc04e0815`；验证（实施者执行，Converge 未重跑）：命令 1～5：`WI listJobs` 2 / `WI scenarios read` 33 / `WI slow` 3 / `real-stubs.spec.ts` 14 / `WI not-started seeds` 1 pass；命令 6：`contract --check`（15 methods / 10 events / 2 artifacts）/ typecheck / lint 通过；段末全量单测 23 文件 776 pass / 0 fail；**失败留痕**：场景组首跑 23 pass / 10 fail，原因是新测试的嵌套匹配器没有容纳错误对象里的 `message` 字段；只改新测试匹配器后 33 pass，未放宽生产代码或既有测试；S-37（Checklist R8.1 P3）：`job-state-read.spec.ts` 的 `WI not-started seeds read` 用例同时断言了非空正向样例（j-collect collect 等于原样例且有 2 条投放；j-deliver deliver 等于原样例，六类块按序）。**断言已落实**，本标准未改字；R-D：未新增 guard（`JobStateSchema` 只组合既有边界 schema）；状态按构造保持的策略留给后续写方法（implementation-log §8）。｜原 blocked_by: IMPL-GATE-R6（已满足）｜开码前置 R8.1 已满足（`34d339e`）
 - **预计**：2 h｜**依赖**：T-A09、T-A09b
 - **上下文**：plan §2.3“契约 mock 层持有唯一可变状态”，§2.4 九场景 × 读方法表。
 - **修改范围**：新建 `frontend/src/contracts/mock/job-state.ts`（按场景从 fixture——或 T-A09 解析出的 `jobFixtures` 覆盖——建会话状态；该状态是**模块级唯一共享会话状态**：每次调用 `createMockDataClient()` 时建立 / 重建（读 scenario 与 `jobFixtures` 各一次），`createMockAgentClient()`（T-A18 接入）与所有 DataClient 实例共用当前这一份，不各持一份；因此 `jobFixtures` 为“建状态时读一次”，与既有 v1 `fixtures` 的“每次请求读取”时机不同（r6.1，R7 S-27，只定语义、无新机制）；单一 `commit(mutator)`：在深拷贝上修改 → 边界校验 → 整体替换，失败时不留部分修改；读 API 返回副本）；实现 `listJobs(filter?)`（状态 / 类型 / 标题子串组合筛选，缺省 updatedAt 倒序）、`getJob`（S-13）、`getStageWorkspace`；empty / error（业务读方法返回 adapter_error，bootstrap / 目录仍然成功）/ slow（每次调用延迟 1500ms）/ boot-error / job-* 的读行为；`client.ts` 的 `DataClient` 接口、`methods.ts` 的 `dataMethods` 语义、`real/index.ts` 的 NotImplementedError 桩（无网络）、`mock/index.ts` 接线。生成物；新建 `tests/unit/jobs/job-state-read.spec.ts`、`tests/unit/jobs/real-stubs.spec.ts`。本任务不实现持久化（T-A11）、写方法（T-A12 起）与 Agent 运行关联（T-A18）；`commit(mutator)` 本任务无生产调用方，其原子性由 T-A17 标准 2 经真实 commit 验证。
@@ -376,7 +400,7 @@
 
 ### T-A11 本地持久化 persistence.ts 与 resetMockData
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-B（P3 后续观察，非新增标准）：状态由 DataClient 工厂建立，持久化入口按正常调用顺序接入并以测试固定，不加 guard
 - **预计**：2 h｜**依赖**：T-A10
 - **上下文**：plan §2.3 / §3 的持久化规则。plan 没写横幅如何得知持久化状态，本任务由 `persistence.ts` 提供只读状态订阅（`getPersistenceStatus()` / `onPersistenceStatus(cb)`，取值 `ok|degraded|unreadable`），供 T-G04 的横幅使用；不经业务契约。
 - **修改范围**：新建 `frontend/src/jobs/persistence.ts`（`fai.jobs.v1` = `{version:1,data}`；`fai.inbox.v1` = 已读 id；UTF-8 字节数用 TextEncoder 计算，上限 512 KiB；配额异常时降级）；`job-state.ts` 接入：只有 normal 场景且没有 `jobFixtures` 覆盖时读写（r6，H-6：注入的样例不污染本机快照）；每次成功 commit 后保存；`resetMockData`（normal：删除两个 key 并重建 fixture；其他场景：只重建内存）；`DataClient` / `methods.ts` / real 桩加 `resetMockData`。生成物；新建 `tests/unit/jobs/persistence.spec.ts`。
@@ -501,7 +525,7 @@
 
 ### T-A18 Agent 关联：jobContext、activeRunId 与旁路合并（S-15）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜r6.3 R-D 口径：①（有 run 时 overlayRev ⇔ pendingMerge）由本任务写方法按构造保持，不加 refine（implementation-log §8）
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜r6.3 R-D 口径：①（有 run 时 overlayRev ⇔ pendingMerge）由本任务写方法按构造保持，不加 refine（implementation-log §8）｜开工前读 `review-batch2.md` R2-B / R2-E（P3 后续观察，非新增标准）：AgentClient 不自行初始化状态，调用顺序以测试固定、不加 guard；场景延迟 / 错误沿用 plan §2.4 登记的同一来源，不另立第三套
 - **预计**：1.5 h（r6：契约字段与透传拆到 T-A09a）｜**依赖**：T-A09a、T-A14、T-A16、T-A17
 - **上下文**：plan §2.4（mock DataClient 与 AgentClient 共享 job-state，状态层先处理、再通知）；§4.7 旁路与检查点；§2 S-15 规则。
 - **修改范围**：（r6：`SendMessage.jobContext?` 字段、事件公共字段与 mock 透传已由 T-A09a 交付，本任务不再改 `events.ts`；`types.ts` 只给 `SendMessageSchema.jobContext` 的 describe 补 S-23 口径）`mock/index.ts` 的 `createMockAgentClient` 接入 job-state（共用 T-A10 的当前模块级会话状态，r6.1 S-27；受理时登记 runId→上下文；每个定时器回调先交状态层处理、再投递给订阅者）；`job-state.ts`：activeRunId 规则（§2 S-15 / S-23：终态后置 null，仍在运行的第二个带上下文 run 不接任；该口径一句写进 `SendMessageSchema.jobContext` 的 describe，不加调度 / 接任逻辑）；有 run 时 saveBlockText / updateParams 产生 overlay 修订和 pending 事件，agent 只读 latestMergedRev；只有 pendingRunId 匹配的 run.completed 才合并（原事件 outcome=merged）；failed / aborted 保留 overlay 和 pending；cancelled / delivered 作业的晚到事件只进时间线。生成物；新建 `tests/unit/jobs/job-state-agent.spec.ts`（aborted 用 AgentRunSchema 合法的合成事件序列，从系统边界注入状态层，**不新增 abort 脚本**）。
@@ -581,7 +605,7 @@
 
 ### T-A22 作业路由切片：routes.ts、registerJobRoutes 与页面骨架（H-3·路由切片）
 
-- **状态**：**已实施（batch2，待本批独立代码 Review；不表示 AC 最终验收）**｜commit `cc59e946df2d08178b03e3b37928ab34517067d7`；验证（实施者执行，Converge 未重跑）：命令 1 `WI routes` 7 pass；命令 2 `WI register` 2 pass；命令 3 typecheck / lint 通过。S-32：暂未使用的 `pinia` 在本提交中用行内 eslint-disable 处理，签名不变，T-A22b 已撤销。H-3·路由切片的生产方 ①②③ 已具备（③ 待本批 Review），④ 未取得｜原 blocked_by: IMPL-GATE-R6（已满足）
+- **状态**：**已完成（batch2；本批代码 Review 通过 `f72a1a1`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收；P3 R2-D：同步 main `072bb12` 时 `routes.spec` 真实路由表用例须按 §7 重核 / Analyze / A 定向复核后再派指定范围小任务，未修）**｜commit `cc59e946df2d08178b03e3b37928ab34517067d7`；验证（实施者执行，Converge 未重跑）：命令 1 `WI routes` 7 pass；命令 2 `WI register` 2 pass；命令 3 typecheck / lint 通过。S-32：暂未使用的 `pinia` 在本提交中用行内 eslint-disable 处理，签名不变，T-A22b 已撤销。H-3·路由切片的生产方 ①②③ 已具备（③ 含 A 亲跑，`review-batch2.md` §1 / §5），④ 未取得｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1 h｜**依赖**：T-A01（r6：视图 store 移出后不再依赖 T-A10）
 - **上下文**：plan §2.1（`jobs/routes.ts` + `main.ts` 在挂载前注册，不改 `app/router.ts`）；v2 plan §7.3 H-3 只要求路由定义与注册、不含页面功能。r6 把原“视图 store 骨架”拆到 T-A22a（jobsStore）、T-A22b（sessionStore）、T-C01（intakeStore）、T-G02（inboxStore），本任务只交付路由切片。`43b6d79` 的路由表里没有 `jobs` 占位（§0 B-10），v2 前为新增、v2 后为同名替换。
 - **修改范围**：新建 `frontend/src/jobs/routes.ts`（导出两条记录：name `jobs`（`/jobs`）/ `job-detail`（`/jobs/:id/:stage?`），meta 为 `{title, en, navId:'jobs'}`；导出 `registerJobRoutes(router, pinia)`，本任务内只对两条记录调用 `router.addRoute`；实施提示（R7 S-32）：本任务阶段 `pinia` 尚未使用，若 `eslint --max-warnings 0` 报未用参数，按仓库既有 eslint 规则处理（如 `_pinia`），不改签名、不加逻辑）；`frontend/src/main.ts`（在 `app.use(pinia).use(router).mount` 之前调用 `registerJobRoutes(router, pinia)`，不改其他装配）；`frontend/src/jobs/pages/{JobListPage,JobDetailPage}.vue` 骨架（不读数据）；新建 `tests/unit/jobs/routes.spec.ts`。【r6.5 精度（Converge batch2 登记）】两条记录的导出名为 `jobRoutes: RouteRecordRaw[]`，注册函数签名为 `registerJobRoutes(router: Router, pinia: Pinia): void`。标准 2 中“对真实路由表执行时为新增”以 pin 的 `90187f7` 为准；main `072bb12` 已有 `jobs` 壳占位，同步时按 §7 重核（`converge-batch2.md` §6）。
@@ -615,7 +639,7 @@
 
 ### T-A22b sessionStore 只读上下文与路由守卫（H-4；r6 新增）
 
-- **状态**：**已实施（batch2，待本批独立代码 Review；不表示 AC 最终验收）**｜commit `b38cf43f602390d7645cc84514d0da9860a7e0b7`；验证（实施者执行，Converge 未重跑）：命令 1 `WI H-4 enter` 4 pass；命令 2 `WI H-4 leave same navigation` 3 pass；命令 3 `WI H-4 readonly` 1 pass，且 typecheck / lint 通过；`routes.spec.ts` 整文件回归 9 pass。H-4 的生产方 ①②③ 已具备（③ 待本批 Review），④ 未取得，公开设置方式 = 无｜原 blocked_by: IMPL-GATE-R6（已满足）
+- **状态**：**已完成（batch2；本批代码 Review 通过 `f72a1a1`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收）**｜commit `b38cf43f602390d7645cc84514d0da9860a7e0b7`；验证（实施者执行，Converge 未重跑）：命令 1 `WI H-4 enter` 4 pass；命令 2 `WI H-4 leave same navigation` 3 pass；命令 3 `WI H-4 readonly` 1 pass，且 typecheck / lint 通过；`routes.spec.ts` 整文件回归 9 pass。H-4 的生产方 ①②③ 已具备（③ 含 A 亲跑，`review-batch2.md` §1 / §5），④ 未取得，公开设置方式 = 无｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1 h｜**依赖**：T-A02、T-A22
 - **上下文**：plan §2.3 的 sessionStore（“当前作业 / 阶段上下文，供抽屉、介入事件使用”）未写设置与清空时机；v2 plan §7.3 H-4：只读，进入详情 / 切阶段时设置，离开 `job-detail` 时在同一次导航内同步清空，不从 lastRun 推导。
 - **修改范围**：新建 `frontend/src/jobs/stores/session.ts`（`useSessionStore`：只读 `context: JobContext | null`，**不导出公开 setter**，写入只由守卫进行）；`routes.ts` 的 `registerJobRoutes` 增加 `router.afterEach`：`to.name === 'job-detail'` 且 `stage` 参数属于 `Stage` 时置 `{jobId, stage}`，否则置 null（缺省 / 未知 stage 由 T-B04 的 `router.replace` 补齐后再设置）；新建 `tests/unit/jobs/session-context.spec.ts`（真实 memory-history router + `registerJobRoutes` + 真实 Pinia，只经导航改变上下文）。【r6.3 精度（H-4 机制与行为不变）】`session.ts` 为 setup store：私有 `ref<JobContext | null>`，对外只暴露 `context`（computed / getter，类型层只读）与唯一的**生产路由绑定入口** `bindRouter(router: Router): void`——它只调用一次 `router.afterEach` 注册上述守卫（目标判定在 `session.ts` 内），不接受任何 `JobContext` 参数，不是 setter；`registerJobRoutes(router, pinia)` 在 addRoute 之后调用 `useSessionStore(pinia).bindRouter(router)`（`pinia` 由此被使用，T-A22 的 S-32 临时 `_pinia` 随之撤销）。不在模块顶层调用 `useStore`；不用模块级 WeakMap / 注册表 / provide 等隐藏写权限；不改 `app/router.ts`；`session.ts` 不导入 `routes.ts` 或 `agent/**`（只用 `vue` / `pinia` / `vue-router` 类型与契约 `JobContext` / `StageSchema`）；不做 navigation failure / 重复注册 / 竞态兜底（应用内无中止导航的守卫）。壳与测试都不直接调用 `bindRouter`，测试只经 `registerJobRoutes` + 真实 router 导航改变上下文；标准 3 的 `@ts-expect-error` 写入放在不执行的函数体内（只验类型层）。【r6.5 精度（Converge batch2 登记）】`context` 返回深只读对象，字段同样不可写；`bindRouter(router: Router): void`；store 的 `$state` 不暴露上下文。
@@ -630,7 +654,7 @@
 
 ### T-A23 徽标组件（S-11 / S-17）
 
-- **状态**：**已实施（batch2，待本批独立代码 Review；不表示 AC 最终验收）**｜commit `ebce4c85b1422a62b883117f75459a1fdee81b80`；验证（实施者执行，Converge 未重跑）：命令 1 `WI status badges` 18 pass；命令 2 `WI source badge` 9 pass；命令 3 `check --only colors` / `check --only glass` / typecheck / lint 通过；H-2·标签旁证 `contract-labels.spec.ts -t "WI labels"` 10 pass。三个徽标为自制组件，未导入 shared `Badge.vue`。**失败留痕**：首跑 16 fail / 2 pass，原因是新测试选择器把根 `<span>` 算进了索引；只修新测试选择器后全部通过。AC-001-5 的组件部分具备，人工部分 M-01 仍归 T-G10。H-2·标签的生产方 ①②③ 已具备（③ 待本批 Review），④ 未取得｜原 blocked_by: IMPL-GATE-R6（已满足）
+- **状态**：**已完成（batch2；本批代码 Review 通过 `f72a1a1`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收，AC-001-5 只有组件半项；P3 R2-C 归属见页首，未修）**｜commit `ebce4c85b1422a62b883117f75459a1fdee81b80`；验证（实施者执行，Converge 未重跑）：命令 1 `WI status badges` 18 pass；命令 2 `WI source badge` 9 pass；命令 3 `check --only colors` / `check --only glass` / typecheck / lint 通过；H-2·标签旁证 `contract-labels.spec.ts -t "WI labels"` 10 pass。三个徽标为自制组件，未导入 shared `Badge.vue`。**失败留痕**：首跑 16 fail / 2 pass，原因是新测试选择器把根 `<span>` 算进了索引；只修新测试选择器后全部通过。AC-001-5 的组件部分具备，人工部分 M-01 仍归 T-G10。H-2·标签的生产方 ①②③ 已具备（③ 含 A 亲跑，`review-batch2.md` §1 / §5），④ 未取得｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1.5 h｜**依赖**：T-A01
 - **上下文**：plan §2.2 徽标体系；designUI §2.4（状态徽不能只靠颜色）。
 - **修改范围**：新建 `frontend/src/jobs/components/{JobStatusBadge,ArtifactStatusBadge,SourceBadge}.vue`（复用既有的 `shared/components/Badge.vue` 和令牌；文案 / 图标只来自契约常量；SourceBadge 按 S-17 处理 derived；上传状态用 ArtifactStatusBadge 的同一渲染方式消费 `UploadStatusLabel`，不新建组件）；新建 `tests/component/jobs/badges.spec.ts`。【r6.3 基线事实修正（§0.0 r6.3 复核 ②）】`shared/components/Badge.vue` 只接受 `state` 并渲染固定文案（正常 / 警告 / 异常 / 样例），无插槽 / 文案 prop，且 `shared/**` 不属本 feature（§1-5），无法承载契约文案；故上句“复用既有 Badge.vue”改读为：三个徽标是 `jobs/components/` 内的自制 SFC（designUI §6（:214“新增组件（D-016）”；r6.4 按 Checklist R8 S-33 更正，r6.3 误写 §8）“来源徽、状态徽……移植 / 自制决策随实施登记”，此处登记为自制），**不导入、不修改** Badge.vue，只复用其令牌与样式写法（`var(--fai-*)` 边框 / 文字令牌、`--fai-type-tag` 等），点睛红只作边 / 图标、不作文字（plan §1）；文案 / 图标仍只来自契约常量；标准 / 命令不变。
@@ -645,7 +669,7 @@
 
 ### T-A24 行级 diff 工具
 
-- **状态**：**已实施（batch2，待本批独立代码 Review；不表示 AC 最终验收）**｜commit `27e59e610e2ab8c14e7c3db554609e52e40f5f76`；验证（实施者执行，Converge 未重跑）：命令 1 `WI lcs` 6 pass；命令 2 `WI limit` 7 pass；命令 3 typecheck / lint 通过；依赖与锁文件未改｜原 blocked_by: IMPL-GATE-R6（已满足）
+- **状态**：**已完成（batch2；本批代码 Review 通过 `f72a1a1`，0 P1 / P2，A 亲跑本任务命令同数通过；不表示 AC 最终验收）**｜commit `27e59e610e2ab8c14e7c3db554609e52e40f5f76`；验证（实施者执行，Converge 未重跑）：命令 1 `WI lcs` 6 pass；命令 2 `WI limit` 7 pass；命令 3 typecheck / lint 通过；依赖与锁文件未改｜原 blocked_by: IMPL-GATE-R6（已满足）
 - **预计**：1 h｜**依赖**：无
 - **上下文**：plan §2.2 / §6：自实现 LCS 行级 diff，上限 2000 行，超出时只给变更摘要；不引入第三方库。
 - **修改范围**：新建 `frontend/src/jobs/diff.ts`；新建 `tests/unit/jobs/diff.spec.ts`（期望结果用手写样例，不在测试里重写算法）。【r6.3 精度】输入按 `'\n'` 切行，空串视为 0 行；两侧行数均 ≤ 2000 时返回逐行结果（每行 equal / add / remove 与文本）；任一侧 > 2000 时直接返回摘要（两侧行数），不进入 LCS、不返回逐行结果；标准 2 以 2000 / 2001 行两个边界各一例断言返回形态，不以耗时断言。不引入第三方库、不改依赖。实施提示（r6.4，Checklist R8 S-36；不新增机制 / 标准 / 命令）：返回类型可给逐行与摘要两个分支一个具名判别（如 `kind: 'lines' | 'summary'`），便于 T-F05 消费时不靠长度判断。【r6.5 精度（Converge batch2 登记）】实际导出为 `diffLines(before: string, after: string): LineDiffResult`，结构如下：
@@ -664,7 +688,7 @@
 
 ### T-B01 作业列表渲染与三态
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准）：消费徽标前用既有 `--fai-status-*` 令牌核对状态边框映射，不新增色值
 - **预计**：1.5 h｜**依赖**：T-A10、T-A22、T-A22a、T-A23
 - **上下文**：spec R-001；plan §2.2。
 - **修改范围**：`jobs/pages/JobListPage.vue`（数据取自 `useJobsStore()` 的未筛选缓存，挂载时 `ensureJobs()`，错误重试 `refresh()`——r6，T-A22a）、新建 `jobs/components/JobCard.vue`（标题、类型、状态徽、当前阶段、更新时间；角标位预留给 T-G02）；三态复用 `Loading` / `EmptyState` / `ErrorState`（错误态含可复制诊断）；新建 `tests/component/jobs/job-list.spec.ts`。
@@ -839,7 +863,7 @@
 
 ### T-C04 采集端到端：页面入口、payload、待归属
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准；若 R2-C 尚未在前序页面任务处理）
 - **预计**：1.5 h｜**依赖**：T-C03、T-B04
 - **上下文**：AC-003-1 的工作台入口和顶栏全局入口属于 v2（T-H01）；本任务只覆盖本 feature 的页面入口。
 - **修改范围**：新建 `e2e/jobs/intake.spec.ts`。
@@ -952,7 +976,7 @@
 
 ### T-F01 交付台六类块、图表样例、块徽与头部定稿状态
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜开工前读 `review-batch2.md` R2-C（P3 后续观察，非新增标准；若 R2-C 尚未在前序页面任务处理）
 - **预计**：2 h｜**依赖**：T-B04、T-A16、T-A23
 - **上下文**：spec R-006；plan §2.4 ChartSpec（只编译 line-sample，使用地基主题 `fai-dark`）、§4.6（头部按 `DeliverableStatusLabel` 显示，不新增组件）。
 - **修改范围**：新建 `jobs/stages/{DeliverWorkspace,DeliverableBlock,BlockChart,BlockTable}.vue`；新建 `tests/component/jobs/deliver-blocks.spec.ts`。
@@ -1126,7 +1150,7 @@
 
 ### T-G06 静态守卫与契约文档对拍收口
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜收口时复核 `review-batch-a09a.md` R-C（P3 后续观察，非新增标准）
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜收口时复核 `review-batch-a09a.md` R-C 与 `review-batch2.md` R2-A（P3 后续观察，非新增标准；把方法 describe 中的 mock 场景句迁回 `jobScenarios`）
 - **预计**：1.5 h｜**依赖**：T-G03、T-G04、T-G05、T-B02、T-C04、T-D03
 - **上下文**：AC-007-5 / AC-008-1 / AC-008-3 / AC-008-4；S-11 / S-14 / S-16 / S-18 在文档中的落点。
 - **修改范围**：新建 `tests/unit/jobs/contract-doc.spec.ts`（逐个 job schema 对拍 schema.json 与 zod，CONTRACT.md 含每个 job 方法的小节、每条 Label 文案、S-14 / S-16 注记、Deliverable 的两个分支、`SourceNote.publishedAt`、2.0.0 变更说明，以及 `jobScenarios` 中 S-19 声明句“CONTRACT.md §4 所列为 v1 五场景与 fixture 键；job-* 场景及 `window.__FAI_MOCK__.jobFixtures` 以本条为准”）。
@@ -1178,7 +1202,7 @@
 
 ### T-G10 人工验收执行与截图（Handoff 阶段）
 
-- **状态**：未开始｜blocked_by: IMPL-GATE-R6
+- **状态**：未开始｜blocked_by: IMPL-GATE-R6｜M-01 前确认 `review-batch2.md` R2-C 已处理或登记（P3 后续观察，非新增标准）
 - **预计**：2 h｜**依赖**：T-G09；另需工作流闸门：Converge 报告、Review、Gate 2（AGENTS §2；spec AC-009-2“Handoff 附截图”）
 - **上下文**：v2 未交付时能否分阶段 Handoff，由 Walter 在 Gate 2 决定；本文件不预设。
 - **修改范围**：按 manual-acceptance.md 执行 M-01～M-10，截图保存到 `specs/workbench-interaction/assets/manual/`，并填写结果栏；在 review.md 引用截图。
