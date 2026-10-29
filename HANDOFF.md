@@ -503,3 +503,66 @@ fi
 ### 13.9 下次开场（取代 §12.9）
 
 > 第三批四项与 R3-A 补修已通过独立 A 代码 Review，当前 21/68 完成、47 未开始，代码固定 `af24c82`；按既有授权从 T-B01（先确认 R2-C 归属）或 T-A14～A16 / T-C01 继续。H-2·列表等切片仍待消费方集成，R3-B / R3-C 未修，整体未收敛。
+
+## 14. 第四批实施 + Review 未通过 + R4-A 工程审批等待（2026-10-29；安全点恢复记录，非正式 Handoff；替代 §13 后续状态）
+
+> 本节由 Opus 状态登记会话起草（claude-opus-5-5 via anthropic，PI_SESSION_ID `01a18834-f443-750c-ae53-bba830191e22`），协调器按真实提交与工作树状态核对后追加。**当前停在 AGENTS §5.1 工程审批硬边界，不是全 feature Gate 2 / Handoff，也不是用户叫停。** Plan / Converge / 记账 = claude-opus-5-5 via anthropic；Implement = openai/gpt-6-astra；独立 A = claude-fable-5-1 via anthropic；集成人仍为协调会话 openai/gpt-6.1-sol。本窗口 bridge 已确认 quota / rate / spend_limit，不重复试，官方同模型调用成功；未改配置、未因测试或 Review 未过换模型。
+
+### 14.1 授权与进度
+
+- Walter 原话“允许”代码实施及指定协调会话 `01a18388-a371-7746-8158-9fb15d55d819` 为集成人的通用授权持续有效，**不重复询问通用代码授权**。但它**不覆盖** plan 明确不做的新 guard，R4-A 需 Walter 对该项单独批准。
+- **70 个任务 / 104.5 h，235 标准 ↔ 235 命令**：**21 已完成 + 5 已实施、第四批 Review 未通过 + 44 未开始**（其中 1 项为待批草案 T-B04a，原 43 项未开始）。本批不计完成；46 AC 最终验收仍 **0**，feature 未收敛。
+- 已实施五项：T-B01 列表与徽标令牌；T-B02 筛选；T-A22d 详情缓存；T-B04 详情轨道 / URL / 三态；T-B03 内联创建与跳转。列表与详情现在是功能页，**C–F 四个工作区仍占位**；投放、取消、重跑、角标与创建者展示未完成。
+
+### 14.2 固定引用与有效 Checklist
+
+| 项 | 固定提交 |
+|---|---|
+| r6.9 开工前精度 / Analyze R16 | `94f1f83d6871cdd9ef6ce1e57d13d505992fda70` |
+| Checklist R10 原件 | `37e2f71aae5a625de7e39a3f4b2d9c0b1a9c7b38`，26/26，0 P1/P2；blob `4537c55f226f0bdc4f39b19e7c369731cf23abba` |
+| T-B01 | `5c00cf695235155c4cfa9efb9df1fee06a161189` |
+| T-B02 | `0221a94bbd9aefe4b7d482f61e3e9017d0a25710` |
+| T-A22d | `ca7dca175150652b1026a831f1447fb6830028e4` |
+| T-B04 | `cc6559d7bb0b5afb0e233b8295dbd55f1de41d9d` |
+| T-B03（当前代码固定点） | `6c082fd60570a329771727be16b494f81775f957` |
+| 第四批 Converge / Analyze R17 | `adede0ca02a23ddc11560e6b5674fab48ca37a43`（`converge-batch4.md`：当时收口、待 Review） |
+| 第四批独立代码 Review 原件 | `9812f64666f8c1f1d8283bf4d7ebd9ae94b4e018`（`review-batch4.md`：**未通过，1 P2 R4-A + 4 P3 R4-B～E**） |
+| Review 后状态 / R4-A 草案 / Analyze R18 | `e285ad2c1515ba4d26861124f625f211dd00c38d` |
+| 规格树同步提交 | 不硬编码自身；`git log -1 --format="%H %s" -- HANDOFF.md` 查询 |
+
+- R10 是当前唯一有效 Checklist；只转存 A 原件，实施者未改勾选。T-A22d 自已顶格的 B04 拆出，B01 纳 R2-C 后为 2 h；B03 为详情回显依赖 B04，是唯一有意编号回边，真实拓扑无环。
+- Astra 三个新会话分别实施 B01/B02、A22d、B04/B03，均首选、未回退。失败都只涉及新测试或新模板：缺省 stage 为 undefined、border 简写序列化、空格标题实际匹配全部、空 analyze 产物误断只读、保留详情锚的断言、lint / 新测试 TS 错误；**旧测试未改、未删覆盖、未加 guard**。细节见实施日志 §15 / §16 与 Converge。
+
+### 14.3 独立审核与验证
+
+- A 新会话 `01a1881e-0d52-740b-8dea-83fca258f12f`，隔离 worktree，固定审 `adede0c` 与 `37e2f71..6c082fd -- frontend`：5 提交、17 文件、+1870/−11。亲跑全量单测 **34 文件 / 1018 passed / 0 failed**，17 条任务命令与实施者逐条同数，四份 E2E（shell / agent / detail-stage / list-create）**29 passed**。
+- 六守卫、typecheck、lint、contract 24/10/2 通过；v1 契约 88、real-stubs 23、routes+session 17、旧 H-2 27、labels 10；徽标 status 18 / source 9 / tone 21 / 整文件 48 通过。
+- A 另做 **9 个只读 Chrome 探针**（非正式 29 条 E2E），确定复现 R4-A。**测试全绿不改变 Review 未通过。** 原 5 项标准在代码层成立，不等于没有用户可触发的 bug。
+- 未跑其余 7 份 E2E、全量 `pnpm test`、人工截图或最终 AC 验收。产品测试由实施者与 A 执行，Converge / 记账未跑产品测试。
+
+### 14.4 R4-A 与待 Walter 批准的最小修复
+
+- **P2 根因**：`JobDetailPage.vue` 的 async watch 在 `await openJob` 后仍执行 canonical `router.replace`。停止 watcher 不会取消已经等待中的回调。
+- **确定复现 / 概率**：slow 模式两次读取各 1500 ms，约 **3000 ms 窗口**；从不带 stage 的详情入口进入，期间离开、Back 或同作业点“交付”，迟到 replace 会劫回 `/process`、覆盖 `/prices` 或列表的历史记录；Back 甚至可退到 `about:blank`。请求按序完成，**不是乱序，也不是 harness 伪影**。normal 下不可达；真实 api 下窗口等于两次往返，默认卡片链接每次都会经过。
+- **草案 T-B04a（0.5 h，blocked_by Walter §5.1 批准）**：watch 第三参数 `onCleanup`，每次回调 `let stale=false`，清理时置 true，仅 canonical replace 前检查 `!stale`，约 **3–5 行**。新增 2 例组件回归（slow 离开、读期间选交付）+ 1 例真实 slow E2E（SPA 离开不被拉回）；原 11 例组件 / 4 例阶段 E2E 不改，回归全量单测与四份 E2E。
+- **仅上述范围**：不改 store、不取消请求、不加请求序号 / 锁、不清锚、不透传 query、不做 R4-E 全局防乱序。只动详情页及其两份测试，见 tasks T-B04a / plan【r6.11 待批草案】。
+- **当前尚未取得批准**：协调器已在 commentary 向 Walter 报告出错方式、确定性窗口与代码量；**Walter 尚未回复，不派 Astra、不写 guard 代码**。通用“允许继续”不能倒推为这项新防护已获准。
+- 获准后：按 T-B04a 更新批准记录 → Implement → Converge → **新会话 A 增量 Review**，通过后才关闭 R4-A、判第四批通过。需要时由集成人决定是否先做设计定向复核，不另造用户 Gate。
+- **流程纠偏**：原 Review 中“本批 Gate 2 待 Walter”“风险接受可改判通过”等是流程建议文字，原件保留；**不能创设批次 Gate 2，也不能把未修的 P2 当 P3 过关**。当前只是 §5.1 工程审批，全 feature Gate 2 在后续。集成人推荐只批准最小修复，不请求风险接受。
+
+### 14.5 H-x 与开放风险
+
+- H-2·标签①候选 `5c00cf6`，②R10，③A 亲跑 18/9/21/48；本批未过，不转“生产已核”。R2-C 代码修正经 A 核实，但关闭条件尚未满足，暂不记关闭。
+- H-2·列表①仍 `af24c82`，详情缓存是内部成员；旧 27 例复跑通过。所有切片④仍缺，页面切片本批未过且 C 组未做，**未交付**；H-5 未做、H-6 缺 A21。不能用生产方 SHA 冒充消费方签收。
+- 其余 P3 均未风险接受：R4-B query → G01/G05；R4-C 初始提示 → G10；R4-D 同作业旧错误 → B05 前精度；R4-E 迟到 store 写入 → api；S-41 创建者展示 → 本 feature B05 前精度。R3-B/C 与前批未关项归属保持，见日志 §8。
+- 消费分支只读仍 `3f63273`；不写、不重建、不代 merge v2。正式基线仍 `43b6d79`，上游 pin `90187f7`；main `072bb12` 未导入。同步仍须 R2-D 的重核 / Analyze / A 定向与协调 v2 T-V2-09#4，不代写壳测试。
+
+### 14.6 工作树、安全点与下次开场
+
+- 实施树 `D:/2030/Futures-AI-interaction-implement` / `feat/workbench-interaction-astra`、生产方集成树 `D:/2030/Futures-AI-interaction-integration` / `integration/workbench-interaction`、Converge 树 `D:/2030/Futures-AI-interaction-converge-batch4` / `docs/workbench-interaction-batch4-converge` **均已 ff-only 至 `e285ad2c1515ba4d26861124f625f211dd00c38d`**；其前端代码仍固定 `6c082fd`。生产方集成仅本协调会话串行写，不是 v2 接收方。
+- 只读审核树 `-checklist-batch4` @ `37e2f71`、`-review-batch4` @ `9812f64`；准备树 `-plan-batch4` @ `94f1f83`。规格主树只同步本 feature 文档 / README 本方两行 / 本恢复节，不铺代码或导入其他 feature / 权威 docs。
+- 状态结构：70/104.5h，21 完成 + 5 已实施未过 + 44 未开始，235 对，46 AC 矩阵一致；T-B04a 依赖 B04/B03 的已实施代码，G09 显式等 B04a，H04 可达修复任务；唯一编号回边 B03→B04，无环。
+- 临时目录 `C:/Users/iswal/AppData/Local/Temp/wi-batch4-01a18388-nzh9q1wh/` 保留提示、会话、日志与 `review-probe/`；关键结论已入 tasks、日志 §8/15/16、Analyze R17/R18、Converge、Review 与接口登记，恢复不依赖 Temp。B01/B02 另有独占日志 `C:/Users/iswal/AppData/Local/Temp/astra-list-01a187e0/`。原始会话 / 凭证不入库，不清共享 tmp。
+- 全部模型调用已同步返回，测试自管服务已退出，无本 session 待续跑服务；未 push、未建 PR、未 merge main、未进入全 feature Gate 2 / Handoff。
+
+> **下次先看 Walter 是否已对 T-B04a 最小生命周期检查与回归单独批复。** 获准才派 Astra → Converge → A 新会话定向复核；未获准不派代码。当前 21 完成 + 5 已实施未过 + 44 未开始，P2 R4-A 尚未修，整体未收敛。

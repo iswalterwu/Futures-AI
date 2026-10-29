@@ -29,6 +29,14 @@
 > **2026-10-29 r6.8（第三批代码 Review 后的 Converge 补修登记，未实施）**：第三批独立代码 Review（`review-batch3.md`，原件 `49edb7e`）判本批通过（0 P1 / P2），其 P3 **R3-A** 指出 `jobsStore.applyFilter(f)` 成功分支改写了未筛选列表的 `listStatus` / `listError`。集成人决定现在修，采用 A 的最小方案 (b)。本文件只在 §2.3 补一条【r6.8】精度：读状态归属与恢复口径，即恢复 r6.6“`applyFilter(f)` 只写 `filter` / `filteredJobs`”的原意。修复任务为 tasks **T-A22c**（0.5 h）。
 >
 > 除上述读状态口径外，不改设计、方法集、公开成员、动作矩阵、九场景、样例表、迁移表、定稿语义或 46 AC；不新增筛选状态机、回滚、锁或请求序号；不是需求变更，不回 Clarify（analyze.md「Analyze R14」）。r6.7 对 `0032fc6` 实际行为的登记原文保留在 tasks T-A22a。作者 = claude-opus-5-5 via anthropic（bridge 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。
+> **2026-10-29 r6.9（第四批 T-B01 / T-B02 / T-A22d / T-B04 / T-B03 开工前机制精度，未实施）**：只为第四批页面闭环补既有 what / AC 内的最小机制精度（标【r6.9】），四阶段工作区内容仍为 C–F 占位：
+> - §1：R2-C 徽标边框令牌映射（只用既有 `--fai-status-ok/warn/bad` 与中性 `--fai-glass-module-border`；来源徽中性；文字色不变；不新增色值 / 状态枚举 / 映射常量），落在 T-B01。
+> - §2.1：详情页路由 stage 的入口定型（缺省 / 未知 → 以 `getJob` 的 currentStage `router.replace` 一次）与 StageRail 两种标记（业务 currentStage 高亮 vs 当前查看）。
+> - §2.3：jobsStore 详情视图缓存的只读成员 / `openJob` 签名与返回 / `refresh` 重读锚 / 离开后保留口径 / 与列表读状态隔离；落地拆为 tasks **T-A22d**（1 h，原 T-B04 已知超出 2 h，按 Checklist R8 B-12 先例在 Tasks 阶段拆分）。
+>
+> 冻结 spec v1.1、46 AC、方法集、契约 / 生成物、动作矩阵、九场景、样例表、迁移表、定稿语义均不变；不新增公开交接接口、请求序号 / 锁 / 去重 guard / 轮询 / 事件总线 / 测试 setter；不是需求变更，不回 Clarify（analyze.md「Analyze R16」）。本补正**未经审核**：须独立 A 新会话做 Checklist R10 定向复核通过并提交后才可开码。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a187b5-a3e7-75a6-a499-74d51c9f9bbd`；`claude-bridge` 本协调窗口已确认 quota / rate / spend_limit 耗尽，不重试；本批官方通道最小真实调用 exit 0（协调器登记）；只换通道不换模型，未改配置）。
+> **2026-10-29 r6.10（Converge batch4 精度登记，实施后）**：第四批 T-B01 / T-B02 / T-A22d / T-B04 / T-B03 已实施（代码 diff `37e2f71..6c082fd -- frontend`，待第四批独立代码 Review）。按实际代码只补类型 / 读法精度（标【r6.10】）：§2.1 `JobCard` / `StageRail` / `StageWorkspace` / 创建面板的实际 props 与写法；§2.3 详情缓存成员的类型层只读形态，以及 Checklist R10 S-43 的跨 feature 登记（真实 `api` 乱序归 `api` feature 决定）。不改行为、方法集、契约、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC 与任务结构；不是需求变更（analyze.md「Analyze R17」、`converge-batch4.md` §3）。R10 S-41（创建者展示）不在本轮改设计，只登记归属 = 本 feature、T-B05 开工前精度轮（tasks T-B05 状态行）。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；bridge 本协调窗口已确认 quota / rate / spend_limit，不重试；官方通道成功；未改配置）。
+> **2026-10-29 r6.11（第四批 Review R4-A 的最小修复草案；【待 Walter AGENTS §5.1 批准，不生效】）**：第四批代码 Review（`review-batch4.md`，原件 `9812f64`）判**未通过**，唯一 P2 = R4-A：详情页 async 入口在离开或切换阶段后，仍会执行迟到的 canonical replace。A 用真实 Chrome 在请求按序完成的 slow 场景复现了这一点，因此它不属于 S-43 的“乱序”口径。修复需要在 §2.1 新增一处本 plan 明确不做的生命周期检查，故只写成草案，见 §2.1 / §2.3【r6.11 草案】，落点为 tasks **T-B04a**（0.5 h，blocked_by Walter §5.1 批准）。在 Walter 单独批准前，§2.1【r6.9】“不加比较 / 去重 guard”仍然有效，本条不授权实施。不改 spec / 46 AC、方法集、契约、store、动作矩阵、九场景、样例表与定稿语义；不是需求变更，不回 Clarify。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18834-f443-750c-ae53-bba830191e22`；bridge 本协调窗口已确认 quota / rate / spend_limit，不重试；官方通道成功；未改配置）。
 > **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
@@ -39,6 +47,14 @@
 - **契约版本**：`CONTRACT_VERSION` 1.0.0 → **2.0.0**。保留既有方法/字段语义，事件与 `SendMessage` 只加可选 `jobContext`；旧消息/事件 fixtures 不加该字段仍可解析。新增必实现的 `DataClient` 方法及封闭场景枚举使旧 real 实现不再满足接口，故统一升 MAJOR；不承诺旧 bootstrap 通过新 `z.literal(CONTRACT_VERSION)`，bootstrap 必须声明 2.0.0
 - **复用**：design tokens / 三层玻璃 / `Num` / `Kpi` / 三态 / 对话抽屉 / CoT 时间线 / ECharts 暗色主题 / `check.mjs` / 契约生成器。**不新增颜色字面量与玻璃层级**
 - **状态徽与来源徽**：只用既有令牌（文字主/次、琥珀；点睛红只作图标/边，不作文字），以文案 + 图标为主，不新增色值（designUI §2.4「派生标记」用来源徽+文字）。【r6.3】徽标为 `jobs/components/` 内自制组件（designUI §6 :214“新增组件（D-016）……移植 / 自制决策随实施登记”；r6.4 更正，r6.3 误写 §8），不导入 `shared/components/Badge.vue`（其文案固定、无插槽 / 文案 prop，且不属本 feature），只复用令牌与样式写法（tasks T-A23）
+  - 【r6.9（R2-C，落地 tasks T-B01）】三个徽标的边框令牌按下表映射（`JobStatusBadge` / `ArtifactStatusBadge` 根元素带 `data-status=<契约枚举值>`，样式以属性选择器写在各自 SFC，沿用 shared `Badge.vue` 的 `[data-badge]` 写法；不建 TS 色调映射 / helper / 新 schema）。未列入 ok / warn / bad 的值走基础规则的中性边 `var(--fai-glass-module-border)`。`--fai-status-sample` 不用于这三个徽标（designUI 资产 `UI_COLORS.md#status_colors`：sample 须配虚线边与「样例」文字）。`--fai-status-ok` 为蓝色，状态不用绿色（D-015）。文字色不变（状态徽 `--fai-text-secondary`，来源徽主 / 次），红只作边，文案与图标仍只来自契约常量。
+
+    | 徽标 | ok `--fai-status-ok` | warn `--fai-status-warn` | bad `--fai-status-bad` | 中性（基础规则） |
+    |---|---|---|---|---|
+    | `JobStatusBadge` | collecting、processing、analyzing、delivering、delivered | needs_human | failed | draft、cancelled |
+    | `ArtifactStatusBadge`（产物 / 块） | confirmed | provisional | conflict | draft |
+    | `ArtifactStatusBadge`（上传） | ingested | pending_validation | quarantined | — |
+    | `SourceBadge` | — | — | — | 全部（来源与状态正交，无 `data-status`，不带状态色） |
 - **文件边界**：
   - 本 feature 唯一修改者：`frontend/src/jobs/**`、相应 jobs 测试、`frontend/src/contracts/**` 的作业类型/方法/mock/可选 `SendMessage.jobContext`、`frontend/src/agent/events.ts` 的可选上下文、`frontend/src/main.ts` 的作业注册（挂载前调用 `registerJobRoutes(router, pinia)`：两条路由 + 会话上下文守卫；`jobsStore` 的应用级 agent 订阅，沿用既有 `useAgentStore(pinia).receive` 订阅写法——r6 精化）、frontend-workbench 既有 `tests/unit/{contracts,contract-doc,mock}.spec.ts` 中受契约 2.0.0 影响的硬编码断言（仅 T-A09，保留 v1 语义）、`specs/workbench-interaction/**`、`specs/README.md` 本 feature 行。新增 schema 并入 `contractSchemas`，方法进 `methodSemantics`；表驱动生成器无需修改
   - `frontend-workbench` v2 唯一修改者（本 feature 不改）：`frontend/src/app/{nav.ts,router.ts,Rail.vue,TopBar.vue,AppShell.vue}`、`frontend/src/workbench/WorkbenchPage.vue` 与首页作业轨道、`frontend/src/agent/{store.ts,AgentDock.vue,AgentDrawer.vue,CotTimeline.vue}` 的上下文消费/展示；本 feature 提供组件、契约和集成测试输入。v2 的契约字段需求交由本 feature 统一写入，不重复改 schema
@@ -67,6 +83,25 @@
 - 【r6.5 精度（Converge batch2 登记）】实际导出如下：
   - `jobs/routes.ts`：`jobRoutes: RouteRecordRaw[]`（上述两条记录）与 `registerJobRoutes(router: Router, pinia: Pinia): void`；
   - `jobs/stores/session.ts`：`useSessionStore()` 的 `context` 返回深只读对象（字段亦不可写），以及 `bindRouter(router: Router): void`。
+- 【r6.9 精度（详情页入口与阶段轨道；落地 tasks T-B04，store 见 §2.3【r6.9】）】
+  - **URL 是“当前查看阶段”的唯一来源**。`JobDetailPage` 以 `watch([route.params.id, route.params.stage], …, {immediate: true})` 处理入口与参数变化：stage 合法 → `openJob(id, stage)`；缺省或未知 → `const s = await openJob(id, null)`，`s` 非 null 时 `router.replace({name:'job-detail', params:{id, stage:s}})` 一次。replace 后 stage 合法，监听再触发一次 `openJob(id, s)`；这条缺省路径会多读一次 `getJob` + 工作区，是可接受代价，不加比较 / 去重 guard。`s` 为 null（empty 预置 id 或读失败）时不 replace。
+  - **StageRail 两种标记分开**：业务当前阶段 = `job.currentStage`（AC-002-1 的“当前阶段高亮”，`aria-current="step"` + 既有令牌边线，参照 `app/Rail.vue` 当前项写法）；当前查看 = 路由 stage（`aria-pressed="true"`）。阶段顺序与五种状态直接取 `job.stages`（契约已固定顺序）及 `StageLabel` / `StageStateLabel`，不重排、不推导业务状态。点击阶段只 `router.replace` 到该 stage，不 push 历史。
+- 【r6.10 精度（Converge batch4 登记；只记实际写法，不改设计）】
+  - `JobCard` props = `job: DeepReadonly<JobListItem>`（store 对外元素层只读）；标题链接只带 `{name, params:{id}}`。
+  - `StageRail` props = `{stages: readonly StageSummary[]; currentStage: Stage; viewedStage: Stage | null}`，emit `select(stage)`；`aria-pressed` 为布尔绑定，查看项的视觉线索为阶段名下划线；当前阶段边线 = `--fai-accent-red`（同 `app/Rail.vue` 当前项）。
+  - `StageWorkspace` 只渲染 `aria-label="<阶段>工作区"` 的占位与“工作区内容由后续任务提供。”；C–F 实现前不消费 `currentStageWorkspace`。
+  - 创建面板（`JobCreatePanel`）失败诊断 `moduleId='job-create'`，成功后 `router.push({name:'job-detail', params:{id, stage:'collect'}})`。
+  - 以上路由对象都不携带当前 `route.query`；其对 `?scenario=` / `?agentScript=` 的影响登记为 Converge 观察 O-B4-1（`converge-batch4.md` §5），由第四批 Review 判定，本条不预设处置。
+- 【r6.11 草案（第四批 Review R4-A；**待 Walter AGENTS §5.1 批准，不生效**；落地 tasks T-B04a）】
+  - **缺陷**：`watch` 回调在 `await openJob(id, null)` 返回后无条件执行 canonical `router.replace`。组件卸载或参数变化只停止再触发，不会让已在等待中的回调失效。于是离开详情、浏览器 Back、同作业读期间选阶段，都会在读完成后被拉回 `/<currentStage>`，并覆盖当时的历史记录（`review-batch4.md` §3，Chrome slow 复现约 3000 ms 窗口）。
+  - **若获批**，`JobDetailPage` 的写法改为：
+    - `watch` 回调使用第三参数 `onCleanup`；
+    - 同一次回调内 `let stale = false`，并 `onCleanup(() => { stale = true })`（再触发或卸载时由 Vue 调用）；
+    - 只在 canonical `router.replace` 之前检查 `!stale`。约 3～5 行。
+    - `openJob` 照常调用；`selectStage` 与上一条【r6.9】的其余入口语义不变。
+  - **不做**：不改 jobsStore（不清锚、不取消请求、不加请求序号 / 锁 / 比较去重）；不给任何导航加 `route.query`（R4-B）；不处理 store 迟到写入（R4-E，归 `api` feature），也不做全局防乱序。
+  - **测试与范围**：确定为 `JobDetailPage.vue` + `tests/component/jobs/job-detail.spec.ts`（只新增 `WI R4-A` 组 2 例：slow 离开、同作业读期间选“交付”）+ `e2e/jobs/detail-stage.spec.ts`（只新增 1 例 `WI R4-A`：真实 slow 下 SPA 离开不被拉回）；原 11 例组件测试与原 4 例 E2E 不改；回归跑四份 E2E 与全量单测。API / 契约输入 / 私有存储均无变化。
+  - **获批前**，上一条【r6.9】“不加比较 / 去重 guard”仍然有效；获批并实施后，须经 Converge + A 新会话增量 Review 才关闭 R4-A。
 - 全局投放入口、工作台作业轨道、导航项均属 v2 前置变更（§7），v1 先保证路由可直达与页面内入口
 
 ### 2.2 组件与职责
@@ -102,6 +137,17 @@
   - `applyFilter(f)` 成功**只写** `filter` / `filteredJobs`，不改 `listStatus` / `listError`：全新 store 先筛选时保持 idle，随后 `ensureJobs()` 照常加载未筛选列表；已有的读错误也不会被筛选成功清除，须显式 `refresh()` 恢复。
   - `applyFilter(f)` 失败沿用已审口径：保留旧 `filteredJobs`，把这份共享读状态置 error 并写 `listError`。此时 `filter` 与 `filteredJobs` 可能暂不对应（Review O-R3-2），UI 按 error 呈现。
   - 不新增筛选专属状态字段、回滚、锁或请求序号（AGENTS §5.1），对外成员与签名不变。
+
+- 【r6.9 精度（详情视图缓存；落地任务 tasks T-A22d，页面消费归 T-B04）】
+  - **成员**：只读 `currentJob: Job | null`、`currentStageWorkspace: StageWorkspace | null`、`detailStatus: 'idle'|'loading'|'ready'|'error'`、`detailError: ContractError | null`（`computed` + `readonly`，同既有列表成员写法）；action `openJob(jobId: string, stage: Stage | null): Promise<Stage | null>`。另有私有锚 `{jobId, stage}`（不导出，不是测试 setter）。不新增 `closeJob` 或其他公开成员；这些成员不属 v2 交接接口。
+  - **`openJob`**：先把锚置为本次请求；仅当 `currentJob` 不是同一 jobId（含 null）时置 loading，同作业切阶段保持现状态；`getJob(jobId)`，有效阶段 = 入参 stage ?? `job.currentStage`；job 为 null（empty 预置 id）时不读工作区、`currentStageWorkspace=null`、返回 null；否则 `getStageWorkspace(jobId, 有效阶段)`。成功：写两缓存、锚的 stage 定为有效阶段、ready、清 `detailError`、返回有效阶段。失败：保留旧缓存，置 error 并写原 `ErrorResponse.error`（not_found / adapter_error 等既有语义），resolve null，不抛出（S-38 同口径）。
+  - **`refresh()`**：既有列表 / 筛选部分不变；锚非 null 时**再**按锚重读详情（同一读取逻辑，`openJob` 与 `refresh` 共用一个私有读函数）。详情读不把状态置 loading；成功 ready + 清错，失败只写 `detailStatus` / `detailError`。列表与详情各自 try，互不跳过、互不改写对方的读状态（不污染【r6.8】未筛选列表的 `listStatus` / `listError`）。写后 / agent 终态刷新经同一 `refresh()` 自动带上详情；`receiveAgentEvent` 的触发条件（带 `jobContext` 的三种终态）不变。
+  - **离开详情**：不清锚、不清缓存（视图缓存）。之后的 `refresh()` 仍重读最近打开的详情，属可接受的额外读取；再次进入不同作业时 `openJob` 换锚并置 loading，进入同一作业时先显示缓存再刷新。
+  - 不加请求序号、锁、轮询、事件总线或 fallback；并发 open / refresh 按 mock 同延迟、按序完成口径处理（AGENTS §5.1）。
+- 【r6.10 精度（Converge batch4 登记；Checklist R10 S-43 与实际类型）】
+  - 类型层：对外 `currentJob` / `currentStageWorkspace` 为 `DeepReadonly<Job> | null` / `DeepReadonly<StageWorkspace> | null`（同既有 `jobs` 的 `computed(readonly)`）；锚与共用读函数为闭包私有，不出现在 store 实例上。
+  - 跨 feature 登记（S-43）：上一条“按序完成”只是 mock 口径。真实 `api` 实现可能乱序完成，届时若出现后发先至覆盖（含详情页 async 入口在用户离开后迟到的 canonical replace，Converge 观察 O-B4-2），由 `api` feature 按需求流程决定是否加请求序号或其他防护；本 feature 不预做，任何新增 guard 按 AGENTS §5.1 先报 Walter。
+- 【r6.11 草案（**待 Walter §5.1 批准，不生效**）】第四批 Review 已用真实浏览器证实：上一条括号里的“迟到 canonical replace”（O-B4-2 = R4-A，P2）在请求**按序完成**时就会发生，不依赖乱序，因此不归 `api` feature。若获批，按 §2.1【r6.11 草案】只在页面回调内处理，store 不变。store 的迟到写入（R4-E，P3，自愈）仍按上一条归 `api` feature。
 
 - **契约 mock 层持有唯一可变状态**（`contracts/mock/job-state.ts`），读写均经契约方法；UI store 只做视图缓存。这样 `api` feature 落地时只需替换实现，不动组件
 - 本地持久化 key：`fai.jobs.v1`（作业、产物/版本、投放的允许子集、介入事件、交付物/定稿快照、收件箱条目）；`fai.inbox.v1`（已读 id）。非 normal 场景使用 fixture + 会话内可变副本，**不读、不写、不清**这两个 key；切场景不会清空正常模式数据
