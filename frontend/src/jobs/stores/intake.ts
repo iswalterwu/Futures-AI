@@ -89,6 +89,7 @@ export const useIntakeStore = defineStore('intake', () => {
   }
 
   function selectReceipt(receipt: IntakeReceipt): void {
+    previewTarget.value = structuredClone(receipt.upload)
     selection.value = { upload: receipt.upload, preview: receipt.preview, mapping: structuredClone(receipt.upload.mapping) }
     previewStatus.value = 'ready'
     previewError.value = null

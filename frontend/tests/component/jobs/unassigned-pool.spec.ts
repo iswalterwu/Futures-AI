@@ -449,12 +449,13 @@ describe('WI assign refresh', () => {
     expect(poolReads).not.toHaveBeenCalled()
   })
 
-  test.each(['assign', 'remove'] as const)('%s clears a receipt-only selection without a preview target', async action => {
+  test.each(['assign', 'remove'] as const)('%s clears a receipt selection and its synced preview target', async action => {
     const { store } = connect()
     const receipt = await store.submit({ inputKind: 'text', text: '合成正文', sourceNote: note })
     expect(store.selection!.upload.id).toBe(receipt.upload.id)
-    expect(store.previewTarget).toBeNull()
+    expect(store.previewTarget!.id).toBe(receipt.upload.id)
     await (action === 'assign' ? store.assign(receipt.upload.id, 'j-collect') : store.remove(receipt.upload.id, '移除'))
+    expect(store.previewTarget).toBeNull()
     expect(store.selection).toBeNull()
     expect(store.previewStatus).toBe('idle')
     expect(store.previewError).toBeNull()
@@ -483,5 +484,37 @@ describe('WI assign refresh', () => {
     await pending
     expect(resolved).toBe(true)
     expect(store.pool.map(item => item.id)).not.toContain(upload.id)
+  })
+})
+
+describe('WI R5-A', () => {
+  test.each(['assign', 'remove'] as const)('%s of previewed A preserves submitted B and its mapping draft, then confirm syncs the receipt', async action => {
+    const { store, assigns, removes, confirms } = connect()
+    await store.loadPool()
+    const uploadA = store.pool[0]!
+    await store.selectUpload(uploadA)
+    const submitted = await store.submit({ inputKind: 'text', text: 'R5-A 合成正文 B', sourceNote: note })
+    expect(submitted.upload.jobId).toBeNull()
+    expect(store.selection!.upload).toEqual(submitted.upload)
+    // Soft assertion lets the old implementation also expose the lost B draft below.
+    expect.soft(store.previewTarget).toEqual(submitted.upload)
+    store.editMapping(0, { targetField: 'R5-A B 编辑字段' })
+    const mapping = store.selection!.mapping.map(field => ({ ...field }))
+    expect(mapping[0]!.targetField).toBe('R5-A B 编辑字段')
+    expect(store.selection!.upload.mapping).toEqual(submitted.upload.mapping)
+    await (action === 'assign' ? store.assign(uploadA.id, 'j-collect') : store.remove(uploadA.id, '移除 A'))
+    if (action === 'assign') expect(assigns).toHaveBeenCalledExactlyOnceWith(uploadA.id, 'j-collect')
+    else expect(removes).toHaveBeenCalledExactlyOnceWith(uploadA.id, '移除 A')
+    expect(store.selection?.upload.id).toBe(submitted.upload.id)
+    expect(store.selection!.mapping).toEqual(mapping)
+    expect(store.previewTarget).toEqual(submitted.upload)
+    expect(store.previewStatus).toBe('ready')
+    const confirmed = await store.confirm(mapping)
+    expect(confirms).toHaveBeenCalledExactlyOnceWith(submitted.upload.id, mapping)
+    expect(confirmed.upload.status).toBe('ingested')
+    expect(confirmed.upload.mapping).toEqual(mapping)
+    expect(store.selection!.upload).toEqual(confirmed.upload)
+    expect(store.selection!.mapping).toEqual(mapping)
+    expect(store.previewTarget).toEqual(confirmed.upload)
   })
 })
