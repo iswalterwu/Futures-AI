@@ -3,12 +3,15 @@ import { computed, onMounted, ref } from 'vue'
 import { JobStatusLabel, JobStatusSchema, JobTypeLabel, JobTypeSchema, type JobStatus, type JobType } from '../../contracts/types.ts'
 import JobCard from '../components/JobCard.vue'
 import JobCreatePanel from './JobCreatePanel.vue'
+import IntakeDrawer from '../stages/IntakeDrawer.vue'
+import { useIntakeStore } from '../stores/intake.ts'
 import { useJobsStore, type ListJobsFilter } from '../stores/jobs.ts'
 import EmptyState from '../../shared/components/EmptyState.vue'
 import ErrorState from '../../shared/components/ErrorState.vue'
 import Loading from '../../shared/components/Loading.vue'
 
 const jobsStore = useJobsStore()
+const intake = useIntakeStore()
 const createExpanded = ref(false)
 const status = ref<JobStatus | ''>(jobsStore.filter?.status ?? '')
 const type = ref<JobType | ''>(jobsStore.filter?.type ?? '')
@@ -38,15 +41,30 @@ function clearFilter() {
     aria-label="作业列表"
   >
     <h1>作业</h1>
-    <button
-      class="job-create-toggle"
-      type="button"
-      :aria-expanded="createExpanded"
-      @click="createExpanded = !createExpanded"
-    >
-      新建作业
-    </button>
+    <div class="intake-actions">
+      <button
+        class="job-create-toggle"
+        type="button"
+        :aria-expanded="createExpanded"
+        @click="createExpanded = !createExpanded"
+      >
+        新建作业
+      </button>
+      <button
+        class="intake-toggle"
+        type="button"
+        @click="intake.open()"
+      >
+        投放
+      </button>
+    </div>
     <JobCreatePanel v-if="createExpanded" />
+    <div
+      v-if="intake.isOpen"
+      class="intake-slot"
+    >
+      <IntakeDrawer />
+    </div>
     <div class="job-filters">
       <label>
         状态
@@ -125,6 +143,12 @@ function clearFilter() {
   gap: var(--fai-space-grid-gap);
 }
 
+.intake-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fai-space-grid-gap);
+}
+
 .job-filters {
   display: flex;
   flex-wrap: wrap;
@@ -138,6 +162,7 @@ function clearFilter() {
   color: var(--fai-text-secondary);
 }
 
+.intake-toggle,
 .job-create-toggle,
 .job-filters select,
 .job-filters input,
@@ -150,15 +175,18 @@ function clearFilter() {
   font: inherit;
 }
 
+.intake-toggle,
 .job-create-toggle,
 .job-filters button {
   cursor: pointer;
 }
 
+.intake-toggle,
 .job-create-toggle {
   justify-self: start;
 }
 
+.intake-toggle:focus-visible,
 .job-create-toggle:focus-visible,
 .job-filters select:focus-visible,
 .job-filters input:focus-visible,

@@ -409,3 +409,206 @@ describe('WI H-5 store', () => {
     expect(store.draft).toEqual(initialDraft)
   })
 })
+
+// T-C01a: append-only coverage; C01 tests and harness above remain unchanged.
+import { h, readonly } from 'vue'
+import { RouterView } from 'vue-router'
+import { StageLabel, UploadStatusLabel } from '../../../src/contracts/types.ts'
+import StageWorkspace from '../../../src/jobs/components/StageWorkspace.vue'
+import CollectWorkspace from '../../../src/jobs/stages/CollectWorkspace.vue'
+import IntakeDrawer from '../../../src/jobs/stages/IntakeDrawer.vue'
+import drawerSource from '../../../src/jobs/stages/IntakeDrawer.vue?raw'
+import Loading from '../../../src/shared/components/Loading.vue'
+
+async function mountIntakePages(path: string) {
+  await router.push(path)
+  const wrapper = mount({ render: () => h(RouterView) }, { attachTo: document.body, global: { plugins: [router] } })
+  await flushPromises()
+  return wrapper
+}
+
+describe('WI H-5 container', () => {
+  test('fills the supplied container with the existing glass layer and no modal or positioning machinery', () => {
+    connect()
+    const wrapper = mount(IntakeDrawer)
+    expect(wrapper.element.tagName).toBe('ASIDE')
+    expect(wrapper.classes()).toEqual(['glass-drawer', 'intake-drawer'])
+    expect(wrapper.attributes('aria-label')).toBe('投放抽屉')
+    expect(wrapper.findComponent(IntakePanel).exists()).toBe(true)
+    expect(wrapper.get('h2').text()).toBe('投放')
+    expect(wrapper.find('[role="dialog"], [aria-modal], [inert], dialog').exists()).toBe(false)
+    expect(drawerSource).not.toMatch(/position:\s*fixed|backdrop|overlay|focusin|keydown|focus\(|inert|aria-modal/)
+    const sheet = new CSSStyleSheet()
+    sheet.replaceSync(drawerSource.split('<style scoped>')[1]!.split('</style>')[0]!)
+    const style = (Array.from(sheet.cssRules).find(rule => (rule as CSSStyleRule).selectorText === '.intake-drawer') as CSSStyleRule).style
+    expect(style.width).toBe('100%')
+    expect(style.height).toBe('100%')
+    expect(style.minWidth).toBe('0')
+    expect(style.padding).toBe('var(--fai-space-grid-gap)')
+  })
+})
+
+describe('WI H-5 close', () => {
+  test('the drawer close button only closes, preserving route, target and draft without agent calls', async () => {
+    const { store, writes } = connect()
+    store.open('j-collect')
+    store.updateDraft({ inputKind: 'text', text: '未提交草稿', purpose: '关闭测试' })
+    const wrapper = await mountIntakePages('/jobs/j-collect/collect')
+    const route = router.currentRoute.value.fullPath
+    const push = vi.spyOn(router, 'push')
+    const replace = vi.spyOn(router, 'replace')
+    const send = vi.spyOn(agentClient, 'send')
+    await wrapper.get('.intake-heading button').trigger('click')
+    expect(store.isOpen).toBe(false)
+    expect(wrapper.find('.intake-slot').exists()).toBe(false)
+    expect(router.currentRoute.value.fullPath).toBe(route)
+    expect(push).not.toHaveBeenCalled()
+    expect(replace).not.toHaveBeenCalled()
+    expect(send).not.toHaveBeenCalled()
+    expect(writes).not.toHaveBeenCalled()
+    expect(store.jobId).toBe('j-collect')
+    expect(store.draft.text).toBe('未提交草稿')
+  })
+})
+
+describe('WI page mount', () => {
+  test('list entry opens an unassigned snapshot; navigation remounts one drawer without losing the snapshot or draft', async () => {
+    const { store } = connect()
+    const wrapper = await mountIntakePages('/jobs')
+    expect(wrapper.findComponent(IntakeDrawer).exists()).toBe(false)
+    await wrapper.get('.intake-toggle').trigger('click')
+    expect(store.jobId).toBeNull()
+    expect(wrapper.get('.intake-slot > aside').text()).toContain('未指定作业：提交后进入待归属池')
+    expect(wrapper.get('.intake-slot').element.nextElementSibling).toBe(wrapper.get('.job-filters').element)
+    await wrapper.get('input[value="text"]').setValue(true)
+    await wrapper.get('[aria-label="投放文本"]').setValue('跨页未提交正文')
+    await wrapper.get('[aria-label="用途"]').setValue('跨页用途')
+    await router.push('/jobs/j-collect/collect')
+    await flushPromises()
+    expect(wrapper.findAll('.intake-slot > aside')).toHaveLength(1)
+    expect(wrapper.get('.intake-slot > aside').text()).toContain('未指定作业：提交后进入待归属池')
+    expect(store.jobId).toBeNull()
+    expect((wrapper.get('[aria-label="投放文本"]').element as HTMLTextAreaElement).value).toBe('跨页未提交正文')
+    expect((wrapper.get('[aria-label="用途"]').element as HTMLInputElement).value).toBe('跨页用途')
+    await wrapper.get('.intake-heading button').trigger('click')
+    await wrapper.getComponent(CollectWorkspace).get('button').trigger('click')
+    expect(store.jobId).toBe('j-collect')
+    expect(wrapper.get('.intake-slot > aside').text()).toContain('目标作业：j-collect')
+    await router.push('/jobs/j-process/process')
+    await flushPromises()
+    expect(wrapper.findAllComponents(IntakeDrawer)).toHaveLength(1)
+    expect(store.jobId).toBe('j-collect')
+    expect(store.draft.text).toBe('跨页未提交正文')
+  })
+
+  test('collect renders all input kinds in contract order and consumes readonly caches without modifying them', async () => {
+    const { client, jobs } = connect()
+    await client.submitIntake({ jobId: 'j-collect', inputKind: 'file', fileMeta: { name: '样例.csv', size: 4, type: '', lastModified: 0 }, sourceNote: note })
+    await client.submitIntake({ jobId: 'j-collect', inputKind: 'text', text: '不应出现在列表的正文', sourceNote: note })
+    const wrapper = await mountIntakePages('/jobs/j-collect/collect')
+    const workspace = jobs.currentStageWorkspace!
+    if (workspace.stage !== 'collect') throw new Error('Expected real collect workspace')
+    const before = JSON.stringify(workspace)
+    const collect = wrapper.getComponent(CollectWorkspace)
+    expect(collect.props('job')).toBe(jobs.currentJob)
+    expect(collect.props('workspace')).toBe(workspace)
+    expect(isReadonly(collect.props('workspace'))).toBe(true)
+    const rows = collect.get('[aria-label="采集列表"]').findAll('li')
+    expect(rows).toHaveLength(workspace.uploads.length)
+    for (const [index, upload] of workspace.uploads.entries()) {
+      const row = rows[index]!
+      const name = upload.inputKind === 'file' ? `文件 · ${upload.fileMeta.name}` : upload.inputKind === 'url' ? `链接 · ${upload.url}` : '文本 · 文本投放（正文未保存）'
+      expect(row.text()).toContain(name)
+      expect(row.text()).toContain(`用途：${upload.sourceNote.purpose}`)
+      expect(row.get('.artifact-status-badge').text()).toContain(UploadStatusLabel[upload.status].text)
+      expect(row.get('[aria-hidden="true"]').text()).toBe(UploadStatusLabel[upload.status].icon)
+    }
+    expect(collect.text()).not.toContain('不应出现在列表的正文')
+    expect(JSON.stringify(workspace)).toBe(before)
+    expect(collect.findAll('button')).toHaveLength(1)
+  })
+
+  test('a newly created job has an empty collect list and a working entry', async () => {
+    const { client, store } = connect()
+    const receipt = await client.createJob({ title: '空采集', type: 'adhoc', subject: null, goal: '' })
+    const wrapper = await mountIntakePages(`/jobs/${receipt.jobs[0]!.id}/collect`)
+    const collect = wrapper.getComponent(CollectWorkspace)
+    expect(collect.get('[aria-label="采集列表"]').findAll('li')).toHaveLength(0)
+    expect(collect.text()).toContain('暂无投放。')
+    await collect.get('button').trigger('click')
+    expect(store.jobId).toBe(receipt.jobs[0]!.id)
+  })
+
+  test.each(['process', 'analyze', 'deliver'] as const)('%s keeps the original placeholder even when a collect cache is supplied', async stage => {
+    const { client } = connect()
+    const job = (await client.getJob('j-collect'))!
+    const workspace = await client.getStageWorkspace(job.id, 'collect')
+    const wrapper = mount(StageWorkspace, { props: { stage, job: readonly(job), workspace: readonly(workspace) } })
+    expect(wrapper.attributes('aria-label')).toBe(`${StageLabel[stage].text}工作区`)
+    expect(wrapper.get('h2').text()).toBe(`${StageLabel[stage].text}工作区`)
+    expect(wrapper.text()).toContain('工作区内容由后续任务提供。')
+    expect(wrapper.findComponent(CollectWorkspace).exists()).toBe(false)
+  })
+
+  test('unmatched collect cache uses only local reading status, not shared Loading', async () => {
+    const { client } = connect()
+    const job = (await client.getJob('j-collect'))!
+    const wrapper = mount(StageWorkspace, { props: { stage: 'collect', job: readonly(job), workspace: null } })
+    expect(wrapper.get('[role="status"]').text()).toBe('读取中…')
+    expect(wrapper.findComponent(Loading).exists()).toBe(false)
+    expect(wrapper.findComponent(CollectWorkspace).exists()).toBe(false)
+    await wrapper.setProps({ workspace: readonly(await client.getStageWorkspace(job.id, 'process')) })
+    expect(wrapper.get('[role="status"]').text()).toBe('读取中…')
+    await wrapper.setProps({ workspace: readonly(await client.getStageWorkspace(job.id, 'collect')) })
+    expect(wrapper.findComponent(CollectWorkspace).exists()).toBe(true)
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
+  })
+
+  test.each(['empty', 'error', 'slow'] as const)('detail drawer stays mounted independently of %s detail state', async scenario => {
+    vi.useFakeTimers()
+    const { store } = connect(scenario)
+    store.open('j-collect')
+    const wrapper = await mountIntakePages('/jobs/j-collect/collect')
+    expect(wrapper.find('.intake-slot > aside').exists()).toBe(true)
+    expect(wrapper.get('.job-detail').element.firstElementChild).toBe(wrapper.get('.intake-slot').element)
+    expect(wrapper.get('.intake-slot > aside').text()).toContain('目标作业：j-collect')
+    if (scenario === 'slow') {
+      expect(wrapper.findComponent(Loading).exists()).toBe(true)
+      await vi.runAllTimersAsync()
+      await flushPromises()
+      expect(wrapper.findComponent(Loading).exists()).toBe(false)
+      expect(wrapper.find('.intake-slot > aside').exists()).toBe(true)
+    }
+  })
+})
+
+describe('WI non-modal', () => {
+  test('list filtering, creation entry, outside focus and detail stage navigation remain usable while the drawer is open', async () => {
+    connect()
+    const wrapper = await mountIntakePages('/jobs')
+    await wrapper.get('.intake-toggle').trigger('click')
+    const title = wrapper.get<HTMLInputElement>('[aria-label="标题"]')
+    title.element.focus()
+    expect(document.activeElement).toBe(title.element)
+    await title.setValue('不存在的标题')
+    await flushPromises()
+    expect(wrapper.text()).toContain('暂无符合筛选的作业。')
+    await wrapper.get('.job-filters button').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('.job-card').length).toBeGreaterThan(0)
+    await wrapper.get('.job-create-toggle').trigger('click')
+    expect(wrapper.find('[aria-label="新建作业"]').exists()).toBe(true)
+    expect(wrapper.find('[role="dialog"], [aria-modal], [inert]').exists()).toBe(false)
+    await router.push('/jobs/j-collect/collect')
+    await flushPromises()
+    const stage = wrapper.get('[aria-label="作业阶段"]').findAll('button')[1]!
+    ;(stage.element as HTMLButtonElement).focus()
+    expect(document.activeElement).toBe(stage.element)
+    await stage.trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.params.stage).toBe('process')
+    expect(wrapper.get('[aria-label="处理工作区"]').text()).toContain('工作区内容由后续任务提供。')
+    expect(wrapper.findAll('.intake-slot > aside')).toHaveLength(1)
+    expect(wrapper.find('[role="dialog"], [aria-modal], [inert]').exists()).toBe(false)
+  })
+})

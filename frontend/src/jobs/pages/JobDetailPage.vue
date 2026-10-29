@@ -11,10 +11,13 @@ import JobStatusBadge from '../components/JobStatusBadge.vue'
 import StageRail from '../components/StageRail.vue'
 import StageWorkspace from '../components/StageWorkspace.vue'
 import { useJobsStore } from '../stores/jobs.ts'
+import { useIntakeStore } from '../stores/intake.ts'
+import IntakeDrawer from '../stages/IntakeDrawer.vue'
 
 const route = useRoute()
 const router = useRouter()
 const jobsStore = useJobsStore()
+const intake = useIntakeStore()
 const ui = useUiStore()
 const viewedStage = computed(() => {
   const result = StageSchema.safeParse(route.params.stage)
@@ -41,6 +44,12 @@ function selectStage(stage: Stage) {
     class="job-detail"
     aria-label="作业详情"
   >
+    <div
+      v-if="intake.isOpen"
+      class="intake-slot"
+    >
+      <IntakeDrawer />
+    </div>
     <Loading v-if="jobsStore.detailStatus === 'idle' || jobsStore.detailStatus === 'loading'" />
     <ErrorState
       v-else-if="jobsStore.detailStatus === 'error' && jobsStore.detailError"
@@ -87,6 +96,8 @@ function selectStage(stage: Stage) {
           <StageWorkspace
             v-if="viewedStage !== null"
             :stage="viewedStage"
+            :job="jobsStore.currentJob"
+            :workspace="jobsStore.currentStageWorkspace"
           />
         </div>
         <InterventionHistory :job="jobsStore.currentJob" />

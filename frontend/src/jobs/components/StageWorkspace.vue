@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { StageLabel, type Stage } from '../../contracts/types.ts'
+import type { DeepReadonly } from 'vue'
+import { StageLabel, type Job, type Stage, type StageWorkspace } from '../../contracts/types.ts'
+import CollectWorkspace from '../stages/CollectWorkspace.vue'
 
-defineProps<{ stage: Stage }>()
+defineProps<{ stage: Stage; job: DeepReadonly<Job>; workspace: DeepReadonly<StageWorkspace> | null }>()
 </script>
 
 <template>
@@ -10,7 +12,20 @@ defineProps<{ stage: Stage }>()
     :aria-label="`${StageLabel[stage].text}工作区`"
   >
     <h2>{{ StageLabel[stage].text }}工作区</h2>
-    <p>工作区内容由后续任务提供。</p>
+    <CollectWorkspace
+      v-if="stage === 'collect' && workspace?.stage === 'collect'"
+      :job="job"
+      :workspace="workspace"
+    />
+    <p
+      v-else-if="stage === 'collect'"
+      role="status"
+    >
+      读取中…
+    </p>
+    <p v-else>
+      工作区内容由后续任务提供。
+    </p>
   </section>
 </template>
 
