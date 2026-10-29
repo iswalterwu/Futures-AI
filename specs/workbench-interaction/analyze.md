@@ -3,7 +3,8 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
-> **当前结论（2026-10-29 T-B04a 已实施、增量 Converge 已收口、待 A 新会话增量 Review）：见文末「Analyze R20」**（当前索引）。结构 70 / 104.5 h / 235 / 235；21 已完成 + 6 已实施（第四批 5 项未过 + T-B04a 待 A）+ 43 未开始；R4-A 代码已修、未关闭。下一行起指向 R18 的页首块，以及文末 R19，均为当时原文。
+> **当前状态补记（2026-10-29 R4-A 关闭后；只是页首状态链接，不是新的 Analyze 轮次，R20 仍是最新 Analyze 索引，其正文原样保留）**：独立 A 增量 Review [review-batch4-r4a.md](review-batch4-r4a.md)（原件 `46e8fbe`，claude-fable-5-1 via anthropic）判**本增量通过（0 P1 / P2 / 0 新 P3）**：R4-A 关闭，R2-C 技术关闭，第四批 5 项 + T-B04a 技术通过。tasks 状态改为 **27 已完成 + 43 未开始**；结构不变（70 / 104.5 h / 235 / 235 / 46 AC 双向；唯一回边 B03 → B04；无环）；46 AC 最终验收 0；feature 未收敛。见 tasks 页首、implementation-log §19。下一行“待 A”“21 + 6 已实施”为 R20 当时原文。
+> 【R20 当时原文】**当前结论（2026-10-29 T-B04a 已实施、增量 Converge 已收口、待 A 新会话增量 Review）：见文末「Analyze R20」**（当前索引）。结构 70 / 104.5 h / 235 / 235；21 已完成 + 6 已实施（第四批 5 项未过 + T-B04a 待 A）+ 43 未开始；R4-A 代码已修、未关闭。下一行起指向 R18 的页首块，以及文末 R19，均为当时原文。
 > 【当时原文】**当前结论（2026-10-29 第四批 Review 未通过 + R4-A 工程审批等待）：见文末「Analyze R18」**（当前索引；下方 R17 页首块及更早轮次为当时原文，正文不改）
 > - **本轮**：第四批代码 Review（`review-batch4.md`，原件 `9812f64`）判**未通过**：1 P2 R4-A + 4 P3 R4-B～R4-E，结论原样保留。R4-A 修复草案 = tasks **T-B04a**（0.5 h）+ plan §2.1 / §2.3【r6.11 草案】，**blocked_by: Walter AGENTS §5.1 批准**；草案**不授权实施**。这不是需求变更，不重过 Gate 1；不是全 feature Gate 2 / Handoff。
 > - **结构**：70 个任务 / 104.5 h；235 / 235；**21 已完成 + 5 已实施（第四批 Review 未通过）+ 44 未开始（其中 T-B04a 待工程批准）**；真实依赖图无环，唯一编号回边仍为 T-B03 → T-B04；AC 矩阵 46 行双向一致，部分前置都是最终任务的祖先（AC-002-2 最终 = T-B04 + T-B04a，v2 后 T-H04 回归）；46 AC 最终验收 0；feature **未收敛**。
