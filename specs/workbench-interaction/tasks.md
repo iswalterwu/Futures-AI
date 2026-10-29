@@ -1,6 +1,21 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
-> **当前状态（R4-A 最小修复已获 Walter §5.1 批准，plan r6.11 生效；T-B04a 可开码，2026-10-29；以本块为准。下一块中的“Walter 尚未回复”“blocked_by: Walter §5.1 批准”“获准前不派 Astra”为当时原文）**：
+> **当前状态（T-B04a 已实施 + 增量 Converge 已收口，待 A 新会话增量 Review，2026-10-29；以本块为准。下一块批准块中的“T-B04a 可开码、尚未实施”“44 未开始”为当时原文）**：
+>
+> - **实施**：T-B04a 代码 `ae592ba23b086dd5887a269e842f80c96ad16fb2`（父 = 授权提交 `80a1892`），openai/gpt-6-astra 新会话，未回退。`80a1892..ae592ba -- frontend` 共 3 个文件 +72 / −2：`JobDetailPage.vue` 只改 `watch` 回调（签名加 `onCleanup`、`let stale`、cleanup 置 true、canonical replace 前 `!stale`）；两个测试文件只追加 `WI R4-A` 2 / 1 例，原文件是逐字节前缀。store / query / 其他源码零差异。
+> - **证据**（实施者执行，Converge 未重跑）：旧代码下先红（组件 2 failed、Chrome 1 failed，都被拉回 `/process`），修复后同一测试变绿：命令 1 = 2 → 13；命令 2 = 1 → 30；命令 3 = 34 files / 1020 / 0 + typecheck / lint + `6c082fd..HEAD -- frontend` 只含三文件。另跑六守卫、contract 24 / 10 / 2、routes + session 17、H-2 27 / badges 48 / job-list 12。其余 E2E、全量 `pnpm test`、截图、最终 AC 未跑。
+> - **Converge**：[converge-batch4-r4a.md](converge-batch4-r4a.md) 判**本任务增量已收口、待独立 A 增量 Review**，没有发现缺口，不新增任务，plan 不改（无 r6.12），不是需求变更。
+> - **进度**：70 个任务、约 104.5 h；**27 已实施** = 21 已完成 + 第四批 5 项已实施（原批次 Review 未通过，不计完成）+ T-B04a 1 项已实施待 A；**43 未开始**；235 / 235；46 AC 最终验收 **0**；feature 未收敛。结构复算见 analyze.md「Analyze R20」。
+> - **未变**：
+>   - R4-A 代码已修，**未关闭**，待 A 判定；第四批 Review 维持未通过；
+>   - R2-C 关闭仍待本批通过；R4-B～E / S-41 / R3-B / R3-C 等 P3 未经风险接受；
+>   - H-2·标签 ① 候选 `5c00cf6` 仍是候选，所有切片 ④ 缺；
+>   - Checklist R10 `37e2f71` 只读 26 / 26。
+> - **下一步**：A 新会话增量代码 Review（固定 `80a1892..ae592ba -- frontend` + 本轮文档提交），不需要用户再次批准 §5.1。按 Walter 的选择，feature 全部完成后再合 main：Draft PR #12 保持 Draft（远端 head 仍是 `e285ad2`），不 merge、不 resolve、不清理目录；main pin `90187f7` 与 R2-D 流程不变。见 implementation-log §18。
+>
+> 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188e8-c8fd-7213-8e90-b721dc6bf792`；bridge 当前额度窗口已明确耗尽，不重试；同模型官方通道成功；未改配置）。
+
+> 【历史原文，“T-B04a 可开码、尚未实施”已由上方实施后块取代】**当前状态（R4-A 最小修复已获 Walter §5.1 批准，plan r6.11 生效；T-B04a 可开码，2026-10-29；以本块为准。下一块中的“Walter 尚未回复”“blocked_by: Walter §5.1 批准”“获准前不派 Astra”为当时原文）**：
 >
 > - **批准**：集成人报告 R4-A 与 `onCleanup` 约 3～5 行最小方案及归档选项后，Walter 原话回复：**“那就先修P2等全部工作完成后，再合入main”**。这是对 R4-A 最小修复的 §5.1 单独批准，并选定先修、feature 全部完成后再合 main。**不是**风险接受、**不是**提前 Gate 2，也不批准扩到 store 取消 / 锁 / 请求序号 / query。
 > - **范围**（= plan §2.1【r6.11】原文，不扩）：只改 `JobDetailPage.vue` 的 `watch` 回调（`onCleanup` + `stale` + canonical replace 前 `!stale`）；`job-detail.spec.ts` 只新增 `WI R4-A` 2 例；`detail-stage.spec.ts` 只新增 1 例；原 11 / 4 例不改；其他源码、store、query 禁止。T-B04a 标准 / 命令 / 依赖 / 工时不变。
@@ -1206,7 +1221,7 @@
 
 ### T-B04a R4-A 最小修复：离开详情或切换阶段后不再执行迟到的 canonical replace（第四批 Review R4-A；r6.11，已获 Walter §5.1 批准）
 
-- **状态**：未开始（**可开码**：2026-10-29 Walter 原话“那就先修P2等全部工作完成后，再合入main”批准本项最小修复，plan r6.11 生效；范围严格按下方修改范围，不扩）｜原状态行“草案，blocked_by: Walter §5.1 批准；【r6.11 待批，不生效】；获准前不得开码、不派 Astra”为草案时原文，下文“为什么要单独批准”保留为背景
+- **状态**：**已实施，待 A 新会话增量 Review**（R4-A 代码已修、未关闭；第四批 Review 维持未通过；不计完成）｜commit `ae592ba23b086dd5887a269e842f80c96ad16fb2`（父 `80a1892`；openai/gpt-6-astra 新会话 `01a188e0…`，未回退），只有 3 个授权文件 +72 / −2，原 11 / 4 例为逐字节前缀，store / query 零差异。验证（实施者执行，Converge 未重跑）：命令 1 = `WI R4-A` 2 → 整文件 13；命令 2 = `WI R4-A` 1 → 四份 E2E 30；命令 3 = 全量单测 34 files / 1020 / 0 + typecheck / lint + `6c082fd..HEAD -- frontend` 只含三文件。**先红后绿**：旧生产代码下同一组测试组件 2 failed（被拉回 `/process`，分别出自 `/prices` 与 `/deliver`）、Chrome 1 failed（被拉回 `/jobs/j-process/process`），修复时测试期望没有改。增量 Converge 见 `converge-batch4-r4a.md`（已收口、无缺口）｜以下为批准登记时原文：未开始（**可开码**：2026-10-29 Walter 原话“那就先修P2等全部工作完成后，再合入main”批准本项最小修复，plan r6.11 生效；范围严格按下方修改范围，不扩）｜原状态行“草案，blocked_by: Walter §5.1 批准；【r6.11 待批，不生效】；获准前不得开码、不派 Astra”为草案时原文，下文“为什么要单独批准”保留为背景
   - **性质**：不是需求变更（spec / 46 AC 不变，不回 Clarify / Gate 1）。这是第四批 Review 唯一 P2 R4-A 的 Converge 补修草案（AGENTS §2 第 9 步）。
   - **为什么要单独批准**：修复会新增一处 plan 明确不做的生命周期检查——plan §2.1【r6.9】写明“不加比较 / 去重 guard”，§2.3【r6.10】写明“任何新增 guard 按 AGENTS §5.1 先报 Walter”。因此须 Walter 本人对本项单独批准；他的通用代码授权不覆盖这一项。
   - **获准后的流程**：Implement（新会话，首选 openai/gpt-6-astra）→ Converge → **A 新会话增量 Review**。增量 Review 通过后才关闭 R4-A、改判第四批。

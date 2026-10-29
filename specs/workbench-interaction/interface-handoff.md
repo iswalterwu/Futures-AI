@@ -78,7 +78,15 @@
 > - **其余**：H-1 / H-3 / H-4 历史证据保留、当前有效 Checklist 并记 R10、④ 缺；H-5 未做；H-6 缺 T-A21。消费分支 `integration/frontend-workbench-v2` 只读仍 `3f63273`。
 >
 > 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；bridge 本协调窗口已确认限额，不重试；官方通道成功；未改配置）。
-> **当前状态（2026-10-29 R4-A 最小修复已获 Walter §5.1 批准，plan r6.11 生效；以本块为准，下一块中的“blocked_by Walter §5.1 批准，未开码”为当时原文）**：
+> **当前状态（2026-10-29 T-B04a 已实施 + 增量 Converge 已收口，待 A 新会话增量 Review；以本块为准，下一块批准块中的“未实施”为当时原文）**：
+> - **本修复**：T-B04a 代码 `ae592ba`（父 `80a1892`），只改 `JobDetailPage.vue` 的 `watch` 回调（`onCleanup` / `stale` / `!stale`），另追加 `WI R4-A` 组件 2 例、E2E 1 例；store 与所有交接接口（props / 文案 / 图标 / 公开成员）零差异。Converge 见 `converge-batch4-r4a.md`，结论是本任务已收口、待 A。**R4-A 未关闭**，第四批 Review 维持未通过。
+> - **H-2·标签**：① 候选 `5c00cf6` **仍是候选**，须新 A 复核本批通过后才可转为生产已核；② R10 `37e2f71`；③ 第四批 A 亲跑数字不变，本轮实施者回归 badges 48；**④ 缺**。
+> - **H-2·列表**：① 仍 `af24c82`；本轮实施者回归 `WI H-2` 27；④ 缺。
+> - **其余**：所有切片 ④ 缺，页面切片未交付（C 组未做、工作区仍为占位）；H-5 未做；H-6 缺 T-A21。消费分支 `integration/frontend-workbench-v2` 只读仍 `3f63273`。
+> - **性质**：本修复**不是** v2 集成，也**不是**整个 feature 交付；生产方集成树 `ae592ba` 只作旁证，不能填作 ④。按 Walter 的选择，feature 全部完成后再合 main，Draft PR #12 保持 Draft（implementation-log §18）。
+>
+> 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188e8-c8fd-7213-8e90-b721dc6bf792`；bridge 当前额度窗口已明确耗尽，不重试；同模型官方通道成功；未改配置）。
+> 【历史原文】**当前状态（2026-10-29 R4-A 最小修复已获 Walter §5.1 批准，plan r6.11 生效；以本块为准，下一块中的“blocked_by Walter §5.1 批准，未开码”为当时原文）**：
 > - Walter 原话“那就先修P2等全部工作完成后，再合入main”批准 T-B04a（只改 `JobDetailPage.vue` 的 `watch` 回调 + 新增 3 例测试），**未实施、R4-A 未关闭**，第四批 Review 仍判未通过；不是风险接受、不是 Gate 2。T-B04a 不改 store、不改任何交接接口。
 > - **H-2·标签** ① 候选 `5c00cf6` 仍须等修复后新 A 复核本批通过；**④ 未放行**。H-2·列表 ① 仍 `af24c82`；页面切片未交付；其余 P3 未经风险接受；43 项后续任务未开始。Draft PR #12 保持 Draft，不合 main（implementation-log §17）。
 >
