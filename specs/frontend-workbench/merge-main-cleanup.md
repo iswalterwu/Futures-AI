@@ -1,5 +1,7 @@
 # frontend-workbench v2 S0 阶段合入 main 与目录清理记录（merge-main-cleanup.md）
 
+> **后续验证登记（协调集成，2026-10-29）**：真实 merge 为 `3f632739fc186396221482364cf16e3629b4b24f`（父 `76abe92` / `cf8e11b`）。Astra 在该代码上亲跑完整前端验证：**564/564 unit/component、70/70 e2e、六守卫 / typecheck / lint / build 全部成功**，仅保留既有大 chunk 警告；原样报告 `validation-main-integration.md` 已提交 `9e682339bc8f60625277cfa3a9196f8e6bcb6611`。独立只读集成 Analyze / Converge 原文见 `analyze-main-integration.md`：S0 集成内部已收敛，0 P1/P2，2 个不阻断本次合入的 P3；完整 v2 仍未收敛（外部阻塞）。其中迁移快照时态建议已由 `handoff-v2-s0.md` 页首明确，第 1～7 节均属旧 SHA；S1-track 与 main H-01 数字样式的前瞻约束留待 S1 开工前核验，不新增或放行任务。当前尚待独立 A 集成复核、真实 PR / merge，目录清理仍未执行。下方“尚未验证”等只反映作者写入固定 merge 时点，不能覆盖本段。最终合并提交及清理结果通过 PR 记录 / 协调器执行摘要确认，不在提交内预写自身 merge SHA。
+
 > **作者**：`claude-opus-5-5 via anthropic`，由协调器新派的集成 / 交接文档会话。不是 Implement，不是审核员 A，也不是协调器。bridge 在本限额窗口已有真实额度 / 限流失败，本会话没有重试，也没有改 provider、路由或配置。
 > **唯一可写树**：`D:/2030/Futures-AI-workbench-v2-integration`，分支 `integration/frontend-workbench-v2`。开始时 HEAD = `76abe9246fbd6b9bbf2573dbd3751fd8eb022cb7`，`git status` 干净。本会话没有另建目录或工作树，没有 checkout / reset / 删除其他树或分支，没有派 agent。
 > **性质**：这是对 S0 现有内容的**阶段性合入**和集成记录，不是 v2 最终 Review、Gate 2 或正式 Handoff。本会话只做文档和 Git 检查，没有运行 install / pnpm / test / build，也没有启动服务。本文件不写自己的合并提交号（以 `git log` 为准），也不预写复测结果、PR 结果或目录删除结果。

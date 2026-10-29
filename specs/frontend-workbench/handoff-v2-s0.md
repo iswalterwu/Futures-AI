@@ -1,6 +1,6 @@
 > **迁移说明（2026-10-29，主线合并）**：本文件原是 `76abe92` 的根目录 `HANDOFF.md`（frontend-workbench v2 的 S0 状态归档）。合入 main `cf8e11b` 时根目录 `HANDOFF.md` 出现 add/add 冲突：main 的根 `HANDOFF.md` 是另一 feature（agent 工作流重塑）已交付的交接、被 `docs/plan.md` 等多处引用，所以根文件逐字取 main，本 feature 的交接迁到这里。
 > - 下方正文是 `76abe92` 原文，只把指向 plan v2 设计的 “plan §7.4” 机械改为 “plan §9.4”（plan 编号映射见 `plan.md` 页首“主线合并与编号迁移”行）。正文中“本文件 / 根目录 `HANDOFF.md`”的自指和 `git show <SHA>:HANDOFF.md` 历史命令，仍指迁移前的路径与固定 SHA，照常有效。
-> - 第 5 节分支 / 工作树表与第 6 节下一步是 `76abe92` 时点的快照。本次阶段合入的授权、范围、校验与待清理工作树清单见同目录 `merge-main-cleanup.md`；协调器清理后，表中多数工作树目录将不存在（分支 ref 保留）。
+> - 下方第 1～7 节全部是 `76abe92` 时点的原文快照，包括“尚未 PR / main 合并”、分支 / 工作树表和下一步，均不是当前合并状态。本次阶段合入的授权、范围、实际验证及待清理工作树清单见同目录 `merge-main-cleanup.md`；最终 PR / merge / 清理结果以该记录指向的 GitHub 记录与协调器执行摘要为准。协调器清理后，表中多数工作树目录将不存在（分支 ref 保留）。
 > - 当前状态不变：S0 已完成；T-V2-03～12 仍 blocked 于 H-x；完整 v2 未收敛（外部阻塞）；P3-1 未修复、未获风险接受；M-01～M-12 未代勾。
 # 当前交接 — frontend-workbench v2（S0 状态归档）
 
