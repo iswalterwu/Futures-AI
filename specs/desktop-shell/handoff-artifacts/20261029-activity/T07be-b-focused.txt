@@ -1,0 +1,76 @@
+
+> futuresai-shell@0.1.0 check
+> node check.js harness-selftest crash-restart close-to-tray close-quit tray-menu
+
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-harness-selftest-nbbTZm"
+PASS harness-selftest › paths 位于临时目录
+PASS harness-selftest › 默认数据目录 = LOCALAPPDATA\FuturesAI
+PASS harness-selftest › 窗口存在
+PASS harness-selftest › 后端存活
+PASS harness-selftest › spawns 恰 1 条
+PASS harness-selftest › registry PID = 快照 PID
+PASS harness-selftest › 标题含测试钩子标记
+PASS harness-selftest › 日志首行 TEST HOOKS ENABLED
+PASS harness-selftest › Electron 精确版本
+RUNTIME {"electron":"33.4.11","node":"20.18.3","chrome":"130.0.6723.191"}
+PASS harness-selftest › 控制通道 snapshot 路径一致
+PASS harness-selftest › 托盘与活动来自真实状态
+PASS harness-selftest › 未知命令 HTTP 400
+PASS harness-selftest › eval 调用真实窗口
+PASS harness-selftest › 无未应答对话框
+PASS harness-selftest › 退出码 0
+PASS harness-selftest › 后端 pid 已退出
+PASS harness-selftest › 后端 pid 已退出
+PASS harness-selftest › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-crash-restart-Lq7lGn"
+PASS crash-restart › 真实写锁存在
+PASS crash-restart › 定向结束后端成功
+PASS crash-restart › 重启后就绪且端口变化
+PASS crash-restart › restarts = 1
+PASS crash-restart › 旧进程已死且新进程存活
+PASS crash-restart › 新代令牌已轮换
+PASS crash-restart › 新端点真实健康
+PASS crash-restart › preload 返回新代端口
+PASS crash-restart › preload 返回新代令牌
+PASS crash-restart › 真实阶段包含 restarting
+PASS crash-restart › 重启后托盘与活动来自真实状态
+PASS crash-restart › 真实宿主非夹具
+PASS crash-restart › 退出码 0
+PASS crash-restart › 后端 pid 已退出
+PASS crash-restart › 后端 pid 已退出
+PASS crash-restart › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-close-to-tray-6APicr"
+PASS close-to-tray › 窗口隐藏未销毁
+PASS close-to-tray › 后端存活
+PASS close-to-tray › 托盘 running
+PASS close-to-tray › 夹具作业完成后清理
+CLEANUP_OBSERVED {"backend":{"phase":"ready","phases":["idle","spawning","waiting_health","ready"],"gen":1,"restarts":0,"pid":32836,"port":51343,"lastCode":null},"window":{"exists":true,"visible":false,"url":"file:///D:/2030/Futures-AI-desktop-implement/shell/renderer/onboarding.html"}}
+PASS close-to-tray › 后端 pid 已退出
+PASS close-to-tray › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-close-quit-dAn48v"
+PASS close-quit › 关窗后退出码 0
+PASS close-quit › 关窗后后端已退出
+PASS close-quit › 后端 pid 已退出
+PASS close-quit › 临时目录已删除
+TEMP "C:\\Users\\iswal\\AppData\\Local\\Temp\\fai-e2e-tray-menu-hnVa6o"
+PASS tray-menu › 菜单标签齐全
+PASS tray-menu › 子菜单列出作业
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 非法托盘路径被拒
+PASS tray-menu › 缺失菜单项被拒
+PASS tray-menu › 打开主窗口后可见
+PASS tray-menu › 真实二级菜单可点击
+PASS tray-menu › 作业菜单激活窗口
+PASS tray-menu › 设置… 打开设置页
+PASS tray-menu › 禁用菜单项被拒
+PASS tray-menu › 退出调用 requestQuit
+PASS tray-menu › 后端 pid 已退出
+PASS tray-menu › 临时目录已删除
+SUMMARY 60/60 assertions; 5 scenes; failures=0
+
+real	0m19.795s
+user	0m0.060s
+sys	0m0.090s

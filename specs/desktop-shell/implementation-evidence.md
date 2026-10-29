@@ -725,3 +725,51 @@ cwd=`shell`。每个真实Electron命令均以进程局部 **`env -u FAI_CHECK_E
 - 源码阶段 `git diff --check` 通过；追加证据后首次postflight发现 **EOF新增空行，diff-check exit2**（原始`postflight.log`保留）。仅去掉本节末尾多余空行并补记失败，未改源码/重跑测试；复核记于`postflight-final.log`。旧check-runner只加44行/删0行；证据只追加§14，不改§1～13。Git出现LF→CRLF提示，不是测试失败；一次read证据使用offset710超过当时684行，工具报越界后改为637读取，未动内容、未影响测试。无本阶段其他产品/辅助执行失败；ignore exit1为预期未忽略结果。
 - **状态：T07a自动化实施检查点完成；T07b待新的null兼容规划/Analyze/独立A批准与派工，当前未进入；T07c/d/e与T08a未进入。** 未启动正式Converge/Review/Gate2/Handoff；不声称真实业务作业、agent、drain、系统toast/托盘观感、立即relaunch M12或其他人工/外部验收已完成。
 - R5-02、R6/control-timeout缺口、UTF-8/PYZ/507 GUI、其余RL条目与人工外部边界全部保留；本次不扩修。不commit/push/PR/merge/reset、不改全局配置/真实凭证/用户数据、不碰其他工作树。待协调者处理未提交差异及B的批准输入。
+
+## 15. 2026-10-29 T-07b→c→d→e 实施检查点（Plan7/A6，止于 T08a 前）
+
+### 15.1 身份、批准输入与冻结
+
+- Implement = **openai/gpt-6-astra via openai**，原 session **01a187d9-b23d-712f-8297-3106886f9e49**。工作树 `D:/2030/Futures-AI-desktop-implement` / `feat/desktop-shell-astra`，唯一 writer；未启动其他 agent、未切模型/通道、未改 provider/auth/全局配置。
+- 固定输入 HEAD **559c6977173968e9170cadd75fa196c09526db25**，起始 status 干净，与主输入 **c8be968d50209a7038ff6c3465d67e74b5914526** whole-tree diff 为空；最终HEAD不变。对保存的T07a提交 **9acd4c4223193f115e5d7dd65e6f510ae8b76115** 核对 `shell/backend` diff为空，未冒称重新跑过基线。沿用§14 **52 unit / 默认20场景313/313、124.933s**，原始日志与§13 STOP/§14历史不动。
+- 已重读 AGENTS、HANDOFF §21、权威docs相关段落、Plan7 §3.3/3.5/3.6/4.3/4.6/6/7.3/8.4、Tasks b～e、**完整更新Checklist（含全部41框和A6全文）**、Analyze10、Review最新记录、证据§14与实际helpers；任务边界重读对应任务/契约与源码。Checklist **41 checked / 0 unchecked**，从未写入。
+- 新独立批准 = **A6 `anthropic/claude-fable-5-1` via anthropic**，session **01a187ef-bc6d-7674-bdd0-2f3e2ce2f57d**，审固定a4fd997相对ec55aee四文档+78/−2、14保护SHA不变，41/41、无P1/P2、五P3。不是复用旧41放行，不是代码Review。Plan/Tasks/Analyze作者仍Opus5.5官方/session01a187bb。页首修订6残留按R7-01保留，实际§0修订7与§8.4(6)为准，未擅改文档。
+- 仓库外新 RUN = **`C:/Users/iswal/AppData/Local/Temp/fai-t07be-01a187d9-CpBTSK/`**；源码改动前冻结 **271 tracked文件**于`input.sha256`，清单 SHA-256 **03cd39677396c6e76dad6dfb4aacc12aa736e848a066075a9c4c9fb57bfc7fbe**。未读取/写入其他工作树WIP，未commit/push/reset/merge/PR。
+
+### 15.2 顺序实施与精确所有权
+
+- **B完成**：main持有真实`Tray`（非空16×16 nativeImage）、`Menu`、归约器活动；closeBehavior=tray隐藏不销毁、quit走生产requestQuit；托盘打开窗口/作业子菜单/设置/退出共用生产处理器。事件夹具只来自已校验`hooks.testEvents`，相对首次backend.ready或mock目标页完成，独立delay、不累加/重启不重放。hooks只序列化真实对象与同一Menu、按1～2级非空标签调用实际MenuItem.click，400/409路径均真实测试。两旧场景**各原位替换一行**为指定名与字面量`['idle', true]`，其余原文不动；没有条件假null或夹具专用Tray。
+- **C完成**：request-quit/托盘退出/关窗quit/before-quit共用requestQuit；生产归约器ask→真实对话框等待/取消；queued取消、新到queued/started拒收的固定码写日志与托盘提示/菜单，不记录作业载荷/ID/原因；运行归零优雅退出；托盘取消等待恢复accepting。hooks只补实际message/detail记录。场景显式回答对话框；夹具自带finished，取消与B/通知场景在结束前等无运行中作业，等待场景由实际归零自动退出，未伪造清理/自动应答或修改清理期限。
+- **D完成**：新增批准的4个preload成员及窄IPC，应用区显示/持久化closeBehavior、notifications、updateCheck及当前/待生效目录；未配置发布更新源时禁用并说明，不发更新请求。patch只允许三项可编辑偏好，复用真实prefs.save校验/原子保存；chooseDataRoot复用probe/save并拒绝非绝对、当前、安装目录内路径。只写pending、下次启动通过原paths/applyPending生效，旧哨兵数据保留。UI只用安全DOM，不改档案、注册指引、凭证、CSP/CORS。`relaunch`接同一退出守卫，真正退出时app.relaunch；**未自动调用立即重启（M12仍人工）**。
+- **E完成**：Notification使用既有出口（钩子记录器或真实Electron Notification），AppUserModelId=`com.futuresai.desktop`；真实生命周期error/ready在来源入口校验后进归约器，ready在实际同步回调内清error、先于任何await/延迟。关闭通知不改变tray更新。`crash-restart`除B批准一行外**只新增5行**（error轮询及两条断言），保留全部原断言与B新断言；无历史字段，hooks在E只读。
+- 实际写入 **17个源码/测试文件（8既有+9新增）** + 本证据仅追加§15：`main.js`、`preload.js`、`renderer/onboarding.{html,js}`、`src/test-hooks.js`、`test/e2e/{index,harness-selftest,crash-restart}.js`；新增`close-to-tray/close-quit/tray-menu/quit-guard-cancel/quit-guard-wait/change-root/prefs-ui/notify/notify-off.js`。A归约器/其单测、check.js/runner单测/fixtures、backend/paths/prefs、其余旧场景、所有依赖/lockfile/配置/审核规划文档均不改。B～E登记只改index，不改运行器。
+
+### 15.3 本轮真实验证（原始命令，cwd=shell）
+
+每个真实Electron命令均进程局部 **`env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER`**，明确去掉两替身变量；Bash `time`包裹、stdout/stderr重定向至下表RUN日志。所有阶段按序执行，**下表全部exit0，0 failures，unit均0 skipped/0 cancelled**，没有失败后重复取绿。
+
+| 阶段 / 完整产品命令 | 实际结果 / 墙钟 | RUN原始日志 |
+|---|---|---|
+| B `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check -- harness-selftest crash-restart close-to-tray close-quit tray-menu` | **5场景60/60**，19.795s | `b-focused.log` |
+| B `npm run test:unit` | **52 pass**，4984.1074ms，墙钟5.542s | `b-unit.log` |
+| B `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check` | **默认23场景339/339**，116.908s；在C改动前通过 | `b-all.log` |
+| C `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check -- quit-guard-cancel quit-guard-wait` | **2场景22/22**，11.454s | `c-focused.log` |
+| C `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check` | **默认25场景361/361**，132.149s | `c-all.log` |
+| D `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check -- change-root prefs-ui` | **2场景41/41**，14.165s；两者真实后端，无FAI_DATA_ROOT覆盖 | `d-focused.log` |
+| E `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check -- notify notify-off crash-restart` | **3场景28/28**，11.821s；crash-restart真实后端 | `e-focused.log` |
+| 最后源码 `npm ci` | 70 packages，3.363s；既有boolean@3.2.0弃用警告 | `final-npm.log` |
+| 最后源码 `npm run test:unit` | **52 pass / 0 fail / 0 skip / 0 cancelled**，5024.918ms，墙钟5.595s | `final-unit.log` |
+| 最后源码 `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check -- events-invalid harness-selftest crash-restart close-to-tray close-quit tray-menu quit-guard-cancel quit-guard-wait change-root prefs-ui notify notify-off` | **12场景138/138**，50.458s，涵盖全部T07目标与两旧兼容场景 | `final-focused.log` |
+| 最后源码 `env -u FAI_CHECK_E2E_DIR -u FAI_CHECK_PRODUCER npm run check` | **默认29场景414/414**，**143.586s** | `final-all.log` |
+
+- 最后29 = A完成时20 + B3 + C2 + D2 + E2。两旧新状态断言及其余全部旧断言通过；crash-restart实际error快照与ready后idle/accepting=true同时通过。events-invalid仍code4/固定marker实际通过；启动preload批准全集、安全隔离、单实例/强杀/重试、T06档案/指引隐私断言全部保留并通过。
+- 最终自然root-locked：helper-ready1114ms、paths/control1453ms、waiting_health1640ms、failed(data_root_locked)3626ms、helper-exit3865ms、retry-ready5683ms、electron-exit6298ms。无自然Root失败；未改时限/锁/生产时间戳/旧断言，**不证明RL-01根因已修复**，仍P3 OPEN / UNKNOWN / nonblocking。
+- Runtime实际 **Electron33.4.11 / 内嵌Node20.18.3 / Chrome130.0.6723.191**；构建机 **Node25.2.1 / npm11.7.0 / Python3.14.2**（`versions.log`）。Node单测只证纯逻辑/运行器，夹具事件与Notification记录器不证明真实业务作业/系统toast。
+
+### 15.4 清理、失败披露、最终冻结与停止边界
+
+- 本阶段所有产品测试首次通过，无产品失败、无通过改断言/期限/重跑取绿的修复。无辅助命令/编辑失败；首次宽rg输出被工具截断，随后按文件/范围完整读取所需Checklist与契约，未将截断摘要当完整读取。Git LF→CRLF提示与npm既有弃用警告保留。`git ls-files … | xargs git check-ignore -v --no-index`的**xargs exit123**来自子命令预期exit1（9个新文件无ignore匹配、`ignore.log`为空），不是测试失败或文件被忽略。
+- 8次Electron验证（5+23+2+25+2+3+12+29）共 **101个临时根**：全部原清理断言通过，独立存在性核查 **101 checked / 0 remaining / exit0**（`cleanup-roots.log`）；ACL恢复断言通过。CIM所属产品进程 **0**、listeners **0**、services **0**（`cleanup-cim.log`）；未广杀/手删锁，无遗留服务/测试端口。各场景测试所需定向kill仍只作用自有PID，清理本体与泄漏FAIL语义完全冻结。
+- 最后源码验证前生成17文件`source-final.sha256`，清单 SHA-256 **27f446b0fddc573f5b433e259f5f81597a61f4f4a95604d7bbeffa952dda83f0**；验证后 **17/17一致**（`source-recheck.log`），之后只追加本证据。排除8个授权既有源码与证据，**262个原tracked文件SHA全部不变**（`frozen-final.log`），包括Checklist及A只读源码。`postflight-before-evidence.log`/`postflight-final.log`记录范围、diff-check、HEAD与最终SHA；未手改生成物，仓库外日志与manifest保留。
+- **状态：T07b/c/d/e四项自动化实施检查点完成；T08a未进入。** 下一实施点为T08a，但需协调者保存/派工；当前停止，不自行推进。没有正式Converge、代码Review、Gate2、人工M-ID或真实workflow验收声明。
+- 全部既有P3与外部边界继续保留：R7-01～05、R6/control-timeout未覆盖、R5-02、RL-01 OPEN/UNKNOWN与RL02正负对照/RL03生产时间戳/UTF-8、PYZ残余、507 GUI、立即relaunch M12、安装版tray/toast观感、真实作业/agent/drain等。未改任何全局/真实凭证/用户数据，不commit/push/reset/merge/PR，交协调者处理未提交检查点。

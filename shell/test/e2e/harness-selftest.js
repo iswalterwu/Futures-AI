@@ -23,7 +23,7 @@ module.exports = {
     ctx.expectEqual('Electron 精确版本', snapshot.versions.electron, '33.4.11')
     console.log(`RUNTIME ${JSON.stringify(snapshot.versions)}`)
     ctx.expectEqual('控制通道 snapshot 路径一致', snapshot.paths, first.paths)
-    ctx.expectEqual('未实现 tray/activity 不伪造', [snapshot.tray, snapshot.activity], [null, null])
+    ctx.expectEqual('托盘与活动来自真实状态', [snapshot.tray.state, snapshot.activity.accepting], ['idle', true])
     ctx.expectEqual('未知命令 HTTP 400', (await ctx.rawCommand(first, { command: 'not-a-command' })).status, 400)
     ctx.expectEqual('eval 调用真实窗口', (await ctx.cmd(first, { command: 'eval', js: 'document.location.protocol' })).value, 'file:')
     ctx.expectEqual('无未应答对话框', snapshot.records.dialogs, [])

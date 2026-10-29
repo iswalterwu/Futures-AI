@@ -27,7 +27,9 @@ function install(electron, startup, state, requestQuit) {
       const options = args.at(-1)
       const answer = answers[0]?.type === 'message' ? answers.shift() : undefined
       const response = answer ? options.buttons.indexOf(answer.button) : -1
-      records.dialogs.push({ type: 'message', buttons: options.buttons, unanswered: response < 0 })
+      records.dialogs.push({ type: 'message', buttons: options.buttons, unanswered: response < 0,
+        ...(typeof options.message === 'string' ? { message: options.message } : {}),
+        ...(typeof options.detail === 'string' ? { detail: options.detail } : {}) })
       return { response: response < 0 ? (options.cancelId ?? options.buttons.length - 1) : response, checkboxChecked: false }
     }
     electron.dialog.showOpenDialog = async () => {
@@ -63,7 +65,10 @@ function install(electron, startup, state, requestQuit) {
         url: win.webContents.getURL(), title: win.getTitle() } : { exists: false },
       backend: state.backend ? state.backend.snapshot() :
         { phase: 'idle', phases: [], gen: 0, restarts: 0, pid: null, port: null, lastCode: null },
-      tray: null, activity: null, records, prefs: startup.prefs,
+      tray: state.tray && !state.tray.isDestroyed() ? { state: state.tray.state, tooltip: state.tray.tooltip,
+        menu: state.trayMenu.items.filter(item => item.type !== 'separator').map(item => ({ label: item.label,
+          ...(item.submenu ? { submenu: item.submenu.items.map(child => ({ label: child.label })) } : {}) })) } : null,
+      activity: state.activity, records, prefs: startup.prefs,
     }
   }
   function backendCommand() {
@@ -96,7 +101,23 @@ function install(electron, startup, state, requestQuit) {
             }
             answers.push(...message.queue); send(200, { queued: answers.length }); break
           case 'close-window': state.window.close(); send(200, { accepted: true }); break
-          case 'tray-click': send(409, { error: 'tray_not_implemented' }); break
+          case 'tray-click': {
+            if (!Array.isArray(message.path) || message.path.length < 1 || message.path.length > 2 ||
+                message.path.some(label => typeof label !== 'string' || !label)) {
+              send(400, { error: 'invalid_tray_path' }); break
+            }
+            let menu = state.trayMenu, item, error
+            for (const label of message.path) {
+              item = menu?.items.find(candidate => candidate.label === label)
+              if (!item) { error = 'tray_item_missing'; break }
+              if (item.enabled === false || item.visible === false) { error = 'tray_item_unavailable'; break }
+              menu = item.submenu
+            }
+            if (error) { send(409, { error }); break }
+            item.click()
+            send(200, { clicked: true })
+            break
+          }
           case 'app-menu-click': {
             if (message.item === 'settings') {
               const item = electron.Menu.getApplicationMenu()?.getMenuItemById('fai-settings')

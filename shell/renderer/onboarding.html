@@ -107,6 +107,23 @@
         <p class="hint">以下为本地配置与最近记录，不代表本次上游取数成功。</p>
         <div class="card"><table id="sources-table"><thead><tr><th>数据源</th><th>路径</th><th>状态</th><th>最近验证</th><th>最近取数</th><th>说明</th></tr></thead><tbody></tbody></table></div>
       </section>
+      <div class="card" id="application-settings">
+        <h2>应用</h2>
+        <label for="close-behavior">关窗行为</label>
+        <select id="close-behavior"><option value="tray">最小化到托盘</option><option value="quit">关闭即退出</option></select>
+        <label for="notifications">系统通知</label>
+        <input id="notifications" type="checkbox" style="width:auto" />
+        <label for="update-check">启动时检查更新</label>
+        <input id="update-check" type="checkbox" style="width:auto" />
+        <p class="hint" id="update-note"></p>
+        <p>当前数据目录：<span id="data-root"></span></p>
+        <p id="pending-root" hidden></p>
+        <div class="actions">
+          <button type="button" id="choose-data-root">更改…</button>
+          <button type="button" id="relaunch" hidden>立即重启</button>
+        </div>
+        <div class="status" id="application-status" role="status" hidden></div>
+      </div>
     </main>
     <script src="onboarding.js"></script>
   </body>

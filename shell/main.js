@@ -5,7 +5,9 @@
 'use strict'
 
 const electron = require('electron')
-const { app, BrowserWindow, Menu, dialog, ipcMain, shell: electronShell } = electron
+const { app, BrowserWindow, Menu, Tray, nativeImage, dialog, ipcMain, shell: electronShell } = electron
+const activity = require('./src/activity')
+const prefs = require('./src/prefs')
 const { Backend, httpJson } = require('./src/backend')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -27,10 +29,18 @@ const state = {
   timing: { shown_ms: null, ready_ms: null, interactive_ms: null },
   page: null,
   navigation: 0,
+  activity: activity.initialState({ notifications: startup.prefs?.notifications ?? true }),
+  tray: null,
+  trayMenu: null,
+  eventTimers: [],
+  eventsStarted: false,
+  activityHints: [],
+  quitDialog: false,
+  relaunchAfterQuit: false,
 }
 let hooks = null
 if (process.env.FAI_TEST_HOOKS === '1' && startup.paths) {
-  hooks = require('./src/test-hooks').install(electron, startup, state, () => gracefulQuit(0))
+  hooks = require('./src/test-hooks').install(electron, startup, state, () => requestQuit())
 }
 
 // ---------- 日志（AC-010-1） ----------
@@ -85,8 +95,11 @@ function startBackend() {
     setStatus({ ...status, phase: status.phase === 'spawning' ? 'starting' : status.phase })
     if (status.phase === 'restarting' || status.phase === 'failed') void showStartup()
   })
+  state.backend.on('backend.error', event => receiveActivity({ type: 'backend.error', code: event.code }))
   state.backend.on('backend.ready', () => {
+    receiveActivity({ type: 'backend.ready' })
     state.timing.ready_ms = Date.now() - startedAt
+    startTestEvents()
     void routeToMain()
   })
   state.backend.start()
@@ -131,6 +144,7 @@ async function loadTarget() {
   }
   setStatus({ phase: state.mode === 'mock' ? 'mock' : 'ready' })
   await loadPage(selection.target)
+  if (state.mode === 'mock' && state.page === selection.target) startTestEvents()
 }
 async function routeToMain() {
   if (!state.window) return { error: 'not_ready' }
@@ -163,7 +177,10 @@ async function routeToMain() {
 }
 async function openSettings(via) {
   const available = Boolean(state.window && (state.mode === 'mock' || state.backend?.getBackend()))
-  if (available) await loadPage(path.join(__dirname, 'renderer', 'onboarding.html'))
+  if (available) {
+    showMainWindow()
+    await loadPage(path.join(__dirname, 'renderer', 'onboarding.html'))
+  }
   if (hooks) hooks.records.navigation.push({ action: 'open-settings', via, result: available ? 'opened' : 'not_ready' })
   return available ? { opened: true } : { error: 'not_ready' }
 }
@@ -174,6 +191,10 @@ function beginStartup() {
 function installIpc() {
   ipcMain.handle('fai:backend', () => state.backend?.getBackend() ?? null)
   ipcMain.handle('fai:status', () => state.status)
+  ipcMain.handle('fai:shell-prefs', () => shellPrefsView())
+  ipcMain.handle('fai:set-shell-prefs', (_event, patch) => setShellPrefs(patch))
+  ipcMain.handle('fai:choose-data-root', () => chooseDataRoot())
+  ipcMain.handle('fai:relaunch', () => { void requestQuit(true); return { accepted: true } })
   ipcMain.handle('fai:open-settings', () => openSettings('renderer'))
   ipcMain.handle('fai:open-main', async () => {
     const result = await routeToMain()
@@ -198,6 +219,126 @@ function installIpc() {
     const error = await electronShell.openPath(folder)
     return error ? { error } : { path: folder }
   })
+}
+
+// ---------- 应用偏好（R-004/R-006） ----------
+function shellPrefsView() {
+  if (!startup.prefs) return { error: 'prefs_invalid' }
+  let updateConfigured = false
+  if (app.isPackaged) {
+    try {
+      const config = JSON.parse(fs.readFileSync(path.join(process.resourcesPath, 'app-config.json'), 'utf8'))
+      updateConfigured = typeof config.update?.feedUrl === 'string' && config.update.feedUrl.length > 0
+    } catch { /* No release update source configured. No requests are made here. */ }
+  }
+  return { prefs: startup.prefs, dataRoot: startup.dataRoot, updateConfigured }
+}
+function setShellPrefs(patch) {
+  if (!patch || typeof patch !== 'object' || Array.isArray(patch) ||
+      Object.keys(patch).some(key => !['closeBehavior', 'notifications', 'updateCheck'].includes(key))) {
+    return { error: 'prefs_invalid' }
+  }
+  if (!startup.prefs) return { error: 'prefs_invalid' }
+  const saved = prefs.save(startup.paths.prefsFile, { ...startup.prefs, ...patch })
+  if (!saved.error) {
+    startup.prefs = saved.prefs
+    state.activity = { ...state.activity, notifications: saved.prefs.notifications }
+  }
+  return saved
+}
+async function chooseDataRoot() {
+  if (!startup.prefs) return { error: 'prefs_invalid' }
+  const selected = await dialog.showOpenDialog(state.window, { title: '更改数据目录', properties: ['openDirectory', 'createDirectory'] })
+  if (selected.canceled) return { cancelled: true }
+  const candidate = selected.filePaths[0]
+  if (typeof candidate !== 'string' || !path.isAbsolute(candidate)) return { error: 'data_root_invalid' }
+  const root = path.resolve(candidate)
+  if (path.relative(startup.dataRoot, root) === '') return { error: 'data_root_current' }
+  const installDir = app.isPackaged ? path.dirname(app.getPath('exe')) : app.getAppPath()
+  const relative = path.relative(installDir, root)
+  if (!path.isAbsolute(relative) && relative !== '..' && !relative.startsWith('..' + path.sep)) return { error: 'data_root_install' }
+  const probed = prefs.probe(root)
+  if (probed.error) return probed
+  const saved = prefs.save(startup.paths.prefsFile, { ...startup.prefs, pendingDataRoot: root })
+  if (saved.error) return saved
+  startup.prefs = saved.prefs
+  return { pendingDataRoot: root }
+}
+
+// ---------- 活动与托盘（R-006） ----------
+function receiveActivity(event) {
+  if (activity.validateEvent(event)) { log('activity invalid_event'); return }
+  consumeActivity(event)
+}
+function notify(kind) {
+  const Notification = hooks ? hooks.outlets.Notification : electron.Notification
+  if (!Notification.isSupported()) return
+  const body = { stage_completed: '作业阶段已完成。', verification_pending: '有待处理的验证性需求。',
+    intervention_conflict: '介入内容存在冲突，请查看作业。', backend_error: '本地后端发生异常，请查看应用状态。' }[kind]
+  new Notification({ kind, title: 'FuturesAI', body }).show()
+}
+function consumeActivity(event) {
+  if (event.type === 'quit.cancel') state.relaunchAfterQuit = false
+  const result = activity.apply(state.activity, event)
+  state.activity = result.state
+  for (const effect of result.effects) {
+    if (effect.type === 'log') log(`activity ${effect.code}`)
+    if (effect.type === 'hint' && !state.activityHints.includes(effect.code)) state.activityHints.push(effect.code)
+    if (effect.type === 'tray') updateTray(effect.state)
+    if (effect.type === 'notify') notify(effect.kind)
+    if (effect.type === 'quit') void gracefulQuit(0)
+  }
+  return result.effects
+}
+function startTestEvents() {
+  if (!hooks || state.eventsStarted) return
+  state.eventsStarted = true
+  state.eventTimers = hooks.testEvents.map(event => setTimeout(() => {
+    if (!state.quitting) consumeActivity(event)
+  }, event.delayMs ?? 0))
+}
+function showMainWindow() {
+  state.window?.restore()
+  state.window?.show()
+  state.window?.focus()
+}
+function trayImage(status) {
+  const color = { idle: [146, 152, 154], running: [224, 230, 232], error: [143, 138, 201] }[status]
+  const pixels = Buffer.alloc(16 * 16 * 4)
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    if ((x - 7.5) ** 2 + (y - 7.5) ** 2 <= 49) {
+      const offset = (y * 16 + x) * 4
+      pixels.set([...color, 255], offset)
+    }
+  }
+  return nativeImage.createFromBitmap(pixels, { width: 16, height: 16 })
+}
+function updateTray(status) {
+  if (!state.tray) return
+  const running = state.activity.jobs.filter(job => job.status === 'running')
+  const tooltip = [`FuturesAI · ${{ idle: '空闲', running: '运行中', error: '有错误' }[status]}`,
+    ...(state.activity.waiting ? ['等待完成后退出'] : []), ...state.activityHints].join(' · ')
+  state.tray.setImage(trayImage(status))
+  state.tray.setToolTip(tooltip)
+  // Metadata belongs to the production Tray, updated with the actual native setters.
+  state.tray.state = status
+  state.tray.tooltip = tooltip
+  state.trayMenu = Menu.buildFromTemplate([
+    { label: '打开主窗口', click: showMainWindow },
+    { label: '运行中作业', submenu: running.length ? running.map(job => ({ label: job.title, click: showMainWindow })) :
+      [{ label: '无运行中作业', enabled: false }] },
+    { label: '设置…', click: () => openSettings('tray') },
+    ...state.activityHints.map(label => ({ label, enabled: false })),
+    ...(state.activity.waiting ? [{ label: '取消退出', click: () => consumeActivity({ type: 'quit.cancel' }) }] : []),
+    { type: 'separator' },
+    { label: '退出', click: () => requestQuit() },
+  ])
+  state.tray.setContextMenu(state.trayMenu)
+}
+function createTray() {
+  state.tray = new Tray(trayImage(state.activity.tray))
+  state.tray.on('double-click', showMainWindow)
+  updateTray(state.activity.tray)
 }
 
 // ---------- 窗口（R-005/R-009） ----------
@@ -249,15 +390,38 @@ async function createWindow() {
     setStatus({ phase: 'failed', code: 'renderer_crashed', path: failedPath })
     void showStartup()
   })
+  win.on('close', event => {
+    if (state.quitting) return
+    event.preventDefault()
+    if ((startup.prefs?.closeBehavior ?? 'tray') === 'tray') win.hide()
+    else void requestQuit()
+  })
   win.on('closed', () => { state.window = null })
   await showStartup()
   if (!state.quitting) await shown
 }
 
 // ---------- 退出（R-003） ----------
+async function requestQuit(relaunch = false) {
+  if (state.quitting || state.quitDialog || state.activity.waiting) return
+  state.relaunchAfterQuit = relaunch
+  const effects = consumeActivity({ type: 'quit.request' })
+  if (!effects.some(effect => effect.type === 'ask')) return
+  state.quitDialog = true
+  const queued = state.activity.jobs.filter(job => job.status === 'queued')
+  const { response } = await dialog.showMessageBox(state.window, {
+    type: 'question', title: '退出 FuturesAI', message: '仍有运行中的作业，是否等待完成后退出？',
+    detail: `排队作业将标记 cancelled_on_exit：\n${queued.map(job => job.title).join('\n') || '无排队作业'}\n等待期间新作业将标记 rejected_exiting。`,
+    buttons: ['等待完成后退出', '取消退出'], defaultId: 1, cancelId: 1,
+  })
+  state.quitDialog = false
+  consumeActivity({ type: response === 0 ? 'quit.wait' : 'quit.cancel' })
+}
 async function gracefulQuit(exitCode = 0) {
   if (state.quitting) return
   state.quitting = true
+  if (state.relaunchAfterQuit) app.relaunch()
+  for (const timer of state.eventTimers) clearTimeout(timer)
   log('graceful shutdown started')
   try {
     await state.backend?.stop()
@@ -267,6 +431,7 @@ async function gracefulQuit(exitCode = 0) {
     return
   }
   log('graceful shutdown done')
+  state.tray?.destroy()
   app.exit(exitCode)
 }
 
@@ -289,18 +454,18 @@ if (!startup.gotLock && !startup.error) {
   })
 
   app.on('window-all-closed', () => {
-    // v1：关窗即退出（托盘常驻在 T-07 接入）
-    gracefulQuit(0)
+    void requestQuit()
   })
 
   app.on('before-quit', (event) => {
     if (!state.quitting) {
       event.preventDefault()
-      gracefulQuit(0)
+      void requestQuit()
     }
   })
 
   app.whenReady().then(async () => {
+    if (process.platform === 'win32') app.setAppUserModelId('com.futuresai.desktop')
     log('shell starting')
     for (const key of startup.ignored || []) log(`${key} ignored (packaged)`)
     Menu.setApplicationMenu(Menu.buildFromTemplate([
@@ -310,6 +475,7 @@ if (!startup.gotLock && !startup.error) {
       ] },
       { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' },
     ]))
+    createTray()
     if (hooks) await hooks.startControl()
     installIpc()
     if (startup.error) setStatus({ phase: 'failed', ...startup.error })
