@@ -3,6 +3,7 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
+> **当前结论补记（2026-10-29 r6.6.2 语义回归许可）：见文末「Analyze R12.2」**——只许 T-A12 改 `tests/unit/jobs/persistence.spec.ts` 中 `WI non-normal` 参数化用例的 error 分支，以符合已批准的 error 拒绝时机（commit 内、替换状态前）；T-A13 对该文件无许可；plan / 标准 / 命令 / 结构不变，R12 / R12.1 其余结论有效。
 > **当前结论补记（2026-10-29 r6.6.1 范围精度）：见文末「Analyze R12.1」**——只补 T-A11 / A12 / A13 对本 feature 自有 `tests/unit/jobs/real-stubs.spec.ts` 的“`requests` 表追加本任务新增方法键”写入许可；需求 / 方法 / 标准 / 命令 / 结构不变，R12 其余结论有效。
 > **当前结论（2026-10-29 第三批开工前精度澄清 r6.6）：见文末「Analyze R12」**
 > - **本轮**：只为第三批 T-A11 → T-A12 → T-A13 → T-A22a（4 项，约 7 h）补既有 what / AC 的机制与类型精度（plan §2.3 / §2.4 / §3【r6.6】，四个任务的修改范围【r6.6 精度】）。冻结 spec / 46 AC / 方法集 / 动作矩阵不变，不回 Clarify；67 个任务 / 约 102 h / 224 ↔ 224 / 依赖不变。
@@ -857,3 +858,61 @@
 - 第三批范围内 spec ↔ plan ↔ tasks ↔ implementation-log ↔ 真实代码**无冲突**，G-1 / G-2 已由 r6.6.1 关闭，G-3 / G-4 是表述更正（不改 R9 结论，不改 checklist）。R12 其余结论有效。
 - **状态**：第三批 4 项（T-A11 → T-A12 → T-A13 → T-A22a）**仍全部待实施**。集成人提交本修订并同步实施树后，再派 Astra 从 T-A11 继续；现在不预写成功。
 - **feature**：16 / 67 已完成、51 未开始，**未收敛**；46 AC 最终验收 0；H-x 无一已交付。本报告不是 Review / Gate 2 / Handoff。
+
+---
+
+## Analyze R12.2（只读；第三批 r6.6.2 语义回归许可，2026-10-29；R12 / R12.1 的范围补记，不占后续 Converge 配套的 R13 编号；区别于 Checklist R9，**不是**审核结论）
+
+> **阶段记录（脱敏）**：
+> - **角色与模型**：Tasks 语义回归许可小补 + 本分析；实际模型 = **claude-opus-5-5 via anthropic**（PI_SESSION_ID `01a186f6-6f87-759d-864d-cfa50e021625`）。
+> - **通道**：`claude-bridge` 本窗口已明确 quota / rate 失败，按 AGENTS §6 规则 5 不重试；官方通道正常。未改 provider / key / 路由 / 全局配置。测试红与范围问题不是换模型理由。
+> - **派工**：集成人协调会话 `01a18388`。Walter 的“允许”授权与集成人指定在既有 tasks 范围内持续有效，本轮不新增人工授权。
+> - **性质**：只读报告，不勾选 checklist。当前有效审核 = **Checklist R9**（`ab742f5`，`checklist.md` blob `74084c1337491a042c944096e1f290fe07aab324`，本轮未改）。
+>
+> **写入与执行边界**：
+> - **可写范围**：唯一可写 worktree `D:/2030/Futures-AI-interaction-plan-batch3`（`docs/workbench-interaction-batch3-plan`，起点 `e4031fa`，起始 clean）。本轮只写 tasks.md（页首补记一段；T-A12 / T-A13 修改范围各一条【r6.6.2】）、本报告（本节）、implementation-log.md（页首补记、§7 四行、§10 一条）。
+> - **只读核对**：实施树 `D:/2030/Futures-AI-interaction-implement`（HEAD `742d6aa3d671cee91c6cce856f657a103d510615`，`c7ebccb` 为其祖先；工作区有 T-A13 未提交改动）中的 `frontend/tests/unit/jobs/persistence.spec.ts` 与 `frontend/src/contracts/mock/job-state.ts` 的 `commit`，以及独占临时目录中的 Astra 回报与日志。**未写实施树**。
+> - **未改动**：代码 / fixture / 测试 / spec / plan / checklist / interface-handoff / README / 审核原件 / 权威 docs / 其他 worktree。
+> - **未执行**：未 commit / push / merge；未安装；未启动服务或子 agent；**未运行任何产品测试**。
+
+### 1. 起因与输入
+
+- **起因**：Astra（`openai/gpt-6-astra`，调用正常、未回退）提交 T-A11 `c7ebccb`、T-A12 `742d6aa` 后，实现了 T-A13 但未提交。A12 / A13 各自的定向命令、contract、typecheck、lint、real-stubs 均通过；A13 末轮全量 `test:unit` **925 pass / 1 fail**，六守卫通过。唯一失败：`persistence.spec.ts > WI non-normal … > error never gets, sets or removes either key, including reset from an old client`，抛出 `{ error: { code: 'adapter_error', … } }`。该文件不在 A12 / A13 写入清单，Astra 按范围纪律停下，未改测试、未放宽生产规则。
+- **重新读取**：AGENTS.md（§2 / §5 / §6）、`docs/plan.md`；本 feature plan §2.4【r6.6】（写方法时机句、九场景表 error 行）；tasks T-A11 / A12 / A13 全文（含【r6.6 精度】与【r6.6.1】）；implementation-log §7 / §10；本报告 R12（F-9 及写方法时机行）、R12.1；checklist R9 C-04（只读）。
+- **真实代码**（实施树，只读）：
+  - `job-state.ts` 的 `commit`：深拷贝 → mutator → `JobStateSchema.parse` → `state.scenario === 'error'` 时抛 adapter_error → 替换状态 → persistent 时保存。`742d6aa` 与当前工作区的该函数相同（A13 未改 commit）。
+  - `persistence.spec.ts` `WI non-normal` 的 `test.each` 覆盖八个非 normal 场景：先建 normal client 写快照哨兵与 inbox 哨兵 → 挂四个 Storage spy → 切到当前场景（第 260 行）→ **第 261 行直接 `commit(…'memory edit')`**（Astra 回报定位 :262，同一用例）→ 旧 client 的 `resetMockData` resolve null → 场景 / 持久化状态断言 → error 下 `listJobs` 为 adapter_error → 四个 spy 零调用 → 两个哨兵不变。error 场景种子含 normal 作业，所以目标作业存在，能用 `getJob` 比对。
+
+### 2. 差距判定
+
+| # | 事实 | 判定 |
+|---|---|---|
+| G-5 | plan §2.4【r6.6】与 T-A12【r6.6 精度】已批准：error 拒绝放在 commit 内，在 mutator 与边界校验之后、替换状态之前（保证未知锚先 not_found、error 不产生部分修改）。T-A11 的 `WI non-normal` 用例按 A11 当时语义（commit 尚无 error 拒绝）写成 error 下直接 commit 成功 | **已批准语义下的旧测试预期过时**。A12 的实现符合 plan，测试的 error 分支须随之维护。不是需求变化、不是实现 bug、不是新 guard |
+| G-6 | r6.6 / r6.6.1 的写入清单没有给 A12 / A13 改 `persistence.spec.ts` 的许可 | **Tasks 层范围遗漏**（与 R12.1 G-2 同类）。R12 F-9 与 R9 C-04 审过“error 在 commit 替换前拒绝”这一设计，但没有追到它对 T-A11 既有用例的影响；R12.1 只列了 `real-stubs.spec.ts`，**未预见此用例**。本节如实更正 |
+| G-7 | A11 交付时全量 860 / 860，A12 定向命令全部通过，A13 末轮全量 1 fail | **没有伪绿**：A11 的绿是真实的（当时 commit 没有 error 拒绝）；A12 的任务命令都只跑 `job-state-intake.spec.ts`，不含该用例；按 §10 建议的批末全量回归如期暴露了冲突。推断（同一 commit 代码，未另行跑）：自 `742d6aa` 起 T-A11 命令 4（`-t "WI non-normal"`）的 error 分支即为红；全量红作为失败留痕保留 |
+
+### 3. r6.6.2 落点
+
+- **tasks T-A12**：修改范围加【r6.6.2 语义回归许可】，只允许改 `persistence.spec.ts` `WI non-normal` 参数化用例的 **error 分支**：断言真实 `commit` 抛 adapter_error，且目标作业经真实 job-state 同步读函数（如 `getJob`）读回不变；其余 7 个场景照旧直接 commit。明文保留该用例其余全部断言（error 下业务读失败、显式 reset 在 error 下允许、两个 key 零 get / set / remove、无 clear、normal 快照哨兵与 inbox 哨兵不变）以及文件内其他 describe / test（含 `normal override`）。禁止放宽生产规则、skip / 注释、把 error 移出场景列表、改成断言白名单或宽松匹配。可作为 A12 的独立 test-fix commit。
+- **tasks T-A13**：加一条“对该文件无写入许可”，不扩到其他用例或文件。
+- **tasks 页首**：补记 r6.6.1 / r6.6.2 的范围性质，状态行不改（由批次 Converge 回写）。
+- **implementation-log**：页首补记真实进展与停止原因；§7 记 `e4031fa` 提交、A11 续做、A12 → A13 停止、本轮文档四行；§10 加 r6.6.2 写权限条。
+
+### 4. 为何不改 plan、不需 R9 新设计复核
+
+- 被维护的是测试预期，不是设计：error 拒绝时机原文就在 plan §2.4【r6.6】与九场景表 error 行（“所有新增业务写方法返回 adapter_error，不产生部分修改”），R9 C-04 已审过。**plan 不改**。
+- 改后 error 分支仍验证 T-A11 标准 4（零 storage 访问、显式 reset 不拒绝），并与 T-A12 标准 4（error 下写入被拒、读回不变）一致。没有放宽任何断言，也没有新增标准、命令、guard、机制或流程。
+- 所有权早已覆盖：`persistence.spec.ts` 由 T-A11 新建，属 tasks §1-5 / plan §1 的本 feature jobs 测试。
+- 因此不需要另开 A 设计复核。第三批正式批次代码 Review 核真实 diff：该文件只在 error 分支有改动，其余断言原样，生产 `commit` 未因此改动。
+
+### 5. 不变项核对（脚本 + diff，只读）
+
+- **需求**：冻结 spec、46 AC、方法集、动作矩阵不变；不回 Clarify / Gate 1。
+- **结构**（`analyze-r12-struct.py` 对本轮与 `e4031fa` 两版 tasks 复算，输出 `analyze-r122-structure.log` / `analyze-r122-structure-HEAD.log`）：67 个任务、102.0 h、16 × 已完成 / 51 × 未开始、完成标准 / 命令 **224 / 224**、依赖无环、AC 矩阵 46 行；第三批命令 19 条、7.0 h。
+- **diff**：`git diff e4031fa -- tasks.md` 只落在页首补记与 T-A12 / T-A13 修改范围；状态行、完成标准、验证命令、预计、依赖、§5 矩阵、§6 DAG、§7 无 hunk。
+
+### 6. 结论（Analyze R12.2）
+
+- G-5 是已批准语义下的旧测试维护，G-6 是 tasks 写入范围遗漏，已由 r6.6.2 关闭；G-7 确认无伪绿，红作为失败留痕保留。第三批范围内 spec ↔ plan ↔ tasks ↔ implementation-log ↔ 真实代码在本补记后无冲突。R12 / R12.1 其余结论有效。
+- **状态**：规范进度仍 16 / 67 已完成。T-A11 `c7ebccb`、T-A12 `742d6aa` 已实施，待正式批次 Review；T-A13 仍未提交（工作区改动保留），待 A12 test-fix 落地、全量回归后再交付；T-A22a 未开始。不预写 A13 成功，也不预写“本轮全绿”。
+- **feature**：**未收敛**；46 AC 最终验收 0；H-x 无一已交付。本报告不是 Review / Gate 2 / Handoff。
