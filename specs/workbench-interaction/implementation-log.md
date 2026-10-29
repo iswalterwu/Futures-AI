@@ -1,7 +1,16 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
-> **当前状态（2026-10-29 第四批 Review 未通过 + R4-A 工程审批等待 = 批次安全点；以本块为准。下一块 Converge batch4 中的“5 项已实施、待第四批独立代码 Review”“69 个任务、约 104 h”“232 / 232”“43 项未开始”“R2-C 待 A 确认关闭”为当时原文，其余记录仍有效）**：
+> **当前状态（2026-10-29 R4-A 关闭，第四批 5 项 + T-B04a 技术通过；以本块为准。下一块及 §16～§18 中的“Review 未通过”“待 §5.1 批准”“待 A”“R4-A 未关闭”“R2-C 不记关闭”“① 候选”均为当时原文）**：
+> - **进度**：70 个任务、约 104.5 h；**27 / 70 已完成**（21 + 第四批 5 + T-B04a；已完成 = 批次 / 增量 Review 通过，非最终 AC）；**43 未开始**；235 / 235；46 AC 最终验收 **0**；feature **未收敛**。
+> - **Review**：A 增量 Review `review-batch4-r4a.md`（原件 `46e8fbe`，claude-fable-5-1 via anthropic）判本增量通过（0 P1 / P2 / 0 新 P3）：**R4-A 关闭、R2-C 技术关闭、第四批 5 项 + T-B04a 技术通过**。原件 `9812f64` 的未通过结论原样保留（补修后复核闭环，不是翻票）。详见 §19。
+> - **P3**：R4-B～R4-E、S-41、R3-B / R3-C 及前批未关项仍开放，**均未经风险接受**（§8【R4-A 关闭后更新】）。
+> - **H-x**：H-2·标签 ① `5c00cf6` 转生产已核；H-2·列表 ① 仍 `af24c82`；页面切片 C 组未做 → 未交付；④ 全缺。
+> - **合并**：Walter 已选全部工作完成后再合 main；Draft PR #12 保持 Draft；25 个目录保留复用，不删目录 / 分支。
+>
+> 不是全 feature Review / Gate 2 / Handoff。
+
+> 【历史原文】**当前状态（2026-10-29 第四批 Review 未通过 + R4-A 工程审批等待 = 批次安全点；以本块为准。下一块 Converge batch4 中的“5 项已实施、待第四批独立代码 Review”“69 个任务、约 104 h”“232 / 232”“43 项未开始”“R2-C 待 A 确认关闭”为当时原文，其余记录仍有效）**：
 > - **进度**：**70 个任务、约 104.5 h**。21 项已完成；**5 项已实施，第四批 Review 未通过（R4-A 待 §5.1 批准 / 修复）**，不计完成；**44 项未开始**（含草案 T-B04a，blocked_by Walter §5.1 批准）。235 / 235；46 AC 最终验收 **0**；feature **未收敛**。
 > - **Review**：`review-batch4.md`（原件 `9812f64`，A = claude-fable-5-1 via anthropic）判**未通过：1 P2 R4-A + 4 P3 R4-B～R4-E**，结论不改。A 亲跑全量单测 34 / 1018 / 0、17 条任务命令同数、四份 E2E 29 / 0、六守卫 / typecheck / lint / contract 24 / 10 / 2，均为绿，但不改变判定。
 > - **R4-A**：真实 Chrome slow 下复现——离开 / Back / 选“交付”后，迟到的 canonical replace 会把用户劫回 `/process` 并覆盖历史；请求按序完成，不是乱序，也不是伪影。修复草案 T-B04a（`onCleanup` 失效标志，约 3～5 行 + 2 例组件 + 1 例 E2E）**待 Walter 单独批准，未开码**；通用代码授权不覆盖。详见 §16。
@@ -466,6 +475,13 @@
 | R4-D | P3 | 同作业重开时，先显示上一次的 `not_found` 错误（产品内实际不可达） | 下次 plan 精度一句 / T-B05 开工前 | 开放 |
 | R4-E | P3 | store 迟到写入导致短暂错位（自愈） | `api` feature（plan §2.3【r6.10】） | 开放 |
 
+【R4-A 关闭后更新（2026-10-29，`review-batch4-r4a.md` 原件 `46e8fbe`；以本段为准，上表 R4-A“未修；blocked”与上段“R2-C 不记关闭”为当时原文）】
+- **R4-A**：**已关闭**。T-B04a `ae592ba` 修复；A 增量 Review 0 P1 / P2 / 0 新 P3，真实 Chrome 探针 2a / 2b / 2c / 2d 不再发生（§19）。
+- **R2-C**：**技术关闭**（原件 §5 关闭条件“本批通过”已成立；这是批次技术闭合，不是 Gate 2）。
+- **R4-B / R4-C / R4-D / R4-E**：仍开放、归属不变。R4-E 在 A 探针 P-2d 中仍可观察到约 17 ms 的 store 错位（自愈），本次**未修**，不写成已修。
+- **S-41、R3-B / R3-C、R-A、R-B 残留、R-C / R2-A、R-D ①③④、R-E、R-F、R2-B AgentClient 侧、R2-D**：本增量不涉及，归属不变。
+- 以上开放项**均未经 Walter 风险接受**；Walter 的批准只覆盖 R4-A 最小修复。
+
 【首批记账时原文】**下一步（不在本记账内执行）**：集成人按 tasks §6 DAG 派第二批（入口 T-A10 / T-A22 / T-A23 / T-A24；Implement 首选 `openai/gpt-6-astra`，新会话、实施树），开工前读本节对应项；H-1 ④ 待 `integration/frontend-workbench-v2` 所有者真正集成后由其登记，本 feature 不代写。
 
 ## 9. 第二批派工准备（r6.3，2026-10-29；r6.4 按 Checklist R8 B-12 拆分后更新；历史：已实施，并经 `f72a1a1` 批次 Review 通过；“待实施”为当时原文）
@@ -851,3 +867,78 @@
   - main `072bb12` 不在祖先、不导入，继续 pin `90187f7`（R2-D 流程不变）。
   - 未 push、未开 PR、未 merge。
 - **下一步**：先等 Walter 对 R4-A 最小修复的单独批复。批准范围以 plan §2.1【r6.11 草案】与 T-B04a 为限，不扩到 store / query / 全局防乱序。在此之前不派代码、不写 v2 / main。其余未关项按 §8 原归属处理。
+
+## 17. R4-A 最小修复获 Walter §5.1 批准，T-B04a 可开码（2026-10-29；只登记，未实施、无产品验证）
+
+- **作者**：claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188da-1d90-7009-9405-316722985a4e`；bridge 本窗口额度耗尽、无重置证据，不重试；官方通道近期成功；未改配置）。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。
+- **用户批复**（原话）：“**那就先修P2等全部工作完成后，再合入main**”。集成人在报告 R4-A、`onCleanup` 约 3～5 行最小方案与归档选项之后收到。判定 = R4-A 最小修复的 §5.1 单独批准 + 选定 feature 全部完成后再合 main；**不是**风险接受、**不是**提前 Gate 2，不批准扩到 store 取消 / 锁 / 请求序号 / query，也不是立即删除现有 25 个目录（保留；复用现有 worktree，phase 结束后按后续指令清理）。
+- **范围**（= plan §2.1【r6.11】，已生效）：只改 `JobDetailPage.vue` 的 `watch` 回调（`onCleanup` / `stale` / `!stale` 条件）+ `job-detail.spec.ts` 新增 2 例 + `detail-stage.spec.ts` 新增 1 例；原 11 / 4 例不改；其他源码、store、query 禁止。T-B04a 标准 / 命令 / 依赖 / 工时与 70 任务 / 235 对不变。
+- **流程**：不另开 Checklist R10.1（理由见 analyze.md「Analyze R19」§3），R10 `37e2f71` 保持 26 / 26 只读。下一步：Implement（新会话，首选 openai/gpt-6-astra，复用现有实施 worktree `feat/workbench-interaction-astra` @ `6c082fd`）→ Converge → A 新会话增量代码 Review。发现草案外的真实设计问题即停报。
+- **待测试**：T-B04a 三条命令（`WI R4-A` 组件 2 例 + 整文件 13；`WI R4-A` E2E 1 例 + 四份 E2E 30；全量单测 1020 + typecheck / lint + `git diff --stat 6c082fd HEAD -- frontend` 只含三文件）均**未运行**；本节只登记，没有任何产品验证。
+- **状态**：21 已完成 + 5 已实施（第四批 Review 未通过，不计完成）+ 44 未开始；R4-A 未关闭；R2-C 待本批通过；其余 P3 未经风险接受；46 AC 最终验收 0；feature 未收敛。
+- **远端上下文**（只记录，本轮不操作远端 / Root）：用户上轮备份已 push 3 个分支；Draft PR https://github.com/iswalterwu/Futures-AI/pull/12（head = integration @ `e285ad2`；isDraft = true，automerge = null，DIRTY）。Root 规格树 spec @ `4f11611766a12092758145910042a08fb5f9a524` 有 HANDOFF §15 备份记录；本树没有 §15，不从别树整体 merge。PR 继续 Draft，不合 main、不强推，不写 v2 树；main pin `90187f7` 与 R2-D 同步流程不变。功能尚未完成；Root 文档定向同步 / 恢复 §16 由集成人后续处理。
+
+## 18. T-B04a 已实施（R4-A 最小修复）与增量 Converge（2026-10-29；实施者执行，Converge 未重跑；待 A 新会话增量 Review）
+
+- **作者**：claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188e8-c8fd-7213-8e90-b721dc6bf792`）。bridge 当前额度窗口已明确耗尽，不重试；同模型官方通道成功；未改配置。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。本轮复用现有文档树 `D:/2030/Futures-AI-interaction-converge-batch4`（起点 `ae592ba`、clean），没有新建工作树。
+- **授权**：`80a1892`（§17）。Walter 原话“那就先修P2等全部工作完成后，再合入main”= R4-A 最小修复的 §5.1 单独批准。它不是风险接受，不是提前 Gate 2，也不删目录。实施严格在这一授权内。
+- **代码**：
+  - commit `ae592ba23b086dd5887a269e842f80c96ad16fb2`，`fix(jobs): skip stale detail canonical navigation (R4-A)`，父 `80a1892`。
+  - 实施者 = openai/gpt-6-astra，新会话 `01a188e0-48c1-71df-a0b9-6c87a5b4c916`；会话日志只有这一个模型、无 error 停止，未回退。
+  - 实施树 `feat/workbench-interaction-astra`；集成人 ff-only 后，`integration/workbench-interaction` 和本文档树都在 `ae592ba`（旁证，不是 ④）。
+- **diff**（`80a1892..ae592ba -- frontend`，全仓也只有这些）：3 个文件，+72 / −2。
+  - `src/jobs/pages/JobDetailPage.vue`：diff 共 6 行。回调签名加 `_old, onCleanup`；`await` 前新增 `let stale = false` 和 `onCleanup(() => { stale = true })`；canonical replace 条件前加 `!stale`。其他字节不变。
+  - `tests/component/jobs/job-detail.spec.ts`：+54，只追加 describe `WI R4-A` 2 例。原 12048 字节是逐字节前缀，SHA256 `74d3fe502e9a49304faf864888263483a3a79c11778aef1f30703ceaeff20c4d`；新文件 blob `3d5d242`。
+  - `e2e/jobs/detail-stage.spec.ts`：+14，只追加 1 例。原 2266 字节是逐字节前缀，SHA256 `1a3d5f4d7cb2a2ceb7f2622138bc077136a7beede382af6e7e4df6cdf76fe4d4`；新文件 blob `031634c`。
+  - 两份前缀已由本会话用 `git show` + `cmp` 复核。store / routes / session / query / 契约 / 配置 零差异。
+- **红 → 绿**（实施者执行；日志在协调器 Temp `wi-r4a-fix-01a18388-bdy5e3x0/astra-*`）：
+  - 旧生产代码 + 新测试：组件 `WI R4-A` **2 failed**，第 245 行 `/jobs/j-process/process` ≠ `/prices`，第 276 行 `/jobs/j-process/process` ≠ `/jobs/j-process/deliver`；Chrome `WI R4-A` **1 failed**，第 51 行收到 `/jobs/j-process/process`。三条都是真实缺陷复现。
+  - 生产修复后，同一批测试期望不变，全部变绿。
+- **输出数字**（实施者执行，本会话未重跑）：
+  - 命令 1：`WI R4-A` 2 passed → `job-detail.spec.ts` 整文件 13 passed。
+  - 命令 2：`WI R4-A` E2E 1 passed → 四份 E2E（shell / agent / jobs/detail-stage / jobs/list-create）30 passed。只追加了 `--output <独占 Temp>`，配置不变。
+  - 命令 3：全量单测 34 files / 1020 passed / 0 failed；typecheck、lint 通过；`git diff --stat 6c082fd HEAD -- frontend` 只含三文件。
+  - 回归：六守卫通过；contract 24 / 10 / 2；routes + session 17；`WI H-2` 27；badges 48；job-list 12；提交前后 `git diff --check` 与 `astra-verify.py` PASS（冻结 spec / R10 blob `4537c55…` 26 / 0 不变）；提交后 clean，4173 无 LISTEN。
+- **未跑**：其余 7 份 E2E、全量 `pnpm -C frontend test`、人工截图、后端测试、任何 46 AC 最终验收。
+- **增量 Converge**：`converge-batch4-r4a.md` 判**本任务增量已收口、待独立 A 增量 Review**。3 / 3 标准满足；无缺口；不新增任务；plan 不改（无 r6.12）；不是需求变更。交 A 的观察 O-R4A-1～4：被弃回调的 store 写入照常发生（R4-E 边界）；Back / 换作业没有单独用例；E2E 用固定真实等待；例 2 中 `replace` 恰一次来自 `selectStage`。Analyze R20 结构复算：70 / 104.5 h / 235 / 235；21 已完成 + 6 已实施 + 43 未开始；回边仍只有 T-B03 → T-B04；无环；46 AC 双向一致。
+- **未关项**：
+  - **R4-A**：代码已修，**待 A 判定是否关闭**；第四批 Review 维持未通过。
+  - **R2-C**：代码已核，但按原件须本批通过后才关闭。
+  - **R4-B～R4-E**（四项旧 P3）、S-41、R3-B / R3-C 及前两批 P3：都没有经过风险接受，本轮不动。
+  - **H-x**：H-2·标签 ① `5c00cf6` 仍是候选；H-2·列表 ① 仍 `af24c82`；所有切片 ④ 缺。本修复不是 v2 集成，也不是整个 feature 交付。
+- **状态**：27 已实施 = 21 已完成 + 第四批 5 项已实施（原批次未过）+ T-B04a 1 项待 A；43 未开始；46 AC 最终验收 0；feature 未收敛。
+- **远端与合并**（只记录，本轮不操作）：
+  - Draft PR https://github.com/iswalterwu/Futures-AI/pull/12 的远端 head 仍是 `e285ad2`，暂未更新（本地远端跟踪 ref 同值，未 fetch）。
+  - Root 规格树 `spec/workbench-interaction` @ `4f11611` 有 HANDOFF §15 备份。
+  - 按 Walter 的选择，feature 全部完成后再合 main。本轮不 merge main、不 resolve 冲突、不清理目录、不写 v2 树；core pin `90187f7` 与 main `072bb12` 的 R2-D 流程不变。
+- **下一步**：A 新会话增量代码 Review。固定审 `80a1892..ae592ba -- frontend` 与本轮文档提交，只核 R4-A 及第四批是否可以改判。下一步是 A 复核，不需要用户再次批准 §5.1。A 通过前，不写“已完成”，不关闭 R4-A / R2-C，不把 H-2·标签 ① 转为已核。
+
+## 19. R4-A 关闭：A 增量 Review 通过，第四批 5 项 + T-B04a 技术通过（2026-10-29；状态登记，不是全 feature Review / Gate 2 / Handoff）
+
+- **作者**：claude-opus-5-5 via anthropic（PI_SESSION_ID `01a188ff-3aaa-7144-8323-7c67c8018ae9`）。bridge 本窗口已明确 quota，不重试；官方通道成功；未改配置，也没有因为 Review 结果换模型。派工 = 集成人 `01a18388-a371-7746-8158-9fb15d55d819`。复用本文档树（起点 `46e8fbe`、clean），没有新建工作树。本节**没有运行产品测试**，数字全部引自 A 原件与实施者日志。
+- **授权 → 实施 → 收口 → 复核链**：
+
+  | 步骤 | 提交 | 角色 / 模型（会话） | 结论 |
+  |---|---|---|---|
+  | Walter §5.1 批准 | `80a189264428f4b011279e4ebf1cc980e9656d14` | 记账 claude-opus-5-5 via anthropic（`01a188da…`） | 原话“那就先修P2等全部工作完成后，再合入main”= 批准 R4-A 最小修复，并选定全部完成后再合 main；**不是**风险接受、**不是**提前 Gate 2、**不是**立即清理 |
+  | T-B04a 实施 | `ae592ba23b086dd5887a269e842f80c96ad16fb2` | openai/gpt-6-astra（`01a188e0…`，首选、未回退） | 3 文件 +72 / −2，生产 diff 6 行；旧代码先红（组件 2 / Chrome 1），修复后同一测试变绿；没有扩大范围 |
+  | 增量 Converge / Analyze R20 | `11a467fba775e1f3448fa306056e0fc2aeba0fb6` | claude-opus-5-5 via anthropic（`01a188e8…`） | 当时判“本任务增量已收口、待 A”（原文不改） |
+  | A 增量 Review | `46e8fbef925faf83ca7cc1509a1490df27394172` | claude-fable-5-1 via anthropic（`01a188f3-5e82-71d7-950a-7cdff74d3042`，新会话、只读审核树） | **本增量通过：0 P1 / 0 P2 / 0 新 P3**；R4-A 关闭；R2-C 技术关闭；第四批 5 项 + T-B04a 可判技术通过 |
+
+  A 与 Implement 异模型，与 Converge 隔离；只换通道、不换模型（A 未单独探 bridge，原件已如实登记）。
+- **A 亲跑证据**（`review-batch4-r4a.md` §1 / §4，本节只引用）：
+  - 任务命令：命令 1 = 2 → 13；命令 2 = 1 → 四份 E2E 30 / 0；命令 3 = 34 files / 1020 / 0 + typecheck / lint + `6c082fd..HEAD -- frontend` 只含三文件（scope 无扩大）。
+  - 回归：六守卫；contract 24 methods / 10 events / 2 artifacts；routes + session 17；`WI H-2` 27；badges 48；job-list 12；v1 契约 88；real-stubs 23。
+  - 真实 Chrome 只读探针 6 / 6：侧栏离开后等 4 s 仍在 `/prices`；Back 后历史完整、不再退到 `about:blank`，Forward 时合法 canonical 正常；同作业缓存下选“交付”，7 s 内从未回到 `/process`；换作业不再被遗弃 id 劫持（只观察到 R4-E 约 17 ms 的 store 错位，随后自愈）；slow 首次 canonical 与 normal 点阶段 + reload 正常。**探针不计入 30 条正式 E2E。**
+  - **未跑**：其余 7 份 E2E、全量 `pnpm -C frontend test`、人工截图、后端测试、任何 46 AC 的最终验收。
+- **判定与状态回写**：
+  - 第四批原 Review（`9812f64`，未通过）原样保留、不改。本次是补修后的复核闭环，不是翻票。T-B01 / B02 / A22d / B04 / B03 / B04a 记为“已完成（原 Review + 增量 Review 联合依据，非最终 AC）”。
+  - **27 / 70 已完成，43 未开始**；70 个任务 / 104.5 h；235 / 235；46 AC 最终验收 **0**；feature **未收敛**。标准 / 命令 / 工时 / DAG / 矩阵均未改。
+  - 开放 P3 见 §8【R4-A 关闭后更新】：R4-B～R4-E、S-41、R3-B / R3-C 及其他前批项均未经风险接受。后台 store 时序（R4-E）本次没有修。
+- **H-x**：H-2·标签 ① `5c00cf6` 转**生产已核**；H-2·列表 ① 仍 `af24c82`；页面切片 B01 / B02 / B04 / B04a 已完成，但 C 组未做 → 未交付；H-5 未做；H-6 缺 T-A21；**④ 全缺**。生产方集成树 SHA 不能填作 ④。
+- **结构复算**（只读脚本 `status-struct.py`，在协调器 Temp，复用 R20 逻辑）：70 个任务 / 104.5 h；done 27、todo 43、impl 0；235 / 235；46 AC 矩阵双向一致，部分前置都是祖先；无环，唯一编号回边 T-B03 → T-B04。与 HEAD 逐任务对比，只有这六项的状态从 impl 变为 done。
+- **工作树、远端与合并**：
+  - Walter 已选择继续开发（全部完成后再合 main），所以不再是“等用户决定归档清理”。现有 25 个本 feature worktree 保留并复用，没有新建 D:/2030 目录。
+  - Draft PR #12 保持 Draft，不开 auto-merge、不转 ready；本轮不 merge、不处理 main 冲突、不删除任何目录或分支。本状态提交后，由集成人按常规 push 备份 integration / spec 分支（远端 head 当前仍是 `e285ad2`）。
+  - main pin `90187f7` 与 R2-D 同步流程不变；不写 v2 树。
+- **下一步**：依赖已满足、可起步的有 T-A14 / T-A15 / T-A16 / T-C01。T-A16 / T-A19 开工前须先定案 R-A；T-B05 开工前先做 S-41 精度轮。下一批由集成人按既有流程起步（开工前精度 → Analyze → A Checklist 定向复核 → Implement → Converge → A Review），**不再重复询问通用代码授权**。全部任务完成、经全 feature Converge / Review / Gate 2 后才合 main。
