@@ -1,13 +1,22 @@
 # Feature: workbench-interaction 任务清单（tasks.md）
 
-> **当前状态（r6.12 第五批派工准备 = 采集台闭环开工前机制精度，2026-10-29；未审核、未实施；以本块为准。下一块 R4-A 关闭块中的“70 个任务、约 104.5 h”“43 未开始”“235 / 235”“下一步可起 T-A14 / A15 / A16 / C01”为当时原文，其完成记录与开放项仍有效）**：
+> **当前状态（r6.12.1 = Checklist R11 已通过 + 其 P3 S-44～S-48 措辞 / 实施提示吸收，2026-10-30；以本块为准。下一块 r6.12 派工准备块中的“未审核”“开码前置须 R11”为当时原文，其第 4 点原条件句已废止）**：
+>
+> - **R11**：独立 A（claude-fable-5-1 via anthropic）Checklist R11 原件 = 提交 `1f99f80`（`checklist.md` blob `27a76aa6…`；审查对象 `fdac9f2`）：**通过，26 ☑ / 0 ☐，0 P1 / 0 P2**；5 项 P3 S-44～S-48 不阻断，由作者自行吸收、不需重过 Checklist。**第五批有效 Checklist = R11 `1f99f80`**；R10 `37e2f71` 为历史，其勾选不改。
+> - **T-A13a（R3-B）**：R11 独立判定为**既有领域规则**（与 `confirmIntake` / `assignUpload` 对已删除投放 validation_error 同类），可在现有授权内实施，**不需 Walter §5.1 另批**；不借 R4-A 的批准，也不扩展为其他竞态 / 安全 guard 的许可。R3-B **维持开放、未修**，关闭与否由第五批代码 Review 对真实 diff 判定。
+> - **依赖纪律**：第五批按 §6 DAG 串行；任何任务依赖未满足即阻塞，不得“照常实施”“按未关闭 P3 处理”或忽略依赖。r6.12 原文中此类条件句已删除或标废止，不构成先例（S-45）。
+> - **本轮吸收**（只改措辞 / 实施提示 / 登记；标准编号、命令、工时、依赖与结构不变）：S-44 → T-B06 依赖行括注移走、§6 r6.9 口径句标【r6.12 见下】、`InterventionHistory.vue` 后续扩展须显式写权限；S-45 → 见上（T-A13a 状态行、本页首、plan、implementation-log、interface-handoff、README 同步）；S-46 → T-C01 提交时 file 种类只判 `fileMeta !== null`；S-47 → 实施提示写入 implementation-log §20.5 派工提醒；S-48 → T-B06 / T-G08 / T-G10 登记“默认收起、展开才读”的人工验收看点（提示，非新增硬 AC / 工程门）。
+> - **状态**：第五批 9 项**仍未实施**（未写代码、未跑产品测试）；73 个任务 / 约 107 h / 245 / 245；**27 已完成 / 46 未开始**；46 AC 最终验收 0；feature 未收敛。本轮无新机制，原 R11 结论覆盖，**可按 R11 开码**（首项 T-A01a；Implement 首选 openai/gpt-6-astra，新会话），不再找 A 重新投票。各任务状态行中“Checklist R11 定向复核通过并提交前不得开码”的前置已由 `1f99f80` 满足（原文不逐行改）。
+> - 作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1894d-29db-730d-9090-8d4c26c5575f`；bridge 本窗口既有限额、无重置证据，不重试；官方通道同模型调用成功；未改配置）。只读登记见 analyze.md「Analyze R22」。
+
+> 【r6.12 派工准备原文；“未审核”“开码前置须 R11”已由上方 r6.12.1 块取代，第 4 点原条件句已删除】**当前状态（r6.12 第五批派工准备 = 采集台闭环开工前机制精度，2026-10-29；未审核、未实施；以本块为准。下一块 R4-A 关闭块中的“70 个任务、约 104.5 h”“43 未开始”“235 / 235”“下一步可起 T-A14 / A15 / A16 / C01”为当时原文，其完成记录与开放项仍有效）**：
 >
 > - **范围与顺序**：第五批 = **T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04**（9 项，约 12 h，33 条命令），同一实施树串行。process / analyze / deliver 工作区仍是占位。**不在本批**：D–F 组、T-A14 / T-A15（分析写）/ T-A16～A21、T-B05 / T-B07、角标 / 收件箱、持久化横幅（T-G04）、v2 壳接线、D-020～D-024、真实解析 / URL 抓取 / agent。
 > - **从代码推断的缺口与最小落点**（plan【r6.12】；analyze.md「Analyze R21」）：
 >   1. **介入历史**：T-C04 标准 2 要核对介入历史展开内容，但原依赖不含 T-B06，而 T-B06 依赖的 `listInterventions` 捆在 T-A15 的分析写里。→ 拆出 **T-A15a**（只读 `listInterventions`，0.5 h；原 T-A15 标准 / 命令 4 **移交**），T-A15 预计 1.5 → 1 h、改为 4 条标准；**T-B06** 依赖改为 T-A15a / T-A01a，补 JobDetailPage 侧栏挂载权与“默认收起、展开才读、以 `currentJob` 替换为重读信号”（1.5 → 2 h，标准 2 → 3）；**T-C04** 增依赖 T-B06。
 >   2. **采集区接线**：新增 `stages/CollectWorkspace.vue`，`StageWorkspace` 只对 collect 分发（**T-C01a**，1 → 1.5 h，标准 4 → 5，第 5 条为详情 / 列表回归）；预览 / 映射 / 确认挂在 IntakeDrawer（**T-C02**，1.5 → 2 h，标准数不变）；待归属池与删除确认（**T-C03**，工时与标准数不变）。逐任务允许写的文件见各任务修改范围与 implementation-log §20。
 >   3. **intakeStore**：公开 H-5 成员 `open(jobId?) / close / isOpen / jobId` 与内部草稿 / 选中 / 池的状态与动作定型（plan §2.3【r6.12】）；可靠性四值中文文案拆为 **T-A01a**（契约 `ReliabilityLabel`，0.5 h；原 T-C01 已顶格 2 h）。
->   4. **R3-B**：拆为 **T-A13a**（已删除投放再次 `removeUpload` → validation_error，0.5 h），T-C03 依赖它。它是否属既有领域规则、而非 AGENTS §5.1 的新 guard，**由 A 的 Checklist R11 判定**；若判为须 §5.1，则 T-A13a `blocked_by: Walter §5.1 批准`、R3-B 维持开放，C03 不受影响。本作者不自称授权。
+>   4. **R3-B**：拆为 **T-A13a**（已删除投放再次 `removeUpload` → validation_error，0.5 h），T-C03 依赖它。【r6.12.1 改写】Checklist R11（`1f99f80`）已判定：属既有领域规则，可在现有授权内实施，不需 Walter §5.1 另批；R3-B 维持开放至第五批代码 Review。原条件分支已删除、废止。
 >   5. **既有隐含依赖显式化**：T-D02 / T-E03 / T-F03 的端到端标准写“介入历史出现…”，却不依赖 T-B06 → 各增依赖 T-B06（标准 / 工时不改）。
 > - **结构**（脚本复算，analyze.md「Analyze R21」§5）：**73 个任务、约 107 h**（A 33 / 45.5、B 8 / 12、C 5 / 8.5，其余组不变）；完成标准 / 验证命令 **245 / 245**；**27 已完成 / 46 未开始**；46 AC 最终验收 **0**；feature **未收敛**。唯一编号回边仍为 T-B03 → T-B04，无新回边、无环；AC 矩阵 46 行，部分前置都是最终任务的祖先，任务标准与矩阵双向一致。
 > - **开码前置**：独立 A 新会话做 **Checklist R11 定向复核**，通过并提交后才可派 Astra。有效 Checklist 仍为 R10 `37e2f71`（blob `4537c55…`），它**不自动覆盖** r6.12 的新接口；本作者不勾选、不预判。冻结 spec / 46 AC 不变，不是需求变更，不回 Clarify。
@@ -837,7 +846,7 @@
 
 ### T-A13a R3-B：已删除投放再次 removeUpload 被拒（领域前置；r6.12 新增，第五批）
 
-- **状态**：未开始｜r6.12 新增；Checklist R11 定向复核通过并提交前不得开码。**R11 须判定**：本项是否属既有领域规则（与 `confirmIntake` / `assignUpload` 对已删除投放 validation_error 一致），而不是 AGENTS §5.1 意义上的新 guard。若判为须 §5.1，则本任务改 `blocked_by: Walter §5.1 批准`，R3-B 维持开放，T-C03 照常实施（其依赖中的本任务按“未关闭 P3”处理，由集成人登记）；本作者不自称授权，R4-A 的批准不覆盖本项
+- **状态**：未开始｜r6.12 新增；【r6.12.1】Checklist R11 已通过并提交（`1f99f80`），开码前置已满足。**R11 判定**：本项属既有领域规则（与 `confirmIntake` / `assignUpload` 对已删除投放 validation_error 一致），不是 AGENTS §5.1 意义上的新 guard，可在现有授权内实施，不需 Walter 另批；不借 R4-A 的批准，也不扩展为其他竞态 / 安全 guard 的许可。R3-B **维持开放、未修**，关闭由第五批代码 Review 对真实 diff 判定。T-C03 依赖本任务：本任务未完成前 T-C03 不得开码（原“须 §5.1 时 C03 照常”条件分支已删除、废止）
 - **预计**：0.5 h｜**依赖**：T-A13
 - **上下文**：`review-batch3.md` §5 R3-B（探针 P4）；implementation-log §8 原归属“T-C03 或 T-A17 二选一”。现状（`ae592ba` 的 `job-state.ts` `removeUpload`）不检查 `removed`：已归属投放每次重复删除都会再追加一条相同的 dataset 修订与 `remove_source` 事件（冗余台账、改写 `updatedAt`），未归属投放静默成功；而 `confirmIntake` / `assignUpload` 对已删除者已返回 validation_error。plan §2.4【r6.6】的 remove 句只写“置 `removed=true`”，没写重复删除。T-C03 的删除确认 UI 是首个消费方，故在它之前单列，不并入 C03（C03 已 1.5 h）。
 - **修改范围**：
@@ -1367,7 +1376,7 @@
 ### T-B06 介入历史侧栏与筛选
 
 - **状态**：未开始｜blocked_by: IMPL-GATE-R6（已满足）｜**r6.12：第五批第 4 项**。依赖 T-A15 改为 **T-A15a**（只读）并增 T-A01a；补 JobDetailPage 侧栏挂载权与写后刷新口径；预计 1.5 → 2 h，新增标准 / 命令 2（原标准 / 命令 2 顺延为 3）。Checklist R11 定向复核通过并提交前不得开码
-- **预计**：2 h｜**依赖**：T-B04、T-A15a、T-A01a（r6.12：原依赖 T-A15 改为只读的 T-A15a）
+- **预计**：2 h｜**依赖**：T-B04、T-A15a、T-A01a
 - **上下文**：spec R-007“作业详情侧栏‘介入历史’按时间展示，可按阶段 / 类型筛选”；plan §2.2、§2.3【r6.12】。原范围只新建组件，漏了两件事：谁把它挂进 `JobDetailPage`；同一作业写入新事件后，历史如何看到它（只在 mounted 或 jobId 变化时读会过期）。T-C04 的取证要展开这里的内容。
 - **修改范围**：
   - 新建 `frontend/src/jobs/components/InterventionHistory.vue`：
@@ -1375,8 +1384,9 @@
     - “展开介入历史 / 收起介入历史”按钮（`aria-expanded`）。**默认收起，收起时不发任何读请求**。
     - 展开后调用 `dataClient.listInterventions(job.id, filter)`；filter 只放已选项。阶段 `<select aria-label="按阶段筛选">`：全部 + `StageLabel`；类型 `<select aria-label="按类型筛选">`：全部 + 13 个 `InterventionKind` 契约值原样。读状态是组件本地状态（同既有模块直接读 `dataClient` 的写法）：loading → `Loading`；error → `ErrorState`（`moduleId='intervention-history'`，重试即重读）；空 → `EmptyState`“暂无介入记录。”。
     - 每条显示 `<time :datetime>` createdAt、`StageLabel`、kind、outcome（kind / outcome 用契约值原样，不新建映射）；条目内原生 `<details>` 展开 id / jobId / artifactId / baseRev / reason（null 显示“无”）与 payload 摘要。
-  - **payload 摘要**：按 `InterventionPayload` 的 `action` 判别收窄，不 `JSON.stringify`，也不按任意 JSON 遍历键。总显示 `action`；`ingest` 显示 sourceNote 五项（用途；可靠性 = `ReliabilityLabel` 文案；发布日期 / 有效期为 null 时显示“未知”；口径为 null 时显示“无”）；`map_fix` 显示 mapping 行（源字段 → 目标字段 · 单位）；`remove_source` / `cancel_job` / `delete_conclusion` / `veto` 显示 reason；其余分支只显示 action（后续台面任务按需扩展）。
+  - **payload 摘要**：按 `InterventionPayload` 的 `action` 判别收窄，不 `JSON.stringify`，也不按任意 JSON 遍历键。总显示 `action`；`ingest` 显示 sourceNote 五项（用途；可靠性 = `ReliabilityLabel` 文案；发布日期 / 有效期为 null 时显示“未知”；口径为 null 时显示“无”）；`map_fix` 显示 mapping 行（源字段 → 目标字段 · 单位）；`remove_source` / `cancel_job` / `delete_conclusion` / `veto` 显示 reason；其余分支只显示 action（后续台面任务按需扩展）。【r6.12.1 R11 S-44 ③】后续 D / E / F 任务若要扩展这里的 payload 摘要，须先在该任务修改范围里显式列入 `frontend/src/jobs/components/InterventionHistory.vue` 写权限（或单列精度轮），不得顺手改；本轮不预扩其他任务范围。
   - **重读信号**（plan §2.3【r6.12】）：`watch([() => props.job, 阶段筛选, 类型筛选, 展开状态], …)`，仅在展开时重读。`props.job` 就是 `jobsStore.currentJob` 的只读引用；jobsStore 每次详情读成功（`openJob` / `refresh`，包括所有写后统一 `refresh()`）都会换成新对象，所以同一作业写入新事件后，展开中的历史会随那次 refresh 重读。**不**新增 store 成员、事件总线、轮询、请求序号或比较 guard；并发重读沿用“mock 按序完成”口径（S-43）。
+  - 【r6.12.1 R11 S-48 登记（提示，非新增硬 AC / 工程门）】v1 介入历史侧栏 `<aside>` 在详情 ready 有作业时常驻，内容默认收起、展开才读；理由 = 已审 slow 用例 ready 后不得出现 shared `Loading`，且无人看时不读。R11 已判为 v1 可接受展示精度；designUI §3.3“常驻”的内容可见性读法交 T-G08 / T-G10 人工验收确认。本任务不加新颜色、不加默认展开机制。
   - `frontend/src/jobs/pages/JobDetailPage.vue`（**挂载权**）：只改 ready 且有作业的分支——把既有 `StageRail` + `StageWorkspace` 包进主列，`<InterventionHistory :job="jobsStore.currentJob" />` 作为右侧栏常驻（DOM 顺序在主列之后）。两列 grid 用 `minmax(0, …)` 写法（过 `check --only grid`），窄窗沿用仓库既有断点写法堆叠为单列；只用既有令牌，不新增颜色 / 玻璃类。`watch` / `selectStage` / 三态 / 详情头 / 其他分支不改。
   - 新建 `frontend/tests/component/jobs/intervention-history.spec.ts`：真实 Pinia、真实 memory router + `registerJobRoutes` + `RouterView`、真实 mock client；在系统边界对 `dataClient.listInterventions` / `getJob` / `getStageWorkspace` / `listJobs` 做透传 spy；不 `vi.mock` 内部模块。
   - **避免既有断言歧义**：新组件不渲染 `h1`、`.job-*` 类名、`aria-current` / `aria-pressed`、`JobStatusBadge`；按钮名不含“侧栏”；可访问名称不与“作业详情 / X工作区 / 作业阶段”重名。
@@ -1424,7 +1434,7 @@
     - 文件：`<input type="file" accept=".pdf,.docx,.xlsx,.md,.csv">` + 拖入区（`dragover.prevent` / `drop`）。只取 `files[0]` 的 `name / size / type / lastModified` 组成候选元数据，用 `IntakeFileMetaSchema.safeParse` 校验：失败 → 显示“只接受 pdf / docx / xlsx / md / csv 文件”（由 `INTAKE_FILE_EXTENSIONS` 拼出），草稿 `fileMeta` 保持 null；成功 → `updateDraft({fileMeta})`。**禁止**调用 `File.text / arrayBuffer / stream / slice`、`FileReader`、`URL.createObjectURL` 或任何解析。
     - 链接：`<input type="url">`，只存字符串、不访问；文本：`<textarea>`，正文只进 store 内存草稿。
     - 来源说明：用途（必填）；可靠性 `<select>`（选项按 `ReliabilityLabel` 键序与文案，默认“未知”）；发布日期 / 有效期 `<input type="date">`（空 → null）；口径备注（空 → null）。
-    - 提交：组装候选后做**一次**外部校验——`SourceNoteSchema.safeParse(note)` 加当前种类的输入字段（`IntakeFileMetaSchema` / `IntakeInputSchema.options[1].shape.url` / `IntakeInputSchema.options[2].shape.text`）。失败 → 显示对应提示，不调用 store；成功 → 把确定类型的 `IntakeSubmission` 交给 `intake.submit`。契约错误在面板内显示 `ErrorState`（`moduleId='intake-submit'`，原 error 原样；重试以同一提交再调一次）。
+    - 提交：组装候选后做**一次**外部校验——`SourceNoteSchema.safeParse(note)` 加当前种类的输入字段（【r6.12.1 R11 S-46 精度】file 种类：元数据已在选择 / 拖入边界经 `IntakeFileMetaSchema.safeParse` 一次成为确定类型并写入草稿，提交时**不再 parse**，只判 `draft.fileMeta !== null`（为 null → 正常表单提示“请选择文件”，不调用 store）；url / text 种类：原串字段 `IntakeInputSchema.options[1].shape.url` / `IntakeInputSchema.options[2].shape.text` 在提交时 parse 一次）。来源说明只 parse 一次；契约入口原有 parse 不变，标准 3 的隐私断言不削减。失败 → 显示对应提示，不调用 store；成功 → 把确定类型的 `IntakeSubmission` 交给 `intake.submit`。契约错误在面板内显示 `ErrorState`（`moduleId='intake-submit'`，原 error 原样；重试以同一提交再调一次）。
   - **测试 harness**（`intake.spec.ts`）：真实 Pinia + 真实 memory router + 真实 mock client，在系统边界对 `dataClient.submitIntake` / `listJobs` / `getJob` / `getStageWorkspace` 做透传 spy（同 jobs-store.spec 的 `connect` 做法）；File 用 `new File([...], name, {type, lastModified})` 构造，并在系统边界 spy `File.prototype.{text,arrayBuffer,stream,slice}` 与 `FileReader.prototype.readAs*`；不 `vi.mock` 内部模块。
   - **一律不改**：`stores/jobs.ts`、契约 / 生成物、页面文件（页面挂载归 T-C01a）、`shared/**`、`app/**`。
 - **完成标准**（正负向）：
@@ -1853,7 +1863,7 @@
 
 - **状态**：未开始｜blocked_by: IMPL-GATE-R6
 - **预计**：1 h｜**依赖**：T-G07
-- **上下文**：plan §2.5 M-01～M-10；AC-009-2 要求清单存在，每项有“看什么”。本任务**只写清单，不声称已有截图**。
+- **上下文**：plan §2.5 M-01～M-10；AC-009-2 要求清单存在，每项有“看什么”。本任务**只写清单，不声称已有截图**。【r6.12.1 R11 S-48 登记，提示、非新增标准 / 命令】清单中涉及详情页 / 介入历史的项（R11 点名 M-02 / M-09，以本清单编号为准）的“看什么”写明：详情 ready 时右侧 `<aside aria-label="介入历史">` 常驻可见；内容 v1 默认收起、展开才读（理由：已审 slow 用例 ready 后不得出现 shared `Loading`；无人看时不读）；展开后十字段与阶段 / 类型筛选可用。供人工 / 设计确认 designUI §3.3“常驻”的读法；不新增颜色、不加默认展开机制。
 - **修改范围**：新建 `specs/workbench-interaction/manual-acceptance.md`（M-01～M-10，每项写：关联 AC、前置（场景 / 视口 / 路由）、操作步骤、看什么、截图输出路径 `specs/workbench-interaction/assets/manual/M-xx-<slug>.png`（**待 Handoff 生成**）、结果栏（空））；新建 `tests/unit/jobs/manual-acceptance.spec.ts`（结构校验：十项齐全、每项有“看什么”和截图路径）。
 - **完成标准**：
   1. 清单存在，十项都有可执行步骤和“看什么”；结果栏为空，不含伪造截图（AC-009-2 部分前置）。
@@ -1875,7 +1885,7 @@
 
 - **状态**：未开始｜blocked_by: IMPL-GATE-R6｜M-01 前确认 `review-batch2.md` R2-C 已处理或登记（P3 后续观察，非新增标准）
 - **预计**：2 h｜**依赖**：T-G09；另需工作流闸门：Converge 报告、Review、Gate 2（AGENTS §2；spec AC-009-2“Handoff 附截图”）
-- **上下文**：v2 未交付时能否分阶段 Handoff，由 Walter 在 Gate 2 决定；本文件不预设。
+- **上下文**：v2 未交付时能否分阶段 Handoff，由 Walter 在 Gate 2 决定；本文件不预设。【r6.12.1 R11 S-48】执行 T-G08 登记的介入历史看点时，据实记录人工 / 设计对“默认收起、展开才读”的确认结论；若决定改为默认展开，另起精度轮（R11 给出的最小方案：T-B06 改挂载即读 + 本地状态文案、不用 shared `Loading`，不改 AC / 命令），不在本任务内顺手改代码。
 - **修改范围**：按 manual-acceptance.md 执行 M-01～M-10，截图保存到 `specs/workbench-interaction/assets/manual/`，并填写结果栏；在 review.md 引用截图。
 - **完成标准**：
   1. 十项都有截图和结论（AC-009-2 **最终**；AC-001-5 / AC-006-1 的人工部分 M-01 / M-05 在此验收）。
@@ -1993,7 +2003,7 @@
 
 - 组序：A（T-A01→T-A24）→ B → C → D → E → F → G → H；r6 新增任务用字母后缀插在其依赖之后（T-A09a 在 T-A09 后、T-A22a / T-A22b 在 T-A22 后、T-C01a 在 T-C01 后；r6.4 的 T-A09b 在 T-A09a 后、T-A10 前），排序规则为“T-Xnn < T-Xnna < T-Xnnb < T-Xnnc < T-X(nn+1)”（r6.8：T-A22c 在 T-A22b 后、T-A23 前）；每个任务只依赖排序在它之前的任务，无环（Analyze R6 用脚本复核）。【r6.9】排序规则扩为“… < T-Xnnc < T-Xnnd < T-X(nn+1)”，T-A22d 在 T-A22c 后、T-A23 前。上句“每个任务只依赖排序在它之前的任务”自 r6.9 起有**唯一一条有意回边**：T-B03 → T-B04（T-B03 端到端须核对 T-B04 的详情页回显；保留编号，执行顺序 B04 先于 B03）。真实拓扑仍无环，脚本按依赖图做环检测，不以编号前向冒充无环（Analyze R16）。
 - 主干：A01 → A02/A03 → A04 → A05 → A06 → A07 → A08 → A09 → {A09a, A10} → A11 → {A12→A13, A14, A15, A16} → A17 → A18（另依赖 A09a）→ {A19, A20} → A21；A22 依赖 A01（r6，原依赖 A10）；A22a 依赖 A09a / A10 / A12 / A22；A22b 依赖 A02 / A22；A22c 依赖 A22a（r6.8）；A23 依赖 A01；A24 无依赖。r6.4：A09b 依赖 A08（fixture-only，与状态层无耦合），A10 依赖 A09 / A09b（即主干为 A08 → {A09, A09b}、A09 → A09a、{A09, A09b} → A10）。
-- UI：B01 依赖 A10 / A22 / A22a / A22c / A23；B02 依赖 B01 / A22c（r6.8）；【r6.9】A22d 依赖 A10 / A22a / A22c，B04 依赖 B01 / A22d，B03 依赖 B01 / A12 / B04（有意回边）；C01 依赖 A22 / A12 / A22a，C01a 依赖 C01，C03 另依赖 C01a；E03 另依赖 A22b；G04 依赖 C01a；C、D、E、F 都以 B04 为入口；G03 / G05 / G06 收口；H 只依赖 C04 / E03 / G02 / G09，外加 v2 外部闸门；H 组只清理本 feature 页面级抽屉挂载（T-H01）并做集成验证，不改壳方。
+- UI：B01 依赖 A10 / A22 / A22a / A22c / A23；B02 依赖 B01 / A22c（r6.8）；【r6.9】A22d 依赖 A10 / A22a / A22c，B04 依赖 B01 / A22d，B03 依赖 B01 / A12 / B04（有意回边）；C01 依赖 A22 / A12 / A22a，C01a 依赖 C01，C03 另依赖 C01a（本句 B / C 组依赖为 r6.9 口径，现行依赖【r6.12 见下】）；E03 另依赖 A22b；G04 依赖 C01a；C、D、E、F 都以 B04 为入口；G03 / G05 / G06 收口；H 只依赖 C04 / E03 / G02 / G09，外加 v2 外部闸门；H 组只清理本 feature 页面级抽屉挂载（T-H01）并做集成验证，不改壳方。
 - H-x 切片最早可交接点（仅指依赖链，仍须 IMPL-GATE-R6 与四项交接登记）：H-2·标签 = A01 + A23；H-3·路由切片 = A22（只依赖 A01）；H-1 = A09a；H-4 = A22b；H-2·列表 = A22a + A22c（r6.8）；H-5 = C01 + C01a；H-6 场景 / 覆盖部分 = A11 之后、角标样例 = A21 之后；页面切片 = C04 之后。r6.4：T-A10 新增祖先 T-A09b，凡依赖链经过 A10 的切片（H-2·列表、H-6、页面切片）随之多一个祖先；A09b 不是任何切片的提供任务、不形成 ①～④ 任何一项，各切片交付状态不变（仍全部未交付，H-1 维持“待消费方集成”）。
 - r6.3：T-A10 增标准 / 命令 5（R-B），原工程门顺延为 6；合计完成标准 / 验证命令 **221 / 221**（r6.2 为 220 / 220）；任务数、工时、依赖不变。第二批 = T-A10 → {T-A22 → T-A22b}、T-A23、T-A24（同一实施树串行）。
 - r6.4（Checklist R8 B-12）：新增 T-A09b（0.5 h，3 条标准 / 命令）；T-A10 仍 6 / 6、2 h，只改依赖（+T-A09b）与标准 / 命令 5 的内容；合计完成标准 / 验证命令 **224 / 224**（脚本复算，见 analyze.md「Analyze R10」）。第二批 = T-A09b → T-A10；T-A22 → T-A22b；T-A23、T-A24（6 项，约 7 h；同一实施树串行）。
@@ -2001,6 +2011,7 @@
 - r6.9（第四批开工前精度）：新增 T-A22d（1 h，4 条标准 / 命令，依赖 A10 / A22a / A22c；自原 T-B04 的 store 部分拆出），T-B01 预计 1.5 → 2 h 并增标准 / 命令 3（R2-C），T-B03 增依赖 T-B04，T-B04 依赖改为 B01 / A22d（预计仍 2 h）。矩阵：A22d 进入 AC-001-4 / AC-002-1 / AC-002-2 部分前置，B04 进入 AC-001-3，B01 进入 AC-001-5。合计 **69 个任务、约 104 h**（A 30 个 44.5 h / B 7 个 11 h，其余组不变）；完成标准 / 验证命令 **232 / 232**（脚本复算，见 analyze.md「Analyze R16」）。第四批 = T-B01 → T-B02 → T-A22d → T-B04 → T-B03（5 项，约 7.5 h，17 条命令）。上行 r6.8 与下行 r6.4 的合计为当时原文。
 - 【r6.11 草案，待 Walter §5.1 批准，不生效】第四批 Review（`review-batch4.md` 原件 `9812f64`）未通过，唯一 P2 = R4-A。新增 **T-B04a**（0.5 h，3 条标准 / 命令，依赖 T-B04 / T-B03 的已实施代码，`blocked_by: Walter §5.1 批准`），排在 T-B04 之后、T-B05 之前；编号前向（T-B04a 在 T-B04 后、T-B05 前），不新增回边。T-B04a 与 T-B04 共同作为 AC-002-2 的最终任务（原 B04 的正常路径承接与命令保留）；T-G09 增依赖 T-B04a，使全量检查与 T-H04 复验都在修复之后执行。原 5 个任务的标准 / 命令 / 工时不改。合计 **70 个任务、约 104.5 h**（A 30 / 44.5、B 8 / 11.5，其余组不变）；完成标准 / 验证命令 **235 / 235**；唯一有意编号回边仍为 T-B03 → T-B04（见 analyze.md「Analyze R18」）。上行 r6.9 的合计为当时原文。
 - 【r6.12（第五批开工前机制精度；未审核、未实施）】新增 **T-A01a**（0.5 h，3 条标准 / 命令，依赖 A01）、**T-A13a**（0.5 h，3 条，依赖 A13）、**T-A15a**（0.5 h，3 条，依赖 A13；自 T-A15 拆出，原 A15 标准 / 命令 4 移交）。T-A15 1.5 → 1 h、标准 / 命令 5 → 4；T-B06 1.5 → 2 h、2 → 3，依赖 T-A15 → T-A15a + T-A01a；T-C01 依赖 + T-A01a；T-C01a 1 → 1.5 h、4 → 5，依赖 + T-B04；T-C02 1.5 → 2 h，依赖 + T-C01a；T-C03 依赖 + T-A13a；T-C04 依赖 + T-B06；T-A17 依赖 + T-A15a；T-D02 / T-E03 / T-F03 依赖 + T-B06（其标准已引用介入历史）。排序：T-A01a 在 A01 后、A02 前；T-A13a 在 A13 后、A14 前；T-A15a 在 A15 后、A16 前。所有新依赖都按编号前向，**不新增回边**（T-A15 不依赖 T-A15a）；唯一有意回边仍为 T-B03 → T-B04，真实拓扑无环。合计 **73 个任务、约 107 h**（A 33 / 45.5、B 8 / 12、C 5 / 8.5，其余组不变）；完成标准 / 验证命令 **245 / 245**（脚本复算，见 analyze.md「Analyze R21」）。第五批 = T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04（9 项，约 12 h，33 条命令）。上行 r6.11 与下行 r6.4 的合计为当时原文。
+- 【r6.12.1（Checklist R11 `1f99f80` 通过后的 P3 S-44～S-48 吸收）】只改措辞 / 实施提示 / 登记：T-B06 依赖行括注移走（依赖仍为 T-B04 / T-A15a / T-A01a）、T-A13a 状态行以 R11 判定替换原条件句、T-C01 提交校验写法、T-B06 / T-G08 / T-G10 人工验收登记。任务数、工时、依赖、标准编号与命令均不变：仍 **73 个任务、约 107 h、245 / 245**，唯一有意回边 T-B03 → T-B04，真实拓扑无环（脚本复算见 analyze.md「Analyze R22」）。
 - 合计 **67 个任务、约 102 h**（r6.4；A 28 个 43 h / B 7 个 10.5 h / C 5 个 7.5 h / D 3 个 5 h / E 3 个 5.5 h / F 7 个 12 h / G 10 个 14.5 h / H 4 个 4 h）。r5 为 62 个 / 96.5 h；r6 增量：新增 T-A09a 1 h、T-A22a 1.5 h、T-A22b 1 h、T-C01a 1 h；T-A09 1.5→2 h、T-A21 1.5→2 h、T-A18 2→1.5 h；T-A22、T-C01 预估不变（拆出部分与新增部分相当）。r6.4 增量：新增 T-A09b 0.5 h（r6～r6.3 为 66 个 / 101.5 h）。所有任务 `blocked_by: IMPL-GATE-R6`；H 组（4 个任务、4 h）另 `blocked_by: frontend-workbench-v2`。
 
 ## 7. Converge 口径

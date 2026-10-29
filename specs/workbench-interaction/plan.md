@@ -46,6 +46,7 @@
 > - §3：投放草稿与 File 的内存 / 元数据边界。
 >
 > 冻结 spec v1.1、46 AC、动作矩阵（13 kind）、九场景、样例表、迁移表、定稿语义均不变；`CONTRACT_VERSION` 仍 2.0.0（只增一个读方法与一张展示映射）；不新增事件总线 / 轮询 / 请求序号 / 锁 / 实例登记 / 测试 setter；不改 `app/**`、壳、agent、router、main。不是需求变更，不回 Clarify（analyze.md「Analyze R21」）。本补正**未经审核**：须独立 A 新会话做 Checklist R11 定向复核通过并提交后才可开码；R10 不自动覆盖本轮新接口。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18917-d5b2-7520-921c-f26458a30be1`；bridge 本协调窗口已明确 quota、无重置证据，不重试；同模型官方通道近期成功；未改配置）。
+> **2026-10-30 r6.12.1（Checklist R11 通过后的 P3 吸收；只改措辞 / 实施提示，不改设计）**：独立 A Checklist R11（claude-fable-5-1 via anthropic，原件提交 `1f99f80`，`checklist.md` blob `27a76aa6…`，审查对象 `fdac9f2`）判 r6.12 **通过：26 ☑ / 0 ☐，0 P1 / 0 P2**，5 项 P3 S-44～S-48 不阻断、授权作者自行吸收而不重过 Checklist。本 plan 只补两处【r6.12.1】：§2.3 校验位置写明 file 元数据在选择 / 拖入边界 parse 一次、提交时只判非空（S-46）；§2.4 R3-B 句以 R11 判定替换原条件句（S-45：**既有领域规则，可在现有授权内实施，不需 Walter §5.1 另批**；R3-B 维持开放至第五批代码 Review）。上一行 r6.12 中“是否属领域规则由 Checklist R11 判定”“本补正未经审核”为当时原文。方法集、契约、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC 与任务结构（73 / 107 h / 245 / 245）均不变；不是需求变更，不回 Clarify（analyze.md「Analyze R22」）。作者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1894d-29db-730d-9090-8d4c26c5575f`；bridge 本窗口既有限额、无重置证据，不重试；官方同模型调用成功；未改配置）。
 > **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
@@ -172,7 +173,7 @@
     - 待归属池 `pool` 与 `poolStatus` / `poolError`；`loadPool()`、`assign(uploadId, jobId)`、`remove(uploadId, reason)`。
   - **语义**：`open()` 清空选中与预览读状态、不清草稿；`submit` 成功后复位草稿并以回执设选中；`confirm` 成功后以回执（确认后的 Upload 与预览）替换选中，选中项状态立即为 ingested / quarantined；`assign` / `remove` 成功后清除同 id 的选中。跨页面（互斥路由）重新挂载时，打开状态、快照、草稿、选中都在 store 中保留；刷新页面即全部丢失（草稿与原文不持久化）。
   - **写后刷新**：`submit` / `confirm` / `assign` / `remove` 成功后调用 `jobsStore.refresh()` **恰一次**；若池已加载过（`poolStatus !== 'idle'`），再单独 `loadPool()` 一次——池不在 jobsStore 内，单独正常重读。写失败以原 `ErrorResponse` reject（调用组件 await + catch，显示 `ErrorState`），不刷新、不改缓存；读动作（`selectUpload` / `loadPool`）失败写各自的 error 状态并自身 resolve（S-38 口径）。
-  - **校验位置**：`IntakePanel` / `MappingEditor` / 删除确认在用户输入边界用契约导出的 schema（`SourceNoteSchema`、`IntakeFileMetaSchema`、`IntakeInputSchema` 分支字段、`FieldMappingSchema`、`removeUpload` 的 reason 参数 schema）safeParse 一次，得到确定类型再交 store；store 不重复 parse，契约边界照旧 parse。
+  - **校验位置**：`IntakePanel` / `MappingEditor` / 删除确认在用户输入边界用契约导出的 schema（`SourceNoteSchema`、`IntakeFileMetaSchema`、`IntakeInputSchema` 分支字段、`FieldMappingSchema`、`removeUpload` 的 reason 参数 schema）safeParse 一次，得到确定类型再交 store；store 不重复 parse，契约边界照旧 parse。【r6.12.1 R11 S-46】File 元数据在选择 / 拖入边界经 `IntakeFileMetaSchema.safeParse` 一次成为确定类型写入草稿，提交时不再 parse，只判 `fileMeta !== null`（缺文件给正常表单提示）；url / text 原串与来源说明在提交时各 parse 一次。
   - **不做**：请求序号、锁、事件总线、轮询、实例登记 / 首个挂载者、草稿持久化；store 不持有 File 对象。
   - **介入历史重读信号**：`InterventionHistory` 以 props `job`（即 `jobsStore.currentJob` 的只读引用）为信号——jobsStore 每次详情读成功（`openJob` / `refresh`，含所有写后统一 `refresh()`）都会替换该对象，因此同一作业写入新事件后，展开中的历史随那次 refresh 重读。默认收起、收起时不读；读状态为组件本地状态；不新增 store 成员；并发重读按 mock 按序完成口径（S-43）。
 - **契约 mock 层持有唯一可变状态**（`contracts/mock/job-state.ts`），读写均经契约方法；UI store 只做视图缓存。这样 `api` feature 落地时只需替换实现，不动组件
@@ -254,7 +255,7 @@ resetMockData()
   - submit 的 jobId 非空、且该作业尚无 dataset 时，同一次写内建立 `<jobId>-dataset`（draft / external / source）。ingest 的 `artifactId` 即该 dataset（含本次新建者），`baseRev` = 原最新修订，首次建立时为 null（R9 S-39）。
 - 【r6.12 精度（第五批；T-A15a / T-A13a / T-A01a）】
   - **`listInterventions(jobId, filter?: {stage?: Stage; kind?: InterventionKind})`**（filter strict，省略即不限制）：返回该作业介入事件副本，按 `createdAt` 升序（同刻保持记录顺序）；未知作业 not_found；empty 场景预置 id 返回 `[]`；场景延迟 / error 与既有作业读方法同源（R2-E）；方法描述实现中立。复用 `StageSchema` / `InterventionKindSchema` / `InterventionSchema`，不新增注册 schema。自 T-A15 拆出为 T-A15a，T-A15 只剩 `submitIntervention`。
-  - **`removeUpload` 对已删除投放**：再次删除返回 validation_error，不追加修订、事件，不改 `updatedAt`（与 `confirmIntake` / `assignUpload` 对已删除者拒绝一致；上方【r6.6】remove 句补此一条，R3-B）。是否属既有领域规则而非 AGENTS §5.1 新 guard，由 Checklist R11 判定；判为须 §5.1 时本条待 Walter 批准后生效。
+  - **`removeUpload` 对已删除投放**：再次删除返回 validation_error，不追加修订、事件，不改 `updatedAt`（与 `confirmIntake` / `assignUpload` 对已删除者拒绝一致；上方【r6.6】remove 句补此一条，R3-B）。【r6.12.1 改写】Checklist R11（`1f99f80`）已判定：属既有领域规则（本节“无效操作返回 validation_error”与 §4.2“只移除当前关联”的落实），而非 AGENTS §5.1 新 guard，可在现有授权内实施，不需 Walter 另批；范围只限 `removeUpload` 一处，不扩展为其他竞态 / 安全 guard 的许可。R3-B 维持开放至第五批代码 Review。原条件句已删除、废止。
   - **`ReliabilityLabel`**：第十张契约展示映射（S-11 同机制，`labelSchema` 生成并入 `contractSchemas`），键集合 = `SourceNote.reliability` 四值，文案 高 / 中 / 低 / 未知；不新建 Reliability 枚举 schema。表单、介入历史摘要只消费该常量。
 - 错误形态沿用 `{error:{code,message,retryable}}` 与既有 code；本 feature 的无效操作/只读写入/定稿未决项均返回 validation_error，payload 含说明；未知锚返回 not_found。方法输入/输出/参数字义写进 `methods.ts` 与生成文档
 

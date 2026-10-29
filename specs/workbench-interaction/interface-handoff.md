@@ -79,10 +79,10 @@
 >
 > 本块不宣称任何切片已交付或已被 v2 签收。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1880c-8385-70eb-96c3-75402937cefb`；bridge 本协调窗口已确认限额，不重试；官方通道成功；未改配置）。
 > **当前状态（2026-10-29 r6.12 第五批派工准备 = 采集台闭环开工前机制精度；未审核、未实施；以本块为准。下一块 R4-A 关闭块的切片登记仍有效）**：
-> - **本批**：T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04，**全部待实施**；没有新代码，也没有新测试输出。开码前须独立 A 新会话 Checklist R11 定向复核通过并提交（R10 `37e2f71` 不自动覆盖新接口）。
+> - **本批**：T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04，**全部待实施**；没有新代码，也没有新测试输出。开码前须独立 A 新会话 Checklist R11 定向复核通过并提交（R10 `37e2f71` 不自动覆盖新接口）。【r6.12.1，2026-10-30】R11 已通过并提交（原件 `1f99f80`，26 ☑ / 0 ☐，0 P1 / P2），开码前置已满足；P3 S-44～S-48 只作措辞 / 实施提示吸收，不改本块接口；本批仍**全部未实施**。
 > - **H-5 接口（预期，不是结果）**：公开成员仍只有 `useIntakeStore().open(jobId?: string)` / `close()` / 只读 `isOpen` / `jobId`；`open` 每次调用都以 `jobId ?? null` 覆盖快照，store 不读 route；提交只用快照（内部 `submit` 的参数类型不含 `jobId`）；`close` 不导航、不调 agent。`IntakeDrawer` 无必需 props，根 `.glass-drawer` 填满父容器。草稿 / 选中 / 预览 / 待归属池与各写动作是本 feature 内部成员，不进交接接口（plan §2.3【r6.12】）。
 > - **页面切片（预期）**：C 组完成后，本方提供任务（T-B01 / B02 / B04 / C01 / C01a / C02 / C03 / C04）齐备；T-C04 现依赖 T-B06（介入历史展开取证），T-B06 / T-A15a / T-A01a / T-A13a 是依赖，不单列为提供任务。
-> - **契约增量（内部，不属任何切片）**：`DataClient.listInterventions(jobId, filter?)`（T-A15a）、`ReliabilityLabel`（T-A01a）、`removeUpload` 对已删除投放 validation_error（T-A13a，合法性由 R11 判定）；`CONTRACT_VERSION` 仍 2.0.0。
+> - **契约增量（内部，不属任何切片）**：`DataClient.listInterventions(jobId, filter?)`（T-A15a）、`ReliabilityLabel`（T-A01a）、`removeUpload` 对已删除投放 validation_error（T-A13a；【r6.12.1】Checklist R11 `1f99f80` 已判定为既有领域规则、可在现有授权内实施，R3-B 维持开放至第五批代码 Review）；`CONTRACT_VERSION` 仍 2.0.0。
 > - **当前状态**：H-5 / 页面切片仍**未交付**（① ② ③ ④ 均未取得）；H-2·标签 ① `5c00cf6` / H-2·列表 ① `af24c82` 与 H-1 / H-3 / H-4 的历史生产方证据不变，④ 全缺；H-6 仍缺 T-A21。本块不宣称任何切片已交付或已被 v2 签收。
 >
 > 记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a18917-d5b2-7520-921c-f26458a30be1`；bridge 本协调窗口已明确 quota、无重置证据，不重试；同模型官方通道近期成功；未改配置）。
@@ -170,7 +170,7 @@
 
 【R4-A 关闭后口径（2026-10-29，`review-batch4-r4a.md` 原件 `46e8fbe`；以本段为准，上段“① 候选待 Review”与表中“不转生产已核”为当时原文）】**H-2·标签** ① `5c00cf6` 转为生产已核（复核条件“第四批通过”已成立），②③ 见上表，④ 缺。**H-2·列表** ① 仍 `af24c82`，不因 R4-A 修复变化，也不需要等 v2 消费。**页面切片** 本方 B 组提供任务已完成，C 组未做 → 未交付。H-5 未做；H-6 缺 T-A21。所有切片 ④ 仍只能由 v2 消费方所有者登记。
 
-【r6.12 第五批派工准备口径（2026-10-29，未实施）】上表各行不改。H-5 的提供任务仍为 T-C01 / T-C01a；页面切片仍为 T-B01 / B02 / B04 / C01 / C01a / C02 / C03 / C04。本批完成并经批次 Review 通过后，H-5 可形成生产方 ①③（② 届时以已提交的有效 Checklist 轮次为准，预计 R11），④ 仍只能由 `integration/frontend-workbench-v2` 所有者登记；生产方集成树 SHA 不能填作 ④。
+【r6.12 第五批派工准备口径（2026-10-29，未实施）】上表各行不改。H-5 的提供任务仍为 T-C01 / T-C01a；页面切片仍为 T-B01 / B02 / B04 / C01 / C01a / C02 / C03 / C04。本批完成并经批次 Review 通过后，H-5 可形成生产方 ①③（② 届时以已提交的有效 Checklist 轮次为准，现为 R11 `1f99f80`），④ 仍只能由 `integration/frontend-workbench-v2` 所有者登记；生产方集成树 SHA 不能填作 ④。
 
 ## 2. 逐项对拍（v2 要求 → r5 状态 → r6 落点）
 

@@ -1,10 +1,16 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
-> **当前状态（2026-10-29 r6.12 第五批派工准备；未审核、未实施；以本块为准。下一块 R4-A 关闭块中的“70 个任务 / 104.5 h / 43 未开始 / 235 / 235”为当时原文，其完成记录与开放项仍有效）**：
+> **当前状态（2026-10-30 r6.12.1：Checklist R11 已通过，P3 S-44～S-48 已吸收；第五批可开码、未实施；以本块为准。下一块 r6.12 派工准备块中的“未审核”“开码前置待 R11”“T-A13a 由 R11 判定”为当时原文）**：
+> - **开码前置（已满足）**：独立 A Checklist R11 原件 = 提交 `1f99f80`（claude-fable-5-1 via anthropic；`checklist.md` blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`；审查对象 `fdac9f2`）判**通过，26 ☑ / 0 ☐，0 P1 / 0 P2**，5 项 P3 S-44～S-48 不阻断。**第五批有效 Checklist = R11 `1f99f80`**；R10 `37e2f71` 为历史、勾选不改。本轮吸收只改措辞 / 实施提示 / 登记、无新机制，按原 R11 可开码，不再找 A 重新投票。
+> - **T-A13a（R3-B）**：R11 判定为既有领域规则，可在现有授权内实施，不需 Walter §5.1 另批；R3-B 维持开放、未修，关闭由第五批代码 Review 判。第五批任何任务依赖未满足即阻塞，不得照常实施或忽略依赖。
+> - **进度**：第五批 9 项**仍未实施**；73 个任务 / 约 107 h / 245 / 245；**27 已完成 / 46 未开始**；46 AC 最终验收 0；feature 未收敛。首项 T-A01a，Implement 首选 openai/gpt-6-astra（新会话）；派工提醒见 §20.5。
+> - 本块不是 Review / Gate 2 / Handoff；没有运行产品测试，不预写结果。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1894d-29db-730d-9090-8d4c26c5575f`；bridge 既有限额、无重置证据，不重试；官方同模型调用成功；未改配置）。
+
+> 【r6.12 派工准备原文，开码前置已由上方 r6.12.1 块满足】**当前状态（2026-10-29 r6.12 第五批派工准备；未审核、未实施；以本块为准。下一块 R4-A 关闭块中的“70 个任务 / 104.5 h / 43 未开始 / 235 / 235”为当时原文，其完成记录与开放项仍有效）**：
 > - **本批**：T-A01a → T-A13a → T-A15a → T-B06 → T-C01 → T-C01a → T-C02 → T-C03 → T-C04（9 项，约 12 h，33 条命令）；逐任务文件所有权、模型、AC 与命令见 §20。
 > - **进度**：73 个任务、约 107 h；**27 已完成 / 46 未开始**；245 / 245；46 AC 最终验收 **0**；feature 未收敛。
-> - **开码前置**：独立 A 新会话 Checklist R11 定向复核通过并提交；R10 `37e2f71` 不自动覆盖新接口。T-A13a 是否属既有领域规则由 R11 判定。
+> - **开码前置**：独立 A 新会话 Checklist R11 定向复核通过并提交；R10 `37e2f71` 不自动覆盖新接口。【r6.12.1】R11 已判定 T-A13a 属既有领域规则、可实施。
 > - 本块不是 Review / Gate 2 / Handoff；没有运行产品测试，不预写结果。
 
 > **当前状态（2026-10-29 R4-A 关闭，第四批 5 项 + T-B04a 技术通过；以本块为准。下一块及 §16～§18 中的“Review 未通过”“待 §5.1 批准”“待 A”“R4-A 未关闭”“R2-C 不记关闭”“① 候选”均为当时原文）**：
@@ -489,7 +495,7 @@
 - 以上开放项**均未经 Walter 风险接受**；Walter 的批准只覆盖 R4-A 最小修复。
 
 【r6.12 第五批派工准备更新（2026-10-29；以本段为准，只登记落点，代码未改）】
-- **R3-B**：落点由“T-C03 或 T-A17 二选一”定为新任务 **T-A13a**（0.5 h：`removeUpload` 对 `removed` 记录返回 validation_error，pool spec 新增 1 组 2 例；plan §2.4【r6.12】）。它是否属既有领域规则、而非 AGENTS §5.1 的新 guard，由 Checklist R11 判定；判为须 §5.1 时 blocked_by Walter。**未修、未经风险接受**。
+- **R3-B**：落点由“T-C03 或 T-A17 二选一”定为新任务 **T-A13a**（0.5 h：`removeUpload` 对 `removed` 记录返回 validation_error，pool spec 新增 1 组 2 例；plan §2.4【r6.12】）。【r6.12.1 改写】Checklist R11（`1f99f80`）已判定：属既有领域规则，而非 AGENTS §5.1 的新 guard，可在现有授权内实施，不需 Walter 另批；R3-B 维持开放至第五批代码 Review。原条件句已删除、废止。**未修、未经风险接受**。
 - 其余未关项（R3-C、R4-B～R4-E、S-41、R-A、R-B 残留、R-C / R2-A、R-D ①③④、R-E、R-F、R2-B AgentClient 侧、R2-D）不在第五批，归属不变。
 
 【首批记账时原文】**下一步（不在本记账内执行）**：集成人按 tasks §6 DAG 派第二批（入口 T-A10 / T-A22 / T-A23 / T-A24；Implement 首选 `openai/gpt-6-astra`，新会话、实施树），开工前读本节对应项；H-1 ④ 待 `integration/frontend-workbench-v2` 所有者真正集成后由其登记，本 feature 不代写。
@@ -972,7 +978,7 @@
 | 序 | 任务 | 预计 | 依赖 | 标准 / 命令 | 最终 / 部分 AC |
 |---|---|---|---|---|---|
 | 1 | T-A01a ReliabilityLabel | 0.5 h | A01 | 3 / 3 | AC-003-3、AC-008-1 部分前置 |
-| 2 | T-A13a R3-B 重复删除拒绝 | 0.5 h | A13 | 3 / 3 | AC-007-3 部分前置（**R11 判定领域规则；判为 §5.1 则 blocked**） |
+| 2 | T-A13a R3-B 重复删除拒绝 | 0.5 h | A13 | 3 / 3 | AC-007-3 部分前置（**R11 判定：既有领域规则，可实施；R3-B 维持开放至代码 Review**） |
 | 3 | T-A15a listInterventions | 0.5 h | A13 | 3 / 3 | AC-007-1、AC-008-2、AC-008-3 部分前置 |
 | 4 | T-B06 介入历史侧栏 | 2 h | B04、A15a、A01a | 3 / 3 | AC-007-1 **最终**；AC-002-4、AC-003-3 部分前置 |
 | 5 | T-C01 投放面板 + intakeStore（H-5） | 2 h | A22、A12、A22a、A01a | 5 / 5 | AC-003-2 **最终**；AC-003-1 / 003-3 / 003-5 部分前置 |
@@ -1017,8 +1023,23 @@
 
 ### 20.4 闸门、交接与未关项
 
-- **开码前置**：独立 A 新会话 **Checklist R11 定向复核**通过并提交（建议范围见 analyze.md「Analyze R21」§7）。R10 不覆盖 r6.12 的新接口；本作者不勾选、不预判。R11 之前不派 Astra。
-- **R3-B**：T-A13a 的合法性（领域规则还是 §5.1 guard）由 R11 判定。若判为须 §5.1，本任务 blocked_by Walter；集成人可先做其余 8 项，T-C03 对 T-A13a 的依赖届时按“R3-B 未关、未经风险接受”登记处理，不得自称获批。
+- **开码前置**：【r6.12.1：已满足】独立 A Checklist R11 已通过并提交——原件 `1f99f80`（blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`，26 ☑ / 0 ☐，0 P1 / 0 P2，P3 S-44～S-48 已按 §20.5 吸收）。第五批有效 Checklist = R11 `1f99f80`，可派 Astra 自 T-A01a 起按 DAG 串行开码。【原文】独立 A 新会话 Checklist R11 定向复核通过并提交后才派 Astra。
+- **R3-B**：【r6.12.1 改写】R11 判定 T-A13a 属既有领域规则，可在现有授权内实施，不需 Walter §5.1 另批，不借 R4-A 批准；R3-B 维持开放至第五批代码 Review。T-C03 依赖 T-A13a，T-A13a 未完成前 T-C03 不得开码；任何依赖未满足即阻塞（原“可先做其余 8 项、依赖按未关 P3 登记”条件句已删除、废止，不构成先例）。
 - **H-x**（预期，不是结果）：本批完成后，H-5 的提供任务 T-C01 / T-C01a 齐备，可形成生产方 ①③；页面切片的 C 组齐备；④ 仍须 v2 消费方所有者集成后登记。H-6 仍缺 T-A21。
 - **仍开放、本批不处理**（均未经 Walter 风险接受）：R4-B～R4-E、S-41（T-B05 前）、R3-C（T-G04）、R-A / R-B 残留 / R-C / R2-A / R-D ①③④ / R-E / R-F / R2-B AgentClient 侧 / R2-D。
 - **合并**：Walter 已选全部工作完成后再合 main；Draft PR #12 保持 Draft、不开 auto-merge；25 个本 feature 目录保留复用；main `072bb12` 不导入、继续 pin `90187f7`，R2-D 流程不变；不写 v2 树。
+
+### 20.5 R11 通过与 P3 吸收（r6.12.1，2026-10-30；派工提醒，非新增标准 / 命令）
+
+- **依据**：Checklist R11 原件 `1f99f80`（A = claude-fable-5-1 via anthropic；`checklist.md` blob `27a76aa6c3e4adcb817fed5d9b6512e1853061dd`；26 ☑ / 0 ☐，0 P1 / 0 P2）。其「非阻断建议」S-44～S-48 由 A 授权作者自行吸收、不需另一次 Checklist；本节与 tasks / plan【r6.12.1】只改措辞 / 实施提示 / 登记。标准编号、命令、工时、依赖与 73 / 107 h / 245 / 245 / 46 AC 均不变（analyze.md「Analyze R22」）。
+- **S-44 文件写权限**：§20.2 表不变。`InterventionHistory.vue` 只归 T-B06；后续 D / E / F 任务若要扩展其 payload 摘要，须先在该任务修改范围中显式列入此文件写权限（或单列精度轮），不得顺手改；本轮不预扩任何其他任务的写入范围。T-B06 依赖 = T-B04 / T-A15a / T-A01a（“原依赖 T-A15”的说明只留在状态行）。
+- **S-45 依赖纪律**：R11 判定 T-A13a = 既有领域规则，可在现有授权内实施，不需 Walter 另批；R3-B 未修、未关，待第五批代码 Review。按 tasks §6 DAG 串行，任一依赖未满足即停下阻塞，不“照常实施”、不忽略依赖。不借 R4-A 许可，不改任何 A 原件。
+- **S-46（T-C01 写法）**：File 元数据在选择 / drop 边界经 `IntakeFileMetaSchema.safeParse` 一次成为确定类型并写入草稿；submit 时不再 parse，只判 `fileMeta !== null`（缺文件给正常表单提示）；url / text 原串字段与 sourceNote 各在提交时 parse 一次；契约层原有边界 parse 不变；标准 3 的隐私测试（File / FileReader / `createObjectURL` spy 0 次、`fai.jobs.v1` 不含正文）不削减。
+- **S-47 测试 harness 提示**（A 只读核实；只是实施提示，不增新测试标准）：
+  1. happy-dom 21.0.4：`File.prototype` 的 `text / arrayBuffer / stream / slice` 继承自 `Blob.prototype`，`FileReader.prototype.readAs*` 为继承方法；`vi.spyOn(File.prototype, 'text')` 等可直接计数（vitest `spyOn` 沿原型链取描述符），`restoreMocks` 逐例恢复；`URL.createObjectURL` 同理可 spy。`input.files` 用 `Object.defineProperty(input, 'files', {value: [file]})` 或 `DataTransfer`；drop 用 VTU `trigger('drop', {dataTransfer: {files: [file]}})`。不需生产 shim。
+  2. 种子选择：`interventions.json` 里 j-collect 只有 1 条（collect / ingest），不要假定它跨阶段 / 多 kind。T-A15a 标准 1 的“跨阶段 / kind 种子”与“同刻保持记录顺序”取 j-deliver（两条同 `createdAt` 08:02:00，kind = rewrite / framework）及 j-process 等作业断言；j-collect 用于真实 `submitIntake` / `removeUpload` 产生的 ingest / remove_source，以及组合筛选的 `[]` 对照。
+  3. zod 4.6.7 的 `ZodTuple` 没有 `.items` getter：T-C03 的理由 schema 取 `dataMethods.removeUpload.params.def.items[1]`，或对整元组 `safeParse([uploadId, reason])`。
+  4. 内置投放种子全部 `mapping === preview.fields`：T-C02 标准 1“初值 = `upload.mapping`”的差异样例（以及 quarantined 样例）须经 `window.__FAI_MOCK__.jobFixtures` 在系统边界注入。
+  若实施中发现上述提示与真实环境不符，停下回报，不改标准 / 命令讨绿。
+- **S-48 人工验收登记**：v1 介入历史侧栏常驻、内容默认收起、展开才读（A 已认可为 v1 展示精度）；人工看点登记在 T-B06 修改范围与 T-G08 / T-G10 上下文（R11 点名 M-02 / M-09，以清单编号为准）。这是提示，不是新增硬 AC / 工程门；不加新颜色，也不加默认展开机制。
+- **派工**：R11 已提交，本节吸收为措辞级、无新机制，可按 §20.1 顺序派 Astra（首选 openai/gpt-6-astra，新会话、实施树；回退规则同 §20.1）。每任务固定 commit + 逐命令输出摘要；超 2 h、旧用例真实失败、需改 §20.2 以外文件，或与 plan / tasks 精度不符时，先停下回报。记账者 = claude-opus-5-5 via anthropic（PI_SESSION_ID `01a1894d-29db-730d-9090-8d4c26c5575f`）；只写本 feature 规格文档，未改代码 / 测试 / spec / checklist / docs，未运行产品测试，未 commit。
