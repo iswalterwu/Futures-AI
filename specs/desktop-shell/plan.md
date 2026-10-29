@@ -1,10 +1,11 @@
 # Feature: desktop-shell 实施计划（plan.md）
 
-> Plan 阶段产物（**修订 5**，2026-10-29；修订 5 只做 T-06c/T-06d 的设置导航、应用菜单测试驱动与两个旧场景兼容的实现设计修正，见 §0「修订 5」与 §6.1；修订 4 只做 T-04b 后端产物的构建收集源头修正，见 §0「修订 4」与 §7.5；修订 3 为修订 2 之后按审核员 A 的 Checklist 发现 F-01～F-07 与协调者静态关注点修补），由已冻结的 `spec.md` v1 生成（Gate 1：Walter 于 2026-10-28 在会话内批准，见 `review.md`）。
+> Plan 阶段产物（**修订 6**，2026-10-29；修订 6 只做 T-07a 运行器提前退出观察契约与 T-07b/c/e 测试钩子接线所有权的实现设计修正，见 §0「修订 6」与 §8.4；修订 5 只做 T-06c/T-06d 的设置导航、应用菜单测试驱动与两个旧场景兼容的实现设计修正，见 §0「修订 5」与 §6.1；修订 4 只做 T-04b 后端产物的构建收集源头修正，见 §0「修订 4」与 §7.5；修订 3 为修订 2 之后按审核员 A 的 Checklist 发现 F-01～F-07 与协调者静态关注点修补），由已冻结的 `spec.md` v1 生成（Gate 1：Walter 于 2026-10-28 在会话内批准，见 `review.md`）。
 > 需求以 spec 为准；本文只写实现机制、契约与验证方式，不新增需求、不改 AC。
 >
 > - **作者 / 通道**：Plan = claude-opus-5-5 via anthropic（claude-bridge 的 seven_day 额度已确认耗尽，本窗口不再探活；官方通道最小真实调用成功）。协调会话 = openai/gpt-6.1-sol（不是 Plan 或 Implement 作者）。
 > - **基线**：`8ba1b6a304f916e3d57ebdd6b89790b75a15f14c`，分支 `plan/desktop-shell-resume`。
+- **修订 6 作者 / 输入**：Plan / Tasks / Analyze = `anthropic/claude-opus-5-5` via anthropic，会话 `01a187bb-94f0-739b-a564-841bc4ccb516`（PI 环境实核）。`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽（约 2026-10-30 重置），按 AGENTS §6.5 不重复探活；本轮官方最小真实调用返回 `ACTIVITY_PLAN_OK`；不是因测试变红或发现问题而换模型。固定输入 `c1b40700b3824396d7a071868f904d181f6adcfd`（分支 `plan/desktop-shell-activity-harness`，主树快照，含 `implementation-evidence.md` §12 的 T-07a 停止记录；源码为 T-06c/d 检查点）。A 对修订 5 的 41/41 **不自动**覆盖修订 6。
 - **修订 5 作者 / 输入**：Plan / Tasks / Analyze = `anthropic/claude-opus-5-5` via anthropic，会话 `01a186ae-a724-7435-9516-4e3e3028f6a5`（PI 环境实核）。`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽（约 2026-10-30 重置），按 AGENTS §6.5 不重复探活；本轮官方最小真实调用返回 `ROUTING_PLAN_OK`；不是因测试变红而换模型。固定输入 `4b0c3c510906bba83f41eac4ac34bbbccf1c1a30`（分支 `plan/desktop-shell-settings-routing`，主树 T-06b 检查点；实施提交 `d77ce69` 代码相同），原始源码基线仍为 `8ba1b6a`。A 对修订 4 的 41/41 **不自动**覆盖修订 5。
 - **修订 4 作者 / 输入**：Plan = `anthropic/claude-opus-5-5` via anthropic（本轮官方通道最小真实调用成功；`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽，按 AGENTS §6.5 不重复探活；不是因测试变红而换模型）。固定输入 `1275ae2`（分支 `plan/desktop-shell-build-assets`），原始源码基线仍为 `8ba1b6a`。下方「阶段状态」是修订 3 时点的历史描述；修订 4 的审批状态以 `checklist.md` / `review.md` 为准，A 对修订 3 的 41/41 **不自动**覆盖修订 4。
 > - **阶段状态**：A 已对修订 2 出具初轮 Checklist（`anthropic/claude-fable-5-1`，30/41 勾选，结论"F-01、F-02 修补后可进入 Tasks"）；修订 3 处理全部 F-01～F-07，新 tasks.md 已写，Analyze 见 `analyze.md`。截至本文件生成时 A 尚未复查（含 Tasks/Analyze 对齐项）；**当前审批状态以 `checklist.md` / `review.md` 为准**。Implement、Converge、Review、Gate 2 均未开始。
@@ -12,6 +13,19 @@
 > - **标记约定**：【现有】= 基线源码里已经有的行为；【计划】= 尚未实现的设计；【外部】= 依赖本 checkout 之外的产物或环境，本 feature 只能给出过渡证据。
 
 ## 0. 修订摘要
+
+### 修订 6（相对修订 5；T-07a 运行器提前退出观察契约 + T-07b/c/e 钩子接线所有权，不改 spec、不改 AC、不改安全面）
+
+授权：Walter 对已批准的 desktop-shell 指示“继续”。本修订是已批准 §3.5（测试事件夹具“非法 → 退出码 4 + `TEST_EVENTS_INVALID`”）、§8.3（`events-invalid` 自检场景、`tray-click`、`request-quit` 调用生产退出入口、快照 `tray`/`activity`）与冻结 AC-006-1/2/4、AC-003-2/4 之内的**实现设计修正**，不是需求变更、不是安全面变更、不是 Gate 2。协调 = `openai/gpt-6.1-sol`（只协调），Implement = `openai/gpt-6-astra`。
+
+| 项 | 内容 |
+|---|---|
+| 触发（观测事实） | T-07a 实施会话 `01a187b3-5e6b-76b8-b88a-1209f19e5f0a`（输入 `dad9352`）在写任何代码前静态预检停止（`implementation-evidence.md` §12；不是产品失败、不是模型/通道失败）。本轮在 `c1b4070` 只读复核属实：① `shell/check.js` 第 113–164 行 `ctx.launch()` 只在 `paths && (second \|\| controlPort)` 时返回，第 161 行对提前退出直接抛 `Electron exited before paths/control: <code>`，不返回实例；② 第 153–156 行 stderr 只提取 TypeError/ReferenceError/SyntaxError 类型名，没有安全的固定标记观察；③ `shell/main.js` 第 32–34 行在顶层调用 `hooks.install()`，控制通道到第 303–313 行 `whenReady` 才启动——在 install 入口正确地整体拒绝非法事件文件，必然在控制通道之前以退出码 4 结束；④ tasks 页首“登记约定”只允许 `check.js` 登记，运行器、旧单测与夹具对 T-07a 只读。规划者另行核实同类缺口：⑤ `src/test-hooks.js` 快照恒为 `tray:null, activity:null`，`tray-click` 是 409 `tray_not_implemented` 占位，`request-quit` 回调直连 `gracefulQuit(0)`（main.js 第 33 行），消息对话框记录只有 `buttons`/`unanswered`；而 T-07b/c/e 的修改范围列了 main.js 与场景，却没有给 test-hooks 写入权，无法满足 §8.3 已批准的真实快照、真实托盘菜单项 `click`、生产退出入口，以及 T-07c“对话框列出排队作业”的证据 |
+| 修正 | 见 §8.4：① `ctx.launch()` 新增**唯一**可选约定 `expectEarlyExit:'test-events-invalid'`（固定映射退出码 4 + 固定标记），仍先核对首条 `SMOKE paths` 与隔离，只保存布尔标记；默认行为不变；② 仅运行器读取、仅在 `FAI_CHECK_E2E_DIR` 夹具模式下生效的 `FAI_CHECK_PRODUCER`，供运行器单测在进程边界制造负对照；③ §3.5 标记格式收紧为固定原因枚举、同步写 stderr 后 `app.exit(4)`；④ T-07b/c/e 对 `src/test-hooks.js` 的最小接线所有权（读取生产对象的快照字段、`tray-click` 调用真实托盘菜单项、`request-quit` 改接生产 `requestQuit()`、消息对话框记录补 `message`/`detail`） |
+| 不变 | spec 与 38 条 AC、Gate 1；`backend/**`、settings schema；默认 `ctx.launch()` 语义（paths + control/second、意外提前退出即 FAIL）、10 s 观察窗与 30 s 场景时限、清理与泄漏即 FAIL、隔离路径校验；控制命令集合（不新增命令、不新增 emit/注入事件、不执行主进程 JS）、快照键集合、控制通道仍不设令牌；preload 18 项批准全集与 `startup-visible` 的 APPROVED 18 / REQUIRED_NOW 7 断言；Chromium/CSP/CORS/sandbox/权限；依赖、版本、lockfile；19 个已登记场景及其断言；T-07d 偏好契约；主窗口生命周期策略 |
+| 范围判定 | 提前退出约定比默认路径更窄（只接受一个固定退出码 + 一个固定标记，其余一律 FAIL），是对 §8.3 已批准 `events-invalid` 断言的观察落点；`FAI_CHECK_PRODUCER` 与已批准的 `FAI_CHECK_E2E_DIR` 同类（只由运行器读取、只服务运行器单测、正式 `npm run check` 不可用）；钩子接线是 §8.3 已列快照字段与既有命令的实现，不新增控制面。因此不需回 Clarify / Gate 1、不需新 ADR，作者判断不需 AGENTS §5.1 额外批准；若 A 判断任何一项需要 Walter 工程批准，按停止处理，A 不代 Walter 批准 |
+| 任务 | 仍 41 个任务：T-07a 的上下文、修改范围、完成标准、验证改写并增加执行细则，估时 1.5h → 2h（合计 61.5h → 62h，2h 偏紧，超出按停止规则报告而不是压缩验证）；T-07b/c/e 修改范围与执行细则补钩子接线所有权（估时不变）；顺带完成 A 第 4 轮 P3 的下次触碰义务：R5-01（T-06c 验证括注对位）、R5-03（T-08e 依赖加 T-06d 与真实完整档案 + 点击 `#prepare-guide` 前提，正文与顺序表第 33 行）；R5-02 仍 OPEN（P3），R5-04 已实施（静态），均不是新需求 |
+| 审批 | 须由 A（新开独立会话）按 `activity-harness-review-request.md` 复查受影响质量项并记入 `checklist.md`，全部复选框为勾选状态后，Astra 才可恢复 T-07a |
 
 ### 修订 5（相对修订 4；T-06c/T-06d 设置导航与测试兼容，不改 spec、不改 AC、不改安全面）
 
@@ -292,7 +306,7 @@ futuresai-backend --root <dir> --port-file <path> --token <hex> [--port 0] [--ex
 |---|---|---|
 | 外壳生命周期（`backend.error/ready`） | **真实** | 后端崩溃、重启、恢复 |
 | 作业引擎事件流 | **不存在**【外部】 | 由 workflow / `api` feature 提供；接入时只新增一个来源适配器，归约器不变 |
-| 测试事件夹具 | **测试专用** | 仅在 `FAI_TEST_HOOKS=1` 时读取 `FAI_TEST_EVENTS=<绝对路径>`：该文件为 UTF-8 JSON **事件数组**（唯一格式，不接受内联 JSON）；每项可带 `delayMs`（相对"首次 `backend.ready`"，mock 模式下相对目标页加载完成；不累加）。文件缺失、JSON 非法、存在未知 `type` 或缺字段 → 外壳以退出码 4 结束并在 stderr/日志写 `TEST_EVENTS_INVALID <原因>`（测试输入错误要显式失败，不丢弃）。启用钩子时窗口标题加"［测试钩子］"，日志首行写 `TEST HOOKS ENABLED`，防止被误认为真实业务 |
+| 测试事件夹具 | **测试专用** | 仅在 `FAI_TEST_HOOKS=1` 时读取 `FAI_TEST_EVENTS=<绝对路径>`：该文件为 UTF-8 JSON **事件数组**（唯一格式，不接受内联 JSON）；每项可带 `delayMs`（相对"首次 `backend.ready`"，mock 模式下相对目标页加载完成；不累加）。文件缺失、JSON 非法、存在未知 `type` 或缺字段 → 外壳以退出码 4 结束并在 stderr/日志写 `TEST_EVENTS_INVALID <原因>`（测试输入错误要显式失败，不丢弃）。（修订 6）校验在 `src/test-hooks.js` 的 `install()` 中、首条 `SMOKE paths` 之后立即进行，不推迟到控制通道就绪；stderr 行为必需证据（日志行不是验收前提），`<原因>` 只取固定枚举 `file_unreadable` / `json_invalid` / `not_array` / `unknown_type` / `missing_field` / `invalid_delay`，不含文件名、路径、事件内容或输入值；用 `fs.writeSync(2, …)` 同步写出后 `app.exit(4)`，不启动控制通道、窗口或后端。校验通过时钩子只返回已校验的事件数组，不调度、不归约；调度与消费在主进程生产代码（§8.4 第 4 段）。运行器侧的观察契约见 §8.4 第 1、2 段。启用钩子时窗口标题加"［测试钩子］"，日志首行写 `TEST HOOKS ENABLED`，防止被误认为真实业务 |
 
 **本阶段边界**：AC-003-4 的"不再接受新作业"在本阶段只能证明**外壳侧语义**（归约器拒收并标记）。后端作业引擎在退出时停止接单（drain）的契约留给 workflow feature（plan-gaps D-02）。
 
@@ -751,7 +765,7 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
   - `snapshot` → `{paths, versions:{electron,node,chrome}, window:{exists,visible,minimized,url,title}, backend:{phase,phases,gen,restarts,pid,port,lastCode}, tray:{state,tooltip,menu}, records:{dialogs,notifications,external,secondInstance,navigation}, activity, prefs}`；
   - `eval {js}` → 主窗口 `executeJavaScript` 的 JSON 结果；
   - `answer {queue}` → 追加对话框应答（如 `{type:"message",button:"取消退出"}`、`{type:"open",paths:[…]}`）；
-  - `close-window`（等同用户点关闭）、`tray-click {path:[菜单标签…]}`（调用托盘菜单项真实 `click`）、`app-menu-click {item:"settings"}`（修订 5：单值枚举，只调用应用菜单固定 id `fai-settings` 菜单项真实 `click`；其他值/缺失 400 `unknown_menu_item`，菜单项缺失 409 `menu_item_missing`、不可用 409 `menu_item_unavailable`；细则见 §6.1 第 5 段）、`request-quit`（调用生产退出入口）。
+  - `close-window`（等同用户点关闭）、`tray-click {path:[菜单标签…]}`（调用托盘菜单项真实 `click`）、`app-menu-click {item:"settings"}`（修订 5：单值枚举，只调用应用菜单固定 id `fai-settings` 菜单项真实 `click`；其他值/缺失 400 `unknown_menu_item`，菜单项缺失 409 `menu_item_missing`、不可用 409 `menu_item_unavailable`；细则见 §6.1 第 5 段）、`request-quit`（调用生产退出入口）。修订 6：`tray-click` 的入参与错误码、`request-quit` 改接生产 `requestQuit()` 的落点见 §8.4 第 4、5 段；不新增任何命令。
   - 控制通道只调用生产函数，不含业务判断。不用 stdin：Electron 在 Windows 上读 stdin 的可靠性未经验证；stdout 只承载 `SMOKE` 行（现有 `check.js` 已证明可读）。
 
 **假后端 `test/fixtures/fake_backend.py`**（进程边界夹具，不是业务实现）：与真实宿主相同的命令行（`--root --port-file --token [--port] [--exit-on-stdin-eof]`）、端点文件、`FAI_HOST` 标记行、退出码 3 语义与 stdin EOF；端点只有 `/health`、`/shutdown`、`GET /settings/profile`（只返回路由需要的 `onboarding` 形状，由 `--onboarded 0|1` 决定，默认 1）。模式 `--mode`：`ok`、`slow-ready:<ms>`、`health-fail`（/health 恒 503）、`hang`（不监听）、`exit-before-ready`、`crash-after-ready:<ms>`（每个实例就绪 `<ms>` 后以退出码 1 退出）、`startup-failed:<code>`。登记：`FAI_FAKE_REGISTRY=<dir>` 下每次启动追加 `spawns.jsonl`（pid、时间），运行器据此统计启动次数，并用 pid 存活检查断言"同时最多一个后端"。重启预算在就绪后**不**清零，只在用户"重试"时清零（§4.2），所以 `crash-after-ready` 下应恰好启动 4 次（1 + 3 次重启）。
@@ -764,7 +778,7 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
 - 清理（含失败与超时路径）：控制通道 `request-quit` → 最多等 10 s → 否则 `taskkill /PID <electron pid> /T /F`；核对快照中的后端 pid 与假后端登记的 pid 都已不存活，否则结束并 FAIL；恢复场景副作用（如 ACL）；删除临时目录（重试 3 次，仍失败 → FAIL 并打印路径）。
 - 输出每条 `PASS|FAIL <场景> › <断言名>`，汇总后有失败则退出码 1。
 - 场景模块形如 `{requires, run(ctx)}`，只有调用 `ctx.launch()` 才启动 Electron；断言 API 不提供单参数布尔断言。
-- 运行器自身规则由 `test/unit/check-runner.test.js` 直接验证：以子进程运行真实 `check.js`，用 `FAI_CHECK_E2E_DIR`（只由运行器读取）把场景目录换成 `test/fixtures/runner/<情形>/`，覆盖未知名称（退出码 2、夹具标记文件未生成）、登记表不一致（退出码 2）、零断言（FAIL）、缺外部工具（FAIL）、两条断言正常通过（退出码 0）。
+- 运行器自身规则由 `test/unit/check-runner.test.js` 直接验证：以子进程运行真实 `check.js`，用 `FAI_CHECK_E2E_DIR`（只由运行器读取）把场景目录换成 `test/fixtures/runner/<情形>/`，覆盖未知名称（退出码 2、夹具标记文件未生成）、登记表不一致（退出码 2）、零断言（FAIL）、缺外部工具（FAIL）、两条断言正常通过（退出码 0）；修订 6 另覆盖提前退出约定的正例与负对照（§8.4 第 3 段）。
 - 假后端由 `test/unit/fake-backend.test.js` 以子进程直接验收：`ok` 写端点文件且 `/health` 200、`health-fail` 503、`startup-failed:<code>` 退出码 3 + 标记行、stdin EOF 退出、`spawns.jsonl` 登记。
 
 **回环夹具服务**（`csp`、`update-*` 场景内由运行器启动）：记录每个请求的 `Host` 头与路径；`/evil.js` 返回 `window.__remoteExecuted=1`；`/frame.html`、`/data`、`/ok`（200，`Access-Control-Allow-Origin: *`）；更新元数据端点。
@@ -772,6 +786,52 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
 **运行器与钩子自检场景**（基础设施；最近 AC 为 AC-004-1（隔离运行、只有一个后端）与 AC-004-4 / WO-04（默认目录解析），不证明产品 AC）：`harness-selftest`（假后端 `ok`：`SMOKE paths` 全在临时目录、窗口存在、后端 pid 存活且 `spawns.jsonl` 1 条 → `request-quit` 后退出码 0、后端 pid 不存活、临时目录已删）；`events-invalid`（`FAI_TEST_EVENTS` 指向含未知 `type` 的文件 → 退出码 4 且输出 `TEST_EVENTS_INVALID`）。`harness-selftest` 只依赖现有就绪流程与假后端，不依赖 §4.2 状态机，因此可以先于生命周期任务落地；它是 `bootstrap` 接线的集成复验，不是 `bootstrap` 任务的完成前提。
 
 **真实后端 e2e**（不设 `FAI_BACKEND_CMD`，开发期以 `python -m app` 运行源码后端）覆盖：就绪、退出清理、锁被占、强杀自愈、崩溃重启、引导与设置、诊断包。
+
+### 8.4 运行器提前退出约定与 T-07 钩子接线所有权（修订 6）
+
+本节只定 T-07a 的运行器观察契约与 T-07b/c/e 对 `src/test-hooks.js` 的接线所有权；不改 spec、AC、控制命令集合、快照键、默认运行器语义、依赖与安全配置。触发事实见 §0「修订 6」。
+
+**1. 提前退出约定（`check.js`，T-07a）**
+
+- 接口：`ctx.launch({ env, args, expectEarlyExit: 'test-events-invalid' })`。`expectEarlyExit` 只接受这一个值，用 `=== 'test-events-invalid'` 精确比较（不做对象键查找），固定对应「退出码 4 + 标记 `TEST_EVENTS_INVALID`」；其他任何非 `undefined` 值 → 在 spawn 之前抛出 `unknown early-exit contract`。不传时行为与现状逐字相同：等到 `paths` 与 control（或 `second`），任何提前退出都抛 `Electron exited before paths/control: <code>`。不接受调用方传入任意退出码、标记或 stderr 模式。
+- 判定（同一个现有 10 s `waitFor`，以子进程 `close` 为判定时点——stdio 已排空，避免 `exit` 早于最后一段 stdout/stderr）：首条 `SMOKE` 必须是 `paths` 且通过现有隔离校验（同一代码路径，越界立即结束进程并 FAIL）；未见 `paths` 就退出 → FAIL `Electron exited before paths: <code>`；出现 `control` 事件 → FAIL `early exit expected but control started`（随后照常由清理经控制通道退出）；主进程异常类型、spawn error → 照旧 FAIL；退出码不是 4 → FAIL `early exit code mismatch: <code>`（只输出数字）；退出码 4 但未观察到标记 → FAIL `early exit marker missing`；10 s 内未退出 → 现有超时 FAIL，清理沿用 10 s 等待 → 自有 `taskkill` → `Electron required owned taskkill` FAIL。成功时返回实例，`code === 4`、`markerSeen === true`；场景仍须用显式断言写出 `退出码 4` 与 `输出 TEST_EVENTS_INVALID`，零断言规则不变。
+- 标记观察：只在该约定下扫描 stderr；只认「行首 + `TEST_EVENTS_INVALID` + 空格」。实现为前缀残留 `carry`（初值 `'\n'`）：每块 `buf = carry + chunk`，若 `buf.includes('\nTEST_EVENTS_INVALID ')` 则置 `markerSeen = true`，再令 `carry = buf.slice(-20)`（20 = 该模式长度 − 1），因此跨块边界可识别，且内存中最多保留 20 个字符的原始输出。实例只保存布尔值；不打印、不保存原始 stderr、原因、文件名、事件内容、令牌或 argv。现有异常类型提取不改（RL-04 的 UTF-8 跨块问题不在本修订处理）。
+- 默认路径不扫描标记、不改动任何现有分支、时限、清理或泄漏判定；`second`、`waitExit`、`cmd`、`snapshot`、`cleanup` 语义不变。
+
+**2. 运行器单测的进程边界替换 `FAI_CHECK_PRODUCER`（`check.js`，T-07a）**
+
+- 只由运行器从自身 `process.env` 读取（子进程环境本来就剔除全部 `FAI_*`），且只在同时设置 `FAI_CHECK_E2E_DIR` 时生效；路径经 `path.resolve` 后必须是 `shell/test/fixtures/runner/producers/` 目录内的 `.js` 文件。未设 `FAI_CHECK_E2E_DIR`、或路径不在该目录、或不是 `.js` → 在运行任何场景之前输出 `REGISTRY_ERROR` 并以退出码 2 结束。
+- 生效时 `ctx.launch()` 以 `process.execPath <producer> ...args` 代替 `electron .`，环境、cwd、stdio、隔离校验与第 1 段的判定代码完全相同。正式 `npm run check`（`test/e2e`）不设 `FAI_CHECK_E2E_DIR`，因此不可能用替身产生通过。
+- 必要性：错误退出码、缺标记、缺失或越界的 `paths` 无法由真实生产代码产生，除非为测试伪造生产路径（违反 AGENTS §5.6）；替换点是 spawn（系统边界），被测对象仍是真实 `check.js`。这与已批准的 `FAI_CHECK_E2E_DIR` 是同一种只服务运行器单测的接缝，不新增运行时、依赖或框架。
+
+**3. 测试与证据分层**
+
+- Node 单测（证明运行器契约，不证明产品）：`test/unit/check-runner.test.js` 追加 5 个用例，沿用现有子进程辅助函数（真实 `check.js`、`FAI_CHECK_E2E_DIR` 指向 `test/fixtures/runner/early-exit/`、`FAI_CHECK_PRODUCER` 指向 `test/fixtures/runner/producers/early-exit.js`、`FAI_RUNNER_CASE` 选择情形）：
+  - `runner：提前退出约定 标记跨块且退出码 4 通过`：替身输出 `paths`（位于注入的 `LOCALAPPDATA` 内），分两次（间隔 ≥ 50 ms）写出 `TEST_EVENTS_` 与 `INVALID FAIPLANT-REASON`，退出码 4 → 运行器退出码 0，两条场景断言 PASS。
+  - `runner：提前退出约定 退出码不符判 FAIL`：同上但退出码 3 → 退出码 1，输出含 `early exit code mismatch: 3`。
+  - `runner：提前退出约定 缺标记判 FAIL`：退出码 4，stderr 只有不在行首的 `xTEST_EVENTS_INVALID FAIPLANT-REASON` → 输出含 `early exit marker missing`。
+  - `runner：提前退出约定 paths 缺失或越界判 FAIL`：两次运行——无 `paths` 直接写标记并以 4 退出 → 输出含 `exited before paths`；`paths` 位于临时根之外 → 输出含 `isolation path outside owned temp root`。
+  - `runner：默认启动遇提前退出仍判 FAIL`：不传 `expectEarlyExit`，替身输出 `paths`、标记并以 4 退出 → 输出含 `Electron exited before paths/control: 4`。
+  - 每个用例另断言：运行器输出不含哨兵 `FAIPLANT-REASON`；`TEMP` 根目录全部已删除（现有辅助函数已核对）。原有运行器用例与辅助函数不改。
+- 夹具：`test/fixtures/runner/early-exit/index.js`（登记 `early-exit`）、`early-exit.js`（按 `FAI_RUNNER_CASE` 选择是否传 `expectEarlyExit` 并经 `launch({env})` 传入替身情形；断言 `退出码 4` 与 `标记已观察`）；`test/fixtures/runner/producers/early-exit.js`（Node 脚本，只按情形写 `SMOKE paths`、stderr 与退出码，不含业务逻辑）。`producers/` 不含 `index.js`，不是场景目录。
+- 真实 Electron（证明生产行为）：T-07a 新场景 `events-invalid` 用真实 `main.js`：在 `ctx.root` 内写入一个 UTF-8 JSON 事件数组文件（含未知 `type`），以 `FAI_TEST_EVENTS` 指向它并用第 1 段约定启动；断言 `退出码 4`、`输出 TEST_EVENTS_INVALID`。只有该场景能证明 §3.5 的生产校验，Node 单测不能。
+
+**4. T-07 钩子接线所有权（T-07a/b/c/e）**
+
+原则：生产状态与处理器在 `main.js`，是唯一权威；`src/test-hooks.js` 只替换系统出口、读取 `state` 中的真实对象、经真实 `MenuItem.click()` 触发菜单动作。不新增控制命令、不新增 emit/注入事件、不做菜单模拟、不执行主进程 JS、不接受任意路径或 URL、不在钩子里保存业务状态。
+
+- **T-07a**：`install()` 在 `paths` 之后校验 `FAI_TEST_EVENTS`（§3.5），非法 → 标记 + `app.exit(4)`；合法 → 返回值新增只读的 `testEvents`（已校验数组）。快照不变（`activity` 仍为 `null`，直到 T-07b）。
+- **T-07b**：`main.js` 持有 `state.activity`（`src/activity.js` 归约器状态）、`state.tray` 与 `state.trayMenu`（传给 `tray.setContextMenu` 的同一个真实 `Menu`），并作为事件来源适配器按 §3.5 调度 `hooks.testEvents`（`setTimeout(delayMs)`，相对首次 `backend.ready`，mock 模式相对首次目标页加载完成，不累加；无钩子时没有夹具来源）。`src/test-hooks.js` 只改两处：快照 `tray` = 从上述真实对象读取的 `{state, tooltip, menu}`（`menu` 为标签树，托盘未创建时为 `null`），`activity` = `state.activity`；`tray-click {path}` 取代 409 占位——`path` 必须是 1～2 个非空字符串，否则 400 `invalid_tray_path`；按标签逐级精确匹配 `state.trayMenu`，缺失 → 409 `tray_item_missing`，`enabled===false` 或 `visible===false` → 409 `tray_item_unavailable`；否则调用该菜单项真实 `click()`，返回 200 `{clicked:true}`。命令本身不导航、不改状态，效果只经生产回调产生。
+- **T-07c**：`main.js` 把传给 `install()` 的退出回调从 `gracefulQuit(0)` 改为生产退出入口 `requestQuit()`，使 `request-quit` 与 §8.3 一致地走退出守卫。`src/test-hooks.js` 只改一处：消息对话框记录在现有 `type/buttons/unanswered` 之外，增加生产代码实际传入的 `message`、`detail` 字符串（未传则省略），用于证明“对话框列出排队作业”；不增加其他字段。
+- **T-07e**：不改 `src/test-hooks.js`。`main.js` 在钩子启用时使用现有出口 `hooks.outlets.Notification`，并把生命周期 `backend.error/ready` 接入归约器。“托盘曾为 error”由场景轮询快照 `tray.state` 证明（真实后端重启窗口为秒级），不新增历史字段。
+- **T-07d**：偏好契约不变，本修订不涉及。
+- 场景约束（与运行器清理兼容）：T-07c 之后运行器清理的 `request-quit` 会经过退出守卫。凡使用事件夹具的场景，在结束前须等到快照 `activity` 中没有运行中作业（夹具自带 `job.finished`），使清理不触发询问；运行器清理语义、10 s 等待与泄漏即 FAIL 不变。
+
+**5. 停止规则与写入范围**
+
+- 各任务的唯一可写集合见 tasks T-07a/b/c/e。`check.js` 仅 T-07a 可改，且只限第 1、2 段；`check-runner.test.js` 仅 T-07a 可追加第 3 段的 5 个用例；`src/test-hooks.js` 各任务只限第 4 段所列改动。
+- 出现即停、写证据并报协调者，不自行扩大范围：真实 Electron 中 `install()` 内 `app.exit(4)` 不能在控制通道之前以退出码 4 结束，或标记未写出；需要新控制命令、emit/注入事件、主进程 JS、任意路径/URL、钩子保存业务状态或菜单模拟；需要改默认 `launch` 语义、时限、清理或泄漏判定；任何旧场景只有弱化断言才能通过。
+- 禁止的替代做法：`second:true` 冒充；在 `ctx.launch()` 之外直接 spawn；捕获 `launch` 异常后读取 `ctx.instances`；伪造 `SMOKE` 行；把事件校验推迟到控制通道就绪之后；放宽默认 `launch` 或现有断言。
 
 ## 9. 验收对应（spec 38 条 AC 逐条 + 无 AC 的 what）
 
