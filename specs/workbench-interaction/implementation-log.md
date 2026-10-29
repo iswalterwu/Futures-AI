@@ -1,7 +1,17 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
-> **当前状态补记（2026-10-29 r6.6.1 范围精度；以本块为准，下一块 r6.6 其余内容仍有效）**：
+> **当前状态补记（2026-10-29 r6.6.2 语义回归许可；以本块为准，下一块 r6.6.1 与再下一块 r6.6 其余内容仍有效）**：
+> - **规范进度不变**：**16 / 67 已完成**、51 未开始（“已完成”= 批次代码 Review 通过）；46 AC 最终验收 0；feature 未收敛。
+> - **第三批真实进展**（Astra 回报、协调器只读核对；本记账会话未跑任何测试）：实施树 `feat/workbench-interaction-astra` HEAD = `742d6aa3d671cee91c6cce856f657a103d510615`。
+>   - **T-A11** `c7ebccb`、**T-A12** `742d6aa`：已实施、已提交，**待第三批正式批次 Review**。
+>   - **T-A13**：已实现、定向命令通过，但**未提交**，工作区保留其改动；须待下述回归修好后再交付。
+>   - T-A22a 未开始。
+> - **停止原因**：A13 末轮全量 `test:unit` **925 pass / 1 fail**。唯一失败是 T-A11 的 `persistence.spec.ts` `WI non-normal` 参数化用例的 error 分支：它仍期待 error 下 `commit` 成功，而已批准的 A12 语义（plan §2.4【r6.6】）要求 error 在 commit 内、替换状态前拒绝。该文件不在 A12 / A13 写入清单，Astra 正确停下，未越权、未放宽生产规则。这是测试结果，不是模型调用失败，不回退。
+> - **r6.6.2**：T-A12 修改范围只许改该用例的 error 分支（断言真实 commit 抛 adapter_error 且目标作业读回不变），其余断言全部保留；T-A13 对该文件无许可。任务 / 估时 / 依赖 / 224 ↔ 224 / 46 AC 不变。见 §10 与 analyze.md「Analyze R12.2」。
+> - **下一步**：集成人提交本修订、定向同步三份文档到实施树（不动 A13 工作区改动）后，派 Astra 先做 A12 的 test-fix commit，再续 A13 交付与 T-A22a；不预写成功或“全绿”。
+>
+> **当前状态补记（2026-10-29 r6.6.1 范围精度；当时以本块为准，下一块 r6.6 其余内容仍有效）**：
 > - **Checklist**：R9 通过（26 / 26，0 P1 / P2，P3 S-38～S-40），集成人提交 `ab742f5801628b15324fc998f03959482fd31d9d`（`checklist.md` blob `74084c1337491a042c944096e1f290fe07aab324`，本轮未改）。第三批当前有效 Checklist = **R9 `ab742f5`**；下一块“当前有效仍为 R8.1”为当时原文。
 > - **Implement 开码前停止**：Astra（`openai/gpt-6-astra`，实施树 `feat/workbench-interaction-astra` @ `ab742f5`）在 T-A11 开码前按范围纪律停下。原因是确定的范围遗漏：`tests/unit/jobs/real-stubs.spec.ts` 的 `requests` 表以 `satisfies` 强制覆盖全部 `DataClient` 键，新增 `resetMockData` 必须加键，但该文件不在 r6.6 写入清单内。Astra 未改代码、未提交，**未运行本轮任何验证命令**。这**不是**模型调用失败（不触发回退），也**不是**产品测试红。
 > - **r6.6.1**：T-A11 / A12 / A13 修改范围显式允许只在该 `requests` 表追加本任务新增方法的真实 stub 调用（A11 一键、A12 / A13 各四键）。67 任务 / 约 102 h / 224 ↔ 224 / 46 AC / 依赖 / 16 已完成 51 未开始均不变。见 §10 与 analyze.md「Analyze R12.1」。
@@ -198,6 +208,10 @@
 | 2026-10-29 | 审核员 A（新会话、独立 worktree `D:/2030/Futures-AI-interaction-checklist-batch3`） | Checklist R9：第三批 r6.6 限定范围定向复核 | `ef64c18` | `anthropic/claude-fable-5-1`（协调器对 `claude-bridge/claude-opus-5-5` 的最小调用 exit 1 = quota / rate / spend_limit 类，本窗口不重试；未单独探 fable 的 bridge；只换通道） | **通过**：26 / 26，0 P1 / P2，P3 S-38～S-40；集成人原样提交 `ab742f5` |
 | 2026-10-29 | Implement（新会话，实施树 `feat/workbench-interaction-astra`） | T-A11（第三批首项） | `ab742f5` | `openai/gpt-6-astra`（首选，调用正常，未回退） | **开码前停止**：确定的范围遗漏（`real-stubs.spec.ts` 的 `requests` 表须为 `resetMockData` 加键，但不在 r6.6 写入清单）；未改代码、未提交、未运行本轮验证命令。不是模型调用失败，也不是测试红 |
 | 2026-10-29 | 计划 / 分析类（Tasks 范围小补 r6.6.1 + 只读 Analyze R12.1，非实施） | T-A11 / A12 / A13 修改范围允许 `real-stubs.spec.ts` 的 `requests` 表按本任务新增方法加键；同步本日志 §10 所有权 | 文档树 `docs/workbench-interaction-batch3-plan` @ `ab742f5` | `anthropic/claude-opus-5-5`（PI_SESSION_ID `01a186d0-43c8-7219-9857-eadff71941bb`；bridge 本窗口已明确 quota / rate / spend_limit，不重试；官方通道正常；未改配置） | 文档完成；只改 tasks / analyze / 本日志；未改代码 / 测试 / spec / plan / checklist；未跑产品测试；未 commit（由集成人提交） |
+| 2026-10-29 | 集成人 | 提交 r6.6.1 文档并同步实施树 | `ab742f5` | — | 提交 `e4031fae9ca31d090f2bec4ed4b09793ff3dea56`；实施树自此续做 |
+| 2026-10-29 | Implement（新会话，实施树） | T-A11（续） | `e4031fa` | `openai/gpt-6-astra`（首选，调用正常，未回退） | 提交 `c7ebccb`；5 条任务命令通过（非 normal 组 13 pass）；末轮全量单测 28 文件 860 / 0、六守卫通过；首轮新测试的 spy / 类型问题为正常任务结果，已修 |
+| 2026-10-29 | Implement（新会话，实施树） | T-A12 → T-A13 | `c7ebccb` | `openai/gpt-6-astra`（首选，调用正常，未回退） | T-A12 提交 `742d6aa`（任务命令 / contract / typecheck / lint / real-stubs 通过）；T-A13 定向命令 / contract / typecheck / lint / real-stubs 通过但**未提交**（工作区保留）。末轮全量单测 **925 pass / 1 fail**，唯一失败 = T-A11 `persistence.spec.ts` `WI non-normal` 的 error 分支（与已批准的 A12 error 时机冲突；该文件不在 A12 / A13 写入清单）→ **按范围纪律停下**；六守卫通过。测试结果，非调用失败，不回退 |
+| 2026-10-29 | 计划 / 分析类（Tasks 语义回归许可 r6.6.2 + 只读 Analyze R12.2，非实施） | T-A12 修改范围允许只改上述用例的 error 分支；T-A13 明确无许可；同步本日志 §7 / §10 | 文档树 `docs/workbench-interaction-batch3-plan` @ `e4031fa`（只读核对实施树 `742d6aa` 与工作区） | `anthropic/claude-opus-5-5`（PI_SESSION_ID `01a186f6-6f87-759d-864d-cfa50e021625`；bridge 本窗口已明确 quota / rate，不重试；官方通道正常；未改配置） | 文档完成；只改 tasks / analyze / 本日志；未写实施树；未改代码 / 测试 / spec / plan / checklist；未跑产品测试；未 commit（由集成人提交） |
 
 ## 8. 首批 Review P3 后续定位（只登记，不改规范机制；**均未经 Walter 风险接受**，本批不修代码）
 
@@ -329,4 +343,12 @@
   - **定性**：这是 r6.6 的范围遗漏，不是模型调用失败（Astra 调用正常、不回退），也不是产品测试红。R9 已注明“real 桩须加键（在 T-A11 范围）”，但这不构成实施者的写权限，因此须在 tasks 显式写明。
   - **修订**：上列三任务所有权各加一条，tasks 三任务修改范围加【r6.6.1 范围精度】。不改需求、方法、标准、命令、任务数、估时或 AC；plan §1 的“jobs 测试归本 feature”不变。
   - **后续**：集成人提交并同步实施树后，Astra 从 T-A11 继续。
+- **r6.6.2 语义回归许可（2026-10-29，以本条为准）**：
+  - **起因**：T-A11 `c7ebccb`、T-A12 `742d6aa` 已提交；T-A13 已实现但未提交（实施树工作区保留其改动）。A13 末轮全量 `test:unit` 925 pass / 1 fail，唯一失败 = `tests/unit/jobs/persistence.spec.ts` `WI non-normal` 参数化用例的 error 分支：该例在切到当前场景后直接 `commit(...'memory edit')` 并期待成功，而 A12 按已批准语义（plan §2.4【r6.6】、T-A12【r6.6 精度】）在 commit 内、边界校验后、替换状态前抛 adapter_error。A12 的写入清单不含该文件，Astra 停下正确。
+  - **定性**：已批准语义下旧测试预期的维护，不是需求变更、不是新 guard，也不是调用失败（不回退）。全量红作为失败留痕保留。
+  - **写权限**：
+    - **T-A12** 加一条：`tests/unit/jobs/persistence.spec.ts` 只改该参数化用例的 error 分支——断言真实 commit 抛 adapter_error，且目标作业经真实 job-state 读函数读回不变；其余 7 场景照旧 commit。保留 error 业务读失败、显式 reset 允许、两 key 零访问、无 clear、normal 快照与 inbox 哨兵不变等全部既有断言；不放宽生产规则、不 skip / 注释、不改场景列表或断言白名单。可作 A12 的独立 test-fix commit。
+    - **T-A13**：对该文件无额外许可，不扩到其他用例 / 文件。
+  - **不变**：任务数、估时、依赖、完成标准 / 命令（224 ↔ 224）、46 AC、R9（blob `74084c1…`）；plan 不改。
+  - **后续**：集成人提交并定向同步三份文档到实施树（保留 A13 工作区改动，不 reset / stash / 覆盖 frontend 文件）后，Astra 先提交 A12 test-fix，再跑全量回归、交付 A13，继续 T-A22a。批次 Review 核真实 diff。
 - **复核建议**：见 analyze.md「Analyze R12」§8。不自动触发新的 A 轮次；持久化白名单补列与 `mappingHistory` 提请第三批独立代码 Review 明确核对；开码前是否另做限定范围的 A 定向复核，由 Walter / 集成人裁量。

@@ -19,6 +19,8 @@
 > **上游与 H-x**：main `072bb12` 仍不在本树祖先，本批继续 pin `90187f7`，不自动同步（R2-D 流程不变，不是本批的人工门）。消费分支 `integration/frontend-workbench-v2` 仍为 `3f63273`，四项 ④ 仍缺；本 feature 不写、不重建 v2 树。
 >
 > **作者**：claude-opus-5-5 via anthropic（本轮协调器对 `claude-bridge/claude-opus-5-5` 的最小真实调用 exit 1，quota / rate / spend_limit 类；同模型官方通道 exit 0；本窗口不重试已明确限额的通道，未改配置）。详见 analyze.md「Analyze R12」。
+>
+> **r6.6.1 / r6.6.2 范围补记**（只扩测试文件写入许可，不改需求 / 标准 / 命令 / 结构）：r6.6.1 允许 T-A11 / A12 / A13 在 `real-stubs.spec.ts` 的 `requests` 表追加本任务新增方法键（Analyze R12.1）；r6.6.2 允许 T-A12 只改 `persistence.spec.ts` 中 `WI non-normal` 参数化用例的 error 分支，以符合已批准的 error 拒绝时机，T-A13 对该文件无许可（Analyze R12.2）。实施进度见 implementation-log §7 / §10；任务状态行由批次 Converge 回写，本补记不改状态。
 
 > **当前实施进度（第二批独立 Review 后记账，2026-10-29；本块为准，取代下方 Converge batch2 块中“6 项已实施、待本批独立代码 Review”等当时原文）**：
 >
@@ -506,6 +508,12 @@
     - `submitIntake({ jobId: null, inputKind: 'url', url: 'https://example.invalid/sample', sourceNote: { purpose: '样例', reliability: 'unknown', publishedAt: null, validUntil: null, scopeNote: null } })`
     - `getIntakePreview('u-unassigned-file')`、`confirmIntake('u-unassigned-file', [])`
     - 既有键、`satisfies` 约束、断言与 describe / test 不改，不新增标准 / 命令。
+  - **【r6.6.2 语义回归许可】`tests/unit/jobs/persistence.spec.ts` 只改一处**（T-A11 交付，属 §1-5 jobs 测试所有权）：
+    - 依据：本任务【r6.6 精度】与 plan §2.4【r6.6】规定 error 拒绝放在 `commit` 内（mutator 与边界校验之后、替换状态之前）。因此 error 场景下真实 `commit` 必然抛 adapter_error。T-A11 的 `WI non-normal` 参数化用例（`test.each([...八个非 normal 场景])`）在切到当前场景后直接 `commit(...'memory edit')` 并期待成功，其 error 分支与已批准语义冲突（实施树 `742d6aa` 起该分支红；A13 末轮全量唯一失败即此例）。
+    - 允许改动：**只改该参数化用例的 error 分支**——error 时断言真实 `commit` 抛 `{ error: { code: 'adapter_error' } }`，且目标作业经真实 job-state 同步读函数（如 `getJob`）读回与调用前相同；其余 7 个场景照旧直接 commit、不抛。
+    - 不改：该用例其余全部断言（error 下业务读 `listJobs` 仍为 adapter_error；旧 client 的 `resetMockData` 在 error 下也照常 resolve null；`getJobScenario()` / `getPersistenceStatus()`；两个 key 的 getItem / setItem / removeItem 零调用、无 `clear`；normal 快照哨兵与 inbox 哨兵不变）；文件内其他 describe / test（含 `normal override`）、spy 方式与场景列表。
+    - 禁止：放宽生产规则（error 拒绝时机、写包装）、`skip` / 注释掉用例、把 error 移出场景列表、改成断言白名单或宽松匹配。
+    - 性质：A12 已批准 error 语义的旧测试维护（T-A11 标准 4 / 命令 4 随之恢复），可作为 A12 的独立 test-fix commit；不新增标准 / 命令 / guard，不改估时、依赖与总数。原全量红（925 pass / 1 fail）作为失败留痕，见 analyze.md「Analyze R12.2」。
   - **不做**：真实解析 / 抓取 / 模型 / 启发式隔离；T-A13 的池、归入、删除与取消；不宣称 T-A17 的只读门已完成。
 - **完成标准**：
   1. createJob 校验必填（标题非空、类型合法），回执和读回均为 collecting / collect，交付物 draft（AC-001-3 部分前置）。
@@ -536,6 +544,7 @@
     - 标准 3：cancel 后 `getJob` 的 currentStage / stages 与取消前一致，各阶段工作区内容不变。本批没有 run 关联，“不 abort”只作实现约束（晚到事件隔离见 T-A18 标准 5）。
     - 每例前清 `localStorage`。
   - **【r6.6.1 范围精度】`tests/unit/jobs/real-stubs.spec.ts`**：规则同 T-A11 该条，只在 `requests` 表追加本任务四键的真实 stub 调用，参数按实际类型给最小合法值。示例（非强制）：`listUnassignedUploads()`、`assignUpload('u-unassigned-file', 'j-collect')`、`removeUpload('u-unassigned-file', '样例删除')`、`cancelJob('j-collect', '样例取消')`。既有键、`satisfies` 约束、断言与 describe / test 不改，不新增标准 / 命令。
+  - **【r6.6.2】`tests/unit/jobs/persistence.spec.ts`**：本任务对该文件**无写入许可**。唯一许可的改动（`WI non-normal` 参数化用例的 error 分支）归 T-A12 语义回归（见 T-A12【r6.6.2】），不得扩到其他用例或文件。
 - **完成标准**：
   1. 待归属的投放出现在池中；assign 之后从池中消失、出现在该作业的采集列表，并追加一条作业内 ingest 事件；assign 到未知作业返回 not_found（AC-003-5 部分前置）。
   2. removeUpload 之后当前视图不再显示该投放，但介入历史和原锚仍可查（AC-007-3 部分前置）。
