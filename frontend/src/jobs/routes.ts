@@ -2,6 +2,7 @@ import type { Pinia } from 'pinia'
 import type { Router, RouteRecordRaw } from 'vue-router'
 import JobListPage from './pages/JobListPage.vue'
 import JobDetailPage from './pages/JobDetailPage.vue'
+import { useSessionStore } from './stores/session.ts'
 
 export const jobRoutes: RouteRecordRaw[] = [
   {
@@ -18,7 +19,7 @@ export const jobRoutes: RouteRecordRaw[] = [
   },
 ]
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- T-A22b uses pinia to bind the route context.
 export function registerJobRoutes(router: Router, pinia: Pinia): void {
   for (const route of jobRoutes) router.addRoute(route)
+  useSessionStore(pinia).bindRouter(router)
 }
