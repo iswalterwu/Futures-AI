@@ -5,6 +5,7 @@
 >
 > - **作者 / 通道**：Plan = claude-opus-5-5 via anthropic（claude-bridge 的 seven_day 额度已确认耗尽，本窗口不再探活；官方通道最小真实调用成功）。协调会话 = openai/gpt-6.1-sol（不是 Plan 或 Implement 作者）。
 > - **基线**：`8ba1b6a304f916e3d57ebdd6b89790b75a15f14c`，分支 `plan/desktop-shell-resume`。
+- **修订 7 作者 / 输入**：同一 Plan 会话 `01a187bb-94f0-739b-a564-841bc4ccb516`（`anthropic/claude-opus-5-5` via anthropic，本轮沿用 `ACTIVITY_PLAN_OK`，bridge 同窗口已知耗尽不重试，非回退）。固定输入 `ec55aeed3c2b24ac8d2ea80bbb8bd7efa78723e5`（内容同主树 `ac8c028`，含 A 第 5 轮 41/41 与证据 §13 的 T-07b 预检停止；源码仍为 T-06d 检查点）。A 第 5 轮不自动覆盖修订 7。
 - **修订 6 作者 / 输入**：Plan / Tasks / Analyze = `anthropic/claude-opus-5-5` via anthropic，会话 `01a187bb-94f0-739b-a564-841bc4ccb516`（PI 环境实核）。`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽（约 2026-10-30 重置），按 AGENTS §6.5 不重复探活；本轮官方最小真实调用返回 `ACTIVITY_PLAN_OK`；不是因测试变红或发现问题而换模型。固定输入 `c1b40700b3824396d7a071868f904d181f6adcfd`（分支 `plan/desktop-shell-activity-harness`，主树快照，含 `implementation-evidence.md` §12 的 T-07a 停止记录；源码为 T-06c/d 检查点）。A 对修订 5 的 41/41 **不自动**覆盖修订 6。
 - **修订 5 作者 / 输入**：Plan / Tasks / Analyze = `anthropic/claude-opus-5-5` via anthropic，会话 `01a186ae-a724-7435-9516-4e3e3028f6a5`（PI 环境实核）。`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽（约 2026-10-30 重置），按 AGENTS §6.5 不重复探活；本轮官方最小真实调用返回 `ROUTING_PLAN_OK`；不是因测试变红而换模型。固定输入 `4b0c3c510906bba83f41eac4ac34bbbccf1c1a30`（分支 `plan/desktop-shell-settings-routing`，主树 T-06b 检查点；实施提交 `d77ce69` 代码相同），原始源码基线仍为 `8ba1b6a`。A 对修订 4 的 41/41 **不自动**覆盖修订 5。
 - **修订 4 作者 / 输入**：Plan = `anthropic/claude-opus-5-5` via anthropic（本轮官方通道最小真实调用成功；`claude-bridge` 同模型 seven_day 限额在当前窗口已知耗尽，按 AGENTS §6.5 不重复探活；不是因测试变红而换模型）。固定输入 `1275ae2`（分支 `plan/desktop-shell-build-assets`），原始源码基线仍为 `8ba1b6a`。下方「阶段状态」是修订 3 时点的历史描述；修订 4 的审批状态以 `checklist.md` / `review.md` 为准，A 对修订 3 的 41/41 **不自动**覆盖修订 4。
@@ -13,6 +14,16 @@
 > - **标记约定**：【现有】= 基线源码里已经有的行为；【计划】= 尚未实现的设计；【外部】= 依赖本 checkout 之外的产物或环境，本 feature 只能给出过渡证据。
 
 ## 0. 修订摘要
+
+### 修订 7（相对修订 6；T-07b/T-07e 两条旧 null 断言的兼容所有权，不改 spec、不改 AC、不改安全面）
+
+| 项 | 内容 |
+|---|---|
+| 触发（观测事实） | T-07b 实施会话 `01a187d9` 在新基线（42 unit / 19 场景 310/310、无失败）之后、写代码前预检停止（`implementation-evidence.md` §13）：`shell/test/e2e/harness-selftest.js:26` 断言 `[snapshot.tray, snapshot.activity]` 等于 `[null, null]`（该文件未分配给任何 T-07 任务）；`shell/test/e2e/crash-restart.js:32` 断言 `[after.tray, after.activity]` 等于 `[null, null]`（T-07e 只允许追加、须保留旧断言）。T-07b 按 §8.4 第 4 段接线后快照必须读出真实非 null 的托盘与活动状态，两条旧断言必然失败 |
+| 修正 | §8.4 第 6 段：两条“未实现不伪造”断言由 T-07b 在首次接入真实状态时替换为更强的真实状态断言（字面期望 `tray.state === 'idle'`、`activity.accepting === true`）；T-07e 保留 T-07b 的新断言，只追加通知/托盘断言 |
+| 不变 | 修订 6 的提前退出约定、`FAI_CHECK_PRODUCER`、钩子接线所有权与停止规则；spec 与 38 条 AC；控制命令与快照键；运行器、单测、夹具；其余全部旧断言；依赖、安全配置、生命周期；任务数 41、合计 62h |
+| 范围判定 | 旧断言是“尚未实现时不伪造”的阶段性负向不变量，T-07b 实现后用真实状态的正向断言取代，证明力更强，不是弱化；不需 Clarify / Gate 1 / ADR / Walter 额外批准。若 A 判断需要，按停止处理 |
+| 审批 | A 第 6 轮（新开独立会话）按 `tray-compat-review-request.md` 复查后，T-07b 才可开始 |
 
 ### 修订 6（相对修订 5；T-07a 运行器提前退出观察契约 + T-07b/c/e 钩子接线所有权，不改 spec、不改 AC、不改安全面）
 
@@ -832,6 +843,12 @@ restarting 预算 3 次（间隔 0.5/1/1.5 s）；用尽 → failed(restart_limi
 - 各任务的唯一可写集合见 tasks T-07a/b/c/e。`check.js` 仅 T-07a 可改，且只限第 1、2 段；`check-runner.test.js` 仅 T-07a 可追加第 3 段的 5 个用例；`src/test-hooks.js` 各任务只限第 4 段所列改动。
 - 出现即停、写证据并报协调者，不自行扩大范围：真实 Electron 中 `install()` 内 `app.exit(4)` 不能在控制通道之前以退出码 4 结束，或标记未写出；需要新控制命令、emit/注入事件、主进程 JS、任意路径/URL、钩子保存业务状态或菜单模拟；需要改默认 `launch` 语义、时限、清理或泄漏判定；任何旧场景只有弱化断言才能通过。
 - 禁止的替代做法：`second:true` 冒充；在 `ctx.launch()` 之外直接 spawn；捕获 `launch` 异常后读取 `ctx.instances`；伪造 `SMOKE` 行；把事件校验推迟到控制通道就绪之后；放宽默认 `launch` 或现有断言。
+
+**6. 两条旧 null 断言的兼容（修订 7，T-07b / T-07e）**
+
+- 映射：`harness-selftest.js` 第 26 行 `未实现 tray/activity 不伪造` 与 `crash-restart.js` 第 32 行 `不伪造托盘或活动` 是 T-07b 之前的阶段性负向不变量。T-07b 在首次接入真实托盘与活动状态的同一任务中，把两行各**原位替换**为一条真实状态断言，断言名分别为 `托盘与活动来自真实状态`（harness-selftest，假后端 `ok`、无事件夹具）与 `重启后托盘与活动来自真实状态`（crash-restart，真实后端）；期望值写成字面量 `[snapshot.tray.state, snapshot.activity.accepting]` = `['idle', true]`（crash-restart 用 `after`）。依据：§3.5 无未清除错误且无运行中作业 → `idle`；未进入退出等待 → `accepting=true`。不用生产函数推算期望，不猜测其他内部字段。
+- T-07e 起 `backend.ready` 会清除 `backend.error`（§3.5“托盘短暂为 error”），重启就绪后仍为 `idle`；T-07e 保留 T-07b 的新断言，只追加 `通知含 backend_error`、`托盘曾为 error`。
+- 只有这两行可改；两文件其余断言与其他旧场景、运行器、单测、夹具只读。禁止按场景条件返回假 null、只在夹具下创建托盘、或删除断言不替换。若真实状态在这两个场景中不是 `idle` / `accepting=true`，停止并报告，不改期望迁就实现。
 
 ## 9. 验收对应（spec 38 条 AC 逐条 + 无 AC 的 what）
 
