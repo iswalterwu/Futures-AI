@@ -3,7 +3,13 @@
 > Analyze 阶段产物（AGENTS §2 第 7 步）：只读报告 spec.md / plan.md / tasks.md 之间的冲突、差距与模糊之处。本报告**不修改** spec / plan / checklist；发现的 Tasks 可修正问题先在 R1 结束只读报告，再单独修订 tasks.md，然后重新读取输入、重跑（R2）。R1 的发现原样保留，不因修订而删除。
 >
 > **阶段记录（脱敏）**：角色 = Analyze；Analyze = **claude-opus-5-5 via anthropic**。通道说明同 tasks.md 页首：沿用本限额窗口 R3 的探活证据（`claude-bridge/claude-fable-5-1` 失败，quota / rate / spend_limit 类，exit 1；`anthropic/claude-opus-5-5` 已真实探活并完成 Plan 补正）；本阶段**未发起 claude-bridge 调用，也未单独探活 bridge-opus**，未改 provider / 路由 / 配置。
-> **当前结论（2026-10-29 第三批实施后 Converge batch3）：见文末「Analyze R13」**
+> **当前结论（2026-10-29 第三批代码 Review 后 R3-A Converge 补修登记 r6.8）：见文末「Analyze R14」**
+> - **第三批**：T-A11 / A12 / A13 / A22a 经独立代码 Review 通过（`review-batch3.md`，原件 `49edb7e`；0 P1 / P2，3 P3），记为已完成。
+> - **R3-A**：集成人决定现在修 → 新增 **T-A22c**（≤ 0.5 h，依赖 T-A22a，方案 b，恢复 r6.6“`applyFilter(f)` 只写 `filter` / `filteredJobs`”的原意）。不回 Clarify，spec / 46 AC 不变。**修复任务已登记、待实施 / 待 A 增量复核**，代码未修。R3-B → T-C03 / T-A17、R3-C → T-G04，未修。
+> - **结构**：68 个任务 / 102.5 h；完成标准 / 命令 227 / 227；20 已完成、48 未开始；46 AC 最终验收 0；feature **未收敛**。
+> - **有效 Checklist**：R9 `ab742f5`（未改）。**不是** Review / Gate 2 / Handoff。
+>
+> 【历史原文】**当前结论（2026-10-29 第三批实施后 Converge batch3）：见文末「Analyze R13」**
 > - **本批**：T-A11 / T-A12 / T-A13 / T-A22a 已实施（代码 `ab742f5..0032fc6 -- frontend`，5 个前端提交，含 A12 test-fix `0a2d1a5`）。Converge 判本批范围**已收口、待第三批独立代码 Review**，未新增任务；实施定形只是精度，已同步 plan / tasks / interface-handoff（r6.7）。
 > - **feature 整体**：**20 / 67 已实施**（16 已完成 + 4 待审）、**47 未开始**，**未收敛**（尚未实施 + H 组外部阻塞）；46 AC 最终验收 0。H-2·列表生产方 ①②③ 具备、④ 缺；H-x 无一已交付。
 > - **有效 Checklist**：R9 `ab742f5`（未改）。上游 main `072bb12` 未同步。
@@ -1017,3 +1023,102 @@
 - **本批**（4 项）：**已收口、待第三批独立代码 Review**。
 - **feature**：**未收敛**（47 项未实施 + H 组外部阻塞）；46 AC 最终验收 0。
 - **不是** Review 通过、Gate 2 或 Handoff；H-x 无一“已交付”。
+
+---
+
+## Analyze R14（只读；第三批代码 Review 后的 R3-A Converge 补修登记 r6.8，2026-10-29；当前索引，R13 历史保留；区别于 Checklist R9，**不是**审核结论）
+
+> **阶段记录（脱敏）**：
+> - **角色与模型**：Converge 补修任务登记 / Plan 精度 + 本分析；实际模型 = **claude-opus-5-5 via anthropic**（PI_SESSION_ID `01a1873f-2338-7718-8e99-6609b56b7a8a`）。
+> - **通道**：`claude-bridge` 本窗口已明确 quota / rate 限额，按 AGENTS §6 规则 2 / 5 不重复试；官方通道成功。只换通道、不换模型，未改 provider / key / 路由 / 全局配置。
+> - **派工**：集成人协调会话 `01a18388-a371-7746-8158-9fb15d55d819`。Walter 的代码 / 集成授权在既有 tasks 范围内持续有效，本轮不新增人工授权。
+> - **性质**：只读报告，不勾选 checklist。当前有效审核 = **Checklist R9**（`ab742f5`，本树 `checklist.md` blob `74084c1337491a042c944096e1f290fe07aab324`，未改）。
+>
+> **写入与执行边界**：
+> - **可写范围**：唯一可写 worktree `D:/2030/Futures-AI-interaction-converge-batch3`（`docs/workbench-interaction-batch3-converge`，HEAD `49edb7ebf7bd0fdb0ab9ea0767c33945b39e13cf`，起始 clean）。只写 plan / tasks / analyze / implementation-log / interface-handoff 与 `specs/README.md` 本 feature 行。
+> - **未改动**：代码 / 测试 / fixture / spec / checklist / 原 Review 原件（`review-batch3.md` 等）/ 各 converge 文件 / 根 HANDOFF / 权威 docs / 其他 worktree。
+> - **未执行**：未 commit / push / merge；未安装；未启动服务或子 agent；**未运行任何产品测试**。
+> - **只读脚本与日志**（非项目产物，不清理共享 tmp），在 `C:/Users/iswal/AppData/Local/Temp/wi-batch3-01a18388-0yit2j1a/` 下：
+>   - `cache-fix-plan-struct.py`：由 `analyze-r12-struct.py` 派生，只把任务号正则扩到 `[abc]` 后缀，并把批次统计对象改为 T-A22c。输出 `cache-fix-plan-structure.log`（本轮 tasks）与 `cache-fix-plan-structure-HEAD.log`（`49edb7e`）。
+>   - `cache-fix-plan-stdcmd.py` → `cache-fix-plan-std-cmd-diff.log`。
+>   - `cache-fix-plan-ready.py`（以 20 项已完成计入的下一可起步）。
+
+### 1. 重新读取与输入
+
+- **工作流与权威**：AGENTS.md（§2 第 7 / 9 / 10 步、§5、§6）、`docs/plan.md`。
+- **本 feature**：冻结 spec.md（AC-001-1 / 001-2 / 001-4 / 009-1）；plan.md §2.3（含 r6 / r6.6 / 写后统一刷新）；tasks.md 页首、§1、§2a H-2·列表、T-A22a 全文（含【r6.6】【r6.7】）、T-A22b、T-B01 / T-B02 / T-B04、§5～§7；checklist R9（只读）；本报告 R13；implementation-log 页首 / §7 / §8 / §10；interface-handoff 页首 / §1 / §2 H-2 行 / §3。
+- **审核原件**：`review-batch3.md`（`49edb7e`）全文，重点 §0、§1、§4 探针 P1 / P2 / P3、§5 R3-A 的两种最小方案（a）/（b）与 O-R3-2、§6、§8。原 Review 结论（本批通过，0 P1 / P2，3 P3）只引用、不改写、不再找模型重判。
+- **真实代码**（本树 frontend = `0032fc6`，只读）：`frontend/src/jobs/stores/jobs.ts`、`frontend/tests/unit/jobs/jobs-store.spec.ts`。
+
+### 2. 源码事实（`0032fc6`，只读，精确到行）
+
+- **初始状态**（`jobs.ts:11-15`）：`jobs=[]`、`listStatus='idle'`、`listError=null`、`filter=null`、`filteredJobs=null`。
+- **`ensureJobs()`**（`:17-19`）：只在 `listStatus==='idle'` 时调 `refresh()`。
+- **`refresh()`**（`:21-33`）：没有数据且不是 ready 时才置 loading；先 `listJobs()` 写 `jobs`，`filter` 非 null 再 `listJobs(filter)` 写 `filteredJobs`；成功 ready + 清错，失败 error + `listError`，两缓存保留。
+- **`applyFilter(value)`**（`:35-49`）：先写 `filter`；`null` 时置空 `filteredJobs` 后返回，**不碰读状态**。非 null：成功写 `filteredJobs`（`:42`），并**写 `listStatus='ready'`（`:43`）与 `listError=null`（`:44`）**；失败写 `listError` 并置 error（`:46-47`），`filteredJobs` 保留。
+- **测试**：`jobs-store.spec.ts:215-234` 的 “filter read errors resolve and retain both caches; the next filter read clears the error” 在 `:232-233` 断言切回 normal 后筛选成功会清错、回 ready，即固定了 `:43-44` 的行为。其余 `applyFilter` 成功都发生在 `ensureJobs()` 已 ready 之后（`:46`、`:151`、`:177`、`:192`、`:256`、`:270`、`:352` 起各例），删掉 `:43-44` 后这些例的状态断言不受影响。
+- **筛选读状态的精确起点**（方案 b 之后，不是二选一）：全新 store 上 `applyFilter(f)` 成功后为 `filter=f`、`filteredJobs=listJobs(f)`、**`listStatus='idle'`、`listError=null`**、`jobs=[]`。随后 `ensureJobs()` 读调用依次为 `[f]`（筛选）、`[]`、`[f]`（refresh），终态 ready。base 已为 error 时，筛选成功后仍是 `error` + 原 `listError`，只有显式 `refresh()` 才回 ready。
+
+### 3. 差距判定
+
+| # | 事实 | 判定 |
+|---|---|---|
+| G-8 | T-A22a【r6.6 精度】原文是“`applyFilter(f)` **只写** `filter` / `filteredJobs`，失败口径同上”；plan §2.3 r6 与 interface-handoff §2 ① 把 `listStatus` / `listError` 写成**未筛选列表缓存**的读状态；`ensureJobs()` =“仅首次加载” | `0032fc6:43-44` 越出了已审设计。r6.7 当时把它登记为“沿用 refresh 成功口径（O-B3-4，交 Review）”，Review 判为 P3 R3-A，**不接受“未规定”**。这是实现与已审设计的差距，**不是需求变更** |
+| G-9 | A 给出两种最小修复：(a) 成功分支只在非 idle 时置 ready / 清错；(b) 删去两行，只写两字段、错误只由 `refresh()` 清 | 集成人取 **(b)**：它与 r6.6“只写”原文逐字一致，不保留“筛选成功也清 base 错误”（即 P2 洗白），也不引入以 idle 为条件的分支。本报告只按 (b) 落定，不留“二选一” |
+| G-10 | 方案 (b) 下，筛选失败造成的 error 也须显式 `refresh()` 清除（筛选成功不再清） | 这是“共享读状态、只由 refresh 恢复”的直接后果，与 S-38 既有口径一致：error 下 `ensureJobs()` 不重试、显式 refresh 恢复。T-B01 的错误重试本来就调 `refresh()`（tasks T-B01 修改范围），重读未筛选列表与当前筛选。不新增筛选专属状态（AGENTS §5.1） |
+| G-11 | 筛选失败后 `filter` 已更新、`filteredJobs` 仍是旧结果（P3 / O-R3-2） | plan 原设计“已有数据保留”的直接后果，mock 下不可观察。按 A 建议只写精度（plan §2.3【r6.8】），不加 rollback / 锁 / 请求序号 |
+| G-12 | R3-A 要求在 T-B02 / H-2 ④ 之前关闭；原件给出两种落点：“≤ 0.5 h 小任务”或“并入 T-B02 修改范围” | 集成人决定现在修，因此按 AGENTS §2 第 9 步追加独立任务，不并入已完成的 T-A22a（不改写已审任务），也不并入 T-B02 UI（避免把缺口藏进未来任务） |
+
+### 4. r6.8 落点
+
+- **tasks**：
+  - 新增 **T-A22c**（0.5 h，依赖 T-A22a，位于 T-A22b 后、T-A23 前），3 条标准 ↔ 3 条命令：
+    - 标准 1 ↔ 命令 1：`-t "WI H-2 list status"`，新增两例回归（P1 / P2 两条路径）。
+    - 标准 2 ↔ 命令 2：整文件 `jobs-store.spec.ts`，原四组与 S-38 回归，以及按精度改断言的那一例。
+    - 标准 3 ↔ 命令 3：typecheck、lint 与 `contract --check`。
+    - 标准引用 AC-001-1 / 001-2 / 001-4 部分前置与 AC-009-1 工程门。命令都限定 `tests/unit/jobs/` 路径与 `WI` 标题。
+  - **依赖**：T-B02 增依赖 T-A22c（R3-A 原件点名）。T-B01 也增依赖 T-A22c，理由见 §5。
+  - **其他位置**：§2a H-2·列表加 T-A22c；§5 矩阵三行加 A22c；§6 加 r6.8 一条，并改排序规则、主干、UI 与 H-x 句。
+  - **状态**：T-A11 / A12 / A13 / A22a 回写为已完成（`49edb7e`），原状态原文保留；T-A22a 的“待 Review 核对”后接 Review 判定，修改范围加【r6.8】，r6.7 原文保留；T-C03 / T-A17 / T-G04 状态行加 R3-B / R3-C 的阅读提示。
+  - **页首**：新增 r6.8 块，batch3 块标为历史原文。
+- **plan**：页首 r6.8 条；§2.3 一条【r6.8 精度】，写明归属与恢复口径（O-R3-2 精度一并写入）。
+- **implementation-log**：页首；§7 四行（batch3 Converge 提交、A Review、原件提交、本轮）；§8 第三批 P3 台账与观察；§11 T-A22c 派工准备。
+- **interface-handoff**：页首；§1 H-2·列表行（提供任务、③ A 亲跑、① 待修、④ 不放行）；batch3 Review 后口径；§3 r6.8 接口精度（对外成员不变）。
+- **README**：本 feature 状态行；跨 feature 交接行中 H-2·列表一句。
+- **恢复原意而非新需求**：T-A22a 的标准 1 / 2 原本就要求“`ensureJobs()` 后 `jobs` 等于未筛选结果”与“`jobs` 保持未筛选全集”。T-A22c 只是在 filter-before-ensure 顺序下把它们固定下来。T-A22a 的标准与命令**不改字**。不新增需求、AC、公开成员、机制或流程；spec 不动，**不回 Clarify / Gate 1**。
+
+### 5. DAG、矩阵与门槛
+
+- **AC 祖先约束**：AC-001-1 的最终任务是 T-B01，AC-001-4 的最终任务是 T-B04（只依赖 T-B01），AC-001-2 的最终任务是 T-B02。T-A22c 的标准引用三者部分前置，§5 矩阵要求部分前置都是最终任务的祖先，所以 **T-B01 必须依赖 T-A22c**（B04 经 B01 继承）。语义上 T-B01 也是 `listStatus` / `listError` 的第一个页面消费者（挂载 `ensureJobs()`、错误态与重试），Review 要求 R3-A 在消费方接入前收口。T-B02 再按指令显式加 T-A22c（与经 B01 的传递依赖重复，无害）。
+- **代价**：T-B01 原本可起步，现须等待 T-A22c（0.5 h）。若集成人更希望 B01 与 A22c 并行，替代做法是把 T-A22c 标准中的 AC-001-1 / 001-4 引用去掉、只保留 AC-001-2，这要再走一轮本文件修订。本轮按派工要求保留三个 AC 引用。
+- **门槛**：
+  - 有效 Checklist 仍为 R9，未改、不重勾。T-A22c 是已审 Review 明确要求的 Converge 补修：方案出自审核原件，不新增需求或机制，不需要重新设计 Checklist。
+  - Implement 前置：集成人提交本 r6.8 文档。实施后由**新会话 A**（与实施异模型）做增量代码 Review，只核 R3-A 是否关闭；第三批其他结论保留。
+  - H-2·列表：T-A22c 关闭前不放行 ④，① `0032fc6` 不作 ④ 的集成对象。
+- **上游**：main `072bb12` 不在祖先，继续 pin `90187f7`；R2-D 流程不变。本轮未读写 v2 树。
+
+### 6. 结构复算（脚本、只读，本轮 tasks 对比 HEAD `49edb7e`）
+
+- 68 个任务，编号唯一，排序正确（T-A22b < T-A22c < T-A23）。合计 102.5 h：A 29 / 43.5、B 7 / 10.5、C 5 / 7.5、D 3 / 5、E 3 / 5.5、F 7 / 12、G 10 / 14.5、H 4 / 4。T-A22c 为 0.5 h，在 0.5～2 h 粒度内。
+- 完成标准 / 验证命令 **227 / 227**（HEAD 为 224 / 224；+3 全部来自 T-A22c），逐任务 1:1、编号连续，problems = []；依赖无环且全部前向。
+- AC 矩阵 46 行；部分前置均为最终任务祖先（`PARTIAL-PREREQ NOT ANCESTOR` = []）；矩阵与任务 AC 双向一致（`BIDIR BAD` = []）；T-A22c 出现在 AC-001-1 / 001-2 / 001-4 三行。
+- 状态：20 × 已完成、48 × 未开始（HEAD：16 已完成 / 4 已实施 / 47 未开始）。
+- 命令路径：除 T-A09 命令 3 的三份 v1 契约测试（既有、已审）外，全部在 jobs 路径；`-t` / `-g` 命令 163 条、159 个不同标题（HEAD 162 / 158；+1 = `WI H-2 list status`）。整文件计数中的 2 处非 WI 标题是 §1 的 `<标题>` 占位符。
+- **逐任务文本比对**（`cache-fix-plan-std-cmd-diff.log`）：差异只有 ① T-A22c 新增的预计 / 依赖、3 条标准与 3 条命令；② T-B01 / T-B02 依赖行；③ §5 三行；④ §6 四句改写与新增 r6.8 一条。**其他任务的预计、标准、命令均无变化**，T-A22a 的 5 条标准与 5 条命令不改字。
+- **命令标题隔离**：新 describe `WI H-2 list status` 不含 `WI H-2 cache` / `filter` / `createJob refresh` / `agent refresh` 子串，T-A22a 命令 1～4 的匹配集合不扩大；命令 2 `WI H-2 filter` 仍为 4 例，其中 1 例按 r6.8 改断言。§2a 的 `-t "WI H-2"` 会包含新 describe，这正是 H-2·列表 ③ 需要的。
+- **下一可起步**（`cache-fix-plan-ready.py`，以 20 项计入）：T-A14 / T-A15 / T-A16、**T-A22c**、T-C01；T-B01 须待 T-A22c。
+
+### 7. 观察项与未解决项
+
+- **R3-A**：修复任务已登记、待实施 / 待 A 增量复核，代码未修，**不得写成“已修”**。H-2·列表 ① `0032fc6` 仍待修，不放行 ④。
+- **R3-B**（→ T-C03 / T-A17）、**R3-C**（→ T-G04）：未修，未经 Walter 风险接受；只在任务状态行加阅读提示，不新增标准。
+- **O-R3-1**（→ T-A20 / T-B05 核）、**O-R3-3**（→ T-G06）：不处理；O-R3-2 已写入 plan 精度。
+- **前两批 P3**（R-A～R-F、R2-A～R2-E）：状态不变（implementation-log §8）。
+- **外部 / 流程**：H 组 v2 外部闸门；各切片 ④ 待 v2 所有者登记；main `072bb12` 同步决策；本树文档待集成人审阅提交。
+
+### 8. 结论（Analyze R14，当前索引）
+
+- **一致性**：spec ↔ plan ↔ tasks ↔ interface-handoff ↔ implementation-log ↔ 审核原件 ↔ 真实代码，在 R3-A 范围内**无未登记冲突**。实现与已审设计之间的差距（G-8）已由 T-A22c 登记为待修；方案 (b) 恢复 r6.6“只写 `filter` / `filteredJobs`”的原意，**不回 Clarify**。
+- **任务 / 标准 / 命令 / 门槛**：T-A22c 3 ↔ 3，命令限定 jobs 路径与 WI 标题，标准引用 AC-001-1 / 001-2 / 001-4 部分前置与 AC-009-1；DAG 与 AC 祖先一致；Checklist R9 不变；实施后由新会话 A 增量代码 Review。
+- **进度**：68 个任务 / 102.5 h；20 已完成、48 未开始（含 T-A22c）；46 AC 最终验收 0；feature **未收敛**（48 项未实施 + H 组外部阻塞）。
+- **不是** Review、Gate 2 或 Handoff；H-x 无一“已交付”。

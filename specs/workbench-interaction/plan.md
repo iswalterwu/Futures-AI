@@ -26,6 +26,9 @@
 > - 首次投放时 ingest 锚到同次新建的 dataset（Checklist R9 S-39 的建议读法）。
 >
 > 方法签名与 §2.3 / §3【r6.6】一致，无须改。不改行为、方法集、动作矩阵、九场景、样例表、迁移表、定稿语义、46 AC 与任务结构；不是需求变更（analyze.md「Analyze R13」、`converge-batch3.md` §3）。作者 = claude-opus-5-5 via anthropic（本轮协调器对 `claude-bridge/claude-opus-5-5` 的最小真实调用 exit 1 = quota / rate / spend_limit 类；同模型官方通道成功；本窗口不重试，未改配置）。
+> **2026-10-29 r6.8（第三批代码 Review 后的 Converge 补修登记，未实施）**：第三批独立代码 Review（`review-batch3.md`，原件 `49edb7e`）判本批通过（0 P1 / P2），其 P3 **R3-A** 指出 `jobsStore.applyFilter(f)` 成功分支改写了未筛选列表的 `listStatus` / `listError`。集成人决定现在修，采用 A 的最小方案 (b)。本文件只在 §2.3 补一条【r6.8】精度：读状态归属与恢复口径，即恢复 r6.6“`applyFilter(f)` 只写 `filter` / `filteredJobs`”的原意。修复任务为 tasks **T-A22c**（0.5 h）。
+>
+> 除上述读状态口径外，不改设计、方法集、公开成员、动作矩阵、九场景、样例表、迁移表、定稿语义或 46 AC；不新增筛选状态机、回滚、锁或请求序号；不是需求变更，不回 Clarify（analyze.md「Analyze R14」）。r6.7 对 `0032fc6` 实际行为的登记原文保留在 tasks T-A22a。作者 = claude-opus-5-5 via anthropic（bridge 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置）。
 > **派工记录（脱敏）**：角色 = Plan 补正；任务 = B-09 / B-10；基线 `8bd1b31`；Plan = claude-opus-5-5 via anthropic。通道切换原因：claude-bridge 通道在本限额窗口的 R3 真实探活（对象 `claude-bridge/claude-fable-5-1`）已失败（quota / rate / spend_limit 类，exit 1），按 AGENTS §6 规则 5 不重复试已耗尽通道，本阶段**未发起任何 claude-bridge 调用**；`anthropic/claude-opus-5-5` 最小真实调用成功（exit 0）。只换通道，不换模型，不改任何 provider / 路由 / 配置。
 
 ## 1. 技术方案
@@ -93,6 +96,12 @@
 | `sessionStore` | 当前作业/阶段上下文（供抽屉、介入事件使用）。r6（H-4）：只读 `context: JobContext \| null`，只由 §2.1 的路由守卫设置 / 清空（守卫经【r6.3】`bindRouter` 注册） | 内存 |
 
 - **写后统一刷新（r6，落实本表“写回执/agent 通知后重新读取”）**：所有领域写调用（作业、投放、介入、交付、收件箱已读、重置）成功后只调用一次 `jobsStore.refresh()`；写失败不刷新；不轮询、不建事件总线、不加请求序号等竞态防护（mock 各请求同延迟、按序完成；真实 `api` 接入时再评估，AGENTS §5.1）。“进行中”只用契约常量 `ACTIVE_JOB_STATUSES`，store 不另建判定
+
+- 【r6.8 精度（第三批 Review R3-A；落地任务 tasks T-A22c）】jobsStore 读状态的归属与恢复口径：
+  - `listStatus` / `listError` 是**未筛选列表缓存 `jobs` 的读状态**。只有 `refresh()` 成功（含 `ensureJobs()` 首次加载、写后 / agent 终态刷新）会置 ready 并清 `listError`；`ensureJobs()` 仍只在 idle 时加载。
+  - `applyFilter(f)` 成功**只写** `filter` / `filteredJobs`，不改 `listStatus` / `listError`：全新 store 先筛选时保持 idle，随后 `ensureJobs()` 照常加载未筛选列表；已有的读错误也不会被筛选成功清除，须显式 `refresh()` 恢复。
+  - `applyFilter(f)` 失败沿用已审口径：保留旧 `filteredJobs`，把这份共享读状态置 error 并写 `listError`。此时 `filter` 与 `filteredJobs` 可能暂不对应（Review O-R3-2），UI 按 error 呈现。
+  - 不新增筛选专属状态字段、回滚、锁或请求序号（AGENTS §5.1），对外成员与签名不变。
 
 - **契约 mock 层持有唯一可变状态**（`contracts/mock/job-state.ts`），读写均经契约方法；UI store 只做视图缓存。这样 `api` feature 落地时只需替换实现，不动组件
 - 本地持久化 key：`fai.jobs.v1`（作业、产物/版本、投放的允许子集、介入事件、交付物/定稿快照、收件箱条目）；`fai.inbox.v1`（已读 id）。非 normal 场景使用 fixture + 会话内可变副本，**不读、不写、不清**这两个 key；切场景不会清空正常模式数据

@@ -1,7 +1,18 @@
 # Feature: workbench-interaction 实施日志（implementation-log.md）
 
 > **性质**：Implement 阶段的派工、授权、模型路由、真实基线与证据路径登记（AGENTS §6 规则 4 / 7 的“派工 / 回退简记”）。它**不是** Gate 2 Handoff、不是 `review.md`，也不是审核结论；正式 Handoff 仍按 AGENTS §2 第 11 步在 `review.md` 完成。
-> **当前状态（2026-10-29 第三批实施后 Converge batch3；以本块为准，下列 r6.6.2 / r6.6.1 / r6.6 补记块中的进度与“下一步”为当时原文）**：
+> **当前状态（2026-10-29 第三批独立代码 Review 后 + R3-A Converge 补修登记 r6.8；以本块为准，下一块 batch3 中的“4 项已实施、待第三批独立代码 Review / 20 / 67 / 47 未开始 / 下一可起步”为当时原文）**：
+> - **进度**：**68 个任务、约 102.5 h**；**20 项已完成**（首批 `af95b66` 10 项、第二批 `f72a1a1` 6 项、第三批 `49edb7e` 4 项）；**48 项未开始**（原 47 项 + 新增 T-A22c）。46 AC 最终验收 0；feature **未收敛**（48 项未实施 + H 组外部阻塞）。
+> - **第三批代码 Review**：审核员 A = claude-fable-5-1 via anthropic（新会话、独立 worktree，固定审文档 `e14ad25` + 代码 `0032fc6`），判**本批通过：0 P1 / P2，3 项 P3（R3-A～R3-C）**，另观察 O-R3-1～3；原件 `review-batch3.md` 由集成人原样提交于 `49edb7ebf7bd0fdb0ab9ea0767c33945b39e13cf`。A 亲跑全量单测 31 files / **951** / 0、19 条任务命令同数、既有 shell + agent E2E **24** / 0、六守卫 / contract / typecheck / lint、只读探针 8 例；R9 交代的隐私核对项经 A 认可。本记账不改 Review 结论。
+> - **R3-A**：集成人决定现在修 → 新增 **T-A22c**（≤ 0.5 h，依赖 T-A22a，方案 b：`applyFilter(f)` 成功只写 `filter` / `filteredJobs`）。状态 = **修复任务已登记、待实施；实施后由新会话 A 做增量代码 Review 核 R3-A 关闭**（其他结论保留）。代码未修。派工准备见 §11。
+> - **R3-B → T-C03 / T-A17，R3-C → T-G04**：留原归属，未修、未经 Walter 风险接受（§8 台账）。
+> - **有效 Checklist**：仍为 R9 `ab742f5`（blob `74084c13…`，未改、不重勾）。T-A22c 是已审 Review 明确要求的 Converge 补修，不新增需求 / 机制，不另开 Checklist 轮次。
+> - **H-x**：H-2·列表提供任务加 T-A22c；① `0032fc6` 含 R3-A、仍待修，**T-A22c 关闭前不放行 ④**；③ 5 / 4 / 7 / 9 现有 A 亲跑同数。H-6 仍缺 T-A21；H-5 / 页面切片未做。
+> - **下一可起步**（脚本核）：**T-A22c**、T-A14 / T-A15 / T-A16、T-C01；T-B01 / T-B02 须待 T-A22c。
+>
+> 不是 Review / Gate 2 / Handoff。
+>
+> 【历史原文】**当前状态（2026-10-29 第三批实施后 Converge batch3；当时以本块为准，下列 r6.6.2 / r6.6.1 / r6.6 补记块中的进度与“下一步”为当时原文）**：
 > - **进度**：**20 / 67 已实施**。前两批 **16 项已完成**（批次 Review 通过）；第三批 **4 项已实施、待第三批独立代码 Review**；**47 项未开始**。46 AC 最终验收 0；feature **未收敛**（尚未实施 + H 组外部阻塞）。
 > - **第三批固定提交**（实施者 openai/gpt-6-astra，调用正常，未回退；代码 diff `ab742f5..0032fc6 -- frontend`，5 个前端提交，17 个文件）：
 >   - T-A11 `c7ebccb`、T-A12 `742d6aa`、A12 test-fix `0a2d1a5`（r6.6.2）、T-A13 `a5ad11c`、T-A22a `0032fc6`；完整 SHA 见 §6 第三批表。
@@ -257,6 +268,10 @@
 | 2026-10-29 | Implement（新会话，实施树） | T-A22a | `a5ad11c` | `openai/gpt-6-astra`（首选，调用正常，未回退） | 提交 `0032fc6`（只动授权的 3 个文件）；任务命令 5 / 4 / 7 / 9 + 工程门通过；末轮 clean 全量 31 文件 951 / 0、六守卫、`contract --check` 24 / 10 / 2、既有 shell + agent E2E 24 / 0；本轮无失败 |
 | 2026-10-29 | 集成人 | 第三批 ff-only 集成 | `ab742f5` → `0032fc6` | — | `integration/workbench-interaction` @ `0032fc6`（旁证；未写 v2 集成树，④ 全缺） |
 | 2026-10-29 | Converge / 进度登记 + Analyze R13 | 第三批 4 项对比、精度同步（r6.7）、状态回写、本日志 / 交接 / README 登记 | `0032fc6`（文档树 `docs/workbench-interaction-batch3-converge`） | `anthropic/claude-opus-5-5`（PI_SESSION_ID `01a18715-bffa-74e9-8b0d-483f569eee2b`；本轮协调器对 `claude-bridge/claude-opus-5-5` 最小真实调用 exit 1 = **quota / rate / spend_limit 类**，同模型官方通道成功；本窗口不重试；未改配置） | 本批已收口、待第三批独立 Review；feature 未收敛；未改代码 / 测试 / spec / checklist / 旧 Review / 旧 Converge；未跑产品测试；未 commit（由集成人提交） |
+| 2026-10-29 | 集成人 | 提交 batch3 Converge 文档 | `0032fc6` | — | 提交 `e14ad25d525d319fee85e2fc34e4ebb972e42150` |
+| 2026-10-29 | 审核员 A（新会话、独立 worktree `D:/2030/Futures-AI-interaction-review-batch3`，只读审查） | 第三批 T-A11 / A12 / A13 / A22a 批次代码 Review | 文档 `e14ad25`、代码 `0032fc6`（diff `ab742f5..0032fc6`） | `anthropic/claude-fable-5-1`（PI_SESSION_ID `01a1872c-7882-7448-9b7d-17c75c6101cc`；协调器对 bridge / opus 的最小真实 probe 为 quota / rate / spend_limit 类，本窗口同通道不重试；未单独探 fable 的 bridge；只换通道、未改配置；与 Implement 异模型、与 Converge 隔离） | **本批通过**：0 P1 / P2，3 P3（R3-A～R3-C）、3 观察；亲跑全量单测 951 / 0、19 条任务命令、E2E 24 / 0、只读探针 8 例；只写审核原件，未改代码 / checklist |
+| 2026-10-29 | 集成人 | 原样提交审核原件 | `e14ad25` | — | 提交 `49edb7ebf7bd0fdb0ab9ea0767c33945b39e13cf`；决定现在修 R3-A，R3-B / R3-C 留原归属 |
+| 2026-10-29 | 计划 / 分析类（Converge 补修任务登记 r6.8 + 只读 Analyze R14，非实施） | 新增 T-A22c（R3-A 方案 b）、plan §2.3 / T-A22a 精度、四项状态回写为已完成、B01 / B02 依赖、§5 / §6、本日志 / 交接 / README 本 feature 行 | 文档树 `docs/workbench-interaction-batch3-converge` @ `49edb7e`（代码 = `0032fc6`） | `anthropic/claude-opus-5-5`（PI_SESSION_ID `01a1873f-2338-7718-8e99-6609b56b7a8a`；bridge 本窗口已明确 quota / rate 限额，不重试；官方通道成功；未改配置） | 文档完成；未改代码 / 测试 / spec / checklist / 原 Review / converge / 根 HANDOFF；未跑产品测试；未 commit（由集成人提交） |
 
 ## 8. 首批 Review P3 后续定位（只登记，不改规范机制；**均未经 Walter 风险接受**，本批不修代码）
 
@@ -307,6 +322,22 @@
 - **R-A / R-B 残留 / R-E / R-F / R2-C / R2-D**：本批不涉及，未处理。
 - **Checklist R9 P3**：S-38（refresh 自身 resolve）、S-39（ingest 锚 dataset 的读法）、S-40（corrupt 后 reset 解除闩锁）均已在实施中落实；tasks 标准未改字，plan 补一句 S-39 精度（r6.7）。
 - **新观察项**：O-B3-1～O-B3-6 交第三批 Review 判定是否算 P3（`converge-batch3.md` §5）。
+
+【batch3 Review 后更新（`review-batch3.md` `49edb7e`；以本段为准，上一段“交第三批 Review 判定”为当时原文）】
+- **R2-B**：DataClient 侧由 A 核对确认（先建 state 再 hydrate，测试固定、无 guard）；AgentClient 侧（T-A18）未做。
+- **R2-E / R2-A / R-C / R-D ②⑤**：A 核对与上段一致；R-D ①③④ 仍归 T-A14 / T-A17 / T-A20。
+- **R-A / R-B 残留 / R-E / R-F / R2-C / R2-D**：本批不涉及、未处理、未经风险接受。
+- O-B3-1 / O-B3-5 / O-B3-6：A 判无发现；O-B3-2 / O-B3-3 / O-B3-4 → 下表 R3-B / R3-C / R3-A。
+
+**第三批 Review P3 台账**（审核原文以 `review-batch3.md` §5 为准；均**未经 Walter 风险接受**，不改 Review 结论）：
+
+| # | 摘要 | 归属 / 时点 | 当前状态 |
+|---|---|---|---|
+| R3-A | jobsStore `applyFilter(f)` 成功分支写 `listStatus='ready'` / `listError=null`：全新 store 先筛选后 `ensureJobs()` 不再加载未筛选列表（探针 P1），base 读错误被筛选成功清除（P2） | 集成人决定**现在修**：T-A22c（r6.8，方案 b，≤ 0.5 h，依赖 T-A22a；T-B01 / T-B02 依赖它）；plan §2.3 / tasks T-A22a 补【r6.8】精度；H-2·列表 ④ 前必须关闭 | **修复任务已登记、待实施；待新会话 A 增量代码 Review 核关闭**；代码未修 |
+| R3-B | 对已删除投放重复 `removeUpload`：已归属者每次追加相同 dataset 修订与 `remove_source` 事件，未归属者静默成功；与 confirm / assign 对已删除者拒绝不一致（探针 P4） | T-C03（删除确认的消费方）或 T-A17（只读门统一入口）；A 建议最小修复 + pool spec 一例，plan §2.4 remove 句补“已删除者拒绝” | 未修 |
+| R3-C | `clearJobKeys` 的 `removeItem` 抛错时，`resetMockData` 以原始 `DOMException` 拒绝（非契约形态），状态停在 unreadable（探针 P5） | T-G04（横幅 / 重置按钮接入时）；A 建议按 degraded 处理或转 `adapter_error`，plan §3 补一句 | 未修 |
+
+观察（不计入判定，供后续任务阅读）：O-R3-1（`cancelJob` 改写 failed 作业的原失败原因）→ T-A20 / T-B05 接入时核；O-R3-2（筛选失败后 `filter` 与 `filteredJobs` 暂不对应）→ 已随 R3-A 精度写入 plan §2.3【r6.8】；O-R3-3（`readJobFixtures()` 无生产调用方）→ T-G06 收口时决定。
 
 【首批记账时原文】**下一步（不在本记账内执行）**：集成人按 tasks §6 DAG 派第二批（入口 T-A10 / T-A22 / T-A23 / T-A24；Implement 首选 `openai/gpt-6-astra`，新会话、实施树），开工前读本节对应项；H-1 ④ 待 `integration/frontend-workbench-v2` 所有者真正集成后由其登记，本 feature 不代写。
 
@@ -412,3 +443,20 @@
   - 唯一的落点顺序差异：T-A12 对 `persistence.ts` 的写权限没有用到，因为 `mappingHistory` 已随 T-A11 落地（O-B3-1）。
   - 两次范围停止（r6.6.1 开码前、r6.6.2 A13 前）都按纪律处理，不是调用失败、不回退。
   - 本批**已收口、待第三批独立代码 Review**；不是 Review / Gate 2 / Handoff。
+
+## 11. R3-A Converge 补修派工准备（T-A22c，r6.8，2026-10-29；待实施，不预写结果）
+
+- **起因**：第三批代码 Review（`review-batch3.md`，原件 `49edb7e`）判本批通过（0 P1 / P2），P3 R3-A 要求在 T-B02 / H-2 ④ 之前关闭。集成人决定现在修，以免拖到 H-2·列表消费；R3-B / R3-C 留原归属。按 AGENTS §2 第 9 步追加任务，不并入已完成的 T-A22a，也不并入 B 组 UI。
+- **范围**：仅 T-A22c（≤ 0.5 h，依赖 T-A22a，已满足）。完成标准与命令以 tasks.md 原文为准（3 / 3）：
+  1. `pnpm -C frontend test:unit tests/unit/jobs/jobs-store.spec.ts -t "WI H-2 list status"`
+  2. `pnpm -C frontend test:unit tests/unit/jobs/jobs-store.spec.ts`
+  3. `pnpm -C frontend typecheck && pnpm -C frontend lint && pnpm -C frontend contract --check`
+- **方案**：A 原件 R3-A 最小方案 **(b)**。只删 `jobs/stores/jobs.ts` 中 `applyFilter(f)` 成功分支写 `listStatus` / `listError` 的两行；失败分支、`applyFilter(null)`、其余 action、S-38 自身 resolve、类型与对外成员不变。不加筛选状态机 / 回滚 / 锁 / 请求序号 / 新公开成员（AGENTS §5.1）。
+- **写权限**：
+  - `frontend/src/jobs/stores/jobs.ts`：只改上述两行。
+  - `frontend/tests/unit/jobs/jobs-store.spec.ts`：新增 describe `WI H-2 list status`（两例）；只改 `WI H-2 filter` 组的 “… the next filter read clears the error” 一例（标题末段与切回 normal 之后的断言改为“筛选成功保留错误、显式 refresh 清错”），不删测试；其余用例不改。
+  - **一律不改**：`main.ts`、`contracts/**` 与生成物、其他 jobs 源 / 测试、fixture、`app/**` / `shared/**` / `agent/**` / `workbench/**`、scripts、package / 锁 / 配置、e2e、spec / checklist / 审核原件 / docs；不写 v2 任何树。
+- **基线与模型**：实施树代码 = `0032fc6`（第三批已审代码）；规格以集成人提交本 r6.8 文档后的 SHA 为准。Implement 首选 `openai/gpt-6-astra`（新会话、实施树），回退 `deepseek/deepseek-flash`；只有调用失败才回退（AGENTS §6）。
+- **建议回归**（非新增标准）：提交前 `git diff --check`；批末全量 `pnpm -C frontend test:unit` 与 `pnpm -C frontend check` 防回归。T-A22a 命令 2 `-t "WI H-2 filter"` 的用例数应仍为 4（新 describe 标题不含该子串），断言按 r6.8 变化。
+- **复核**：有效 Checklist 仍为 R9（不改、不重勾）。实施后由新会话 A（与实施异模型）做**增量代码 Review**，只核 R3-A 是否关闭与本任务 diff；第三批其他结论保留，不再找模型重新判定通过。
+- **H-x**：T-A22c 关闭并经 A 增量复核后，H-2·列表的 ① 改登记为 T-A22c 提交，③ 补 `WI H-2` 新输出；④ 仍只能由 `integration/frontend-workbench-v2` 所有者登记。关闭前不放行 ④。
