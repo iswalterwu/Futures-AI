@@ -1,6 +1,6 @@
 # desktop-shell 评审与验收记录
 
-> 当前实现检查点：**T-05g～l 已实现，最后完整 42 unit / 14 场景 / 213/213 断言通过，但 T-05k 的 root-locked 间歇超时风险未关闭**。单独与最后全集复跑通过不证明根因已修；源码/证据已保存实施提交 **f7d347b**。下一步先复核 T-05k，不直接进入 T-06b/T-07。Checklist 41/41、冻结需求、Converge/独立代码 Review/Gate 2 边界不变。
+> 当前检查点：**T-05k有界诊断及独立A技术评估完成；RL-01=P3 OPEN/UNKNOWN、非阻塞，下一项T-06b**。A本窄范围无P1/P2，允许继续Implement但未关闭根因、未替用户接受；整体Converge/Review前必须补正负对照。Astra仅补scene安全时间线和证据§9（实施681d4bb），生产零改；新42unit/14场景213通过不是根因证明，不等于完整Review/Gate2。
 > Gate 1：Walter 已在会话中批准 desktop-shell v1；spec 页首已补记批准元数据，冻结需求正文未改。
 > **Gate 2 尚未批准**。本次不自动合并或发布，不把受测机冒烟等同于干净机器验收。
 
@@ -194,6 +194,32 @@ A 新增 P3 跟踪：**R4-01** 确认旧 `PYZ-00.toc` 中已有 `pyarrow.conftes
 **未关闭风险（未评级、非用户接受）**：首轮全集212/212后，补config-null的全集出现 **202/203、1failure**，root-locked在10s内尚未从gen1/waiting_health/port=null进入失败态。失败运行已清理；不改超时/断言的单场景16/16与最后全集213/213通过，但**根因未确认，不称已修复**。已在 `implementation-evidence.md` §8.3 记录全部失败/重跑，并把失败原始输出与绿灯共同保存在 `handoff-artifacts/20261029-lifecycle/`。T-05k 保留稳定性复核待关闭，不因最终绿灯把它结算为风险已解决，不自动评级P3；后续先诊断/复核，再进入T-06b。
 
 本批真实runtime仍为Electron33.4.11 / Node20.18.3 / Chrome130；旧Python454/5和打包12/12未复跑。旧onboarding.js消费者刻意未迁移，不称设置业务可用；真实前端/作业、基准机15s、全部人工M-ID、打包资源和诊断等未取得。未做整体Converge/独立代码Review/Gate2，不push/PR/merge。
+
+## 2026-10-29 05:27～05:41 UTC T-05k 有界诊断（完成取证，未证明根因）
+
+- 用户再次继续；主树40aff0c / 实施树35e5f78，启动前均干净、相关内容一致。实际Implement **openai/gpt-6-astra via openai**，新session **01a18620-5f99-7422-91f6-e006cb8c47a3** 元数据确认；原树唯一writer，不是模型回退。协调为PI实核openai/gpt-6.1-sol，不代写代码或跑产品测试。
+- 仍读完整Checklist41/41；本次仅T-05k诊断/有证据最小修复与证据追加，不改需求/Plan/审核，不开始T-06b。优先场景/临时测试钩子安全时间线，生产代码只在证实真实生命周期bug后最小修改；backend/**、其他业务/依赖/全局配置只读。
+- 有界实验集、分离进程/标记/状态/页面阶段，token/argv/payload禁入日志；不能无限重跑或无依据增超时。既有生产30s与观察10s不一致是线索，不是已证明根因。最终如无结论仍OPEN；有修复才按原严格断言、全unit/全14场景复验，不改隔离清理规则。
+- run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-lockprobe-FiY0hypq/`。Astra诊断结束：2次定向（其中一次import profiling）+1次全集未复现，spawn→分类约2.11/2.42s；不能解释原10s失败，未完成受控慢启动/标记负对照，不改预算/断言。最后42unit/14场景213通过但风险OPEN，仅保留scene安全时间线与证据§9，临时hooks恢复，生产零改；协调核对后本地保存实施提交 **681d4bb**。
+
+### 05:47 UTC 独立A窄范围技术风险补充审阅（已完成，非整体Review）
+
+- 触发依据：HANDOFF13允许必要时独立审核判断，本次不拿A代替原实施模型“找通过”。固定输入 **681d4bb09736c2cfec16ccda6f14b854acb8f181**，独立树 `D:/2030/Futures-AI-desktop-lock-risk` / `review/desktop-shell-root-lock-risk`；实际生命周期Git diff e0fe1cd..f7d347b与新观测diff35e5f78..681d4bb、原FAIL和新轨迹均提供，不读摘要代替真实代码。
+- A首选 **anthropic/claude-fable-5-1**，同窗口已知bridge限额不重复请求，本轮官方最小真实调用 `RISK_REVIEW_ROUTE_OK`；新session **01a18632-84de-7247-b0ff-2a0d46152f95** 元数据确认，与Astra/协调隔离。不是因测试失败而模型回退。
+- 只允许新写 `root-lock-risk-review.md`；其余源码/Checklist/Plan/进度只读，工具仅read/edit/write，不执行测试。评价该风险是生产缺陷/测试缺陷/预算假设/证据不足，给严重度与是否必须阻塞的独立依据；不指定“通过”、不替用户接受风险，不代表全feature Review/Gate2。18份输入指纹已冻结待前后核对。
+- A最终报告 **`root-lock-risk-review.md` v2**；18份保护输入SHA在初评/勘误后均全部一致，审核期HEAD681d4bb未动，A只写该新报告。协调者指出整锁读取、快照证明力、Unicode路径三处过推后，原A同模型同会话自行勘误并保留§0.1；协调者未代改技术结论、未换模型“找通过”。
+- **独立结论：无本窄范围P1/P2；RL-01=P3残余、UNKNOWN/OPEN，非阻塞，可继续T-06b起的Implement。** 原AC并无10s分类时限；10s是测试通用观察窗，生产有Plan30s有界失败路径。允许继续是A的范围内风险判定，不是通过次数、根因修复、用户风险接受、完整feature Review或Gate2。
+
+| 本轮实际验证 | 结果 / 边界 |
+|---|---|
+| 有界诊断 | 2定向（1profile）+1全集均未复现；spawn→分类约2.11/2.42s，profiling不能倒推历史原因 |
+| 最后全unit / 独立锁场景 / 全集 | **42pass/0skip；16/16；14场景213/213（67.203s）** |
+| 实际差异 | scene+24/−2安全单调时间线及证据§9追加；临时hooks恢复，生产/超时/断言/清理/依赖均未改；实施源码保存681d4bb |
+| 清理与复制 | owned进程0、ACL恢复并实写、temp已删；3文件指纹核对一致后原样集成主树 |
+
+**必留跟踪而非关闭**：RL-01历史FAIL202/203完整保留；不能从旧snapshot推断OS存活或marker未到。若复现证实OS已死但Node长时未收到exit，按A条件升级P2。RL-02须在整体Converge/Review前完成真实迟启动与错误标记/超deadline正负对照，按Plan/Tasks/派工纪律安排，不只是改大等待值；RL-03生产时间戳需先批准；RL-04 UTF-8跨chunk可损中文path/detail，A评P3、建议整体Review前Converge任务修；RL-05沿用现有deadline语义。当前均未实施或被用户接受。
+
+保存位置：A最终报告 + `implementation-evidence.md` §9；`handoff-artifacts/20261029-lockprobe/` 保存分派、Astra最终输出、普通时间线、最终unit/e2e、A勘误摘要及两类输入/源码指纹；大型profile/完整session留Git外。**取消此前人工临时阻塞，下一项T-06b**；本次未启动后续任务。需求/Plan/Checklist未改，整体Converge/独立代码Review/Gate2未完成，不push/PR/merge。归档Astra输出时，原Markdown硬换行的行尾空白触发一次whitespace检查；已用git stripspace从未改动的临时原始输出重新生成仅空白规范版，再检查通过，未手改生成物或生产源码，原报告保留Git外。
 
 ## 已取得的基线证据（前轮，非本轮复验）
 

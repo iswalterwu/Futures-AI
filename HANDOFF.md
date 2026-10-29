@@ -1,7 +1,7 @@
 # desktop-shell 恢复入口（保留暂停 WIP 交接）
 
-> **最新实现检查点：T-05g～l 已实现，末次 42 单测 / 14 场景 / 213/213 断言通过；T-05k 稳定性复核未关闭（2026-10-29）**。一次联合运行的 root-locked 在 10s 等待窗口内超时，单独复跑与最后全集虽通过，根因未确认，不能称已修复。源码/风险已本地保存为实施提交 **`f7d347b`**；下一步先复核该事项，不直接进入 T-06b/T-07。
-> 实施 = `openai/gpt-6-astra`，协调 = `openai/gpt-6.1-sol`；**先读 §13 和 `implementation-evidence.md` §8.3～8.4**。本批进程/临时目录已清理，无后台 worker。需求与 Checklist 41/41 不变；末次绿灯不等于风险关闭、Converge、代码 Review 或 Gate 2，仍不 push / PR / merge。
+> **最新检查点：T-05k 有界诊断及独立技术复核完成，RL-01 为 P3 OPEN / UNKNOWN、非阻塞；下一项 T-06b（2026-10-29）**。A 未发现本窄范围 P1/P2，允许继续 Implement；这不是根因修复或用户风险接受。Astra 只补安全时间线与证据，实施提交 **`681d4bb`**，生产代码/现有超时/断言未改；最新42unit、14场景213/213通过。
+> **先读 §14 和 `root-lock-risk-review.md` 最终v2结论**。整体Converge/Review前必须补正负对照；若复现进程观测缺陷则升级回修。当前无后台worker，Checklist41/41不变，完整feature Review/Gate2未完成，不push/PR/merge。
 
 ## 历史暂停记录（以下 §1～§9 为暂停时点快照）
 
@@ -296,3 +296,39 @@ git -C D:/2030/Futures-AI-desktop-implement log -1 --oneline
 - 详细证据 **`specs/desktop-shell/implementation-evidence.md` §8**；最终报告、派工、最终 unit/e2e、**间歇失败完整输出**与源码指纹在 **`specs/desktop-shell/handoff-artifacts/20261029-lifecycle/`**。完整会话/其他失败日志/diff/测试库留 Git 外。
 - 原始 run：`C:/Users/iswal/AppData/Local/Temp/desktop-shell-lifecycle-GULOgc3i/`；全部测试日志：`C:/Users/iswal/AppData/Local/Temp/fai-lifecycle-01a185d9/`。本轮未跑 Python 全量或 backend 打包，旧454/5与12/12只为历史证据。
 - **下一步先复核 T-05k 的 root-locked 间歇超时，再从 T-06b 继续**；其余21项、人工/外部验收仍未开始/未完成。旧 onboarding.js 的同步 backend() 消费者刻意留给 T-06b，不宣称设置业务可用。真实前端/作业/agent、clean install、15s、人工 M-ID、托盘/通知/诊断与整体 Converge/独立代码 Review/Gate2 均未取得；已知PYZ P3不变，不加 CORS、不 push/PR/merge。
+
+## 14. 2026-10-29 T-05k 有界诊断与独立评估（P3 OPEN，非阻塞）
+
+### 输入、角色、实际改动
+
+- 用户继续后，主树输入 `40aff0c` / 实施树输入 **`35e5f7869b9d80bcf49a37ab21336072ed611ffc`**，开始均干净、相关内容一致；Checklist **41 checked / 0 unchecked**，需求/Plan/Checklist未改。
+- Implement/debug=**`openai/gpt-6-astra` via openai**，新session **`01a18620-5f99-7422-91f6-e006cb8c47a3`**（05:27～05:41 UTC），元数据实核，原实施树/分支唯一writer，无回退。协调仅派工、记录、核对与集成，未代写实现或跑产品测试。
+- 有界执行 **2次定向（1次import profiling）+1次全集诊断**，均未复现历史失败；正常spawn→分类约 **2.11s / 2.42s**，profile有额外开销，不能解释原故障。没有盲改10s/30s预算，没有无限重跑到绿。
+- 最终仅 `root-locked.js` **+24/−2** 安全单调时间线与证据§9追加；原错误继续抛出，断言/清理/超时未改。临时hooks观测完全恢复，生产/后端/依赖/全局配置零改；指纹核对后保存实施提交 **`681d4bb09736c2cfec16ccda6f14b854acb8f181`**，原样集成主树。
+
+### 新验证与独立A结论
+
+| 项 | 结果 |
+|---|---|
+| 最后完整unit | **42 passed / 0 failed / 0 skipped（4974.143ms）** |
+| 最后独立root-locked | **16/16、exit0** |
+| 最后全登记e2e | **14场景、213/213、0 failures、exit0（67.203s）** |
+| 清理/冻结 | owned进程 **0**，ACL已恢复且实写、场景temp删除；仅2授权差异、211输入文件未改；未运行backend全量/打包 |
+
+- 依§13启动**窄范围技术风险补充审阅**，不是完整feature Review/Converge/Gate2。A=**`anthropic/claude-fable-5-1`**，新独立session **`01a18632-84de-7247-b0ff-2a0d46152f95`**；同窗口不重试已耗尽bridge，本轮官方最小真实调用成功。独立树 `D:/2030/Futures-AI-desktop-lock-risk` / `review/desktop-shell-root-lock-risk`，审期HEAD固定 **681d4bb**。
+- A仅写 **`specs/desktop-shell/root-lock-risk-review.md`**，不执行测试、不动源码/Checklist/原进度，18份输入SHA前后全一致。协调指出整锁读取/旧快照证明力/Unicode路径三处事实过推后，**同一A同一模型自行勘误**并保留§0.1记录，未换审或由协调者改判；最终v2结论不变。
+- **A最终独立判定：本窄范围无P1/P2；RL-01=P3残余，根因UNKNOWN，保持OPEN；T-05k不必继续blocked，可继续Implement。** 10s来自通用测试观察窗，不是AC-004-2时限；生产启动有Plan的30s失败路径。**不是根因已修复、用户已接受或整feature通过**。
+
+### 条件与后续（不可漏）
+
+1. **下一项可从 T-06b 继续**，不是复跑到绿后自行放行，而是上述单审A的非阻塞评估；本次尚未开始T-06b/T-07。
+2. **RL-01继续UNKNOWN/OPEN**，保留历史202/203 FAIL与所有绿灯。不得从旧snapshot反推OS存活或“没有marker”；该快照只证明Node未观察到exit/close/分类。复现时附OS/producer时刻重新评估；若证实OS已退出而Node长时间未感知，按A条件升级P2回修。
+3. **整体Converge/Review前必须按既定文档/派工流程补RL-02正负对照**：合法>10s且在producer deadline内的真实宿主延迟分类仍严格data_root_locked/零重启/不伤holder/可retry；超deadline与错误marker/退出码必须仍失败。不能只调大测试超时。具体方案见A报告§4，当前未执行，不把建议当新批准实现。
+4. RL-03常驻producer时间戳属于生产代码/额外观测，需先批准；本轮未保留。RL-04 UTF-8 chunk边界可能损坏**中文path与detail**（非仅message），A评P3，建议整体Review前作为Converge修补任务处理；未在本轮顺手改源码。RL-05 deadline边界按现有Plan，不隐含改设计。
+5. 原21项与人工/外部验收未完成；旧onboarding.js接口迁移及CORS正对照留T-06b等，仍触发停止规则即停报；已知PYZ P3不变。完整Converge/代码Review/Gate2均未取得，不push/PR/merge。
+
+### 保存与恢复
+
+- 主集成检查点=本文件所在HEAD；实施源码观察提交=681d4bb，若同步进度文档以实施树git log查询最新HEAD。两棵树相关代码/文档会在无writer边界串行同步；不得从历史审核树回拷旧进度。
+- 当前权威证据：`implementation-evidence.md` **§9** + **`root-lock-risk-review.md`最终v2**。分派/最终报告/普通时间线/最终unit/e2e/审核输入指纹与A勘误摘要在 **`handoff-artifacts/20261029-lockprobe/`**；原始历史失败仍在前序lifecycle目录。
+- 原始run `C:/Users/iswal/AppData/Local/Temp/desktop-shell-lockprobe-FiY0hypq/`；原始测试/诊断 `C:/Users/iswal/AppData/Local/Temp/fai-lockprobe-01a18620/`。大型profile日志、完整session、diff/测试库不入Git。本轮两个agent均结束，无服务、控制端口或自有进程需保留。
