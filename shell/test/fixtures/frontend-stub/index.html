@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>前端协议夹具（不是工作台）</title></head>
+<body>
+  <h1>前端协议夹具（不是工作台）</h1>
+  <p id="mode"></p><p id="backend"></p>
+  <script>
+    document.getElementById('mode').textContent = window.futuresai.mode;
+    window.futuresai.getBackend().then(info => {
+      document.getElementById('backend').textContent = info === null ? 'null' : 'available';
+    });
+  </script>
+</body>
+</html>

@@ -299,3 +299,88 @@ npm 安装两次都提示 `boolean@3.2.0` deprecated（既有传递依赖）；�
 - 相对输入 `83b91db`，**backend 与其他只读路径 diff 为空**；没有任何 backend 写入。源码变化为 4 个既有文件（shell/package.json、生成的 package-lock.json、main.js、check.js）+ 21 个新增文件（src 3、unit 5、e2e 3、fake_backend 1、runner fixtures 9）；本证据仅追加本节。完整含新文件 diff 与 SHA-256 清单冻结到上述外部日志目录 `foundation.diff` / `foundation.sha256`，不提交生成物。
 - **本批六任务自动化检查点完成；下一项 T-05g，未开始。** 既有正常生命周期足以证明本批 harness/single-instance；其旧重启缺陷、stdin 接线、host.json 迁移仍按 T-05g/h 处理，不假称已修。日志目前仍是早期状态目录单日志（加诚实标记），滚动/脱敏/数据根日志接线留 T-08。
 - **未取得**：整体 feature 完成、Converge、独立代码 Review、Gate 2、真实前端/设置页面业务、真实作业引擎/drain/agent、真实 EIA key/注册、发布通道、干净机、基准机 15s、Windows 前台焦点 M-09、系统 toast/托盘及满盘 GUI。fake 只提供协议端点，不以可见窗口或 file 页面加载冒充设置业务成功；本批未执行 settings-sources/csp 正对照，后续若触发 Plan §10 CORS/权限/设计停止规则仍须停报，不自行放宽。
+
+## 8. 2026-10-29 Lifecycle + startup 六任务检查点（T-05g/h/i/j/k/l）
+
+### 8.1 固定输入、批准、实施范围
+
+- Implement = **`openai/gpt-6-astra` via openai**；session **`01a185d9-e062-733e-b5af-f1175102c292`**（首次命令仅打印三个 PI 字段与 HEAD，实核）。无模型切换、额外 agent 或配置变更。
+- 工作树 / 分支：`D:/2030/Futures-AI-desktop-implement` / `feat/desktop-shell-astra`；开始工作树干净，固定输入及结束 HEAD **`e0fe1cd4eb464fb76971b18f5f6d72ffb2053a80`**。没有 commit / push / PR / merge / reset。
+- 本轮依据 AGENTS、HANDOFF 最新 §12、docs 四份权威文档 / D-007、feature spec / Plan4 / Tasks / Checklist / Analyze / Review / 本证据；相关读取见会话记录。独立计数 Checklist **41 checked / 0 unchecked**；未修改。未变 shell 任务沿用修订 3 批准，修订 4 只局部修 T-04b；本轮无新需求或 Plan 作者角色。
+- 严格按 **g → h → i → j → k → l** 实施并在边界重读对应任务/流程。停在本检查点，**未开始 T-06b/c/d、T-07 或日志/诊断/更新/构建任务**。backend 全部只读；未重建、未剔除已知 PYZ helpers、未运行 npm dist、未改依赖。
+- 代码范围：8 个既有 shell 文件定点修改 + 17 个新文件；本证据只追加。既有 `check.js`、`prefs.js`、fake_backend.py、旧 unit、onboarding.js、package/lock、冻结文档与其他工作树未改。两个基础场景只把“窗口可见”等待补为“窗口可见且实际 ready”，保留全部原断言（仍 18 / 19）。
+
+### 8.2 六任务实际交付与证据边界
+
+| 任务 | 本批状态 / AC 与真实边界 |
+|---|---|
+| T-05g | **完成**。生产 `src/backend.js` 与直接 Node 单测共用同一状态机；仅 spawn / HTTP 边界注入。8 个约定测试名全部通过：三条件 ready、503 不就绪、3 次预算且 ready 不清零、retry 清零、旧代事件忽略、超时先 kill、标记 + exit3 不重启、ENOENT。覆盖 AC-002-2/3、AC-007-2 的模块子句 |
+| T-05h | **完成**。main 使用该生产模块；代际各有 child / token / portFile / deadline；host.json 在 stateDir/run，spawn 前及 stop 后删除；三条 pipe + EOF flag。真实 `python -m app` 就绪、锁/只读端点存在，requestQuit 后均删除、端口可重新绑定；health-fail 夹具从未 ready，超时后 owned PID 已死。覆盖 AC-003-1、AC-002-2 |
+| T-05i | **完成（本批生命周期子句）**。真实 host 被定向 taskkill 后 gen2、restarts1、新端口/令牌与 preload 当前端点一致。crash-after-ready:300 夹具恰 4 spawns、4 次 ready、观察存活峰值恰 1，最后 restart_limit。仅杀 Electron（明确无 /T）后真实后端 ≤5s、退出码0、自行删除锁/只读端点并释放端口，同目录再次 ready；未手删运行态文件。AC-002-3 的诊断导出与通知/托盘仍属后续任务 |
+| T-05j | **完成**。启动本地页先 visible 再启动后端；sandbox/contextIsolation/nodeIntegration 安全值不变。窄 preload 仅 mode/getBackend/onShellStatus（可 unsubscribe）/retryStartup/openLogs；未就绪 null、失败不转 mock；真实 retry gen+1、无进程重叠。记录 shown/ready/interactive 时序；不是基准机15s认证。覆盖 AC-001-2/002-1 的可见性子句、AC-007-2/WO-12 与失败页面 |
+| T-05k | **实现及最后复跑通过（启动期）；保留一次未解释的联合运行超时风险，见下文**。14 个批准错误码中文映射，动态文本用 textContent。真实 Service 辅助进程持锁 → data_root_locked、不重启；释放辅助进程后点击重试真实 ready。新建 temp 子目录 icacls 拒写 → 路径/权限不足、不改根、不 spawn；finally 恢复 ACL 并实写验证，点击重试真实 ready。disk_full 仅协议夹具标记，应用存活；不冒充真实满盘。覆盖 AC-004-2/3、AC-007-4 启动期 |
+| T-05l | **完成（本批目标选择）**。开发显式 frontend、打包 app-config bundled/builtin 区分；缺失不静默 builtin。真实 Electron 显式 --mock 与 FAI_MODE=mock 都不 spawn（snapshot/registry/OS 查询），stub 显示 mode、内置 mock 横幅说明业务不可用。真实 host + 缺失 frontend → 错误页；仅补齐该 temp 夹具后点重试成功、后端代际不变。缺失 exe → backend_missing、不重启、不转 mock。打包路径解析用真实函数+临时配置夹具，不是打包产物验收。覆盖 AC-002-4 / AC-007-3 |
+
+### 8.3 实际命令、失败历史与最终结果
+
+全部日志留 Git 外：**`C:/Users/iswal/AppData/Local/Temp/fai-lifecycle-01a185d9/`**。命令 cwd = `shell`，均用 bash `time` 保存输出/墙钟；未开启在线/live 标志或访问真实 EIA/key/userdata。
+
+| 顺序 / 命令 | 实际结果（exit 0，除明确失败行） | 日志 / 墙钟 |
+|---|---|---|
+| 新基线 `npm ci` | 70 packages，成功；既有 boolean@3.2.0 deprecated 提示，未升级 | baseline-ci.log / 11.501s |
+| 新基线 `npm run test:unit` | 34 passed / 0 failed / 0 skipped，3093.37ms | baseline-unit.log / 3.664s |
+| 新基线默认 `npm run check` | 2 场景、37/37 断言、0 failures | baseline-e2e.log / 6.902s |
+| T-05g `npm run test:unit` | 42 passed / 0 failed / 0 skipped，4997.72ms | t05g-unit.log / 5.545s |
+| `npm run check -- ready-quit` | 15/15 | t05h-ready.log / 7.427s |
+| `npm run check -- health-fail` | 8/8（补页面断言前） | t05h-health.log / 4.521s |
+| `npm run check -- crash-restart restart-limit` | 28/28（补页面/preload断言前） | t05i-restart.log / 14.589s |
+| `npm run check -- kill-shell-recover` 初次 | **13/15，exit1**：后端死、端口释放、重启成功，但锁/只读端点残留 | t05i-recover.log / 6.686s |
+| 同命令增加 OS 退出码观测后 | **15/17，exit1**：退出码0仍残留两文件；观测 helper 已退出 | t05i-recover-diagnostic.log / 9.620s |
+| 同命令 Windows spawn 修正后 | **17/17** | t05i-recover-console.log / 7.269s |
+| `npm run check -- startup-visible` | 13/13 | t05j-visible.log / 4.837s |
+| `npm run check -- timeout` | 14/14（含 unsubscribe、实际日志出口与 retry） | t05j-timeout.log / 8.177s |
+| `npm run check -- restart-limit health-fail` | 26/26（页面断言已补） | t05j-errors.log / 12.579s |
+| `npm run check -- root-locked` 初次 | **2/3，exit1**：测试试图整读被真实字节锁保护的 .lock，EBUSY；发生在 Electron 启动前，helper 已优雅清理 | t05k-locked.log / 2.734s |
+| 同命令修正后 | **16/16** | t05k-locked-fixed.log / 7.188s |
+| `npm run check -- root-unwritable` | 12/12 | t05k-unwritable.log / 4.969s |
+| `npm run check -- startup-disk-full` | 10/10 | t05k-full.log / 1.808s |
+| `npm run check -- mock` | 17/17 | t05l-mock.log / 3.197s |
+| `npm run check -- frontend-missing` | 19/19 | t05l-missing.log / 5.107s |
+| 首轮联合前完整 `npm run test:unit` | 42 passed / 0 failed / 0 cancelled / 0 skipped，5073.31ms | unit-final.log / 5.681s |
+| 首轮默认 `npm run check`（所有登记场景联合） | 14 场景、212/212 断言、0 failures，exit0 | e2e-final.log / 70.398s |
+| 补 app-config null 形状校验后 `npm run test:unit` | 42 passed / 0 failed / 0 skipped，4975.46ms | unit-final-2.log / 5.528s |
+| 同源码默认 `npm run check` | **14场景、202/203、1 failure，exit1**：root-locked 等待 failed 的10s条件超时；其余场景通过 | e2e-final-2.log / 100.950s |
+| 同源码 `npm run check -- root-locked` 核查 | 16/16；未改超时/断言，不能以此抹掉前次失败 | t05k-locked-recheck.log / 9.443s |
+| **最后源码编辑后，最终完整 `npm run test:unit`** | **42 passed / 0 failed / 0 cancelled / 0 skipped，4988.49ms** | unit-final-3.log / 5.541s |
+| **最后源码编辑后，最终默认 `npm run check`（所有登记场景联合）** | **14 场景、213/213 断言、0 failures，exit0** | e2e-final-3.log / 67.092s |
+
+失败的最小处置（不改验收条件）：
+
+1. 真实仅杀外壳两次均出现“后端 exit0 但锁/端点残留”，不能把同目录重启成功当 EOF 优雅退出通过。Windows spawn 增加 `detached: process.platform === 'win32'`，分离 Windows 控制台生命周期；**没有 unref**，仍由同一状态机跟踪/等待退出、stdin pipe EOF 守护、必要时 owned taskkill /T。该一项 spawn 边界修正后，锁/端点自行删除与端口释放、再次就绪全部通过；最终全集再通过。无 Job Object/PID watchdog/新依赖/后端改动，未声称仅凭退出码即可证明优雅退出。
+2. root-locked 的试验性“读整个锁文件/PID 显示”假设不成立：真实字节锁可拒绝整读，而宿主协议只承诺 PID 读得到时才附加。移除这项非必需整读，改为真实 Service.init 成功信号 + 锁存在 + helper 存活，并保留全部必需的错误码/目录/零重启/持锁者未被误杀/释放后真实 retry 断言。未 mock 锁、未放宽必需断言、未手删锁。该失败和重跑都保留。
+3. 首轮全集通过后，检查发现合法 JSON `null` 的 app-config 会在读取 `.frontend` 时抛 TypeError；在批准的配置入口改为可选链形状检查，统一返回 frontend_missing（重试重新解析），并在 mock 场景调用真实解析器验证；未扩展资源机制。mock 因而由17增至18条，总数213。
+4. 随后的完整运行 **root-locked 10s等待失败**：清理前真实快照为 gen1 / waiting_health / port=null，未收到预期失败状态。runner 已退出后端、辅助进程并删除临时目录。只读核查后端代码与日志，现有证据不能区分启动迟滞还是其他原因，**未确认根因、没有宣称修复**。不改源码/超时/断言的单场景16/16与最后完整213/213均通过；这是保留的间歇性风险，交协调者/独立审核，不以绿灯删除FAIL历史。
+5. 共四次失败运行均已列出；没有 skip、静默吞测试失败、模型回退或变更需求。证据追加后 `git diff --check` 另报第387行 new blank line at EOF，定点去掉新增尾部空行后复查；这是文档空白检查失败，不是产品测试失败。Git 的 LF→CRLF 提示不当作测试失败，未修改 Git 配置。
+
+最终全部场景断言数（含 runner 清理断言）：
+
+| 场景 | 通过/总数 | 场景 | 通过/总数 |
+|---|---|---|---|
+| harness-selftest | 18/18 | single-instance | 19/19 |
+| ready-quit | 15/15 | health-fail | 10/10 |
+| crash-restart | 16/16 | restart-limit | 16/16 |
+| kill-shell-recover | 17/17 | startup-visible | 13/13 |
+| timeout | 14/14 | root-locked | 16/16 |
+| root-unwritable | 12/12 | startup-disk-full | 10/10 |
+| mock | 18/18 | frontend-missing | 19/19 |
+
+构建机 **Node v25.2.1 / npm11.7.0 / Python3.14.2**；真实 Electron 快照 **Electron33.4.11 / 内嵌 Node20.18.3 / Chrome130.0.6723.191**。旧 backend **454/5 skips 与12/12** 本轮未重跑，仅为历史；本轮真实 backend 证据来自 Electron 场景中的源码宿主，不是打包 exe。
+
+### 8.4 清理、冻结、剩余缺口与下一项
+
+- 未修改 runner 的隔离/清理规则。每场景新外部 temp LOCALAPPDATA/state/data；真实宿主场景没有 FAI_BACKEND_CMD。主动退出与最终清理走生产 requestQuit；仅 kill-shell-recover 故意 app-only taskkill，随后等待/核查 EOF，重启实例正常 requestQuit。快照/registry/helper PIDs 均核查已死，所有14场景 temp实际删除；ACL 已恢复且实写成功。失败运行同样清理；无以兜底杀进程当成功。
+- 最终只读 CIM 定向核查本工作树 Electron、fake_backend.py 与本批真实 host/helper 命令根：**OWNED_LIFECYCLE_PROCESSES=0**。无服务/端口保留；未 broad taskkill、未访问/删除真实用户数据。
+- 输入188个 tracked文件 SHA-256 留 `input.sha256`；源码结束后 checksum 仅8个授权既有shell文件改变，其余180个逐字节一致（含 backend、package/lock、旧测试、规格/Checklist等；本证据追加之后多1个合法差异）。冻结 diff 相对 e0fe1cd 为空；17个新文件均不被忽略；新文件 no-index whitespace检查与 `git diff --check` 通过。忽略产物仅既存 backend/build、backend/dist 与 npm生成的node_modules。本证据保留§1～§7，只有追加。
+- 完整日志/session/临时测试库不入Git；代码与证据未提交。最终diff与SHA清单留上述外部目录供协调者核对。
+- **六任务实现已到检查点、最后完整复跑通过，但保留 root-locked 一次未解释超时风险；不宣称稳定性问题已关闭。下一项 T-06b，本 session 不继续。** preload 已采用异步新契约，旧 onboarding.js 的同步 `backend()` 消费者刻意留给 T-06b；本批只证明页面加载/启动生命周期，**不声称现有设置业务可用**，未提前实现 T-06c 的 profile/onboarding 路由或设置入口。
+- 后续仍未验证：14错误码的每个真实GUI触发（本批只实际触发上述场景）、startup.html本身缺失的原生兜底、真实renderer崩溃恢复、打包后的app-config资源装配、日志滚动/脱敏/诊断导出、真实前端与作业/agent/drain、真实EIA注册/key、clean install、基准机15s、全部人工M-ID（含M-09焦点/M-16观感/M-18真实满盘）、toast/托盘、整体Converge、独立代码Review及Gate2。既有PYZ P3不变；settings-sources/csp/CORS正对照留后续，若需要改安全面则停报，不自行放宽。
