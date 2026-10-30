@@ -9,7 +9,7 @@
 |---|---|---|
 | 每会话必读入口、硬约束、工程准则 | [`../AGENTS.md`](../AGENTS.md) | §5 七条工程准则只在此维护 |
 | 产品定位、范围、决策汇总、路线图 / 分期、扩展性、风险 | [plan.md](plan.md) | §3 决策表、§8 路线图、§10 风险 |
-| 产品架构：分层、数据层、知识层、agent 集成、安全隔离 | [architecture.md](architecture.md) | 数据层字段契约以 [`specs/data-layer/plan.md`](../specs/data-layer/plan.md) 为准（见其 §3.1） |
+| 产品架构：分层、数据层、知识层、agent 集成、安全隔离 | [architecture.md](architecture.md) | 数据层字段契约以 [`specs/data-layer/plan.md`](../specs/data-layer/plan.md) 为准（见其 §2.1） |
 | 交互与协作模型：双循环、作业、介入、定稿、回流、学习、校准、世界模型、常驻、多主体 | [interaction.md](interaction.md) | architecture / designUI 引用不复述 |
 | 视觉与界面：配色、图表、chart-spec、交付物块样式、组件 | [designUI.md](designUI.md) | 移植原文在 `../design/` |
 | 决策的“为什么” | [decisions/](decisions/README.md) | ADR 先登记再实现；变更 = 新 ADR，不改历史文件 |
