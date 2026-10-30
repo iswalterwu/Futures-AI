@@ -4,6 +4,8 @@
 > 架构细节见 `architecture.md`，交互与协作模型见 `interaction.md`，设计理念见 `designUI.md`。
 > 变更本文件内容即变更项目方案，需同步相关文档。
 > 第三轮文档同步（Plan / Converge，历史）= openai/gpt-6.1-sol via openai；前作者 anthropic/claude-opus-5-5 正式任务调用超时后回退，基线 `88ff28b`。Handoff 集成（合入 main `44845c8`，解决本文件与 `designUI.md` 冲突）= anthropic/claude-opus-5-5 via anthropic，接续 `4aaf019`；脱敏路由与验证记录见 §9。
+> 开发规则与导航不在本文件：入口见根 `AGENTS.md`，文档权威归属见 [docs/README.md](README.md)。
+> D-026 开发导航文档的 main 兼容交付（2026-10-30）= claude-opus-5-5 via anthropic，基线 `072bb12`；只在 §3 / §4 / §9 增加决策行、文档导航与历史标注，产品设计未改。范围与适配见 [交付记录](maintenance/20261030-agent-navigation-main.md)。
 
 ## 1. 背景与目标
 
@@ -61,6 +63,8 @@
 | D-022 | 常驻研究台与自主度分级：常驻作业类型 + 六台职责 + 晨间议程（日报降为导出）+ A0–A3 自主度 + 预算降级 + 值班员角色 | 维持定时作业 / 完全自主不分级 | agent 从被动变值班、自主度由用户按档开启；详见 ADR 与 `interaction.md` §11 |
 | D-023 | 多主体协作：主体与角色正交、作业树由引擎建、辩论协议 + 裁判员 + crux、用户人格红队、每作业可选 | 单主体自我反证 / 固定三角色硬编码 | 分歧与 crux 是研究价值所在，且不改 D-019 权限模型；详见 ADR 与 `interaction.md` §12 |
 | D-024 | 分析协议冷启动：Phase 1 摄取用户历史产出（派生区、作者 = 人）+ 首启访谈 → `source=bootstrap` 的 proposed 规则；历史立场不生成 call | 等待介入积累 / 预置通用协议 | 存量产出是最便宜的协议来源，首周即"像用户"；详见 ADR 与 `interaction.md` §6.6 |
+| D-025 | 开发工作区收敛：默认唯一主目录 + `main` / `workbench` 两个常驻本地分支；独立审核不取消，必要临时隔离用后回收 | 每轮规划 / 审核长期保留 worktree 和分支 | Walter 要求整合衍生修改并清理目录；完整历史先做可恢复备份，未完成内容不提前合 main；见 [ADR](decisions/20261030-workspace-lifecycle.md)（仅开发协作，不改产品范围） |
+| D-026 | 开发导航与阅读策略：根 AGENTS 为每会话必读的短入口；工作流 / 模型路由外置为单一详细权威；按任务触发读取；plan.md 按触发必读；阶段输入按版本与上下文可见性核对 | 维持长入口 / 只压缩不外置 / 引入上下文装配工具 | 消除双份政策与漂移、降低重复载入，同时保留全部硬约束与旧引用兼容；见 [ADR](decisions/20261030-agent-navigation.md)（仅开发协作，不改产品范围、模型路由语义或任何 Gate） |
 
 §9 决策确认记录：2026-10-26 的待确认事项已全部确认，保留作记录。
 
@@ -73,7 +77,7 @@
 
 **完成记录（2026-10-28，frontend-workbench v1 Handoff 合并主线时）**：第 1–3 项已在分支完成（ADR 标题与活文档引用均为 D-015，`design/` 无残留 D-013；`checklist.md` 等历史评审记录保留 D-013 并带“即 D-015”勘误说明）；第 4 项已执行，上表预留行替换为正式 D-015 行。
 
-2026-10-28 第一轮新增 D-016、D-017；第二轮新增 D-018、D-019（以第二轮裁定为修改基准）；第三轮（agent 工作流重塑）新增 D-020–D-024，未决想法进候选池 `docs/agent/candidates.md`。
+2026-10-28 第一轮新增 D-016、D-017；第二轮新增 D-018、D-019（以第二轮裁定为修改基准）；第三轮（agent 工作流重塑）新增 D-020–D-024，未决想法进候选池 `docs/agent/candidates.md`。2026-10-30 新增 D-025、D-026，仅涉及开发协作。
 
 ## 4. 文档体系规划
 
@@ -81,13 +85,16 @@
 
 ```
 docs/
-├── plan.md            # 本文档：总方案与路线图（唯一"当前状态"入口）
+├── README.md          # 文档权威归属与任务路由（只导航，不是每任务必读的中间索引；D-026）
+├── plan.md            # 本文档：总方案与路线图（产品方案的"当前状态"入口；开发进度见 specs/README.md，工作区见 HANDOFF.md）
 ├── architecture.md    # 产品架构：分层、数据底座、知识层、agent 集成、交付管线、授权
 ├── interaction.md     # 交互架构：双循环、作业与四阶段契约、介入机制、知识回流、学习与协议
 ├── designUI.md        # 全局设计理念：配色、图表系统、chart-spec、交付物块模型、组件、界面形态
 ├── decisions/         # ADR：YYYYMMDD-<slug>.md，编号 D-XXX；先登记再实现
 ├── data/              # （后续）数据模型、序列规范、适配器 SDK 规范、溯源对齐规格
-├── agent/             # candidates.md：agent 工作流候选池（未决想法，含状态与依赖）；（后续）pi 集成细节、工具清单、记忆模块设计、prompt 约定
+├── agent/             # candidates.md：产品 agent 工作流候选池（未决想法，含状态与依赖）；（后续）pi 集成细节、工具清单、记忆模块设计、prompt 约定
+├── development/       # 本仓库开发规则：workflow.md（spec-driven 工作流）、model-routing.md（开发会话模型路由）；与产品 agent 无关（D-026）
+├── maintenance/       # 仓库维护记录与逐字历史存档（证据，不是现行规则来源）
 └── business/          # （后续）收费框架、授权协议、分发与更新、隐私合规
 specs/<feature>/       # 功能规格目录：每功能一份 spec/plan/tasks/review（唯一实施入口）
 templates/             # spec-driven 工作流模板（spec/plan/tasks/checklist/review 的模板权威）
@@ -100,7 +107,7 @@ design/                # FTEngine 移植的规范资产（charts/、ui/，逐份
 - 交互与协作模型只在 `interaction.md` 维护；`architecture.md` / `designUI.md` 引用不复述（阶段契约、闸门判定、指标定义不重复登记）
 - 所有"为什么"写进 ADR 或规范条目，不散落在会话里
 - 方案变更先改 docs 再改代码；实现与 docs 冲突以 docs 为准
-- **功能开发一律走 spec-driven 工作流**（AGENTS.md §2）：Constitution → Spec → Clarify → Plan → Checklist → Tasks → Analyze → Implement → Converge → Review → Handoff；规格与实施产物在 `specs/<feature>/`
+- **功能开发一律走 spec-driven 工作流**（[development/workflow.md](development/workflow.md)；根 `AGENTS.md` §2 为入口摘要）：Constitution → Spec → Clarify → Plan → Checklist → Tasks → Analyze → Implement → Converge → Review → Handoff；规格与实施产物在 `specs/<feature>/`
 
 ## 5. 目录结构规划
 
@@ -198,6 +205,8 @@ Backend 内新增三块：**作业引擎**（阶段状态机/版本/介入/验�
 
 ## 9. 决策确认记录
 
+> **历史过程记录**：本节下列各轮确认、路由与集成记录保留原文，作为有效的历史批准证据；其中的工作树路径、分支、“未 push / merge”“进行中”等只反映写入当时的状态，**不是当前工作区指令**（当前入口见 `../HANDOFF.md`）。本节中 “`../HANDOFF.md` §N” 指 PR #9 时的 HANDOFF 原文，全文见 [维护存档](maintenance/20261030-agent-navigation-main-history.md)；“`AGENTS.md` §6” 的模型路由现行权威为 [development/model-routing.md](development/model-routing.md)（规则编号不变）。本节的完整历史迁移（D-026 结论 6）推迟到后续交付。
+
 已全部确认（2026-10-26）：桌面外壳 Electron（D-007）、前端 Vue 3（D-008）、知识库与嵌入栈（D-009）、后端 FastAPI（D-010）。
 后续新决策一律走 ADR（docs/decisions/）。
 
@@ -246,6 +255,14 @@ Walter 已明确回复 **“以上按建议全部接受”**，以下四组均�
 - **集成提交与复核**：`12408a0` 已完成本地 merge。独立 Analyze / Converge（Opus）结论“已收敛”；A 第二轮（Fable）对该固定提交复核通过，无新增 P1/P2。首轮九项 P3 保留为后续；第二轮的记录时态 / 路由范围措辞已在本交接补记，议程焦点带与 D-015 分段的待 Clarify 指针已补在 `designUI.md` §3.2，不作新产品裁定。
 - **验收证据**：对 main `44845c8` 的差异仅 13 份 Markdown；前端、设计资产、后端、`.gitignore`、前端冻结 spec 与 main 字节一致，锁文件未改。结构 / 链接 / 冲突标记 / `git diff --check` 通过。现有前端守卫首次因本工作树缺 `zod` 未完成；按 `pnpm install --frozen-lockfile` 补依赖后，`pnpm check` 六项全部通过，`pnpm test:unit` 为 14 文件、559/559 通过。未跑 E2E / 后端测试。
 - **交付入口**：[PR #9](https://github.com/iswalterwu/Futures-AI/pull/9)，head `docs/agent-workflow-reshape` → base `main`。前置 PR #6 已合入，本 PR 是本轮唯一交付入口；最终合并状态与 merge commit 以该 PR 的 GitHub 记录及协调者合并确认评论为准，避免在提交内预写自己的合并结果。详细证据与后续见 `../HANDOFF.md` §10。
+
+### 2026-10-30 开发目录整理
+
+Walter 要求整合 `D:/2030` 的 Futures-AI 衍生目录和修改，后续不保留大量 branch。采用 D-025：本地以唯一主目录、`main` / `workbench` 收敛；旧引用先做 bundle 及独立恢复校验；独立项目不误删，远端分支与 Draft PR 不擅动。此授权不是未完成功能的 Gate 2，过程与验证见 [维护记录](maintenance/20261030-workspace-consolidation.md)（main 上为参考页，原执行日志在 workbench）。
+
+### 2026-10-30 开发导航文档（D-026）
+
+Walter 先以“按照你说的进行改造”批准 D-026 改造；A R2 固定审 `03a1bfe` 通过后以“接受，批准本轮 Gate 2”确认（P3-A 接受为后续、未修复）；因原样合入 main 会断链，又以“按你说的做”授权 main 兼容的文档子集交付。均只涉及开发协作，不是任何 feature 的 Gate 1 / Gate 2。见 [D-026 维护索引](maintenance/20261030-agent-navigation.md) 与 [main 兼容交付记录](maintenance/20261030-agent-navigation-main.md)。
 
 ## 10. 风险与约束
 

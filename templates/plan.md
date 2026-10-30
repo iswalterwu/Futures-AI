@@ -4,7 +4,7 @@
 
 ## 1. 技术方案
 
-- 技术栈与架构落点（引用 docs/architecture.md 对应层、docs/plan.md §3 决策）
+- 技术栈与架构落点（引用 docs/architecture.md 对应层、docs/plan.md §3 决策与相关 ADR；各主题的权威文件见 docs/README.md，阶段规则见 docs/development/workflow.md 第 4 步）
 
 ## 2. 模块设计
 

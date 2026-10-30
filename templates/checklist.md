@@ -2,8 +2,9 @@
 
 > Checklist 阶段产物，由审核员生成并勾选。仅当审核员认为某项检查标准得到满足时才标记为通过；
 > 通过只代表需求质量达标，不代表实施完成。实施者不勾选本文件。
-> 审核员 A = claude-fable-5-1，独立会话（与实施隔离、不同模型）；单审，结论即审核结论。
-> 通道：优先 claude-bridge，不可用时走 anthropic（产物头部记录实际通道）。
+> 审核员 A 为独立会话（与实施隔离），单审，结论即审核结论。
+> 模型、回退顺序、Claude 通道与独立性要求只在 [docs/development/model-routing.md](../docs/development/model-routing.md) 维护（审核员 A 一行与规则 2～6），本模板不另列模型清单。
+> 产物头部记录实际模型、通道、基线提交与回退原因，以及输入清单（路径 @ SHA 或 hash + 适用章节，见 [workflow.md 总规则](../docs/development/workflow.md#general-rule)）。
 
 ## 需求完整性
 
