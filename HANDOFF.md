@@ -22,6 +22,12 @@
 3. 直接读该 feature 的冻结 spec / plan / tasks、有效 checklist 与审核 / 交接记录。
 4. feature 不在本 checkout 时，有意切到 `workbench` 分支核对，不在 main 上补建或推断。
 
+## 4. dev-harness-budget v1 交付（2026-10-31）
+
+- 内容：开发工作流的运行后用量观测工具（只观测、不约束）`backend/tools/dev_harness_budget.py` 及其测试与合成夹具，规格与全部审核 / 交接记录在 [specs/dev-harness-budget/](specs/dev-harness-budget/review.md)。
+- 状态：Gate 2 已由用户确认；2 项 P3 经用户接受为后续任务；27 条 AC 的认可记录在该 feature 的 review.md（按本库先例，spec 复选框不勾选）。
+- 本交付只带该 feature 的文件；workbench 上其他在研功能与并行会话的改动不在本次范围。
+
 ## 8. 历史：PR #9 独立 Review 结果与后续线索（保留旧引用编号）
 
 原文见 [维护存档](docs/maintenance/20261030-agent-navigation-main-history.md) 中原 HANDOFF 的 §8。要点：A 对 `f20fdfb` 的 Review 通过（0 个 P1/P2，9 个 P3）；Walter 以“继续”确认 Gate 2，九项 P3 接受为后续 Clarify / 任务线索，**仍未修复**、不扩改冻结 AC。

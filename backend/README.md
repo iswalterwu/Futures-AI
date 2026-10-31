@@ -16,6 +16,7 @@
 | `data/service.py` | 对外门面（CLI/MCP 共用） |
 | `data/mcp_server.py` | MCP 四工具 + 内部只读通道 |
 | `data/cli.py` | CLI 全子命令 |
+| `tools/dev_harness_budget.py` | 开发批次用量的运行后观测；out-dir 须在仓库外（[dev-harness-budget spec](../specs/dev-harness-budget/spec.md)） |
 
 ## 入口
 
